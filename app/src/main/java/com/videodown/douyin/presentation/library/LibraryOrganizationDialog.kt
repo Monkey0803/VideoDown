@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
 
 @Composable
 internal fun LibraryOrganizationDialog(record: DownloadRecord, model: LibraryOrganizationViewModel, onClose: () -> Unit) {
@@ -20,9 +22,11 @@ internal fun LibraryOrganizationDialog(record: DownloadRecord, model: LibraryOrg
     LaunchedEffect(record.id) { model.clearError() }
     AlertDialog(onDismissRequest = { if (!state.busy) onClose() }, title = { Text("重命名与分类") },
         text = { Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
-            OutlinedTextField(value = title, onValueChange = { title = it }, enabled = !state.busy, label = { Text("文件名称") }, singleLine = true)
+            OutlinedTextField(value = title, onValueChange = { title = it }, enabled = !state.busy, label = { Text("文件名称") }, singleLine = true,
+                leadingIcon = { AppIcon(AppIcons.Rename, null) })
             Text("保留原扩展名；更名后的文件会用于播放、分享和导出。", style = MaterialTheme.typography.bodySmall)
-            OutlinedTextField(value = folder, onValueChange = { folder = it }, enabled = !state.busy, label = { Text("分类名称（留空表示未分类）") }, singleLine = true)
+            OutlinedTextField(value = folder, onValueChange = { folder = it }, enabled = !state.busy, label = { Text("分类名称（留空表示未分类）") }, singleLine = true,
+                leadingIcon = { AppIcon(AppIcons.Category, null) })
             Text("分类用于影像库筛选，不移动到外部目录。", style = MaterialTheme.typography.bodySmall)
             state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         } },

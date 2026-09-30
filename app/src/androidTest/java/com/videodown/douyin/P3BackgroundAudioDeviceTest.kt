@@ -103,6 +103,7 @@ class P3BackgroundAudioDeviceTest {
         val manager = context.getSystemService(NotificationManager::class.java)
         var found: Notification? = null
         await { found = manager.activeNotifications.firstOrNull { it.notification.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() == record.title }?.notification; found != null }
+        assertEquals(R.drawable.ic_shiying_notification_audio, found!!.smallIcon.resId)
         return found!!
     }
     private fun find(view: View): PlayerView? {

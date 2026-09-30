@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation.browser
 
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
+
 import android.graphics.Bitmap
 import androidx.core.net.toUri
 import android.webkit.*
@@ -7,10 +10,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -95,9 +94,9 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
         Surface(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    IconButton(onClick = onClose) { Icon(Icons.Filled.Close, contentDescription = "关闭网页") }
-                    IconButton(onClick = { browser?.reload() }) { Icon(Icons.Filled.Refresh, contentDescription = "刷新") }
-                    IconButton(onClick = ::scan) { Icon(Icons.Filled.Search, contentDescription = "查找视频") }
+                    IconButton(onClick = onClose) { AppIcon(AppIcons.Close, contentDescription = "关闭网页") }
+                    IconButton(onClick = { browser?.reload() }) { AppIcon(AppIcons.Retry, contentDescription = "刷新") }
+                    IconButton(onClick = ::scan) { AppIcon(AppIcons.Search, contentDescription = "查找视频") }
                 }
                 Text(page.toUri().host ?: "网页", modifier = Modifier.padding(horizontal = 12.dp), style = MaterialTheme.typography.labelSmall)
                 AndroidView(modifier = Modifier.weight(1f).fillMaxWidth(), factory = { context ->

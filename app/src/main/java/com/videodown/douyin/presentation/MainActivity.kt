@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation
 
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
+
 import android.content.Context
 import android.content.res.Configuration
 import java.util.Locale
@@ -28,14 +31,9 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PersonOutline
-import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
@@ -100,7 +98,7 @@ class MainActivity : ComponentActivity() {
         val action = PendingIntent.getBroadcast(this, 8702, Intent(PIP_ACTION).setPackage(packageName), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val params = PictureInPictureParams.Builder().setAspectRatio(Rational((pipRatio * 1000).toInt(), 1000))
             .setActions(if (pipPlayer == null) emptyList() else listOf(RemoteAction(
-                AndroidIcon.createWithResource(this, if (playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play),
+                AndroidIcon.createWithResource(this, if (playing) com.videodown.douyin.R.drawable.ic_shiying_pause else com.videodown.douyin.R.drawable.ic_shiying_play),
                 if (playing) "暂停" else "播放", if (playing) "暂停播放" else "继续播放", action)))
         if (Build.VERSION.SDK_INT >= 31) params.setAutoEnterEnabled(playing)
         runCatching { setPictureInPictureParams(params.build()) }
@@ -216,7 +214,8 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     val historyState by historyViewModel.state.collectAsStateWithLifecycle()
     val tabs = listOf(Routes.HOME, Routes.TASKS, Routes.LIBRARY, Routes.SETTINGS)
     val labels = listOf("解析", "任务", "已存", "我的")
-    val icons = listOf(Icons.Filled.Home, Icons.Filled.Download, Icons.Filled.GridView, Icons.Filled.PersonOutline)
+    val icons = listOf(AppIcons.Parse, AppIcons.Tasks, AppIcons.Library, AppIcons.Profile)
+    val selectedIcons = listOf(AppIcons.ParseSelected, AppIcons.TasksSelected, AppIcons.LibrarySelected, AppIcons.ProfileSelected)
 
     fun navigateTab(destination: String) {
         focusManager.clearFocus(force = true)
@@ -260,8 +259,15 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         NavigationBarItem(
                             selected = route == destination,
                             onClick = { navigateTab(destination) },
-                            icon = { Icon(icons[index], contentDescription = null) },
+                            icon = { AppIcon(if (route == destination) selectedIcons[index] else icons[index], contentDescription = null) },
                             label = { Text(labels[index]) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
                             alwaysShowLabel = true,
                         )
                     }

@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation.player
 
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
+
 import android.Manifest
 import android.app.Activity
 import android.content.Context
@@ -32,21 +35,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.FullscreenExit
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -302,12 +295,12 @@ fun PlayerScreen(
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                            AppIcon(AppIcons.Back, contentDescription = "返回")
                         }
                     },
                     actions = {
                         IconButton(onClick = { fullscreen = true }, enabled = state.fileExists && state.record?.isAudio != true) {
-                            Icon(Icons.Filled.Fullscreen, contentDescription = "横屏播放")
+                            AppIcon(AppIcons.Fullscreen, contentDescription = "横屏播放")
                         }
                     },
                 )
@@ -359,7 +352,7 @@ fun PlayerScreen(
                         modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding().padding(12.dp).size(48.dp)
                             .background(Color.Black.copy(alpha = .55f), CircleShape),
                     ) {
-                        Icon(Icons.Filled.FullscreenExit, contentDescription = "退出全屏", tint = Color.White)
+                        AppIcon(AppIcons.FullscreenExit, contentDescription = "退出全屏", tint = Color.White)
                     }
                 }
             }
@@ -385,13 +378,13 @@ fun PlayerScreen(
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = { if (player.isPlaying) player.pause() else player.play() }) {
-                                Icon(if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                AppIcon(if (isPlaying) AppIcons.Pause else AppIcons.Play,
                                     contentDescription = if (isPlaying) "暂停" else "播放")
                                 Spacer(Modifier.width(6.dp))
                                 Text(if (isPlaying) "暂停" else "播放")
                             }
                             OutlinedButton(onClick = { fullscreen = true }, enabled = state.fileExists && !record.isAudio) {
-                                Icon(Icons.Filled.Fullscreen, contentDescription = null)
+                                AppIcon(AppIcons.Fullscreen, contentDescription = null)
                                 Spacer(Modifier.width(6.dp))
                                 Text("横屏全屏")
                             }
@@ -404,7 +397,7 @@ fun PlayerScreen(
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(onClick = ::requestExport, enabled = state.fileExists && !exporting) {
-                                Icon(Icons.Filled.SaveAlt, contentDescription = null)
+                                AppIcon(if (record.isAudio) AppIcons.Audio else AppIcons.SaveAlbum, contentDescription = null)
                                 Spacer(Modifier.width(6.dp))
                                 Text(if (exporting) "转存中…" else if (record.isAudio) "转存到音乐" else "转存到相册")
                             }
@@ -414,7 +407,7 @@ fun PlayerScreen(
                                     scope.launch { snackbar.showSnackbar("分享失败") }
                                 }
                             }, enabled = state.fileExists) {
-                                Icon(Icons.Filled.Share, contentDescription = "分享")
+                                AppIcon(AppIcons.Share, contentDescription = "分享")
                             }
                         }
                         if (!record.isAudio) OutlinedButton(onClick = {
@@ -431,7 +424,7 @@ fun PlayerScreen(
                                 scope.launch { snackbar.showSnackbar("未能打开${record.platform.label}") }
                             }
                         }, modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                            AppIcon(AppIcons.ExternalLink, contentDescription = null)
                             Spacer(Modifier.width(6.dp))
                             Text("在${record.platform.label}中查看原视频")
                         }
