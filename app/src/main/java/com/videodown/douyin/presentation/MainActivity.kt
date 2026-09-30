@@ -254,7 +254,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (route in tabs && !keyboardVisible) {
-                NavigationBar() {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
                     tabs.forEachIndexed { index, destination ->
                         NavigationBarItem(
                             selected = route == destination,
@@ -262,7 +262,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                             icon = { AppIcon(if (route == destination) selectedIcons[index] else icons[index], contentDescription = null) },
                             label = { Text(labels[index]) },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
                                 selectedTextColor = MaterialTheme.colorScheme.primary,
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                                 unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,

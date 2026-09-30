@@ -3,12 +3,20 @@ package com.videodown.douyin.presentation.theme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ThemeContrastTest {
     @Test fun lightThemeTextIsReadable() = verifyContrast(LightColors)
     @Test fun darkThemeTextIsReadable() = verifyContrast(DarkColors)
+
+    @Test fun approvedBrandColorsRemainStable() {
+        assertEquals(Color(0xFFFFF8F5), LightColors.background)
+        assertEquals(Color(0xFF33251F), LightColors.onSurface)
+        assertEquals(Color(0xFFFFE6D8), LightColors.primaryContainer)
+        assertEquals(Color(0xFFFFAD75), DarkColors.primary)
+    }
 
     private fun verifyContrast(scheme: ColorScheme) {
         val pairs = listOf(

@@ -13,11 +13,18 @@ import androidx.core.content.ContextCompat
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import com.videodown.douyin.domain.model.VideoPlatform
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -252,9 +259,9 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                                 onClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) onPlay(record.id) },
                                 onLongClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) selectedRecordId = record.id },
                             )) {
-                            if (selecting) Checkbox(checked = record.id in selectedIds, enabled = !state.batchBusy,
-                                onCheckedChange = { toggle(record.id) }, modifier = Modifier.semantics { stateDescription = record.title })
-                            LibraryCover(record, Modifier.fillMaxWidth(), adaptToCover = true)
+                            LibraryCover(record, Modifier.fillMaxWidth(), adaptToCover = true,
+                                selected = if (selecting) record.id in selectedIds else null,
+                                selectionEnabled = !state.batchBusy, onSelect = { toggle(record.id) })
                             Text(record.title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.padding(top = 9.dp))
@@ -284,9 +291,9 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            if (selecting) Checkbox(checked = record.id in selectedIds, enabled = !state.batchBusy,
-                                onCheckedChange = { toggle(record.id) }, modifier = Modifier.semantics { stateDescription = record.title })
-                            LibraryCover(record, Modifier.width(if (selecting) 72.dp else 108.dp))
+                            LibraryCover(record, Modifier.width(108.dp),
+                                selected = if (selecting) record.id in selectedIds else null,
+                                selectionEnabled = !state.batchBusy, onSelect = { toggle(record.id) })
                             Column(Modifier.weight(1f)) {
                                 Text(record.title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -318,7 +325,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
 }
 
 @Composable
-private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCover: Boolean = false) {
+private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCover: Boolean = false,
+    selected: Boolean? = null, selectionEnabled: Boolean = true, onSelect: () -> Unit = {}) {
     var coverAspectRatio by rememberSaveable(record.coverUrl) { mutableFloatStateOf(3f / 4f) }
     Box(
         modifier.aspectRatio(if (adaptToCover) coverAspectRatio else 4f / 3f)
@@ -339,6 +347,28 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
                 }
             },
         )
+        if (selected != null) {
+            Box(Modifier.align(Alignment.TopStart).padding(2.dp).size(48.dp)
+                .clip(CircleShape)
+                .toggleable(value = selected, enabled = selectionEnabled, role = Role.Checkbox,
+                    onValueChange = { onSelect() })
+                .semantics { stateDescription = record.title },
+                contentAlignment = Alignment.Center) {
+                Canvas(Modifier.size(24.dp).alpha(if (selectionEnabled) 1f else .38f)) {
+                    val stroke = 2.dp.toPx()
+                    val radius = (size.minDimension - stroke) / 2
+                    drawCircle(if (selected) Color(0xFFF2784B) else Color.White.copy(alpha = .18f), radius)
+                    drawCircle(Color.White, radius, style = Stroke(stroke))
+                    if (selected) {
+                        val unit = size.width / 24f
+                        drawLine(Color(0xFF33251F), Offset(7 * unit, 12 * unit),
+                            Offset(10.5f * unit, 15.5f * unit), stroke, StrokeCap.Round)
+                        drawLine(Color(0xFF33251F), Offset(10.5f * unit, 15.5f * unit),
+                            Offset(17 * unit, 8.5f * unit), stroke, StrokeCap.Round)
+                    }
+                }
+            }
+        }
         if (record.resolutionLabel.isNotBlank()) {
             Text(record.resolutionLabel, color = Color.White, style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
