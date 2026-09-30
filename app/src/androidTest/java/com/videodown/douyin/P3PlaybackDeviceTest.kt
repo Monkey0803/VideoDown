@@ -9,6 +9,11 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.lifecycle.ViewModelStore
 import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.data.local.DownloadHistoryStore
 import com.videodown.douyin.data.playback.PlaybackPreferences
@@ -97,17 +102,17 @@ class P3PlaybackDeviceTest {
     }
     @Test fun actualSpeedAndLoopControlsApplyAndKeepAudioVideoPreferencesSeparate() {
         val video = record(); show(video)
-        compose.onNodeWithText("倍速 1.0×").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("倍速 1.0×").performScrollTo().performClick()
         compose.onNodeWithText("1.5×", substring = false).performScrollTo().performClick()
-        compose.onNodeWithText("循环：关闭").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("循环：关闭").performScrollTo().performClick()
         waitForPlayer { it.playbackParameters.speed == 1.5f && it.repeatMode == Player.REPEAT_MODE_ONE }
         val reopened = PlaybackPreferences(context, preferenceName)
         assertEquals(PlaybackOptions(1.5f, true), reopened.options(false))
         assertEquals(PlaybackOptions(), reopened.options(true))
         leave(); val audio = record(true); show(audio)
-        compose.onNodeWithText("倍速 1.0×").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("倍速 1.0×").performScrollTo().performClick()
         compose.onNodeWithText("0.75×", substring = false).performClick()
-        compose.onNodeWithText("循环：关闭").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("循环：关闭").performScrollTo().performClick()
         waitForPlayer { it.playbackParameters.speed == 0.75f && it.repeatMode == Player.REPEAT_MODE_ONE }
         compose.runOnUiThread { player().seekTo(player().duration - 100); player().play() }
         waitForPlayer { it.currentPosition in 0..1000 && it.isPlaying }
@@ -118,24 +123,24 @@ class P3PlaybackDeviceTest {
         val video = record(); show(video)
         compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
         compose.waitUntil(10000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
-        compose.onNodeWithText("倍速 1.0×").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("倍速 1.0×").performScrollTo().performClick()
         compose.onNodeWithText("4.0×", substring = false).performScrollTo().performClick()
         waitForPlayer { it.playbackParameters.speed == 4f }
     }
     @Test fun portraitSpeedOptionsAndPlayPauseIconsFollowActualPlayer() {
         val video = record(); show(video)
         waitForPlayer { it.isPlaying }
-        compose.onNodeWithContentDescription("暂停").assertIsDisplayed()
-        compose.onNodeWithText("暂停", substring = false).performClick()
+        compose.runOnUiThread { find(compose.activity.window.decorView)!!.showController() }
+        val playPause = onView(withId(androidx.media3.ui.R.id.exo_play_pause))
+        playPause.check(matches(withContentDescription("暂停"))).perform(click())
         waitForPlayer { !it.isPlaying }
-        compose.onNodeWithContentDescription("播放").assertIsDisplayed()
-        compose.onNodeWithText("播放", substring = false).performClick()
+        playPause.check(matches(withContentDescription("播放"))).perform(click())
         waitForPlayer { it.isPlaying }
-        compose.onNodeWithContentDescription("暂停").assertIsDisplayed()
-        compose.onNodeWithText("倍速 1.0×").performScrollTo().performClick()
+        playPause.check(matches(withContentDescription("暂停")))
+        compose.onNodeWithContentDescription("倍速 1.0×").performScrollTo().performClick()
         compose.onNodeWithText("2.0×", substring = false).assertIsDisplayed().performClick()
         waitForPlayer { it.playbackParameters.speed == 2f }
-        compose.onNodeWithText("倍速 2.0×").performClick()
+        compose.onNodeWithContentDescription("倍速 2.0×").performClick()
         compose.onNodeWithText("4.0×", substring = false).assertIsDisplayed().performClick()
         waitForPlayer { it.playbackParameters.speed == 4f }
         assertEquals(4f, PlaybackPreferences(context, preferenceName).options(false).speed)

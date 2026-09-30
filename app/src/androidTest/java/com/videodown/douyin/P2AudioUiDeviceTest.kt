@@ -8,6 +8,9 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.lifecycle.ViewModelStore
 import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.core.*
 import com.videodown.douyin.data.download.*
@@ -150,10 +153,12 @@ class P2AudioUiDeviceTest {
             compose.runOnUiThread { playing = playerView(compose.activity.window.decorView)?.player?.let { it.isPlaying && it.playbackState == Player.STATE_READY && it.currentPosition > 100 } == true }
             playing
         }
-        compose.onNodeWithText("暂停", substring = false).performScrollTo().performClick()
+        compose.runOnUiThread { playerView(compose.activity.window.decorView)!!.showController() }
+        onView(withId(androidx.media3.ui.R.id.exo_play_pause)).perform(click())
         compose.runOnUiThread { assertFalse(playerView(compose.activity.window.decorView)!!.player!!.isPlaying) }
-        compose.onNodeWithText("转存到音乐").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("横屏全屏").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("转存到音乐").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("横屏播放").assertDoesNotExist()
+        compose.onNodeWithText("横屏全屏").assertDoesNotExist()
         Unit
     }
 }

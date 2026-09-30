@@ -37,15 +37,15 @@ class Material3NavigationDeviceTest {
         assertLanguage()
         compose.activityRule.scenario.recreate()
         assertLanguage()
-        compose.onNodeWithText("留住心动瞬间").assertIsDisplayed()
-        compose.onNodeWithText("收藏美好时刻").assertIsDisplayed()
+        compose.onNodeWithText("拾影").assertIsDisplayed()
+        compose.onNodeWithText("解析视频").assertIsDisplayed()
         compose.onNodeWithText("任务").performClick()
-        compose.onNodeWithText("你的下载任务").assertIsDisplayed()
+        compose.onNodeWithText("下载任务").assertIsDisplayed()
         compose.onNodeWithText("已存").performClick()
-        compose.onNodeWithText("你的影像收藏").assertIsDisplayed()
+        compose.onNodeWithText("已存视频").assertIsDisplayed()
         compose.onNodeWithText("我的").performClick()
-        compose.onNodeWithText("打造专属空间").assertIsDisplayed()
-        compose.onNodeWithText("拾影 · 个人空间").assertIsDisplayed()
+        compose.onNodeWithText("我的设置").assertIsDisplayed()
+        compose.onNodeWithText("外观模式").assertIsDisplayed()
     }
 
     @Test fun navigationFiltersAndDialogsRemainUsable() {

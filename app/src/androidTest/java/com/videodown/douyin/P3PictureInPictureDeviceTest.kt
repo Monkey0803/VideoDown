@@ -79,11 +79,11 @@ class P3PictureInPictureDeviceTest {
         fail("PiP state did not reach expected condition")
     }
     @Test fun homeEntersRealPipHidesSpeedDialogAndReturnsWithoutResettingVideo() {
-        compose.onNodeWithText("倍速 1.0×").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("倍速 1.0×").performScrollTo().performClick()
         instrumentation.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME)
         await { compose.activity.isInPictureInPictureMode }
         compose.onNodeWithText("播放速度").assertDoesNotExist()
-        compose.onNodeWithText("画中画").assertDoesNotExist()
+        compose.onNodeWithContentDescription("画中画").assertDoesNotExist()
         var initial = 0L
         instrumentation.runOnMainSync { initial = player.currentPosition }
         Thread.sleep(1000)
@@ -98,7 +98,7 @@ class P3PictureInPictureDeviceTest {
         await { find(activity.window.decorView)?.player === player && player.isPlaying && player.currentPosition >= initial }
     }
     @Test fun pipScreenOffThenReturnKeepsActivityAndPlayer() {
-        compose.onNodeWithText("画中画", substring = false).performScrollTo().performClick()
+        compose.onNodeWithContentDescription("画中画").performScrollTo().performClick()
         await { activity.isInPictureInPictureMode }
         fun shell(command: String) {
             instrumentation.uiAutomation.executeShellCommand(command).use { descriptor ->
@@ -121,7 +121,7 @@ class P3PictureInPictureDeviceTest {
         await { find(activity.window.decorView)?.player === player && player.playbackState == Player.STATE_READY }
     }
     @Test fun systemPipDismissReleasesVideo() {
-        compose.onNodeWithText("画中画", substring = false).performScrollTo().performClick()
+        compose.onNodeWithContentDescription("画中画").performScrollTo().performClick()
         await { activity.isInPictureInPictureMode }
         Thread.sleep(1000)
         val automation = instrumentation.uiAutomation
@@ -143,7 +143,7 @@ class P3PictureInPictureDeviceTest {
         }
     }
     @Test fun explicitPipEntryThenActivityClosureReleasesVideoAndSavesProgress() {
-        compose.onNodeWithText("画中画", substring = false).performScrollTo().performClick()
+        compose.onNodeWithContentDescription("画中画").performScrollTo().performClick()
         await { compose.activity.isInPictureInPictureMode }
         Thread.sleep(1000)
         await { player.currentPosition > 1000 }

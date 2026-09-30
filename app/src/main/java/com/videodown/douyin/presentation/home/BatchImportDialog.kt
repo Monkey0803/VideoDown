@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
@@ -56,10 +57,10 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
                                     ImportStatus.READY -> "找到 ${row.media.size} 个视频"; ImportStatus.FAILED -> row.error ?: "解析失败" })
                                 row.failureKind?.let { Text(failureGuidance(it).description, style = MaterialTheme.typography.bodySmall) }
                                 row.media.forEach { media ->
-                                    Row {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
                                         Checkbox(checked = media.selected && media.choice != null, enabled = !state.locked && media.choice != null,
                                             onCheckedChange = { model.select(media.key, it) })
-                                        Text(media.video.title, modifier = Modifier.weight(1f).padding(top = 12.dp))
+                                        Text(media.video.title, modifier = Modifier.weight(1f))
                                     }
                                     LazyRow { items(media.video.variants + media.video.audioVariants) { variant ->
                                         FilterChip(selected = media.choice == variant, enabled = !state.locked,

@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation.settings
 
+import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -22,6 +23,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -219,18 +222,8 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     }
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState())
-        .padding(horizontal = 22.dp, vertical = 16.dp)) {
-        Text("打造专属空间", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Black, letterSpacing = 1.7.sp)
-        Column(Modifier.fillMaxWidth().padding(top = 12.dp).background(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.shapes.large)
-            .padding(24.dp)) {
-            Text("拾影 · 个人空间", color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            Text("好视频，慢慢看。", color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black,
-                modifier = Modifier.padding(top = 9.dp))
-            Text("你的专属影像收藏空间", color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .65f), style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(top = 6.dp))
-        }
+        .padding(horizontal = 22.dp)) {
+        TabPageHeader("我的设置", "管理外观、下载偏好与本地存储")
         SectionLabel("外观")
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
@@ -301,6 +294,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             SettingsRow(icon = { AppIcon(AppIcons.Info, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "关于拾影", value = "›", onClick = { showAbout = true })
         }
+        Spacer(Modifier.height(28.dp))
     }
 }
 

@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation.history
 
+import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -53,7 +54,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -107,13 +107,9 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background, snackbarHost = { SnackbarHost(snackbar) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            Column(Modifier.padding(horizontal = 22.dp, vertical = 7.dp)) {
-                if (!selecting) Text("你的下载任务", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Black, letterSpacing = 1.7.sp)
-                Text("下载任务", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black,
-                    modifier = Modifier.padding(top = if (selecting) 0.dp else 10.dp))
-                if (!selecting) Text("把喜欢的内容，稳稳收好。", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-                if (!selecting) Row(Modifier.fillMaxWidth().padding(top = 22.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.padding(horizontal = 22.dp)) {
+                TabPageHeader("下载任务")
+                if (!selecting) Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatCard(state.records.count { state.statusFor(it) in listOf(DownloadStatus.RUNNING, DownloadStatus.PENDING) }, "进行中", Modifier.weight(1f))
                     StatCard(state.records.count { state.statusFor(it) == DownloadStatus.COMPLETED }, "已完成", Modifier.weight(1f))
                     StatCard(state.records.count { state.statusFor(it) in listOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) }, "可续传", Modifier.weight(1f))
@@ -192,10 +188,11 @@ private fun StatCard(count: Int, label: String, modifier: Modifier) {
     Card(modifier, shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
-        Column(Modifier.padding(horizontal = 14.dp, vertical = 13.dp)) {
-            Text(count.toString(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface)
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 7.dp))
+        Row(Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(count.toString(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
