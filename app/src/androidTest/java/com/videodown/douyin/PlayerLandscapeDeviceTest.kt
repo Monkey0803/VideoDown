@@ -92,7 +92,8 @@ class PlayerLandscapeDeviceTest {
     }
 
     @Test fun landscapeVideoUsesItsOwnAspectRatioAndHasAVisibleFullscreenEntry() {
-        compose.onNodeWithContentDescription("横屏播放").assertIsDisplayed()
+        compose.onNodeWithContentDescription("横屏播放").assertDoesNotExist()
+        compose.onNodeWithContentDescription("返回").assertIsDisplayed()
         compose.runOnIdle {
             val view = playerView()!!
             assertEquals(16f / 9f, view.width.toFloat() / view.height, .04f)
@@ -107,7 +108,7 @@ class PlayerLandscapeDeviceTest {
             originalPlayer.seekTo(15_000)
         }
         waitForPlayer { !it.isPlaying && it.currentPosition >= 14_500 }
-        compose.onNodeWithContentDescription("横屏播放").performClick()
+        clickNativeFullscreen()
         waitForOrientation(Configuration.ORIENTATION_LANDSCAPE)
         waitForSystemBars(false)
         compose.runOnIdle {
@@ -117,7 +118,8 @@ class PlayerLandscapeDeviceTest {
             assertTrue(playerView()!!.width > playerView()!!.height)
         }
         saveScreenshot("landscape-player.png")
-        compose.onNodeWithContentDescription("退出全屏").performClick()
+        compose.onNodeWithContentDescription("退出全屏").assertDoesNotExist()
+        clickNativeFullscreen()
         waitForOrientation(Configuration.ORIENTATION_PORTRAIT)
         waitForSystemBars(true)
         compose.runOnIdle {
@@ -125,7 +127,8 @@ class PlayerLandscapeDeviceTest {
             assertFalse(originalPlayer.playWhenReady)
             assertEquals(15_000L, originalPlayer.currentPosition)
         }
-        compose.onNodeWithContentDescription("横屏播放").assertIsDisplayed()
+        compose.onNodeWithContentDescription("横屏播放").assertDoesNotExist()
+        compose.onNodeWithContentDescription("返回").assertIsDisplayed()
     }
 
     @Test fun nativeFullscreenControlAndSystemBackKeepPlaybackRunning() {
@@ -151,7 +154,7 @@ class PlayerLandscapeDeviceTest {
     }
 
     @Test fun leavingFullscreenRestoresWindowAndOrientationPolicy() {
-        compose.onNodeWithContentDescription("横屏播放").performClick()
+        clickNativeFullscreen()
         waitForOrientation(Configuration.ORIENTATION_LANDSCAPE)
         waitForSystemBars(false)
         compose.runOnUiThread { showingPlayer.value = false }
@@ -161,6 +164,17 @@ class PlayerLandscapeDeviceTest {
             assertEquals(originalOrientation, compose.activity.requestedOrientation)
             assertEquals(null, playerView())
         }
+    }
+
+    private fun clickNativeFullscreen() {
+        compose.runOnUiThread { playerView()!!.showController() }
+        compose.waitUntil(5_000) {
+            var visible = false
+            compose.runOnUiThread { visible = playerView()?.isControllerFullyVisible == true }
+            visible
+        }
+        Espresso.onView(allOf(anyOf(withId(androidx.media3.ui.R.id.exo_fullscreen),
+            withId(androidx.media3.ui.R.id.exo_minimal_fullscreen)), isDisplayed())).perform(click())
     }
 
     private fun waitForPlayer(predicate: (Player) -> Boolean) {

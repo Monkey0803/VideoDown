@@ -150,13 +150,43 @@ class BatchFeaturesDeviceTest {
         compose.onNodeWithText("夜景片段").assertIsDisplayed()
         assertTrue(played.isEmpty())
     }
+    @Test fun sortingPickerAppliesSelectionAndDismissKeepsCurrentQuery() {
+        val first = record(0).copy(downloadedBytes = 2000)
+        val second = record(1).copy(downloadedBytes = 1000)
+        runBlocking { history.upsert(first); history.upsert(second) }; showLibrary()
+        val model = models.get("history") as HistoryViewModel
+        compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择排序"))
+        compose.onNodeWithContentDescription("选择排序").performClick()
+        compose.onNodeWithText("最早保存", substring = false).performClick()
+        compose.runOnIdle {
+            assertEquals(com.videodown.douyin.presentation.library.LibrarySort.OLDEST, model.state.value.libraryQuery.sort)
+            assertEquals(first.id, model.state.value.libraryQuery.apply(listOf(first, second)).first().id)
+        }
+        compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择排序"))
+        compose.onNodeWithContentDescription("选择排序").performClick()
+        compose.onNodeWithText("文件最大", substring = false).performClick()
+        compose.runOnIdle {
+            assertEquals(com.videodown.douyin.presentation.library.LibrarySort.LARGEST, model.state.value.libraryQuery.sort)
+            assertEquals(first.id, model.state.value.libraryQuery.apply(listOf(first, second)).first().id)
+        }
+        compose.onNodeWithText("文件最大", substring = false).assertIsDisplayed()
+        compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择排序"))
+        compose.onNodeWithContentDescription("选择排序").performClick()
+        androidx.test.espresso.Espresso.pressBack()
+        compose.runOnIdle { assertEquals(com.videodown.douyin.presentation.library.LibrarySort.LARGEST, model.state.value.libraryQuery.sort) }
+        compose.onNodeWithText("文件最大", substring = false).assertIsDisplayed()
+    }
     @Test fun platformFilterAndListLayoutRetainSearchAndBatchExportCopiesAllSelections() {
         val first = record(0); val second = record(1)
         runBlocking { history.upsert(first); history.upsert(second) }; showLibrary()
-        compose.onNodeWithText("微博", substring = false).performScrollTo().performClick()
+        compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择平台"))
+        compose.onNodeWithContentDescription("选择平台").performClick()
+        compose.onNodeWithText("微博", substring = false).performClick()
         compose.onNodeWithText("春天片段").assertDoesNotExist()
         compose.onNodeWithText("夜景片段").assertIsDisplayed()
-        compose.onNodeWithText("全部平台").performScrollTo().performClick()
+        compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择平台"))
+        compose.onNodeWithContentDescription("选择平台").performClick()
+        compose.onNodeWithText("全部平台").performClick()
         compose.onNodeWithContentDescription("切换为列表布局").performClick()
         compose.onNodeWithText("多选", substring = false).performClick()
         compose.onNodeWithText("全选当前结果").performScrollTo().performClick()

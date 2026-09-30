@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
@@ -33,14 +35,19 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -60,6 +67,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -96,7 +106,7 @@ import kotlinx.coroutines.delay
 import com.videodown.douyin.domain.model.playbackSpeeds
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PlayerScreen(
     recordId: String,
@@ -114,7 +124,6 @@ fun PlayerScreen(
     var fullscreen by rememberSaveable(recordId) { mutableStateOf(false) }
     var choosingSpeed by remember { mutableStateOf(false) }
     var exporting by remember { mutableStateOf(false) }
-    var isPlaying by remember { mutableStateOf(false) }
     var videoAspectRatio by remember(recordId) { mutableStateOf(16f / 9f) }
 
     LaunchedEffect(recordId) { viewModel.load(recordId) }
@@ -149,14 +158,12 @@ fun PlayerScreen(
         }
     }
     DisposableEffect(player) {
-        isPlaying = player.isPlaying
         val listener = object : Player.Listener {
             override fun onEvents(player: Player, events: Player.Events) {
                 if (events.contains(Player.EVENT_POSITION_DISCONTINUITY) || events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED))
                     viewModel.saveProgress(player.currentMediaItem?.mediaId, player.currentPosition, player.duration, player.playbackState == Player.STATE_ENDED)
             }
             override fun onIsPlayingChanged(playing: Boolean) {
-                isPlaying = playing
                 viewModel.saveProgress(player.currentMediaItem?.mediaId, player.currentPosition, player.duration, player.playbackState == Player.STATE_ENDED)
             }
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -298,11 +305,6 @@ fun PlayerScreen(
                             AppIcon(AppIcons.Back, contentDescription = "返回")
                         }
                     },
-                    actions = {
-                        IconButton(onClick = { fullscreen = true }, enabled = state.fileExists && state.record?.isAudio != true) {
-                            AppIcon(AppIcons.Fullscreen, contentDescription = "横屏播放")
-                        }
-                    },
                 )
             }
         },
@@ -346,15 +348,7 @@ fun PlayerScreen(
                             }
                         }
                     }
-                if (fullscreen && state.fileExists && !inPip) {
-                    IconButton(
-                        onClick = { fullscreen = false },
-                        modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding().padding(12.dp).size(48.dp)
-                            .background(Color.Black.copy(alpha = .55f), CircleShape),
-                    ) {
-                        AppIcon(AppIcons.FullscreenExit, contentDescription = "退出全屏", tint = Color.White)
-                    }
-                }
+
             }
             if (!fullscreen && !inPip) {
                 state.record?.let { record ->
@@ -376,61 +370,68 @@ fun PlayerScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = { if (player.isPlaying) player.pause() else player.play() }) {
-                                AppIcon(if (isPlaying) AppIcons.Pause else AppIcons.Play,
-                                    contentDescription = if (isPlaying) "暂停" else "播放")
-                                Spacer(Modifier.width(6.dp))
-                                Text(if (isPlaying) "暂停" else "播放")
-                            }
-                            OutlinedButton(onClick = { fullscreen = true }, enabled = state.fileExists && !record.isAudio) {
-                                AppIcon(AppIcons.Fullscreen, contentDescription = null)
-                                Spacer(Modifier.width(6.dp))
-                                Text("横屏全屏")
-                            }
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(onClick = { choosingSpeed = true }, enabled = state.fileExists) { Text("倍速 ${state.options.speed}×") }
-                            OutlinedButton(onClick = { viewModel.options(state.options.copy(loop = !state.options.loop)) }, enabled = state.fileExists) {
-                                Text(if (state.options.loop) "循环：开启" else "循环：关闭")
-                            }
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(onClick = ::requestExport, enabled = state.fileExists && !exporting) {
-                                AppIcon(if (record.isAudio) AppIcons.Audio else AppIcons.SaveAlbum, contentDescription = null)
-                                Spacer(Modifier.width(6.dp))
-                                Text(if (exporting) "转存中…" else if (record.isAudio) "转存到音乐" else "转存到相册")
-                            }
-                            OutlinedButton(onClick = {
-                                val file = File(record.filePath.orEmpty())
-                                if (!DouyinIntents.shareFile(context, file)) {
-                                    scope.launch { snackbar.showSnackbar("分享失败") }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            PlayerActionTooltip("播放速度") {
+                                OutlinedButton(onClick = { choosingSpeed = true }, enabled = state.fileExists,
+                                    modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "倍速 ${state.options.speed}×" }) {
+                                    AppIcon(AppIcons.Speed, null)
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("${state.options.speed}×")
                                 }
-                            }, enabled = state.fileExists) {
-                                AppIcon(AppIcons.Share, contentDescription = "分享")
+                            }
+                            PlayerActionTooltip(if (state.options.loop) "关闭循环播放" else "开启循环播放") {
+                                FilledIconToggleButton(checked = state.options.loop,
+                                    onCheckedChange = { viewModel.options(state.options.copy(loop = it)) },
+                                    enabled = state.fileExists, modifier = Modifier.size(48.dp).semantics {
+                                        contentDescription = if (state.options.loop) "循环：开启" else "循环：关闭"
+                                        stateDescription = if (state.options.loop) "开启" else "关闭"
+                                    }) { AppIcon(AppIcons.Repeat, null) }
                             }
                         }
-                        if (!record.isAudio) OutlinedButton(onClick = {
-                            if (pipActivity?.enterVideoPip() != true) scope.launch { snackbar.showSnackbar("系统暂时无法开启画中画，请检查应用的画中画权限") }
-                        }, enabled = state.fileExists && pipActivity?.supportsPip == true) { Text("画中画") }
-                        OutlinedButton(onClick = {
-                            val file = File(record.filePath.orEmpty())
-                            if (!DouyinIntents.playExternally(context, file)) {
-                                scope.launch { snackbar.showSnackbar("没有可用的外部播放器") }
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            PlayerIconAction(if (exporting) "转存中…" else if (record.isAudio) "转存到音乐" else "转存到相册",
+                                if (record.isAudio) AppIcons.Audio else AppIcons.SaveAlbum,
+                                enabled = state.fileExists && !exporting, busy = exporting, onClick = ::requestExport)
+                            PlayerIconAction("分享", AppIcons.Share, enabled = state.fileExists) {
+                                val file = File(record.filePath.orEmpty())
+                                if (!DouyinIntents.shareFile(context, file)) scope.launch { snackbar.showSnackbar("分享失败") }
                             }
-                        }, enabled = state.fileExists) { Text("外部播放器") }
-                        OutlinedButton(onClick = {
-                            if (!DouyinIntents.openVideo(context, record)) {
-                                scope.launch { snackbar.showSnackbar("未能打开${record.platform.label}") }
+                            if (!record.isAudio) PlayerIconAction("画中画", AppIcons.Pip,
+                                enabled = state.fileExists && pipActivity?.supportsPip == true) {
+                                if (pipActivity?.enterVideoPip() != true) scope.launch { snackbar.showSnackbar("系统暂时无法开启画中画，请检查应用的画中画权限") }
                             }
-                        }, modifier = Modifier.fillMaxWidth()) {
-                            AppIcon(AppIcons.ExternalLink, contentDescription = null)
-                            Spacer(Modifier.width(6.dp))
-                            Text("在${record.platform.label}中查看原视频")
+                            PlayerIconAction("外部播放器", AppIcons.Play, enabled = state.fileExists) {
+                                val file = File(record.filePath.orEmpty())
+                                if (!DouyinIntents.playExternally(context, file)) scope.launch { snackbar.showSnackbar("没有可用的外部播放器") }
+                            }
+                            PlayerIconAction("在${record.platform.label}中查看原视频", AppIcons.ExternalLink) {
+                                if (!DouyinIntents.openVideo(context, record)) scope.launch { snackbar.showSnackbar("未能打开${record.platform.label}") }
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlayerActionTooltip(label: String, content: @Composable () -> Unit) {
+    TooltipBox(positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text(label) } }, state = rememberTooltipState()) {
+        content()
+    }
+}
+
+@Composable
+private fun PlayerIconAction(label: String, icon: AppIcons, enabled: Boolean = true,
+    busy: Boolean = false, onClick: () -> Unit) {
+    PlayerActionTooltip(label) {
+        OutlinedIconButton(onClick = onClick, enabled = enabled,
+            modifier = Modifier.size(48.dp).semantics { contentDescription = label }) {
+            if (busy) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+            else AppIcon(icon, null)
         }
     }
 }

@@ -63,6 +63,7 @@ class P2LibraryOrganizationDeviceTest {
     @Test fun favoriteControlFiltersAndPersistsAfterHistoryReload() = runBlocking {
         menu(); compose.onNodeWithText("收藏视频", substring = false).performClick()
         compose.waitUntil(5000) { model.state.value.records.first().favorite }
+        compose.onNodeWithTag("library-controls").performScrollToNode(hasText("仅收藏"))
         compose.onNodeWithText("仅收藏").performClick()
         compose.onNodeWithText(record.title).assertIsDisplayed()
         val reopened = DownloadHistoryRepositoryImpl(DownloadHistoryStore(File(directory, "history.json"))).getById(record.id)!!
@@ -86,6 +87,8 @@ class P2LibraryOrganizationDeviceTest {
             compose.waitUntil(5000) { model.state.value.records.first().title == "旅行声音" && !organization.state.value.busy }
             compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT }
             compose.waitUntil(5000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT }
+            compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择分类"))
+            compose.onNodeWithContentDescription("选择分类").performClick()
             compose.onNodeWithText("旅行", substring = false).performClick()
             compose.onNodeWithText("旅行声音").assertIsDisplayed()
             val after = history.getById(record.id)!!

@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation.library
 
+import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -11,8 +12,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
@@ -24,12 +30,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
@@ -41,7 +45,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -69,10 +76,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -161,41 +168,22 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             historyViewModel.onMessageConsumed()
         }
     }
-    BoxWithConstraints(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        val compact = maxHeight < 600.dp || selecting
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(Modifier.fillMaxSize()) {
-            Column(Modifier.padding(start = 22.dp, end = 22.dp, top = 7.dp)) {
-                if (!compact) Text("你的影像收藏", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Black, letterSpacing = 1.7.sp)
-                Text("已存视频", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black,
-                    modifier = Modifier.padding(top = if (compact) 0.dp else 10.dp))
-                if (!compact) Text("让每次心动，都有地方安放。", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-                if (!compact) Row(
-                    Modifier.fillMaxWidth().padding(top = 20.dp).clip(MaterialTheme.shapes.large)
-                        .background(MaterialTheme.colorScheme.primaryContainer).padding(horizontal = 20.dp, vertical = 17.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("我的影像库", color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                        Text("${allSaved.size} 个视频 · 可离线播放",
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .65f), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 6.dp))
-                    }
+            TabPageHeader(
+                title = "已存视频",
+                subtitle = if (selecting) null else "${allSaved.size} 个视频 · 可离线播放",
+                modifier = Modifier.padding(horizontal = 22.dp),
+                trailingContent = {
                     IconButton(
-                        onClick = {
-                            layout = nextLayout
-                            ServiceLocator.preferences.libraryLayout = nextLayout
-                        },
+                        onClick = { layout = nextLayout; ServiceLocator.preferences.libraryLayout = nextLayout },
                         modifier = Modifier.semantics { stateDescription = layout.label },
                     ) {
-                        AppIcon(
-                            icon = if (nextLayout == LibraryLayout.LIST) AppIcons.List
-                                else AppIcons.Grid,
-                            contentDescription = "切换为${nextLayout.label}",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
+                        AppIcon(if (nextLayout == LibraryLayout.LIST) AppIcons.List else AppIcons.Grid,
+                            contentDescription = "切换为${nextLayout.label}", tint = MaterialTheme.colorScheme.primary)
                     }
-                }
-            }
+                },
+            )
             OutlinedTextField(value = state.libraryQuery.text,
                 onValueChange = { queryChanged(state.libraryQuery.copy(text = it)) },
                 label = { Text("搜索标题或作者") }, singleLine = true, enabled = !state.batchBusy,
@@ -204,26 +192,32 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                 trailingIcon = { if (state.libraryQuery.text.isNotEmpty()) TextButton(onClick = { queryChanged(state.libraryQuery.copy(text = "")) }) { Text("清除") } },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp))
-            LazyRow(contentPadding = PaddingValues(horizontal = 22.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                item { FilterChip(selected = state.libraryQuery.platform == null, enabled = !state.batchBusy,
-                    onClick = { controlsChanged(state.libraryQuery.copy(platform = null)) }, label = { Text("全部平台") }) }
-                items(VideoPlatform.entries) { platform -> FilterChip(selected = state.libraryQuery.platform == platform,
-                    enabled = !state.batchBusy, onClick = { controlsChanged(state.libraryQuery.copy(platform = platform)) }, label = { Text(platform.label) }) }
-            }
-            LazyRow(contentPadding = PaddingValues(horizontal = 22.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                item { FilterChip(selected = state.libraryQuery.favoritesOnly, enabled = !organization.busy,
+            Row(Modifier.fillMaxWidth().padding(end = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+            LazyRow(modifier = Modifier.weight(1f).testTag("library-controls"),
+                contentPadding = PaddingValues(start = 22.dp, end = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                item {
+                    LibraryPicker("选择平台", state.libraryQuery.platform?.label ?: "全部平台",
+                        state.libraryQuery.platform, listOf(null to "全部平台") + VideoPlatform.entries.map { it to it.label },
+                        enabled = !state.batchBusy) { controlsChanged(state.libraryQuery.copy(platform = it)) }
+                }
+                item {
+                    LibraryPicker("选择分类", state.libraryQuery.folder?.ifBlank { "未分类" } ?: "全部分类",
+                        state.libraryQuery.folder,
+                        listOf(null to "全部分类") + (allSaved.map { it.folder } + "").distinct().sorted().map { it to it.ifBlank { "未分类" } },
+                        enabled = !state.batchBusy && !organization.busy) { controlsChanged(state.libraryQuery.copy(folder = it)) }
+                }
+                item {
+                    LibraryPicker("选择排序", state.libraryQuery.sort.label, state.libraryQuery.sort,
+                        LibrarySort.entries.map { it to it.label }, enabled = !state.batchBusy) {
+                        controlsChanged(state.libraryQuery.copy(sort = it))
+                    }
+                }
+                item { FilterChip(selected = state.libraryQuery.favoritesOnly, enabled = !state.batchBusy && !organization.busy,
                     onClick = { controlsChanged(state.libraryQuery.copy(favoritesOnly = !state.libraryQuery.favoritesOnly)) }, label = { Text("仅收藏") }) }
-                item { FilterChip(selected = state.libraryQuery.folder == null, enabled = !organization.busy,
-                    onClick = { controlsChanged(state.libraryQuery.copy(folder = null)) }, label = { Text("全部分类") }) }
-                items((allSaved.map { it.folder } + "").distinct().sorted()) { folder ->
-                    FilterChip(selected = state.libraryQuery.folder == folder, enabled = !organization.busy,
-                        onClick = { controlsChanged(state.libraryQuery.copy(folder = folder)) }, label = { Text(folder.ifBlank { "未分类" }) }) }
             }
-            LazyRow(contentPadding = PaddingValues(horizontal = 22.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(LibrarySort.entries) { sort -> FilterChip(selected = state.libraryQuery.sort == sort, enabled = !state.batchBusy,
-                    onClick = { controlsChanged(state.libraryQuery.copy(sort = sort)) }, label = { Text(sort.label) }) }
-                if (compact) item { TextButton(onClick = { layout = nextLayout; ServiceLocator.preferences.libraryLayout = nextLayout }) { Text(nextLayout.label) } }
-                item { TextButton(onClick = { focusManager.clearFocus(); selecting = !selecting; selectedIds = emptySet() }, enabled = !state.batchBusy && allSaved.isNotEmpty()) { Text(if (selecting) "取消多选" else "多选") } }
+                TextButton(onClick = { focusManager.clearFocus(); selecting = !selecting; selectedIds = emptySet() },
+                    enabled = !state.batchBusy && allSaved.isNotEmpty()) { Text(if (selecting) "取消多选" else "多选") }
             }
             if (selecting) SelectionToolbar(selectedIds.size, state.batchBusy, selectedIds == visibleIds && visibleIds.isNotEmpty(),
                 onSelectAll = { selectedIds = if (selectedIds == visibleIds) emptySet() else visibleIds },
@@ -251,8 +245,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                     verticalItemSpacing = 20.dp,
                 ) {
                     items(saved, key = { it.id }) { record ->
-                        Column(Modifier.clip(MaterialTheme.shapes.large)
-                            .combinedClickable(
+                        Column(Modifier.combinedClickable(
                                 role = Role.Button,
                                 onClickLabel = if (selecting) "选择视频" else "播放视频",
                                 onLongClickLabel = "视频操作",
@@ -388,4 +381,25 @@ private fun LibraryMetadata(record: DownloadRecord, modifier: Modifier = Modifie
         style = MaterialTheme.typography.labelSmall,
         modifier = modifier,
     )
+}
+
+@Composable
+private fun <T> LibraryPicker(description: String, label: String, selected: T,
+    options: List<Pair<T, String>>, enabled: Boolean, onSelect: (T) -> Unit) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    Box {
+        AssistChip(onClick = { focusManager.clearFocus(); expanded = true }, enabled = enabled,
+            label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 120.dp)) },
+            trailingIcon = { AppIcon(if (expanded && enabled) AppIcons.ChevronUp else AppIcons.ChevronDown, contentDescription = null) },
+            modifier = Modifier.semantics { contentDescription = description; stateDescription = label })
+        DropdownMenu(expanded = expanded && enabled, onDismissRequest = { expanded = false },
+            modifier = Modifier.heightIn(max = 320.dp)) {
+            options.forEach { (value, title) ->
+                DropdownMenuItem(text = { Text(title) },
+                    leadingIcon = { RadioButton(selected = value == selected, onClick = null) },
+                    onClick = { expanded = false; onSelect(value) })
+            }
+        }
+    }
 }

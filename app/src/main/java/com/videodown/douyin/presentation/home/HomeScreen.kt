@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation.home
 
+import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -91,7 +92,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -215,34 +215,9 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
                     .padding(horizontal = 22.dp),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 24.dp).heightIn(min = 48.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier.size(29.dp).clip(MaterialTheme.shapes.small)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        AppIcon(AppIcons.Brand, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-                    }
-                    Spacer(Modifier.width(9.dp))
-                    Text("拾影", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
-                }
-                Eyebrow("留住心动瞬间")
-                Text(
-                    "发现好视频，\n一键留在身边。",
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = (-1.5).sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-                Text("粘贴分享链接，马上开始解析。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp))
-                HeroCard()
+                TabPageHeader("拾影", "粘贴分享链接，保存喜欢的视频。")
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(top = 22.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.large,
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -251,36 +226,39 @@ fun HomeScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("解析视频", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                             Spacer(Modifier.weight(1f))
-                            Text("1 / 粘贴链接", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
+                            Text("粘贴链接", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
                         }
                         Column(Modifier.bringIntoViewRequester(inputArea).padding(bottom = 12.dp)) {
-                            Box(Modifier.fillMaxWidth().padding(top = 13.dp).clip(MaterialTheme.shapes.large)
-                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
+                            Row(Modifier.fillMaxWidth().padding(top = 13.dp).clip(MaterialTheme.shapes.large)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHighest).heightIn(min = 72.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
                                 TextField(
                                     value = state.input,
                                     onValueChange = viewModel::onInputChange,
-                                    placeholder = { Text("在这里粘贴视频分享链接或分享文案…", style = MaterialTheme.typography.bodySmall) },
-                                    minLines = 2,
+                                    placeholder = { Text("在这里粘贴视频分享链接或分享文案…",
+                                        style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                                     maxLines = 4,
-                                    modifier = Modifier.fillMaxWidth().onFocusChanged { inputFocused = it.isFocused },
+                                    modifier = Modifier.weight(1f).onFocusChanged { inputFocused = it.isFocused },
                                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                     keyboardActions = KeyboardActions(onDone = { dismissKeyboard() }),
                                     textStyle = MaterialTheme.typography.bodyLarge,
-                                    trailingIcon = {
-                                        TextButton(onClick = {
-                                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-                                            clipboard?.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()
-                                                ?.takeIf(String::isNotBlank)?.let {
-                                                    viewModel.onInputChange(it)
-                                                    dismissKeyboard()
-                                                }
-                                        }) { Text("粘贴", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelMedium) }
-                                    },
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = Color.Transparent,
                                         unfocusedContainerColor = Color.Transparent,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        disabledIndicatorColor = Color.Transparent,
+                                        errorIndicatorColor = Color.Transparent,
                                     ),
                                 )
+                                TextButton(modifier = Modifier.padding(end = 4.dp), onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                                    clipboard?.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()
+                                        ?.takeIf(String::isNotBlank)?.let {
+                                            viewModel.onInputChange(it)
+                                            dismissKeyboard()
+                                        }
+                                }) { Text("粘贴", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelMedium) }
                             }
                             PrimaryButton(
                                 text = if (state.isParsing) "解析中…" else "立即解析",
@@ -290,7 +268,7 @@ fun HomeScreen(
                                 loading = state.isParsing,
                             )
                         }
-                        TextButton(enabled = browserUrl != null && !state.isParsing, onClick = { dismissKeyboard(); showBrowser = true }) {
+                        TextButton(contentPadding = PaddingValues(vertical = 8.dp), enabled = browserUrl != null && !state.isParsing, onClick = { dismissKeyboard(); showBrowser = true }) {
                             Text("打开网页查找视频")
                         }
                         state.errorKind?.let { kind ->
@@ -298,7 +276,7 @@ fun HomeScreen(
                             Text(advice.title, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleSmall)
                             Text(advice.description, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
                             listOfNotNull(advice.action.takeUnless { it == RecoveryAction.NONE }, advice.secondaryAction).forEach { action ->
-                                TextButton(enabled = !state.isParsing && (action != RecoveryAction.BROWSER || browserUrl != null), onClick = {
+                                TextButton(contentPadding = PaddingValues(vertical = 8.dp), enabled = !state.isParsing && (action != RecoveryAction.BROWSER || browserUrl != null), onClick = {
                                     dismissKeyboard()
                                     when (action) {
                                         RecoveryAction.BROWSER -> showBrowser = true
@@ -309,7 +287,7 @@ fun HomeScreen(
                                 }) { Text(if (action == RecoveryAction.RETRY) "重新尝试解析" else action.label) }
                             }
                         }
-                        TextButton(onClick = { dismissKeyboard(); showBatchImport = true }) {
+                        TextButton(contentPadding = PaddingValues(vertical = 8.dp), onClick = { dismissKeyboard(); showBatchImport = true }) {
                             AppIcon(AppIcons.BatchImport, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
                             Text("批量导入多个链接")
@@ -378,27 +356,6 @@ fun HomeScreen(
                 },
                 modifier = Modifier.padding(padding),
             )
-        }
-    }
-}
-
-@Composable
-private fun HeroCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-    ) {
-        Row(Modifier.padding(24.dp), verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Column(Modifier.weight(1f)) {
-                Text("收藏美好时刻", style = MaterialTheme.typography.labelSmall)
-                Text("好内容，值得\n反复观看。", style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(vertical = 12.dp))
-                Text("清晰保存 · 随时回看", style = MaterialTheme.typography.bodySmall)
-            }
-            AppIcon(AppIcons.Brand, null, tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(48.dp))
         }
     }
 }
@@ -608,12 +565,6 @@ private fun ResultScreen(
             modifier = Modifier.padding(horizontal = 22.dp, vertical = 14.dp),
         )
     }
-}
-
-@Composable
-private fun Eyebrow(text: String) {
-    Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black, letterSpacing = 1.7.sp,
-        color = MaterialTheme.colorScheme.primary)
 }
 
 @Composable
