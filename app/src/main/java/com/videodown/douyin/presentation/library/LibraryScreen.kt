@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation.library
 
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
+
 import android.Manifest
 import android.os.Build
 import android.content.pm.PackageManager
@@ -39,11 +42,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.automirrored.filled.ViewList
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -182,9 +180,9 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                         },
                         modifier = Modifier.semantics { stateDescription = layout.label },
                     ) {
-                        Icon(
-                            imageVector = if (nextLayout == LibraryLayout.LIST) Icons.AutoMirrored.Filled.ViewList
-                                else Icons.Filled.GridView,
+                        AppIcon(
+                            icon = if (nextLayout == LibraryLayout.LIST) AppIcons.List
+                                else AppIcons.Grid,
                             contentDescription = "切换为${nextLayout.label}",
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
@@ -194,6 +192,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             OutlinedTextField(value = state.libraryQuery.text,
                 onValueChange = { queryChanged(state.libraryQuery.copy(text = it)) },
                 label = { Text("搜索标题或作者") }, singleLine = true, enabled = !state.batchBusy,
+                leadingIcon = { AppIcon(AppIcons.Search, null) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                 trailingIcon = { if (state.libraryQuery.text.isNotEmpty()) TextButton(onClick = { queryChanged(state.libraryQuery.copy(text = "")) }) { Text("清除") } },
@@ -326,7 +325,7 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
             .clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerHighest),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        AppIcon(if (record.isAudio) AppIcons.Audio else AppIcons.Play, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         AsyncImage(
             model = record.coverUrl,
             contentDescription = null,

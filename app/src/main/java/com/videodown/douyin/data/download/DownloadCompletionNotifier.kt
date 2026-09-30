@@ -18,7 +18,7 @@ class DownloadCompletionNotifier(private val context: Context, private val prefe
             .setAction(ACTION_OPEN_LIBRARY)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setSmallIcon(com.videodown.douyin.R.drawable.ic_shiying_notification_complete)
             .setContentTitle("下载完成")
             .setContentText(record.title)
             .setStyle(NotificationCompat.BigTextStyle().bigText("${record.title}\n${record.resolutionLabel} · 点击查看已存视频"))

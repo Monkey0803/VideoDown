@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation.settings
 
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
+
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,17 +26,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.SdStorage
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
@@ -238,24 +233,24 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         }
         SectionLabel("外观")
         SettingsCard {
-            SettingsRow(icon = { Icon(Icons.Filled.Palette, null, tint = MaterialTheme.colorScheme.primary) },
+            SettingsRow(icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "外观模式", value = themeMode.label, onClick = { showThemeMode = true })
         }
         SectionLabel("下载偏好")
         SettingsCard {
-            SettingsRow(icon = { Icon(Icons.Filled.GridView, null, tint = MaterialTheme.colorScheme.primary) },
+            SettingsRow(icon = { AppIcon(AppIcons.Queue, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "同时下载数量", value = "$maxConcurrent 个任务", onClick = { showConcurrency = true })
-            SettingsRow(icon = { Icon(Icons.Filled.GridView, null, tint = MaterialTheme.colorScheme.primary) },
+            SettingsRow(icon = { AppIcon(AppIcons.Quality, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "默认画质", value = quality.label, onClick = { showQuality = true })
             ToggleRow(
-                icon = { Icon(Icons.Filled.Wifi, null, tint = MaterialTheme.colorScheme.primary) },
+                icon = { AppIcon(AppIcons.Wifi, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "仅在 Wi-Fi 下下载",
                 subtitle = if (wifiOnly) "离开 Wi-Fi 自动暂停，连接后可继续" else "允许使用移动网络下载",
                 checked = wifiOnly,
                 onCheckedChange = { preferences.wifiOnly = it },
             )
             ToggleRow(
-                icon = { Icon(Icons.Filled.NotificationsNone, null, tint = MaterialTheme.colorScheme.primary) },
+                icon = { AppIcon(AppIcons.Notification, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "完成时通知",
                 subtitle = when {
                     !notificationsAvailable -> "系统通知未开启，打开开关以授权"
@@ -286,10 +281,10 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 3.dp, top = 8.dp))
         SectionLabel("网页与解析引擎")
         SettingsCard {
-            SettingsRow(icon = { Icon(Icons.Filled.Info, null, tint = MaterialTheme.colorScheme.primary) },
+            SettingsRow(icon = { AppIcon(AppIcons.Settings, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "解析引擎", value = "随应用更新", onClick = { showAbout = true })
             Text(engineVersion, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium)
-            SettingsRow(icon = { Icon(Icons.Filled.Info, null, tint = MaterialTheme.colorScheme.primary) },
+            SettingsRow(icon = { AppIcon(AppIcons.ClearSession, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "清除网页登录态", value = sessionMessage, onClick = {
                     sessionScope.launch {
                         ServiceLocator.historyRepository.snapshot().filter { it.media?.useBrowserSession == true &&
@@ -301,9 +296,9 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         }
         SectionLabel("存储与关于")
         SettingsCard {
-            SettingsRow(icon = { Icon(Icons.Filled.SdStorage, null, tint = MaterialTheme.colorScheme.primary) },
+            SettingsRow(icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "存储空间", value = "占用与残留清理", onClick = { showStorage = true })
-            SettingsRow(icon = { Icon(Icons.Filled.Info, null, tint = MaterialTheme.colorScheme.primary) },
+            SettingsRow(icon = { AppIcon(AppIcons.Info, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "关于拾影", value = "›", onClick = { showAbout = true })
         }
     }

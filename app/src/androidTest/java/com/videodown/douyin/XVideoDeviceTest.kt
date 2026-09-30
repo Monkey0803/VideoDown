@@ -71,7 +71,7 @@ class XVideoDeviceTest {
         show(repo, recorder)
         parseThroughUi()
         compose.onNodeWithText("当前 1/2 · 已选 0 个").assertIsDisplayed()
-        compose.onNodeWithText("查看全部 ▾").performClick()
+        compose.onNodeWithText("查看全部").performClick()
         compose.onNodeWithContentDescription("预览视频 2").performClick()
         compose.onNodeWithText("第二个测试视频").assertIsDisplayed()
         compose.onNodeWithText("360P").performScrollTo().assertIsDisplayed()

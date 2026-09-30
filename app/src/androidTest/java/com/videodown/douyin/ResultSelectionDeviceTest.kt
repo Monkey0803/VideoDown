@@ -53,7 +53,7 @@ class ResultSelectionDeviceTest {
         compose.runOnUiThread { compose.activity.setContent { Text("已关闭") }; models.clear() }
         compose.waitForIdle()
     }
-    private fun open() { compose.onNodeWithText("查看全部 ▾").performClick() }
+    private fun open() { compose.onNodeWithText("查看全部").performClick() }
     private fun preview(index: Int) {
         compose.onNodeWithTag("video-selection-grid").performScrollToNode(hasContentDescription("预览动画 $index"))
         compose.onNodeWithContentDescription("预览动画 $index").performClick()

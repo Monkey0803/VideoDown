@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PlayerView resolves these default resources when constructing its native controller. -->
+    <item name="exo_styled_controls_play" type="drawable">@drawable/ic_shiying_play</item>
+    <item name="exo_styled_controls_pause" type="drawable">@drawable/ic_shiying_pause</item>
+    <item name="exo_styled_controls_fullscreen_enter" type="drawable">@drawable/ic_shiying_fullscreen</item>
+    <item name="exo_styled_controls_fullscreen_exit" type="drawable">@drawable/ic_shiying_fullscreen_exit</item>
+</resources>

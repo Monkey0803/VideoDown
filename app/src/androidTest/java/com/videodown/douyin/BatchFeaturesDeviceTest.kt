@@ -121,7 +121,7 @@ class BatchFeaturesDeviceTest {
     @Test fun batchDownloadKeepsIndividualQualityAndSkipsDuplicates() {
         runBlocking { history.upsert(record(1)) }; showHome()
         compose.onNodeWithText("360P", useUnmergedTree = false).performScrollTo().performClick()
-        compose.onNodeWithText("查看全部 ▾").performClick()
+        compose.onNodeWithText("查看全部").performClick()
         compose.onNodeWithText("全选", substring = false).performClick()
         compose.onNodeWithText("完成选择").performClick()
         compose.onNodeWithText("保存所选 2 个视频").performClick()

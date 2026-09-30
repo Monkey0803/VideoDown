@@ -11,6 +11,8 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import androidx.media3.session.DefaultMediaNotificationProvider
+import com.videodown.douyin.R
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.domain.model.PlaybackCheckpoint
 import com.videodown.douyin.domain.model.PlaybackOptions
@@ -28,8 +30,13 @@ class AudioPlaybackService : MediaSessionService() {
     private fun launchIntent(id: String) = PendingIntent.getActivity(this, 8701,
         Intent(this, MainActivity::class.java).setAction(ACTION_OPEN_PLAYER).putExtra(EXTRA_RECORD_ID, id),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
+        setMediaNotificationProvider(DefaultMediaNotificationProvider.Builder(this)
+            // Keep media playback separate from the download service's notification (1001).
+            .setNotificationId(8701)
+            .build().apply { setSmallIcon(R.drawable.ic_shiying_notification_audio) })
         player = ExoPlayer.Builder(this).build().apply {
             setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
             setHandleAudioBecomingNoisy(true)

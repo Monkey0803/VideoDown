@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation.library
 
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -14,16 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
@@ -42,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -125,18 +121,18 @@ internal fun LibraryActions(
                 Text(selected.title, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp))
-                LibraryActionRow(if (selected.favorite) "取消收藏" else "收藏视频", Icons.Filled.SaveAlt, enabled = !organizing) {
+                LibraryActionRow(if (selected.favorite) "取消收藏" else "收藏视频", if (selected.favorite) AppIcons.FavoriteFilled else AppIcons.Favorite, enabled = !organizing) {
                     onFavorite(selected); onDismiss()
                 }
-                LibraryActionRow("重命名与分类", Icons.Filled.SaveAlt, enabled = !organizing) { onOrganize(selected); onDismiss() }
-                LibraryActionRow("导出到文件夹", Icons.Filled.SaveAlt, enabled = !organizing) { onFileExport(selected); onDismiss() }
-                if (!selected.isAudio) LibraryActionRow("提取音频", Icons.Filled.SaveAlt, enabled = !organizing) { onExtractAudio(selected); onDismiss() }
-                LibraryActionRow(if (selected.isAudio) "播放音频" else "播放视频", Icons.Filled.PlayArrow) {
+                LibraryActionRow("重命名与分类", AppIcons.Rename, enabled = !organizing) { onOrganize(selected); onDismiss() }
+                LibraryActionRow("导出到文件夹", AppIcons.ExportFolder, enabled = !organizing) { onFileExport(selected); onDismiss() }
+                if (!selected.isAudio) LibraryActionRow("提取音频", AppIcons.ExtractAudio, enabled = !organizing) { onExtractAudio(selected); onDismiss() }
+                LibraryActionRow(if (selected.isAudio) "播放音频" else "播放视频", AppIcons.Play) {
                     onDismiss()
                     if (selected.filePath?.let { File(it).isFile } == true) onPlay(selected.id)
                     else showMessage("本地视频文件不存在")
                 }
-                LibraryActionRow(if (selected.isAudio) "分享音频" else "分享视频", Icons.Filled.Share) {
+                LibraryActionRow(if (selected.isAudio) "分享音频" else "分享视频", AppIcons.Share) {
                     onDismiss()
                     val file = selected.filePath?.let(::File)
                     if (file == null || !file.isFile || !DouyinIntents.shareFile(context, file)) {
@@ -145,7 +141,7 @@ internal fun LibraryActions(
                 }
                 LibraryActionRow(
                     if (exportingId == selected.id) "正在保存…" else if (selected.isAudio) "保存到音乐" else "保存到相册",
-                    Icons.Filled.SaveAlt,
+                    if (selected.isAudio) AppIcons.Audio else AppIcons.SaveAlbum,
                     enabled = exportingId == null && pendingPermissionId == null,
                 ) {
                     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
@@ -160,7 +156,7 @@ internal fun LibraryActions(
                     }
                 }
                 HorizontalDivider(Modifier.padding(horizontal = 24.dp, vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                LibraryActionRow("删除视频", Icons.Filled.DeleteOutline,
+                LibraryActionRow("删除视频", AppIcons.Delete,
                     enabled = exportingId != selected.id, tint = MaterialTheme.colorScheme.error) {
                     pendingDeleteId = selected.id
                     onDismiss()
@@ -209,7 +205,7 @@ internal fun LibraryActions(
 @Composable
 private fun LibraryActionRow(
     label: String,
-    icon: ImageVector,
+    icon: AppIcons,
     enabled: Boolean = true,
     tint: Color = MaterialTheme.colorScheme.onSurface,
     onClick: () -> Unit,
@@ -221,7 +217,7 @@ private fun LibraryActionRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Icon(icon, contentDescription = null, tint = color)
+        AppIcon(icon, contentDescription = null, tint = color)
         Text(label, color = color, style = MaterialTheme.typography.titleMedium)
     }
 }

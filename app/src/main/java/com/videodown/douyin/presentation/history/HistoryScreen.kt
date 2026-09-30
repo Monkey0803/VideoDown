@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation.history
 
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Checkbox
 import androidx.compose.ui.semantics.semantics
@@ -23,17 +26,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -248,8 +244,18 @@ private fun TaskCard(
                         maxLines = 2, overflow = TextOverflow.Ellipsis)
                     Text("${record.resolutionLabel} · ${formatBytes(state.totalFor(record).takeIf { it > 0 } ?: state.downloadedFor(record))}",
                         style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 7.dp))
-                    Text(statusLabel(status), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold,
-                        color = statusColor(status), modifier = Modifier.padding(top = 7.dp))
+                    Row(Modifier.padding(top = 7.dp), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        AppIcon(when (status) {
+                            DownloadStatus.PENDING -> AppIcons.Queue
+                            DownloadStatus.RUNNING -> AppIcons.Download
+                            DownloadStatus.PAUSED -> AppIcons.Pause
+                            DownloadStatus.COMPLETED -> AppIcons.Success
+                            DownloadStatus.FAILED -> AppIcons.Error
+                        }, null, modifier = Modifier.size(14.dp), tint = statusColor(status))
+                        Text(statusLabel(status), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold,
+                            color = statusColor(status))
+                    }
                 }
                 if (!selecting) {
                 IconButton(onClick = when (status) {
@@ -257,7 +263,16 @@ private fun TaskCard(
                     DownloadStatus.RUNNING, DownloadStatus.PENDING -> onPause
                     DownloadStatus.PAUSED, DownloadStatus.FAILED -> if (guidance != null && guidance.action != RecoveryAction.RETRY) ({ onRecover(guidance.action) }) else onResume
                 }, enabled = !state.batchBusy && (guidance == null || canRecover(guidance.action)), modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
-                    Icon(if (status == DownloadStatus.RUNNING || status == DownloadStatus.PENDING) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    AppIcon(when {
+                        status == DownloadStatus.COMPLETED -> AppIcons.Play
+                        status == DownloadStatus.RUNNING || status == DownloadStatus.PENDING -> AppIcons.Pause
+                        guidance?.action == RecoveryAction.BROWSER -> AppIcons.Browser
+                        guidance?.action == RecoveryAction.REPARSE -> AppIcons.Parse
+                        guidance?.action == RecoveryAction.STORAGE -> AppIcons.Storage
+                        guidance?.action == RecoveryAction.SETTINGS -> AppIcons.Settings
+                        guidance?.action == RecoveryAction.NONE -> AppIcons.Warning
+                        else -> AppIcons.ResumeDownload
+                    },
                         contentDescription = when (status) {
                             DownloadStatus.COMPLETED -> "播放"
                             DownloadStatus.RUNNING, DownloadStatus.PENDING -> "暂停"
@@ -266,7 +281,7 @@ private fun TaskCard(
                 }
                 IconButton(onClick = onDelete, enabled = !state.batchBusy, modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
-                    Icon(Icons.Filled.DeleteOutline, "删除", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(17.dp))
+                    AppIcon(AppIcons.Delete, "删除", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(17.dp))
                 }
                 }
             }
@@ -313,12 +328,12 @@ private fun TaskCard(
                     style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (!selecting && status == DownloadStatus.COMPLETED) {
                     IconButton(onClick = onShare, enabled = !state.batchBusy, modifier = Modifier.size(48.dp)) {
-                        Icon(Icons.Filled.Share, "分享", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(17.dp))
+                        AppIcon(AppIcons.Share, "分享", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(17.dp))
                     }
                 }
                 if (!selecting && status != DownloadStatus.RUNNING && status != DownloadStatus.PENDING && guidance?.action != RecoveryAction.NONE) {
                     IconButton(onClick = onRestart, enabled = !state.batchBusy, modifier = Modifier.size(48.dp)) {
-                        Icon(Icons.Filled.Refresh, "重新下载", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(17.dp))
+                        AppIcon(AppIcons.Retry, "重新下载", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(17.dp))
                     }
                 }
             }
@@ -328,9 +343,9 @@ private fun TaskCard(
 
 private fun statusLabel(status: DownloadStatus) = when (status) {
     DownloadStatus.PENDING -> "等待中"
-    DownloadStatus.RUNNING -> "● 下载中"
-    DownloadStatus.PAUSED -> "Ⅱ 已暂停"
-    DownloadStatus.COMPLETED -> "✓ 已完成"
+    DownloadStatus.RUNNING -> "下载中"
+    DownloadStatus.PAUSED -> "已暂停"
+    DownloadStatus.COMPLETED -> "已完成"
     DownloadStatus.FAILED -> "下载失败"
 }
 

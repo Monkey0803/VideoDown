@@ -89,7 +89,7 @@ class DownloadService : Service() {
         )
 
         val builder = NotificationCompat.Builder(this, VideoDownApp.DOWNLOAD_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_sys_download)
+            .setSmallIcon(com.videodown.douyin.R.drawable.ic_shiying_notification_download)
             .setContentTitle(if (active.any { it.phase == com.videodown.douyin.domain.model.TransferPhase.EXTRACTING }) "正在提取音频" else if (active.any { it.phase == com.videodown.douyin.domain.model.TransferPhase.MERGING }) "正在合并音视频" else if (count > 1) "正在下载 $count 个视频" else "正在下载视频")
             .setContentText(
                 buildString {

@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation.home
 
+import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppIcons
+
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.activity.compose.BackHandler
@@ -35,12 +38,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ContentPaste
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -55,7 +52,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -228,7 +224,7 @@ fun HomeScreen(
                             .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Filled.PlayArrow, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(19.dp))
+                        AppIcon(AppIcons.Brand, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                     }
                     Spacer(Modifier.width(9.dp))
                     Text("拾影", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
@@ -313,7 +309,11 @@ fun HomeScreen(
                                 }) { Text(if (action == RecoveryAction.RETRY) "重新尝试解析" else action.label) }
                             }
                         }
-                        TextButton(onClick = { dismissKeyboard(); showBatchImport = true }) { Text("批量导入多个链接") }
+                        TextButton(onClick = { dismissKeyboard(); showBatchImport = true }) {
+                            AppIcon(AppIcons.BatchImport, null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("批量导入多个链接")
+                        }
                         Text("支持主流平台与普通网页视频", color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 3.dp))
                     }
@@ -397,7 +397,7 @@ private fun HeroCard() {
                     modifier = Modifier.padding(vertical = 12.dp))
                 Text("清晰保存 · 随时回看", style = MaterialTheme.typography.bodySmall)
             }
-            Icon(Icons.Filled.PlayArrow, null, tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            AppIcon(AppIcons.Brand, null, tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(48.dp))
         }
     }
@@ -478,20 +478,24 @@ private fun ResultScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack, modifier = Modifier.clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerLow)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回", tint = MaterialTheme.colorScheme.onSurface)
+                AppIcon(AppIcons.Back, "返回", tint = MaterialTheme.colorScheme.onSurface)
             }
             Spacer(Modifier.width(12.dp))
             Text("解析结果", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.weight(1f))
             IconButton(onClick = onOpenHistory, modifier = Modifier.clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerLow)) {
-                Icon(Icons.Filled.Download, "下载任务", tint = MaterialTheme.colorScheme.onSurface)
+                AppIcon(AppIcons.Download, "下载任务", tint = MaterialTheme.colorScheme.onSurface)
             }
         }
         if (state.videos.size > 1) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 22.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("当前 ${state.videos.indexOfFirst { it.selectionKey() == video.selectionKey() } + 1}/${state.videos.size} · 已选 ${state.selectedMedia.size} 个",
                     style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-                TextButton(onClick = { showingVideos = true }, enabled = !state.isSubmitting && state.duplicates == null) { Text("查看全部 ▾") }
+                TextButton(onClick = { showingVideos = true }, enabled = !state.isSubmitting && state.duplicates == null) {
+                    Text("查看全部")
+                    Spacer(Modifier.width(4.dp))
+                    AppIcon(AppIcons.ChevronDown, null, modifier = Modifier.size(18.dp))
+                }
             }
         }
         Column(Modifier.weight(1f).verticalScroll(resultScroll)) {
@@ -500,11 +504,14 @@ private fun ResultScreen(
                 AsyncImage(video.coverUrl, "视频封面", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 Box(Modifier.align(Alignment.TopStart).padding(16.dp).clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = .95f)).padding(horizontal = 10.dp, vertical = 6.dp)) {
-                    Text("✓ 已解析 · ${video.platform.label}", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        AppIcon(AppIcons.Success, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurface)
+                        Text("已解析 · ${video.platform.label}", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+                    }
                 }
                 IconButton(onClick = { onPreview(video) }, modifier = Modifier.align(Alignment.Center)
                     .size(56.dp).clip(CircleShape).background(Color.White.copy(alpha = .28f))) {
-                    Icon(Icons.Filled.PlayArrow, "在${video.platform.label}预览", tint = Color.White, modifier = Modifier.size(35.dp))
+                    AppIcon(AppIcons.Play, "在${video.platform.label}预览", tint = Color.White, modifier = Modifier.size(35.dp))
                 }
                 Text(formatDuration(video.durationMs), color = Color.White, style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp).clip(MaterialTheme.shapes.small)
@@ -524,7 +531,9 @@ private fun ResultScreen(
                     Text("@ ${video.author.nickname.ifBlank { "未知作者" }}", style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                     TextButton(onClick = { onOpenAuthor(video) }, enabled = video.author.profileUrl != null) {
-                        Text("查看作者 ↗", style = MaterialTheme.typography.labelMedium)
+                        Text("查看作者", style = MaterialTheme.typography.labelMedium)
+                        Spacer(Modifier.width(4.dp))
+                        AppIcon(AppIcons.ExternalLink, null, modifier = Modifier.size(16.dp))
                     }
                 }
                 Spacer(Modifier.height(18.dp))
@@ -624,7 +633,7 @@ private fun PrimaryButton(
         else {
             Text(text, fontWeight = FontWeight.Bold)
             Spacer(Modifier.width(8.dp))
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, null, modifier = Modifier.size(18.dp))
+            AppIcon(AppIcons.Forward, null, modifier = Modifier.size(18.dp))
         }
     }
 }
