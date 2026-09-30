@@ -1,5 +1,6 @@
 package com.videodown.douyin
 
+import androidx.activity.compose.setContent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -37,6 +38,23 @@ class IconIntegrationDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
     private val context get() = instrumentation.targetContext
 
+    @Test fun defaultThemeKeepsBrandColorsInsteadOfWallpaperColors() {
+        for (dark in listOf(false, true)) {
+            var observed: androidx.compose.material3.ColorScheme? = null
+            compose.runOnUiThread {
+                compose.activity.setContent {
+                    com.videodown.douyin.presentation.theme.VideoDownTheme(darkTheme = dark) {
+                        val colors = androidx.compose.material3.MaterialTheme.colorScheme
+                        androidx.compose.runtime.SideEffect { observed = colors }
+                    }
+                }
+            }
+            compose.waitForIdle()
+            assertEquals(if (dark) androidx.compose.ui.graphics.Color(0xFFFFAD75)
+                else androidx.compose.ui.graphics.Color(0xFFA64021), observed!!.primary)
+        }
+    }
+
     /** Exercises Android's parser/renderer rather than only checking the generated XML. */
     @Test fun vectorsTintCorrectlyAndSelectedLibraryRetainsTransparentPlayCutout() {
         for (icon in AppIcons.entries) {
@@ -63,7 +81,7 @@ class IconIntegrationDeviceTest {
         if (android.os.Build.VERSION.SDK_INT >= 33) assertNotNull(launcher.monochrome)
     }
 
-    /** Uses actual navigation and the existing wallpaper-based palette without changing downloads. */
+    /** Uses actual navigation and the fixed warm brand palette without changing downloads. */
     @Test fun navigationRemainsUsableInLightAndDarkThemes() {
         val preferences = ServiceLocator.preferences
         val original = preferences.themeMode
