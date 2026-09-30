@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T06:24:46" hostname="localhost">
+  <testsuite name="com.videodown.douyin.PlayerLandscapeDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="15.098" timestamp="2026-09-30T06:24:46" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="rotatingWhilePausedPreservesPositionAndReturnsToPortrait" classname="com.videodown.douyin.PlayerLandscapeDeviceTest" time="4.887" />
+    <testcase name="nativeFullscreenControlAndSystemBackKeepPlaybackRunning" classname="com.videodown.douyin.PlayerLandscapeDeviceTest" time="4.112" />
+    <testcase name="leavingFullscreenRestoresWindowAndOrientationPolicy" classname="com.videodown.douyin.PlayerLandscapeDeviceTest" time="4.062" />
+    <testcase name="landscapeVideoUsesItsOwnAspectRatioAndHasAVisibleFullscreenEntry" classname="com.videodown.douyin.PlayerLandscapeDeviceTest" time="2.037" />
+  </testsuite>
+</testsuites>

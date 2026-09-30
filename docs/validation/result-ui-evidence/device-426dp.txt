@@ -1,0 +1,10 @@
+
+com.videodown.douyin.ResultSelectionDeviceTest:....
+com.videodown.douyin.BatchFeaturesDeviceTest:......
+com.videodown.douyin.QualityCardsDeviceTest:.
+com.videodown.douyin.HomeResultBackDeviceTest:...
+com.videodown.douyin.XVideoDeviceTest:.
+
+Time: 25.967
+
+OK (15 tests)

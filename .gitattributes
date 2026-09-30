@@ -1,0 +1,6 @@
+# Preserve the Windows Gradle launcher line endings.
+gradlew.bat text eol=crlf whitespace=cr-at-eol
+
+# Keep upstream license text unchanged, including original whitespace.
+app/src/main/assets/engine/licenses/yt-dlp-THIRD-PARTY.txt whitespace=-blank-at-eol,-blank-at-eof
+app/src/main/assets/engine/native/COPYING.libwebp whitespace=-blank-at-eol,-blank-at-eof

@@ -1,0 +1,16 @@
+app/src/androidTest/java/com/videodown/douyin/P3PictureInPictureDeviceTest.kt
+app/src/androidTest/java/com/videodown/douyin/P3PlaybackDeviceTest.kt
+app/src/androidTest/java/com/videodown/douyin/P3BackgroundAudioDeviceTest.kt
+app/src/androidTest/java/com/videodown/douyin/P3ProcessPersistenceDeviceTest.kt
+app/src/androidTest/assets/background-audio-fixture.m4a
+app/src/androidTest/assets/README.md
+app/src/test/java/com/videodown/douyin/domain/model/PlaybackStateTest.kt
+app/src/main/AndroidManifest.xml
+app/src/main/java/com/videodown/douyin/core/ServiceLocator.kt
+app/src/main/java/com/videodown/douyin/data/playback/AudioPlaybackService.kt
+app/src/main/java/com/videodown/douyin/data/playback/PlaybackPreferences.kt
+app/src/main/java/com/videodown/douyin/domain/repository/PlaybackRepository.kt
+app/src/main/java/com/videodown/douyin/domain/model/PlaybackState.kt
+app/src/main/java/com/videodown/douyin/presentation/MainActivity.kt
+app/src/main/java/com/videodown/douyin/presentation/player/PlayerViewModel.kt
+app/src/main/java/com/videodown/douyin/presentation/player/PlayerScreen.kt

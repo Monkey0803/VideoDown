@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="6" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T05:35:13" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2AudioDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="6.510" timestamp="2026-09-30T05:35:13" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="cancellationAtLocalExtractionPhaseStopsProcessGroupAndCanRunAgain" classname="com.videodown.douyin.P2AudioDeviceTest" time="2.143" />
+    <testcase name="silentVideoProducesExplicitNoAudioFailureAndKeepsOriginal" classname="com.videodown.douyin.P2AudioDeviceTest" time="0.016" />
+    <testcase name="queuedLocalExtractionCanPauseThenResumeOfflineWithoutLosingOriginal" classname="com.videodown.douyin.P2AudioDeviceTest" time="0.547" />
+    <testcase name="localAacExtractionWorksOfflinePreservesEncodedSamplesAndOriginalAndSavesToMusic" classname="com.videodown.douyin.P2AudioDeviceTest" time="0.565" />
+    <testcase name="actualDashParseOffersIndependentAudioAndDownloadsOnlyItsTrack" classname="com.videodown.douyin.P2AudioDeviceTest" time="2.629" />
+    <testcase name="opusSourceFallsBackToAacAndKeepsOriginal" classname="com.videodown.douyin.P2AudioDeviceTest" time="0.610" />
+  </testsuite>
+</testsuites>

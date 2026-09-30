@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T06:25:31" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P1RecoveryNavigationDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="15.351" timestamp="2026-09-30T06:25:31" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="rateLimitedParseOpensSettingsWithoutRepeatingRequest" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="2.447" />
+    <testcase name="storageRecoveryOpensActualSettingsStorageDialog" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="4.404" />
+    <testcase name="loginRecoveryOpensOriginalPageInActualBrowser" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="5.822" />
+    <testcase name="expiredDownloadReparsesOriginalPageRatherThanCdn" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="2.678" />
+  </testsuite>
+</testsuites>

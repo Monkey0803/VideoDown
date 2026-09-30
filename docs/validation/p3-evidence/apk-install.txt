@@ -1,0 +1,32 @@
+Final APK install: Success (adb install -r).
+
+adb uninstall com.videodown.douyin.debug.test
+Success
+
+
+adb shell am force-stop com.videodown.douyin.debug
+
+
+adb shell am start -W -n com.videodown.douyin.debug/com.videodown.douyin.presentation.MainActivity
+Starting: Intent { cmp=com.videodown.douyin.debug/com.videodown.douyin.presentation.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.videodown.douyin.debug/com.videodown.douyin.presentation.MainActivity
+TotalTime: 1550
+WaitTime: 1552
+Complete
+
+
+adb shell pm path com.videodown.douyin.debug
+package:/data/app/~~8-vWPScj1P3rm479RXeaKQ==/com.videodown.douyin.debug-166koWp9NAsrpV7FkqTqYA==/base.apk
+
+
+adb shell sha256sum /data/app/~~8-vWPScj1P3rm479RXeaKQ==/com.videodown.douyin.debug-166koWp9NAsrpV7FkqTqYA==/base.apk
+4346c512d29e3ca6e35fe31a74b24c34952ca8889f0df5a5d75ce3407e67dab1  /data/app/~~8-vWPScj1P3rm479RXeaKQ==/com.videodown.douyin.debug-166koWp9NAsrpV7FkqTqYA==/base.apk
+
+
+Resumed activity:
+    topResumedActivity=ActivityRecord{259619458 u0 com.videodown.douyin.debug/com.videodown.douyin.presentation.MainActivity t633}
+
+Local and installed SHA-256: 4346c512d29e3ca6e35fe31a74b24c34952ca8889f0df5a5d75ce3407e67dab1
+APK size: 86581151

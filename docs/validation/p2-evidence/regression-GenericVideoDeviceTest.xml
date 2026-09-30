@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="8" failures="2" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T05:41:23" hostname="localhost">
+  <testsuite name="com.videodown.douyin.GenericVideoDeviceTest" tests="8" failures="2" errors="0" skipped="0" time="21.970" timestamp="2026-09-30T05:41:23" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="segmentedTaskPausesOnWifiLossAndResumesWithoutDuplicateCompletion" classname="com.videodown.douyin.GenericVideoDeviceTest" time="7.109" />
+    <testcase name="processExitResumeCheckpoint" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.004">
+      <failure>org.junit.AssumptionViolatedException: Pass process_exit_phase=seed/resume
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.GenericVideoDeviceTest$processExitResumeCheckpoint$1.invokeSuspend(GenericVideoDeviceTest.kt:61)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-2ede1c6932fee1a0bbbb65eb32c81b48a8a8f4af-6924:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-2ede1c6932fee1a0bbbb65eb32c81b48a8a8f4af-6925:1)
+	at com.videodown.douyin.GenericVideoDeviceTest.processExitResumeCheckpoint(GenericVideoDeviceTest.kt:58)
+</failure>
+    </testcase>
+    <testcase name="runtimeAndDirectHlsDashDownloadsProduceVideoAndAudio" classname="com.videodown.douyin.GenericVideoDeviceTest" time="8.863" />
+    <testcase name="cancellationStopsEngineAndPolicyBlocksBeforeNetwork" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.832" />
+    <testcase name="protectedFileIsRejectedBeforeTaskCanComplete" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.587" />
+    <testcase name="optionalPublicPageParse" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.002">
+      <failure>org.junit.AssumptionViolatedException: Pass generic_live_url to enable a public site check
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.GenericVideoDeviceTest$optionalPublicPageParse$1.invokeSuspend(GenericVideoDeviceTest.kt:31)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-2ede1c6932fee1a0bbbb65eb32c81b48a8a8f4af-6924:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-2ede1c6932fee1a0bbbb65eb32c81b48a8a8f4af-6925:1)
+	at com.videodown.douyin.GenericVideoDeviceTest.optionalPublicPageParse(GenericVideoDeviceTest.kt:29)
+</failure>
+    </testcase>
+    <testcase name="cancellingAtMergeStopsProcessGroupAndCanResume" classname="com.videodown.douyin.GenericVideoDeviceTest" time="3.754" />
+    <testcase name="browserCookieRedirectsNeverLeakAcrossHosts" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.819" />
+  </testsuite>
+</testsuites>

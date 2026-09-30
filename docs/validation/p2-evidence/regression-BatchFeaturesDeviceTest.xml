@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="6" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T05:40:14" hostname="localhost">
+  <testsuite name="com.videodown.douyin.BatchFeaturesDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="30.064" timestamp="2026-09-30T05:40:14" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="batchDownloadKeepsIndividualQualityAndSkipsDuplicates" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="7.043" />
+    <testcase name="platformFilterAndListLayoutRetainSearchAndBatchExportCopiesAllSelections" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="3.937" />
+    <testcase name="batchGalleryFailureIdentifiesVideoAndRetryDoesNotDuplicateSuccessfulCopy" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="5.776" />
+    <testcase name="filteredSelectionDeletesOnlyVisibleResultAndCancelPreservesFiles" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="5.190" />
+    <testcase name="duplicateDialogCanOpenExistingFileOrExplicitlyDownloadAgain" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="4.294" />
+    <testcase name="selectedTaskPauseAndContinueDoNotTouchUnselectedTask" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="3.824" />
+  </testsuite>
+</testsuites>
