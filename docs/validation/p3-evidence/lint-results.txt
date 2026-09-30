@@ -1,0 +1,525 @@
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/build.gradle.kts:59: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
+        targetSdk = 36
+        ~~~~~~~~~~~~~~
+
+   Explanation for issues of type "OldTargetApi":
+   When your application or sdk runs on a version of Android that is more
+   recent than your targetSdk specifies that it has been tested with, various
+   compatibility modes kick in. This ensures that your application continues
+   to work, but it may look out of place. For example, if the targetSdk is
+   less than 14, your app may get an option button in the UI.
+
+   To fix this issue, set the targetSdk to the highest available value. Then
+   test your app to make sure everything works correctly. You may want to
+   consult the compatibility notes to see what changes apply to each version
+   you are adding support for:
+   https://developer.android.com/reference/android/os/Build.VERSION_CODES.html
+   as well as follow this guide:
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.
+   html
+
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.html
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/presentation/MainActivity.kt:138: Warning: Found dynamic locale changes, but did not find corresponding Play Core library calls for downloading languages and splitting by language is not disabled in the bundle configuration [AppBundleLocaleChanges]
+            setLocale(Locale.SIMPLIFIED_CHINESE)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "AppBundleLocaleChanges":
+   When changing locales at runtime (e.g. to provide an in-app language
+   switcher), the Android App Bundle must be configured to not split by locale
+   or the Play Core library must be used to download additional locales at
+   runtime.
+
+   https://developer.android.com/guide/app-bundle/configure-base#handling_language_changes
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:61: Warning: This intent filter has the format of an Android App Link but is missing the autoVerify attribute; add android:autoVerify="true" to ensure your domain will be validated and enable App Link-related Lint warnings. If you do not want clicked URLs to bring the user to your app, remove the android.intent.category.BROWSABLE category, or set android:autoVerify="false" to make it clear this is not intended to be an Android App Link. [AppLinkWarning]
+            <intent-filter>
+             ~~~~~~~~~~~~~
+
+   Explanation for issues of type "AppLinkWarning":
+   From Android 12, intent filters that use the HTTP and HTTPS schemes will no
+   longer               bring the user to your app when the user clicks a
+   link, unless the intent filter is               an Android App Link. Such
+   intent filters must include certain elements, and at least
+   one Android App Link for each domain must have android:autoVerify="true" to
+   verify               ownership of the domain. We recommend adding
+   android:autoVerify="true" to any intent               filter that is
+   intended to be an App Link, in case the other App Links are modified.
+
+   https://developer.android.com/training/app-links
+   https://g.co/AppIndexing/AndroidStudio
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:65: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="v.douyin.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:66: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="www.douyin.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:67: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="www.iesdouyin.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:68: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="weibo.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:69: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="www.weibo.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:70: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="m.weibo.cn" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:71: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="www.kuaishou.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:72: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="v.kuaishou.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:73: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="v.m.chenzhongtech.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:74: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="m.gifshow.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:75: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="x.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:76: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="www.x.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:77: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="twitter.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:78: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                <data android:scheme="https" android:host="mobile.twitter.com" />
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "IntentFilterUniqueDataAttributes":
+   <intent-filter> <data> tags should only declare a single unique attribute
+   (i.e. scheme OR host, but not both). This better matches the runtime
+   behavior of intent filters, as they combine all of the declared data
+   attributes into a single matcher which is allowed to handle any combination
+   across attribute types.
+
+   For example, the following two <intent-filter> declarations are the same:
+   <intent-filter>
+       <data android:scheme="http" android:host="example.com" />
+       <data android:scheme="https" android:host="example.org" />
+   </intent-filter>
+
+   <intent-filter>
+       <data android:scheme="http"/>
+       <data android:scheme="https"/>
+       <data android:host="example.com" />
+       <data android:host="example.org" />
+   </intent-filter>
+
+   They both handle all of the following:
+   * http://example.com
+   * https://example.com
+   * http://example.org
+   * https://example.org
+
+   The second one better communicates the combining behavior and is clearer to
+   an external reader that one should not rely on the scheme/host being self
+   contained. It is not obvious in the first that http://example.org is also
+   matched, which can lead to confusion (or incorrect behavior) with a more
+   complex set of schemes/hosts.
+
+   Note that this does not apply to host + port, as those must be declared in
+   the same <data> tag and are only associated with each other.
+
+   https://developer.android.com/guide/components/intents-filters
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:27: Warning: An activity in this app supports picture-in-picture and the targetSdkVersion is 31 or above; it is therefore strongly recommended to call both setAutoEnterEnabled(true) and setSourceRectHint(...) [PictureInPictureIssue]
+    <application
+     ~~~~~~~~~~~
+
+   Explanation for issues of type "PictureInPictureIssue":
+   Starting in Android 12, the recommended approach for enabling
+   picture-in-picture (PiP) has changed. If your app does not use the new
+   approach, your app's transition animations will be of poor quality compared
+   to other apps. The new approach requires calling setAutoEnterEnabled(true)
+   and setSourceRectHint(...).
+
+   https://developer.android.com/develop/ui/views/picture-in-picture#smoother-transition
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:45: Warning: Redundant label can be removed [RedundantLabel]
+            android:label="@string/app_name"
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "RedundantLabel":
+   When an activity does not have a label attribute, it will use the one from
+   the application tag. Since the application has already specified the same
+   label, the label on this activity can be omitted.
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/wrapper/gradle-wrapper.properties:4: Warning: A newer version of Gradle than 9.7.1 is available: 9.8.0 [AndroidGradlePluginVersion]
+distributionUrl=https\://services.gradle.org/distributions/gradle-9.7.1-bin.zip
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "AndroidGradlePluginVersion":
+   This detector looks for usage of the Android Gradle Plugin where the
+   version you are using is not the current stable release. Using older
+   versions is fine, and there are cases where you deliberately want to stick
+   with an older version. However, you may simply not be aware that a more
+   recent version is available, and that is what this lint check helps find.
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/build.gradle.kts:50: Warning: A newer version of compileSdk than 36 is available: 37 [GradleDependency]
+    compileSdk = 36
+    ~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:4: Warning: A newer version of androidx.core:core-ktx than 1.17.0 is available: 1.19.1 [GradleDependency]
+coreKtx = "1.17.0"
+          ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:5: Warning: A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.9.4 is available: 2.11.0 [GradleDependency]
+lifecycle = "2.9.4"
+            ~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:5: Warning: A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.9.4 is available: 2.11.0 [GradleDependency]
+lifecycle = "2.9.4"
+            ~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:5: Warning: A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.9.4 is available: 2.11.0 [GradleDependency]
+lifecycle = "2.9.4"
+            ~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:6: Warning: A newer version of androidx.activity:activity-compose than 1.12.4 is available: 1.13.0 [GradleDependency]
+activityCompose = "1.12.4"
+                  ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:7: Warning: A newer version of androidx.navigation:navigation-compose than 2.9.8 is available: 2.10.2 [GradleDependency]
+navigationCompose = "2.9.8"
+                    ~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:8: Warning: A newer version of androidx.compose:compose-bom than 2026.06.01 is available: 2026.09.00 [GradleDependency]
+composeBom = "2026.06.01"
+             ~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:9: Warning: A newer version of androidx.media3:media3-common than 1.10.1 is available: 1.11.1 [GradleDependency]
+media3 = "1.10.1"
+         ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:9: Warning: A newer version of androidx.media3:media3-exoplayer than 1.10.1 is available: 1.11.1 [GradleDependency]
+media3 = "1.10.1"
+         ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:9: Warning: A newer version of androidx.media3:media3-session than 1.10.1 is available: 1.11.1 [GradleDependency]
+media3 = "1.10.1"
+         ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:9: Warning: A newer version of androidx.media3:media3-ui than 1.10.1 is available: 1.11.1 [GradleDependency]
+media3 = "1.10.1"
+         ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:16: Warning: A newer version of androidx.test.ext:junit than 1.2.1 is available: 1.3.0 [GradleDependency]
+androidxJunit = "1.2.1"
+                ~~~~~~~
+
+   Explanation for issues of type "GradleDependency":
+   This detector looks for usages of libraries where the version you are using
+   is not the current stable release. Using older versions is fine, and there
+   are cases where you deliberately want to stick with an older version.
+   However, you may simply not be aware that a more recent version is
+   available, and that is what this lint check helps find.
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:3: Warning: A newer version of org.jetbrains.kotlin.android than 2.2.21 is available: 2.4.20 [NewerVersionAvailable]
+kotlin = "2.2.21"
+         ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:3: Warning: A newer version of org.jetbrains.kotlin.plugin.compose than 2.2.21 is available: 2.4.20 [NewerVersionAvailable]
+kotlin = "2.2.21"
+         ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:3: Warning: A newer version of org.jetbrains.kotlin.plugin.serialization than 2.2.21 is available: 2.4.20 [NewerVersionAvailable]
+kotlin = "2.2.21"
+         ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:11: Warning: A newer version of com.squareup.okhttp3:okhttp than 5.3.2 is available: 5.5.0 [NewerVersionAvailable]
+okhttp = "5.3.2"
+         ~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:12: Warning: A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.9.0 is available: 1.11.0 [NewerVersionAvailable]
+serialization = "1.9.0"
+                ~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:13: Warning: A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.10.2 is available: 1.11.0 [NewerVersionAvailable]
+coroutines = "1.10.2"
+             ~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/gradle/libs.versions.toml:13: Warning: A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.10.2 is available: 1.11.0 [NewerVersionAvailable]
+coroutines = "1.10.2"
+             ~~~~~~~~
+
+   Explanation for issues of type "NewerVersionAvailable":
+   This detector checks with a central repository to see if there are newer
+   versions available for the dependencies used by this project. This is
+   similar to the GradleDependency check, which checks for newer versions
+   available in the Android SDK tools and libraries, but this works with any
+   MavenCentral dependency, and connects to the library every time, which
+   makes it more flexible but also much slower.
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:87: Warning: Exported service does not require permission [ExportedService]
+        <service
+         ~~~~~~~
+
+   Explanation for issues of type "ExportedService":
+   Exported services (services which either set exported=true or contain an
+   intent-filter and do not specify exported=false) should define a permission
+   that an entity must have in order to launch the service or bind to it.
+   Without this, any application can use this service.
+
+   https://goo.gle/ExportedService
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/res/xml/network_security_config.xml:3: Warning: Insecure Base Configuration [InsecureBaseConfiguration]
+    <base-config cleartextTrafficPermitted="true">
+                                            ~~~~
+
+   Explanation for issues of type "InsecureBaseConfiguration":
+   Permitting cleartext traffic could allow eavesdroppers to intercept data
+   sent by your app, which impacts the privacy of your users. Consider only
+   allowing encrypted traffic by setting the cleartextTrafficPermitted tag to
+   false.
+
+   https://goo.gle/InsecureBaseConfiguration
+   https://developer.android.com/preview/features/security-config.html
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/AndroidManifest.xml:29: Warning: The attribute android:allowBackup is deprecated from Android 12 and higher and may be removed in future versions. Consider adding the attribute android:dataExtractionRules specifying an @xml resource which configures cloud backups and device transfers on Android 12 and higher. [DataExtractionRules]
+        android:allowBackup="false"
+                             ~~~~~
+
+   Explanation for issues of type "DataExtractionRules":
+   Before Android 12, the attributes android:allowBackup and
+   android:fullBackupContent were used to configure all forms of backup,
+   including cloud backups, device-to-device transfers and adb backup.
+
+   In Android 12 and higher, these attributes have been deprecated and will
+   only apply to cloud backups. You should instead use the attribute
+   android:dataExtractionRules, specifying an @xml resource that configures
+   which files to back up, for cloud backups and for device-to-device
+   transfers, separately. If your minSdkVersion supports older versions,
+   you'll still want to specify an android:fullBackupContent resource if the
+   default behavior is not right for your app.
+
+   https://developer.android.com/about/versions/12/backup-restore#xml-changes
+   https://goo.gle/DataExtractionRules
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/download/DownloadService.kt:159: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/presentation/MainActivity.kt:91: Warning: Unnecessary; SDK_INT is always >= 26 [ObsoleteSdkInt]
+    val supportsPip: Boolean get() = Build.VERSION.SDK_INT >= 26 && packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/VideoDownApp.kt:21: Warning: Unnecessary; SDK_INT is never < 26 [ObsoleteSdkInt]
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/res/mipmap-anydpi-v26: Warning: This folder configuration (v26) is unnecessary; minSdkVersion is 26. Merge all the resources in this folder into mipmap-anydpi. [ObsoleteSdkInt]
+
+   Explanation for issues of type "ObsoleteSdkInt":
+   This check flags version checks that are not necessary, because the
+   minSdkVersion (or surrounding known API level) is already at least as high
+   as the version checked for.
+
+   Similarly, it also looks for resources in -vNN folders, such as values-v14
+   where the version qualifier is less than or equal to the minSdkVersion,
+   where the contents should be merged into the best folder.
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/presentation/player/PlayerScreen.kt:124: Hint: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var videoAspectRatio by remember(recordId) { mutableStateOf(16f / 9f) }
+                                                 ~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/presentation/settings/SettingsScreen.kt:110: Hint: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+        var chosen by remember(maxConcurrent) { mutableStateOf(maxConcurrent) }
+                                                ~~~~~~~~~~~~~~
+
+   Explanation for issues of type "AutoboxingStateCreation":
+   Calling mutableStateOf<T>() when T is either backed by a primitive type on
+   the JVM or is a value class results in a state implementation that requires
+   all state values to be boxed. This usually causes an additional allocation
+   for each state write, and adds some additional work to auto-unbox values
+   when reading the value of the state. Instead, prefer to use a specialized
+   primitive state implementation for Int, Long, Float, and Double when the
+   state does not need to track null values and does not override the default
+   SnapshotMutationPolicy. See mutableIntStateOf(), mutableLongStateOf(),
+   mutableFloatStateOf(), and mutableDoubleStateOf() for more information.
+
+   Vendor: Jetpack Compose
+   Identifier: androidx.compose.runtime
+   Feedback: https://issuetracker.google.com/issues/new?component=612128
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/res/values/strings.xml:5: Warning: The resource R.string.tab_home appears to be unused [UnusedResources]
+    <string name="tab_home">解析</string>
+            ~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/res/values/strings.xml:6: Warning: The resource R.string.tab_history appears to be unused [UnusedResources]
+    <string name="tab_history">任务</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/res/values/strings.xml:7: Warning: The resource R.string.tab_settings appears to be unused [UnusedResources]
+    <string name="tab_settings">设置</string>
+            ~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UnusedResources":
+   Unused resources make applications larger and slow down builds.
+
+
+   The unused resource check can ignore tests. If you want to include
+   resources that are only referenced from tests, consider packaging them in a
+   test source set instead.
+
+   You can include test sources in the unused resource check by setting the
+   system property lint.unused-resources.include-tests=true, and to exclude
+   them (usually for performance reasons), use
+   lint.unused-resources.exclude-tests=true.
+
+   Available options:
+
+   **skip-libraries** (default is true):
+   Whether the unused resource check should skip reporting unused resources in libraries.
+
+   Many libraries will declare resources that are part of the library surface; other modules depending on the library will also reference the resources. To avoid reporting all these resources as unused (in the context of a library), the unused resource check normally skips reporting unused resources in libraries. Instead, run the unused resource check on the consuming app module (along with `checkDependencies=true`).
+
+   However, there are cases where you want to check that all the resources declared in a library are used; in that case, you can disable the skip option.
+
+   To configure this option, use a `lint.xml` file with an <option> like this:
+
+   ```xml
+   <lint>
+       <issue id="UnusedResources">
+           <option name="skip-libraries" value="true" />
+       </issue>
+   </lint>
+   ```
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/download/DownloadEngine.kt:65: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
+    private val availableBytes: () -> Long = { paths.downloadDir.usableSpace },
+                                                                 ~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/download/DownloadEngine.kt:65: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
+    private val availableBytes: () -> Long = { paths.downloadDir.usableSpace },
+                                                                 ~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/local/DownloadStorageRepository.kt:20: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
+    private val available: (File) -> Long = { it.usableSpace },
+                                                 ~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/local/DownloadStorageRepository.kt:20: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
+    private val available: (File) -> Long = { it.usableSpace },
+                                                 ~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/download/ResumableDownloader.kt:74: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
+        val availableBytes: () -> Long = { partialFile.parentFile?.usableSpace ?: 0L },
+                                                                   ~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/download/ResumableDownloader.kt:74: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
+        val availableBytes: () -> Long = { partialFile.parentFile?.usableSpace ?: 0L },
+                                                                   ~~~~~~~~~~~
+
+   Explanation for issues of type "UsableSpace":
+   When you need to allocate disk space for large files, consider using the
+   new allocateBytes(FileDescriptor, long) API, which will automatically clear
+   cached files belonging to other apps (as needed) to meet your request.
+
+   When deciding if the device has enough disk space to hold your new data,
+   call getAllocatableBytes(UUID) instead of using getUsableSpace(), since the
+   former will consider any cached data that the system is willing to clear on
+   your behalf.
+
+   Note that these methods require API level 26. If your app is running on
+   older devices, you will probably need to use both APIs, conditionally
+   switching on Build.VERSION.SDK_INT. Lint only looks in the same compilation
+   unit to see if you are already using both APIs, so if it warns even though
+   you are already using the new API, consider moving the calls to the same
+   file or suppressing the warning.
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/AppPreferences.kt:18: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            store.edit().putInt("max_concurrent_downloads", count).apply()
+            ~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/AppPreferences.kt:32: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            store.edit().putString("theme_mode", value.name).apply()
+            ~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/AppPreferences.kt:39: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            store.edit().putBoolean("wifi_only", value).apply()
+            ~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/AppPreferences.kt:45: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        set(value) { store.edit().putBoolean("notify_on_completion", value).apply() }
+                     ~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/AppPreferences.kt:49: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        set(value) { store.edit().putInt("preferred_quality", value.ordinal).apply() }
+                     ~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/AppPreferences.kt:53: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        set(value) { store.edit().putString("export_tree_uri", value).apply() }
+                     ~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/AppPreferences.kt:58: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        set(value) { store.edit().putString("library_layout", value.name).apply() }
+                     ~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/export/DocumentTreeExporter.kt:44: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+                val target = Uri.parse(pending.readText())
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/export/DocumentTreeExporter.kt:62: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+                val tree = Uri.parse(treeUri)
+                           ~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/DouyinIntents.kt:30: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+        if (tryOpen(context, Uri.parse(deepLink))) return true
+                             ~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/DouyinIntents.kt:33: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+        return tryOpen(context, Uri.parse(webUrl))
+                                ~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/DouyinIntents.kt:38: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+        if (tryOpen(context, Uri.parse("snssdk1128://aweme/detail/$awemeId"))) return true
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/DouyinIntents.kt:39: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+        return tryOpen(context, Uri.parse("https://www.douyin.com/video/$awemeId"))
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/core/DouyinIntents.kt:50: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                ~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/playback/PlaybackPreferences.kt:18: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        preferences.edit().putFloat("${key(audio)}.speed", safe.speed).putBoolean("${key(audio)}.loop", safe.loop).apply()
+        ~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/src/main/java/com/videodown/douyin/data/playback/PlaybackPreferences.kt:25: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        preferences.edit().putLong("$id.size", fileSize).putLong("$id.modified", modifiedAt)
+        ~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UseKtx":
+   The Android KTX libraries decorates the Android platform SDK as well as
+   various libraries with more convenient extension functions available from
+   Kotlin, allowing you to use default parameters, named parameters, and
+   more.
+
+   Available options:
+
+   **remove-defaults** (default is true):
+   Whether to skip arguments that match the defaults provided by the extension.
+
+   Extensions often provide default values for some of the parameters. For example:
+   ```kotlin
+   fun Path.readLines(charset: Charset = Charsets.UTF_8): List<String> { return Files.readAllLines(this, charset) }
+   ```
+   This lint check will by default automatically omit parameters that match the default, so if your code was calling
+
+   ```kotlin
+   Files.readAllLines(file, Charset.UTF_8)
+   ```
+   lint would replace this with
+   ```kotlin
+   file.readLines()
+   ```
+   rather than
+
+   ```kotlin
+   file.readLines(Charset.UTF_8
+   ```
+   You can turn this behavior off using this option.
+
+   To configure this option, use a `lint.xml` file with an <option> like this:
+
+   ```xml
+   <lint>
+       <issue id="UseKtx">
+           <option name="remove-defaults" value="true" />
+       </issue>
+   </lint>
+   ```
+
+   **require-present** (default is true):
+   Whether to only offer extensions already available.
+
+   This option lets you only have lint suggest extension replacements if those extensions are already available on the class path (in other words, you're already depending on the library containing the extension method.)
+
+   To configure this option, use a `lint.xml` file with an <option> like this:
+
+   ```xml
+   <lint>
+       <issue id="UseKtx">
+           <option name="require-present" value="true" />
+       </issue>
+   </lint>
+   ```
+
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/build.gradle.kts:188: Warning: Use version catalog instead [UseTomlInstead]
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/build.gradle.kts:189: Warning: Use version catalog instead [UseTomlInstead]
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UseTomlInstead":
+   If your project is using a libs.versions.toml file, you should place all
+   Gradle dependencies in the TOML file. This lint check looks for version
+   declarations outside of the TOML file and suggests moving them (and in the
+   IDE, provides a quickfix to performing the operation automatically).
+
+0 errors, 74 warnings, 2 hints

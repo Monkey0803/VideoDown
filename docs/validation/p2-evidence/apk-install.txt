@@ -1,0 +1,4 @@
+adb install -r: Success
+am start -W: Status ok, LaunchState COLD, MainActivity resumed
+Density after tests: Physical density 480, no override
+APK SHA-256: 7ade1864156914beb07a78e22b780151cc37b1cedd05af4eafd2fed175bb6aa1

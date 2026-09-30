@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="6" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T06:11:39" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P3PlaybackDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="22.040" timestamp="2026-09-30T06:11:39" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="landscapeSpeedDialogCanScrollToMaximumSpeed" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="4.823" />
+    <testcase name="actualSpeedAndLoopControlsApplyAndKeepAudioVideoPreferencesSeparate" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="6.270" />
+    <testcase name="leavingAndNewViewModelResumeRealDecodedPosition" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="2.434" />
+    <testcase name="completedPlaybackReopensAtBeginning" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="2.708" />
+    <testcase name="replacementFileInvalidatesOldCheckpointWithoutChangingOptions" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="2.540" />
+    <testcase name="retainedViewModelSurvivesActualActivityRecreationWithCurrentPosition" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="3.265" />
+  </testsuite>
+</testsuites>

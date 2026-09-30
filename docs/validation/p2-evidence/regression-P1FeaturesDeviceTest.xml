@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="5" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T05:36:23" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P1FeaturesDeviceTest" tests="5" failures="0" errors="0" skipped="0" time="30.286" timestamp="2026-09-30T05:36:23" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="concurrencySettingPersistsAndUpdatesTheActualEngine" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="7.307" />
+    <testcase name="priorityControlChangesVisibleQueueAndTheNextActualHttpRequest" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="2.694" />
+    <testcase name="cleanupRequiresConfirmationAndPreservesVideosPausedAndActiveArtifacts" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="10.670" />
+    <testcase name="missingOriginalPageAndUnsupportedContentDoNotOfferUnusableRecovery" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="4.221" />
+    <testcase name="distinctFailureActionsUseTheChosenRecordsAndNetworkRetryResumesOnlyItsTask" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="5.394" />
+  </testsuite>
+</testsuites>

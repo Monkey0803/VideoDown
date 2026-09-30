@@ -1,0 +1,5 @@
+JVM: 186 tests, 0 failures, 0 errors, 0 skipped
+Python: 8 tests, OK
+Gradle testDebugUnitTest lintDebug assembleDebug: BUILD SUCCESSFUL
+Android lint: 0 errors, 68 warnings, 2 hints
+P2 added/modified text whitespace: no new trailing whitespace

@@ -1,0 +1,36 @@
+.gradle/
+.gradle-home/
+build/
+app/build/
+local.properties
+# Real signing keys must never be committed.
+keystore.properties
+keystore/*.jks
+keystore/release.keystore
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local dependency builds and device verification artifacts.
+.tooling/
+
+# Kotlin/Python caches and local environments.
+.kotlin/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local packages, credentials and additional signing key formats.
+*.apk
+*.aab
+*.keystore
+*.jks
+*.p12
+*.pfx
+.env
+.env.*
+!.env.example

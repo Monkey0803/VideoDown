@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T06:23:43" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P3BackgroundAudioDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="23.801" timestamp="2026-09-30T06:23:43" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="lockScreenKeepsAudioAndSystemMediaButtonsPauseAndResume" classname="com.videodown.douyin.P3BackgroundAudioDeviceTest" time="6.493" />
+    <testcase name="temporaryAudioFocusLossPausesAndRegainResumes" classname="com.videodown.douyin.P3BackgroundAudioDeviceTest" time="3.971" />
+    <testcase name="detachedUiKeepsForegroundAudioAndNotificationReturnsWithoutResettingPausedPosition" classname="com.videodown.douyin.P3BackgroundAudioDeviceTest" time="9.574" />
+    <testcase name="noisyEventPausesActualServicePlayer" classname="com.videodown.douyin.P3BackgroundAudioDeviceTest" time="3.763" />
+  </testsuite>
+</testsuites>

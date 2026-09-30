@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T05:34:43" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2ExportPickerDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="4.173" timestamp="2026-09-30T05:34:43" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="systemTreePickerGrantsPersistentAccessAndExportsWithoutShellPermission" classname="com.videodown.douyin.P2ExportPickerDeviceTest" time="4.173" />
+  </testsuite>
+</testsuites>

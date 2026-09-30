@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T06:09:20" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P3PictureInPictureDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="11.988" timestamp="2026-09-30T06:09:20" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="homeEntersRealPipHidesSpeedDialogAndReturnsWithoutResettingVideo" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="7.854" />
+    <testcase name="explicitPipEntryThenActivityClosureReleasesVideoAndSavesProgress" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="4.134" />
+  </testsuite>
+</testsuites>

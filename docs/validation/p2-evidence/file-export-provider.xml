@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="6" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T05:07:22" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2FileExportDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="0.594" timestamp="2026-09-30T05:07:22" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="failedProviderWriteDeletesOnlyNewDocumentAndPreservesExistingCopy" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.390" />
+    <testcase name="interruptedCopyJournalDeletesOnlyUnfinishedDestination" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.029" />
+    <testcase name="unavailableOldProviderDoesNotBlockNewDestinationAndKeepsRecoveryRecord" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.037" />
+    <testcase name="actualProviderCopyPreservesBytesAndCollisionCreatesNewDocument" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.061" />
+    <testcase name="invalidTreeAndMissingRecordDoNotCreateDocuments" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.012" />
+    <testcase name="cancellationDuringCompletedIoHandoffStillDeletesCurrentDestination" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.065" />
+  </testsuite>
+</testsuites>

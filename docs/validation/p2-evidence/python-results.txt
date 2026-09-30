@@ -1,0 +1,13 @@
+test_engine_executable_and_version_failures_are_runtime (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_explicit_login_and_storage_override_generic_http_denial (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_format_protection_and_unknown_cases (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_http_categories_are_distinct (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_local_ffmpeg_stderr_keeps_actionable_categories_without_details (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_malformed_requests_emit_structured_errors_without_traceback (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_signed_urls_and_cookies_never_become_returned_details (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_storage_access_failures_keep_storage_recovery (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.002s
+
+OK

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-09-30T05:32:43" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2AudioUiDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="58.916" timestamp="2026-09-30T05:32:43" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="savedAudioActuallyDecodesPlaysAndPausesInsideApp" classname="com.videodown.douyin.P2AudioUiDeviceTest" time="3.776" />
+    <testcase name="audioShareOpensSystemChooserWithReadableAudioUri" classname="com.videodown.douyin.P2AudioUiDeviceTest" time="47.610" />
+    <testcase name="actualLibraryExtractionControlsCreateAudioAndWarnBeforeDuplicate" classname="com.videodown.douyin.P2AudioUiDeviceTest" time="4.832" />
+    <testcase name="noAudioTypedFailureIsExplicitOnActualTaskScreen" classname="com.videodown.douyin.P2AudioUiDeviceTest" time="2.698" />
+  </testsuite>
+</testsuites>
