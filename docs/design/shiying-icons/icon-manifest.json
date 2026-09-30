@@ -1,0 +1,408 @@
+[
+  {
+    "name": "parse",
+    "label": "解析",
+    "group": "导航",
+    "meaning": "取景角包裹链接，表示识别分享链接",
+    "selected": false
+  },
+  {
+    "name": "tasks",
+    "label": "任务",
+    "group": "导航",
+    "meaning": "箭头落入托盘，表示下载队列",
+    "selected": false
+  },
+  {
+    "name": "library",
+    "label": "已存",
+    "group": "导航",
+    "meaning": "叠放影像，表示本机媒体收藏",
+    "selected": false
+  },
+  {
+    "name": "profile",
+    "label": "我的",
+    "group": "导航",
+    "meaning": "我的",
+    "selected": false
+  },
+  {
+    "name": "parse-selected",
+    "label": "解析 · 已选",
+    "group": "导航选中",
+    "meaning": "解析 · 已选",
+    "selected": true
+  },
+  {
+    "name": "tasks-selected",
+    "label": "任务 · 已选",
+    "group": "导航选中",
+    "meaning": "任务 · 已选",
+    "selected": true
+  },
+  {
+    "name": "library-selected",
+    "label": "已存 · 已选",
+    "group": "导航选中",
+    "meaning": "已存 · 已选",
+    "selected": true
+  },
+  {
+    "name": "profile-selected",
+    "label": "我的 · 已选",
+    "group": "导航选中",
+    "meaning": "我的 · 已选",
+    "selected": true
+  },
+  {
+    "name": "paste",
+    "label": "粘贴",
+    "group": "解析",
+    "meaning": "粘贴",
+    "selected": false
+  },
+  {
+    "name": "batch-import",
+    "label": "批量导入",
+    "group": "解析",
+    "meaning": "批量导入",
+    "selected": false
+  },
+  {
+    "name": "link",
+    "label": "链接",
+    "group": "解析",
+    "meaning": "链接",
+    "selected": false
+  },
+  {
+    "name": "search",
+    "label": "搜索",
+    "group": "通用",
+    "meaning": "搜索",
+    "selected": false
+  },
+  {
+    "name": "quality",
+    "label": "画质",
+    "group": "解析",
+    "meaning": "画质",
+    "selected": false
+  },
+  {
+    "name": "download",
+    "label": "下载",
+    "group": "任务操作",
+    "meaning": "下载",
+    "selected": false
+  },
+  {
+    "name": "pause",
+    "label": "暂停",
+    "group": "任务操作",
+    "meaning": "暂停",
+    "selected": false
+  },
+  {
+    "name": "resume-download",
+    "label": "继续下载",
+    "group": "任务操作",
+    "meaning": "环形恢复箭头内含向下箭头，与播放三角区分",
+    "selected": false
+  },
+  {
+    "name": "retry",
+    "label": "重试",
+    "group": "任务操作",
+    "meaning": "重试",
+    "selected": false
+  },
+  {
+    "name": "queue",
+    "label": "队列",
+    "group": "任务操作",
+    "meaning": "队列",
+    "selected": false
+  },
+  {
+    "name": "priority",
+    "label": "优先下载",
+    "group": "任务操作",
+    "meaning": "优先下载",
+    "selected": false
+  },
+  {
+    "name": "share",
+    "label": "分享",
+    "group": "影像库",
+    "meaning": "分享",
+    "selected": false
+  },
+  {
+    "name": "delete",
+    "label": "删除",
+    "group": "影像库",
+    "meaning": "删除",
+    "selected": false
+  },
+  {
+    "name": "favorite",
+    "label": "收藏",
+    "group": "影像库",
+    "meaning": "收藏",
+    "selected": false
+  },
+  {
+    "name": "favorite-filled",
+    "label": "已收藏",
+    "group": "影像库",
+    "meaning": "已收藏",
+    "selected": false
+  },
+  {
+    "name": "rename",
+    "label": "重命名",
+    "group": "影像库",
+    "meaning": "重命名",
+    "selected": false
+  },
+  {
+    "name": "category",
+    "label": "分类",
+    "group": "影像库",
+    "meaning": "分类",
+    "selected": false
+  },
+  {
+    "name": "export-folder",
+    "label": "导出文件夹",
+    "group": "影像库",
+    "meaning": "文件夹加向外箭头，表示输出文件副本",
+    "selected": false
+  },
+  {
+    "name": "save-album",
+    "label": "保存到相册",
+    "group": "影像库",
+    "meaning": "照片山形加号，与文件夹导出区分",
+    "selected": false
+  },
+  {
+    "name": "audio",
+    "label": "音频",
+    "group": "播放",
+    "meaning": "音频",
+    "selected": false
+  },
+  {
+    "name": "extract-audio",
+    "label": "提取音频",
+    "group": "影像库",
+    "meaning": "提取音频",
+    "selected": false
+  },
+  {
+    "name": "sort",
+    "label": "排序",
+    "group": "影像库",
+    "meaning": "排序",
+    "selected": false
+  },
+  {
+    "name": "grid",
+    "label": "网格视图",
+    "group": "影像库",
+    "meaning": "网格视图",
+    "selected": false
+  },
+  {
+    "name": "list",
+    "label": "列表视图",
+    "group": "影像库",
+    "meaning": "列表视图",
+    "selected": false
+  },
+  {
+    "name": "select-all",
+    "label": "全选",
+    "group": "影像库",
+    "meaning": "全选",
+    "selected": false
+  },
+  {
+    "name": "browser",
+    "label": "网页辅助",
+    "group": "网页",
+    "meaning": "网页辅助",
+    "selected": false
+  },
+  {
+    "name": "external-link",
+    "label": "打开原网址",
+    "group": "网页",
+    "meaning": "打开原网址",
+    "selected": false
+  },
+  {
+    "name": "play",
+    "label": "播放",
+    "group": "播放",
+    "meaning": "圆角实心三角，仅用于播放媒体",
+    "selected": false
+  },
+  {
+    "name": "volume",
+    "label": "音量",
+    "group": "播放",
+    "meaning": "音量",
+    "selected": false
+  },
+  {
+    "name": "repeat",
+    "label": "循环播放",
+    "group": "播放",
+    "meaning": "循环播放",
+    "selected": false
+  },
+  {
+    "name": "speed",
+    "label": "播放速度",
+    "group": "播放",
+    "meaning": "播放速度",
+    "selected": false
+  },
+  {
+    "name": "pip",
+    "label": "画中画",
+    "group": "播放",
+    "meaning": "画中画",
+    "selected": false
+  },
+  {
+    "name": "appearance",
+    "label": "外观",
+    "group": "设置",
+    "meaning": "外观",
+    "selected": false
+  },
+  {
+    "name": "wifi",
+    "label": "Wi-Fi",
+    "group": "设置",
+    "meaning": "Wi-Fi",
+    "selected": false
+  },
+  {
+    "name": "notification",
+    "label": "通知",
+    "group": "设置",
+    "meaning": "通知",
+    "selected": false
+  },
+  {
+    "name": "storage",
+    "label": "存储空间",
+    "group": "设置",
+    "meaning": "存储空间",
+    "selected": false
+  },
+  {
+    "name": "settings",
+    "label": "设置",
+    "group": "设置",
+    "meaning": "设置",
+    "selected": false
+  },
+  {
+    "name": "info",
+    "label": "信息",
+    "group": "设置",
+    "meaning": "信息",
+    "selected": false
+  },
+  {
+    "name": "clear-session",
+    "label": "清除网页登录态",
+    "group": "设置",
+    "meaning": "清除网页登录态",
+    "selected": false
+  },
+  {
+    "name": "back",
+    "label": "返回",
+    "group": "通用",
+    "meaning": "返回",
+    "selected": false
+  },
+  {
+    "name": "forward",
+    "label": "前进",
+    "group": "通用",
+    "meaning": "前进",
+    "selected": false
+  },
+  {
+    "name": "chevron-down",
+    "label": "展开",
+    "group": "通用",
+    "meaning": "展开",
+    "selected": false
+  },
+  {
+    "name": "chevron-up",
+    "label": "收起",
+    "group": "通用",
+    "meaning": "收起",
+    "selected": false
+  },
+  {
+    "name": "close",
+    "label": "关闭",
+    "group": "通用",
+    "meaning": "关闭",
+    "selected": false
+  },
+  {
+    "name": "success",
+    "label": "成功",
+    "group": "状态",
+    "meaning": "成功",
+    "selected": false
+  },
+  {
+    "name": "warning",
+    "label": "警告",
+    "group": "状态",
+    "meaning": "警告",
+    "selected": false
+  },
+  {
+    "name": "error",
+    "label": "失败",
+    "group": "状态",
+    "meaning": "失败",
+    "selected": false
+  },
+  {
+    "name": "notification-download",
+    "label": "下载通知",
+    "group": "通知",
+    "meaning": "下载通知",
+    "selected": false
+  },
+  {
+    "name": "notification-complete",
+    "label": "完成通知",
+    "group": "通知",
+    "meaning": "完成通知",
+    "selected": false
+  },
+  {
+    "name": "notification-audio",
+    "label": "音频通知",
+    "group": "通知",
+    "meaning": "音频通知",
+    "selected": false
+  }
+]
