@@ -1,0 +1,188 @@
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="下载任务" bounds="Rect(61, 113 - 325, 209)">
+</node>
+<node text="" bounds="Rect(61, 253 - 365, 366)">
+<node text="0" bounds="Rect(89, 281 - 112, 338)">
+</node>
+<node text="进行中" bounds="Rect(129, 291 - 212, 329)">
+</node>
+</node>
+<node text="" bounds="Rect(387, 253 - 692, 366)">
+<node text="0" bounds="Rect(415, 281 - 438, 338)">
+</node>
+<node text="已完成" bounds="Rect(455, 291 - 538, 329)">
+</node>
+</node>
+<node text="" bounds="Rect(714, 253 - 1019, 366)">
+<node text="1" bounds="Rect(742, 281 - 765, 338)">
+</node>
+<node text="可续传" bounds="Rect(782, 291 - 865, 329)">
+</node>
+</node>
+<node text="同时下载 3 个 · 0 个排队" bounds="Rect(61, 399 - 380, 439)">
+</node>
+<node text="" bounds="Rect(0, 450 - 922, 626)">
+<node text="" bounds="Rect(61, 472 - 217, 604)">
+<node text="全部" bounds="Rect(105, 514 - 173, 562)">
+</node>
+<node text="" bounds="Rect(61, 494 - 217, 582)">
+</node>
+</node>
+<node text="" bounds="Rect(239, 472 - 428, 604)">
+<node text="进行中" bounds="Rect(283, 514 - 384, 562)">
+</node>
+<node text="" bounds="Rect(239, 494 - 428, 582)">
+</node>
+</node>
+<node text="" bounds="Rect(450, 472 - 639, 604)">
+<node text="已完成" bounds="Rect(494, 514 - 595, 562)">
+</node>
+<node text="" bounds="Rect(450, 494 - 639, 582)">
+</node>
+</node>
+<node text="" bounds="Rect(661, 472 - 861, 604)">
+<node text="全部继续" bounds="Rect(694, 514 - 828, 562)">
+</node>
+<node text="" bounds="Rect(661, 483 - 861, 593)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 626 - 244, 758)">
+<node text="多选任务" bounds="Rect(77, 668 - 211, 716)">
+</node>
+<node text="" bounds="Rect(44, 637 - 244, 747)">
+</node>
+</node>
+<node text="" bounds="Rect(0, 758 - 1080, 1597)">
+<node text="" bounds="Rect(61, 758 - 1019, 1520)">
+<node text="" bounds="Rect(94, 791 - 273, 997)">
+</node>
+<node text="失效链接恢复验收-8e3684be-b6ac-462e-9621-82666f34fc37" bounds="Rect(306, 798 - 656, 876)">
+</node>
+<node text="过期链接验收 · 0 B" bounds="Rect(306, 895 - 534, 933)">
+</node>
+<node text="下载失败" bounds="Rect(356, 953 - 466, 991)">
+</node>
+<node text="" bounds="Rect(689, 828 - 821, 960)">
+<node text="" bounds="Rect(732, 871 - 779, 918)">
+</node>
+<node text="" bounds="Rect(689, 828 - 821, 960)">
+</node>
+</node>
+<node text="" bounds="Rect(854, 828 - 986, 960)">
+<node text="" bounds="Rect(897, 871 - 944, 918)">
+</node>
+<node text="" bounds="Rect(854, 828 - 986, 960)">
+</node>
+</node>
+<node text="" bounds="Rect(94, 1030 - 986, 1044)">
+</node>
+<node text="0% · 下载失败" bounds="Rect(94, 1061 - 986, 1099)">
+</node>
+<node text="网址过期或访问受限" bounds="Rect(94, 1121 - 358, 1161)">
+</node>
+<node text="先重新解析原网址获取新地址；若网站要求登录，可使用网页辅助。" bounds="Rect(94, 1172 - 964, 1212)">
+</node>
+<node text="" bounds="Rect(94, 1212 - 741, 1344)">
+<node text="" bounds="Rect(94, 1212 - 394, 1344)">
+<node text="重新解析原网址" bounds="Rect(127, 1254 - 361, 1302)">
+</node>
+<node text="" bounds="Rect(94, 1223 - 394, 1333)">
+</node>
+</node>
+<node text="" bounds="Rect(394, 1212 - 741, 1344)">
+<node text="打开网页登录/验证" bounds="Rect(427, 1254 - 708, 1302)">
+</node>
+<node text="" bounds="Rect(394, 1223 - 741, 1333)">
+</node>
+</node>
+</node>
+<node text="未知作者 · 刚刚" bounds="Rect(94, 1402 - 854, 1440)">
+</node>
+<node text="" bounds="Rect(854, 1355 - 986, 1487)">
+<node text="" bounds="Rect(897, 1398 - 944, 1445)">
+</node>
+<node text="" bounds="Rect(854, 1355 - 986, 1487)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(0, 2136 - 1080, 2400)">
+<node text="" bounds="Rect(0, 2136 - 1080, 2356)">
+<node text="" bounds="Rect(0, 2136 - 253, 2356)">
+<node text="" bounds="Rect(60, 2149 - 192, 2281)">
+</node>
+<node text="" bounds="Rect(60, 2224 - 192, 2356)">
+<node text="解析" bounds="Rect(96, 2270 - 156, 2310)">
+</node>
+</node>
+<node text="" bounds="Rect(93, 2182 - 159, 2248)">
+</node>
+<node text="" bounds="Rect(49, 2149 - 203, 2281)">
+</node>
+<node text="" bounds="Rect(0, 2136 - 253, 2356)">
+</node>
+</node>
+<node text="" bounds="Rect(275, 2136 - 528, 2356)">
+<node text="" bounds="Rect(324, 2149 - 478, 2281)">
+</node>
+<node text="" bounds="Rect(335, 2224 - 467, 2356)">
+<node text="任务" bounds="Rect(371, 2270 - 431, 2310)">
+</node>
+</node>
+<node text="" bounds="Rect(368, 2182 - 434, 2248)">
+</node>
+<node text="" bounds="Rect(324, 2149 - 478, 2281)">
+</node>
+<node text="" bounds="Rect(275, 2136 - 528, 2356)">
+</node>
+</node>
+<node text="" bounds="Rect(550, 2136 - 804, 2356)">
+<node text="" bounds="Rect(611, 2149 - 743, 2281)">
+</node>
+<node text="" bounds="Rect(611, 2224 - 743, 2356)">
+<node text="已存" bounds="Rect(647, 2270 - 707, 2310)">
+</node>
+</node>
+<node text="" bounds="Rect(644, 2182 - 710, 2248)">
+</node>
+<node text="" bounds="Rect(600, 2149 - 754, 2281)">
+</node>
+<node text="" bounds="Rect(550, 2136 - 804, 2356)">
+</node>
+</node>
+<node text="" bounds="Rect(826, 2136 - 1080, 2356)">
+<node text="" bounds="Rect(887, 2149 - 1019, 2281)">
+</node>
+<node text="" bounds="Rect(887, 2224 - 1019, 2356)">
+<node text="我的" bounds="Rect(923, 2270 - 983, 2310)">
+</node>
+</node>
+<node text="" bounds="Rect(920, 2182 - 986, 2248)">
+</node>
+<node text="" bounds="Rect(876, 2149 - 1030, 2281)">
+</node>
+<node text="" bounds="Rect(826, 2136 - 1080, 2356)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

@@ -1,0 +1,8 @@
+Host-only diagnostic, not device acceptance.
+Used configured Codex bundled Python, actual pinned assets/engine/yt-dlp,
+and AST-loaded strip_html_comments + CommentAwareGenericIE from video_engine.py.
+No cookies, credentials, dependency install, or asset modification.
+Page: https://www.w3.org/2010/05/video/mediaevents.html
+Result: [('HTML5MediaEmbed', [('0', 'ogv'), ('1', 'webm'), ('2', 'mp4')])]
+Only three active formats remain; commented sources are absent.
+The device result must still be recorded separately.

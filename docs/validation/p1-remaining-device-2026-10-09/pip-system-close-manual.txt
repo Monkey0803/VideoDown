@@ -1,0 +1,47 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P3PictureInPictureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P3PictureInPictureDeviceTest:
+INSTRUMENTATION_STATUS: test=systemPipDismissReleasesVideo
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=PIP_STATE: system=true, compose=true, samePlayer=true
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=PIP_SYSTEM_CLOSE_READY: ACTION_DISMISS unavailable; use real system close control
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P3PictureInPictureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Real system PiP close was not completed
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.systemPipDismissReleasesVideo(P3PictureInPictureDeviceTest.kt:170)
+
+INSTRUMENTATION_STATUS: stream=
+Error in systemPipDismissReleasesVideo(com.videodown.douyin.P3PictureInPictureDeviceTest):
+java.lang.AssertionError: Real system PiP close was not completed
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.systemPipDismissReleasesVideo(P3PictureInPictureDeviceTest.kt:170)
+
+INSTRUMENTATION_STATUS: test=systemPipDismissReleasesVideo
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 66.994
+There was 1 failure:
+1) systemPipDismissReleasesVideo(com.videodown.douyin.P3PictureInPictureDeviceTest)
+java.lang.AssertionError: Real system PiP close was not completed
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.systemPipDismissReleasesVideo(P3PictureInPictureDeviceTest.kt:170)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

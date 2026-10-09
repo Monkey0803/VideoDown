@@ -1,0 +1,15 @@
+
+com.videodown.douyin.GenericVideoDeviceTest:Parsing /sample.mp4
+Completed /sample.mp4: 29296 bytes, mp4
+Parsing /opaque
+Completed /opaque: 29296 bytes, mp4
+Parsing /page
+Completed /page: 29296 bytes, mp4
+Parsing /sample.m3u8
+Completed /sample.m3u8: 29376 bytes, mp4
+Parsing /master.m3u8
+Completed /master.m3u8: 29376 bytes, mp4
+Parsing /sample.mpd
+Completed /sample.mpd: 29284 bytes, mp4
+.INSTRUMENTATION_RESULT: shortMsg=Process crashed.
+INSTRUMENTATION_CODE: 0

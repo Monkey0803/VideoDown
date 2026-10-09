@@ -70,6 +70,66 @@ class BackgroundDownloadDeviceTest {
         ServiceLocator.downloader.progress.first { (it[id]?.downloadedBytes ?: 0) > minimum }[id]!!.downloadedBytes
     }
 
+    @Test fun secureScreenOffTransferCompletesAfterNormalManualUnlock() = runBlocking {
+        assumeTrue("Explicit manual-unlock opt-in required", InstrumentationRegistry.getArguments().getString("manual_unlock") == "true")
+        val keyguard = context.getSystemService(KeyguardManager::class.java)
+        assumeTrue("Exercise actual secure keyguard", keyguard.isKeyguardSecure)
+        assumeTrue("Start only from an already unlocked device", !keyguard.isKeyguardLocked)
+        assumeTrue("Preserve pre-existing downloads", ServiceLocator.downloader.progress.value.values.none { it.isActive })
+        assumeTrue("Foreground notification must be observable", notifications.areNotificationsEnabled())
+        var taskId: String? = null
+        var slept = false
+        try {
+            openApp(); delay(500)
+            SlowMp4Server(fixture()).use { server ->
+                val variant = VideoVariant(server.url, "screen-off fixture", sizeBytes = server.bytes.size.toLong())
+                val video = DouyinVideo("screen-off-${UUID.randomUUID()}", "熄屏后台下载验证",
+                    platform = VideoPlatform.GENERIC, variants = listOf(variant))
+                val id = ServiceLocator.downloader.start(video, variant).also { taskId = it }
+                waitForBytes(id, 0)
+                awaitCondition { foregroundNotification() != null }
+                assertTrue(shell("dumpsys activity services ${context.packageName}").contains("isForeground=true"))
+                instrumentation.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME)
+                val baseline = waitForBytes(id, 128 * 1024)
+                shell("input keyevent 223"); slept = true
+                awaitCondition { !context.getSystemService(PowerManager::class.java).isInteractive && keyguard.isKeyguardLocked }
+                val locked = waitForBytes(id, baseline + 128 * 1024)
+                assertFalse("Bytes must advance with screen actually off", context.getSystemService(PowerManager::class.java).isInteractive)
+                assertTrue(keyguard.isKeyguardLocked)
+                report("BACKGROUND_LOCKED: interactive=false, secureLocked=true, bytes=$baseline->$locked")
+                shell("input keyevent 224"); slept = false
+                awaitCondition { context.getSystemService(PowerManager::class.java).isInteractive }
+                report("MANUAL_UNLOCK_READY: background transfer; unlock normally within 120 seconds")
+                withTimeout(120_000) { while (keyguard.isKeyguardLocked) delay(100) }
+                openApp()
+                val returned = ServiceLocator.historyRepository.getById(id)!!
+                assertTrue("Waiting for human unlock may legitimately complete the transfer: ${returned.status}",
+                    returned.status in setOf(DownloadStatus.RUNNING, DownloadStatus.COMPLETED))
+                report("BACKGROUND_UNLOCKED: returned status=${returned.status}; natural completion during unlock is allowed")
+                val completed = withTimeout(120_000) { ServiceLocator.historyRepository.observeRecord(id).first {
+                    it?.status in setOf(DownloadStatus.COMPLETED, DownloadStatus.FAILED, DownloadStatus.PAUSED)
+                }!! }
+                assertEquals(completed.errorMessage, DownloadStatus.COMPLETED, completed.status)
+                val file = File(completed.filePath!!)
+                assertArrayEquals(server.bytes, file.readBytes())
+                com.videodown.douyin.data.generic.validateVideo(file)
+                awaitCondition { foregroundNotification() == null }
+                withTimeout(15_000) {
+                    while (shell("dumpsys activity services ${context.packageName}").contains("isForeground=true")) delay(100)
+                }
+                capture("secure-screen-off-completed")
+                report("BACKGROUND_SCREEN_OFF_COMPLETE: full ${file.length()} bytes verified, valid video, foreground service/notification exited")
+            }
+        } finally {
+            withContext(NonCancellable) {
+                // Wake only. A secure lock is never dismissed or reconfigured by automation.
+                if (slept) shell("input keyevent 224")
+                taskId?.let { ServiceLocator.downloader.cancel(it, true); notifications.cancel(it, 1002) }
+                openApp()
+            }
+        }
+    }
+
     @Test fun foregroundDownloadSurvivesHomeAndScreenOffThenNotificationPauseAndResume() = runBlocking {
         // Sending the real pause-all action is safe only when this is the sole active task.
         assumeTrue("Preserve pre-existing downloads", ServiceLocator.downloader.progress.value.values.none { it.isActive })

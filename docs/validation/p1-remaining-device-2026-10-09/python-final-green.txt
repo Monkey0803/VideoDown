@@ -1,0 +1,17 @@
+test_commented_sources_are_not_active_media (test_generic_html.GenericHtmlTest.test_commented_sources_are_not_active_media) ... ok
+test_packaged_extractor_uses_only_active_sources (test_generic_html.GenericHtmlTest.test_packaged_extractor_uses_only_active_sources) ... ok
+test_script_and_style_payloads_are_preserved (test_generic_html.GenericHtmlTest.test_script_and_style_payloads_are_preserved) ... ok
+test_unicode_crlf_offsets_preserve_all_other_content (test_generic_html.GenericHtmlTest.test_unicode_crlf_offsets_preserve_all_other_content) ... ok
+test_engine_executable_and_version_failures_are_runtime (test_video_engine_errors.EngineErrorClassificationTest.test_engine_executable_and_version_failures_are_runtime) ... ok
+test_explicit_login_and_storage_override_generic_http_denial (test_video_engine_errors.EngineErrorClassificationTest.test_explicit_login_and_storage_override_generic_http_denial) ... ok
+test_format_protection_and_unknown_cases (test_video_engine_errors.EngineErrorClassificationTest.test_format_protection_and_unknown_cases) ... ok
+test_http_categories_are_distinct (test_video_engine_errors.EngineErrorClassificationTest.test_http_categories_are_distinct) ... ok
+test_local_ffmpeg_stderr_keeps_actionable_categories_without_details (test_video_engine_errors.EngineErrorClassificationTest.test_local_ffmpeg_stderr_keeps_actionable_categories_without_details) ... ok
+test_malformed_requests_emit_structured_errors_without_traceback (test_video_engine_errors.EngineErrorClassificationTest.test_malformed_requests_emit_structured_errors_without_traceback) ... ok
+test_signed_urls_and_cookies_never_become_returned_details (test_video_engine_errors.EngineErrorClassificationTest.test_signed_urls_and_cookies_never_become_returned_details) ... ok
+test_storage_access_failures_keep_storage_recovery (test_video_engine_errors.EngineErrorClassificationTest.test_storage_access_failures_keep_storage_recovery) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 2.667s
+
+OK

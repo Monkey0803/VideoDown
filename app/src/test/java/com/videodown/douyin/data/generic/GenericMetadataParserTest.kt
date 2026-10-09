@@ -9,6 +9,23 @@ import org.junit.Test
 class GenericMetadataParserTest {
     private fun parse(json: String) = GenericMetadataParser().parse(Json.parseToJsonElement(json).jsonObject, "https://example.org/watch")
 
+    @Test fun `unsupported declared containers never masquerade as MP4`() {
+        val video = parse("""{"id":"html5","formats":[
+            {"format_id":"ogv","url":"https://cdn.org/trailer.ogv","ext":"ogv","vcodec":"theora"},
+            {"format_id":"ogg","url":"https://cdn.org/trailer.ogg","ext":"ogg","vcodec":"theora"},
+            {"format_id":"mp4","url":"https://cdn.org/trailer.mp4","ext":"mp4","vcodec":"h264"},
+            {"format_id":"webm","url":"https://cdn.org/trailer.webm","ext":"webm","vcodec":"vp8"}]}""").selectedVideo
+        assertEquals(listOf("mp4", "webm"), video.variants.map { it.media!!.formatId })
+        assertEquals(listOf("mp4", "webm"), video.variants.map { it.media!!.extension })
+    }
+
+    @Test fun `missing container keeps opaque direct video support`() {
+        val variant = parse("""{"id":"opaque","url":"https://cdn.org/opaque","format_id":"original"}""")
+            .selectedVideo.variants.single()
+        assertEquals("mp4", variant.media!!.extension)
+        assertEquals(MediaSourceType.DIRECT, variant.media.type)
+    }
+
     @Test fun `generic URLs accepted without weakening credentials rejection`() {
         assertEquals(VideoPlatform.GENERIC, VideoLinkExtractor.extract("分享 https://example.org/video，看看")?.platform)
         assertNull(VideoLinkExtractor.extract("https://user:password@example.org/video"))

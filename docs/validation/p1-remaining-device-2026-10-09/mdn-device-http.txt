@@ -1,0 +1,2 @@
+https://interactive-examples.mdn.mozilla.net/media/examples/flower.mp4 HTTPError HTTP Error 404: Not Found
+https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4 200 video/mp4

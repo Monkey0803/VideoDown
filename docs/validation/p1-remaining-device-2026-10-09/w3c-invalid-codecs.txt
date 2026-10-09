@@ -1,0 +1,16 @@
+[ogg @ 0xb400007d74a52000] Broken file, keyframe not correctly marked.
+Input #0, ogg, from 'cache/public-site-evidence/web-invalid.mp4':
+  Duration: 00:00:52.25, start: 0.000000, bitrate: 1985 kb/s
+  Stream #0:0: Data: none
+  Stream #0:1: Video: theora, yuv420p(bt470bg/bt470bg/bt709), 854x480, 24 tbr, 24 tbn
+      Metadata:
+        TITLE           : Sintel Trailer
+        ARTIST          : Durian Open Movie Team
+        COPYRIGHT       : (c) copyright Blender Foundation | durian.blender.org
+        LICENSE         : Creative Commons Attribution 3.0 license
+        ENCODER         : ffmpeg2theora-0.24
+  Stream #0:2: Data: none
+  Stream #0:3: Audio: vorbis, 48000 Hz, stereo, fltp, 80 kb/s
+      Metadata:
+        ENCODER         : ffmpeg2theora-0.24
+At least one output file must be specified

@@ -39,7 +39,11 @@ class GenericMetadataParser {
                 val height = f.number("height")?.toInt()
                 val width = f.number("width")?.toInt()
                 val rank = listOfNotNull(width, height).minOrNull() ?: 0
-                val ext = f.text("ext")?.takeIf { it in setOf("mp4", "webm", "mkv", "mov", "m4v", "ts") } ?: "mp4"
+                val declaredExt = f.text("ext")?.lowercase()?.takeIf { it.isNotBlank() }
+                // A declared OGG/OGV (or another unsupported container) is not MP4.
+                // Preserve opaque URLs without extension metadata, but never relabel known formats.
+                if (declaredExt != null && declaredExt !in setOf("mp4", "webm", "mkv", "mov", "m4v", "ts")) return@format null
+                val ext = declaredExt ?: "mp4"
                 VideoVariant(url, buildString {
                     append(if (rank > 0) "${rank}P" else "原画")
                     append(" · ${ext.uppercase()}")

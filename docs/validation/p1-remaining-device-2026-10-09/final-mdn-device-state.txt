@@ -1,0 +1,58 @@
+Wi-Fi:
+1
+
+Mobile data:
+0
+
+Display:
+Physical size: 1080x2400
+
+Density:
+Physical density: 440
+
+Theme:
+1
+
+Activity:
+    mResumedActivity: ActivityRecord{d0da776 u0 com.videodown.douyin.debug/com.videodown.douyin.presentation.MainActivity t79}
+
+Services:
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  (nothing)
+
+Cache:
+Crash Reports
+WebView
+image_cache
+
+History:
+[]
+
+Download files:
+
+
+Actual restored UI text:
+拾影
+粘贴分享链接，保存喜欢的视频。
+解析视频
+粘贴链接
+在这里粘贴视频分享链接或分享文案…
+粘贴
+立即解析
+打开网页查找视频
+批量导入多个链接
+支持主流平台与普通网页视频
+最近保存
+查看全部 →
+保存的视频会显示在这里
+解析
+任务
+已存
+我的
+
+Target-process crash buffer entries (historical):
+10-09 13:52:22.676 29881 29881 F DEBUG   : pid: 29816, tid: 29872, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:52:22.676 29881 29881 F DEBUG   : Tombstone written to: pid: 29816, tid: 29872, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:54:02.559 30262 30262 F DEBUG   : pid: 30062, tid: 30088, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:54:02.559 30262 30262 F DEBUG   : Tombstone written to: pid: 30062, tid: 30088, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+No new target-process native crash during MDN regression. No app uninstall/data clear/account or network/display/theme changes.

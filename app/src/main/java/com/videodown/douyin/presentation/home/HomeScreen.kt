@@ -128,7 +128,7 @@ fun HomeScreen(
     val keyboard = LocalSoftwareKeyboardController.current
     val inputArea = remember { BringIntoViewRequester() }
     var inputFocused by remember { mutableStateOf(false) }
-    var showBrowser by remember { mutableStateOf(false) }
+    var showBrowser by remember(state.parseRequestId) { mutableStateOf(false) }
     var showBatchImport by rememberSaveable { mutableStateOf(false) }
     if (showBatchImport) BatchImportDialog(batchImportModel, { showBatchImport = false }, onOpenHistory)
     LaunchedEffect(state.browserRequestUrl) {

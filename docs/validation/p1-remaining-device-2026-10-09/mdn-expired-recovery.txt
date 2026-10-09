@@ -1,0 +1,9 @@
+
+com.videodown.douyin.ExpiredPublicMediaRecoveryDeviceTest:MDN_RECOVERY: production old source HTTP404, LINK_EXPIRED
+MDN_RECOVERY: task recovery opened exact original HTML; automatic parser UNSUPPORTED
+MDN_RECOVERY: completed 554058 bytes, video duration=5059, sha256=c6f8a348953395598a9a73b9bab1676436410797bce9f398f4be1531d6e76dda; original MDN source retained
+.
+
+Time: 21.11
+
+OK (1 test)

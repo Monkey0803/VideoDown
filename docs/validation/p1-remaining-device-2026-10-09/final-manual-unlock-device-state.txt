@@ -1,0 +1,66 @@
+Wi-Fi:
+1
+
+Mobile data:
+0
+
+SIM:
+ABSENT,ABSENT
+
+Display:
+Physical size: 1080x2400
+
+Density:
+Physical density: 440
+
+Theme:
+1
+
+Security:
+    KeyguardServiceDelegate
+      showing=false
+      showingAndNotOccluded=true
+      inputRestricted=false
+      occluded=false
+      secure=true
+      dreaming=false
+      systemIsReady=true
+      deviceHasKeyguard=true
+      enabled=true
+      offReason=OFF_BECAUSE_OF_USER
+      currentUser=-10000
+      bootCompleted=true
+      screenState=SCREEN_STATE_ON
+      interactiveState=INTERACTIVE_STATE_AWAKE
+      KeyguardStateMonitor
+        mIsShowing=false
+        mSimSecure=false
+        mInputRestricted=false
+        mTrusted=false
+        mCurrentUserId=0
+
+Activity:
+    mResumedActivity: ActivityRecord{d7fdc6a u0 com.videodown.douyin.debug/com.videodown.douyin.presentation.MainActivity t87}
+
+Services:
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  (nothing)
+
+Cache:
+Crash Reports
+WebView
+image_cache
+
+History:
+[]
+
+Download files:
+
+
+Target native crash entries (historical before production fixes):
+10-09 13:52:22.676 29881 29881 F DEBUG   : pid: 29816, tid: 29872, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:52:22.676 29881 29881 F DEBUG   : Tombstone written to: pid: 29816, tid: 29872, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:54:02.559 30262 30262 F DEBUG   : pid: 30062, tid: 30088, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:54:02.559 30262 30262 F DEBUG   : Tombstone written to: pid: 30062, tid: 30088, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+
+No new target-process native crash in this manual-unlock run. No secure-keyguard dismiss/config change; no credential screen captured. Restored Home checked visually in after-manual-unlock.png and actual hierarchy after-manual-unlock.xml.
