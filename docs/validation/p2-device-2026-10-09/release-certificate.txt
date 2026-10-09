@@ -1,0 +1,4 @@
+Signer #1 certificate DN: CN=VideoDown Release, O=VideoDown, C=CN
+Signer #1 certificate SHA-256 digest: 925e4c248ba7f70e9eb5e3b8587ee7bde384476799cbd097dd65746a6d29c50d
+Signer #1 certificate SHA-1 digest: cb57a31a233eb59629e457d742da6eff35441388
+Signer #1 certificate MD5 digest: 7e6563f69cfcdfb0e68f906e5175d5a0

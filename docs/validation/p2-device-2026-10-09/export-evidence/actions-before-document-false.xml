@@ -1,0 +1,100 @@
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="android:id/content" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="已存视频" desc="" id="null" bounds="Rect(61, 113 - 325, 209)">
+</node>
+<node text="2 个视频 · 可离线播放" desc="" id="null" bounds="Rect(61, 220 - 343, 260)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(887, 121 - 1019, 253)">
+<node text="" desc="切换为列表布局" id="null" bounds="Rect(920, 154 - 986, 220)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(898, 132 - 1008, 242)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(61, 315 - 1019, 488)">
+<node text="" desc="" id="null" bounds="Rect(61, 334 - 1019, 488)">
+</node>
+<node text="搜索标题或作者" desc="" id="null" bounds="Rect(204, 383 - 473, 440)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(204, 346 - 876, 478)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 499 - 881, 631)">
+<node text="" desc="" id="null" bounds="Rect(61, 499 - 349, 631)">
+<node text="" desc="选择平台" id="null" bounds="Rect(61, 521 - 349, 609)">
+</node>
+<node text="全部平台" desc="" id="null" bounds="Rect(105, 541 - 239, 589)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(61, 521 - 349, 609)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(371, 499 - 659, 631)">
+<node text="" desc="选择分类" id="null" bounds="Rect(371, 521 - 659, 609)">
+</node>
+<node text="全部分类" desc="" id="null" bounds="Rect(415, 541 - 549, 589)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(371, 521 - 659, 609)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(681, 499 - 881, 631)">
+<node text="" desc="选择排序" id="null" bounds="Rect(681, 521 - 881, 609)">
+</node>
+<node text="最新保存" desc="" id="null" bounds="Rect(725, 541 - 859, 589)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(681, 521 - 881, 609)">
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(881, 499 - 1041, 631)">
+<node text="多选" desc="" id="null" bounds="Rect(927, 541 - 995, 589)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(881, 510 - 1041, 620)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 631 - 1080, 2136)">
+<node text="" desc="" id="null" bounds="Rect(61, 692 - 524, 1461)">
+<node text="" desc="" id="null" bounds="Rect(61, 692 - 524, 1309)">
+<node text="" desc="" id="null" bounds="Rect(61, 692 - 524, 1309)">
+</node>
+</node>
+<node text="导出验收-音频-03ad916f" desc="" id="null" bounds="Rect(61, 1334 - 386, 1374)">
+</node>
+<node text="音频 · M4A" desc="" id="null" bounds="Rect(61, 1374 - 198, 1412)">
+</node>
+<node text="刚刚" desc="" id="null" bounds="Rect(61, 1423 - 117, 1461)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(61, 692 - 524, 1461)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(557, 692 - 1020, 1423)">
+<node text="" desc="" id="null" bounds="Rect(557, 692 - 1020, 1309)">
+<node text="" desc="" id="null" bounds="Rect(557, 692 - 1020, 1309)">
+</node>
+</node>
+<node text="导出验收-视频-e0609eee" desc="" id="null" bounds="Rect(557, 1334 - 885, 1374)">
+</node>
+<node text="刚刚" desc="" id="null" bounds="Rect(557, 1385 - 613, 1423)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(557, 692 - 1020, 1423)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 2136 - 1080, 2400)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="android:id/navigationBarBackground" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

@@ -164,6 +164,11 @@ class MainActivity : ComponentActivity() {
                         // Consume this notification destination so recreation restores the current tab.
                         if (intent.action == com.videodown.douyin.data.playback.AudioPlaybackService.ACTION_OPEN_PLAYER)
                             intent.removeExtra(com.videodown.douyin.data.playback.AudioPlaybackService.EXTRA_RECORD_ID)
+                        if (intent.action == DownloadCompletionNotifier.ACTION_OPEN_COMPLETED) {
+                            intent.removeExtra(DownloadCompletionNotifier.EXTRA_RECORD_ID)
+                            intent.action = null
+                            intent.data = null
+                        }
                     })
             }
         }
@@ -178,6 +183,10 @@ class MainActivity : ComponentActivity() {
     private fun handleIntent(intent: Intent?) {
         when (intent?.action) {
             DownloadCompletionNotifier.ACTION_OPEN_LIBRARY -> openLibrary = true
+            DownloadCompletionNotifier.ACTION_OPEN_COMPLETED -> {
+                openPlayerId = intent.getStringExtra(DownloadCompletionNotifier.EXTRA_RECORD_ID)?.takeIf(String::isNotBlank)
+                if (openPlayerId == null) openLibrary = true
+            }
             com.videodown.douyin.data.playback.AudioPlaybackService.ACTION_OPEN_PLAYER ->
                 openPlayerId = intent.getStringExtra(com.videodown.douyin.data.playback.AudioPlaybackService.EXTRA_RECORD_ID)?.takeIf(String::isNotBlank)
             Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)?.takeIf(String::isNotBlank)

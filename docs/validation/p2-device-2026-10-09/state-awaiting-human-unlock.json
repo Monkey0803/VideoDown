@@ -1,0 +1,24 @@
+{
+  "historyCount": 0,
+  "wifiOn": "1",
+  "mobileData": "0",
+  "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+  "keyguard": [
+    "KeyguardServiceDelegate",
+    "      showing=true",
+    "      showingAndNotOccluded=true",
+    "      inputRestricted=false",
+    "      occluded=false",
+    "      secure=true",
+    "      dreaming=false",
+    "      systemIsReady=true",
+    "      deviceHasKeyguard=true",
+    "      enabled=true",
+    "      offReason=OFF_BECAUSE_OF_USER",
+    "      currentUser=-10000"
+  ],
+  "releaseInstalled": false,
+  "manualAudioUnlockCompleted": false,
+  "exportRuntimeExecuted": false,
+  "releaseUpgradeExecuted": false
+}

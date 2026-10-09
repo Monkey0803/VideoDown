@@ -1,0 +1,2 @@
+10-09 16:18:34.880  1763  1814 I am_proc_start: [0,17807,10272,com.videodown.douyin,pre-top-activity,{com.videodown.douyin/com.videodown.douyin.presentation.MainActivity}]
+10-09 16:29:07.000  1763  1814 I am_proc_start: [0,19873,10272,com.videodown.douyin,pre-top-activity,{com.videodown.douyin/com.videodown.douyin.presentation.MainActivity}]

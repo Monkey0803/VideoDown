@@ -1,0 +1,40 @@
+<node text="" desc="" bounds="Rect(100, 828 - 980, 1608)">
+<node text="" desc="" bounds="Rect(100, 828 - 980, 1608)">
+<node text="" desc="" bounds="Rect(100, 828 - 980, 1608)">
+<node text="" desc="" bounds="Rect(100, 828 - 980, 1608)">
+<node text="" desc="" bounds="Rect(100, 828 - 980, 1608)">
+<node text="" desc="" bounds="Rect(100, 828 - 980, 1608)">
+<node text="" desc="" bounds="Rect(100, 828 - 980, 1608)">
+<node text="" desc="" bounds="Rect(100, 828 - 980, 1608)">
+<node text="导出到文件夹" desc="" bounds="Rect(166, 894 - 502, 976)">
+</node>
+<node text="复制所选 1 项，保留本地原文件。同名文件会添加序号，不覆盖已有文件。" desc="" bounds="Rect(166, 1020 - 914, 1116)">
+</node>
+<node text="已导出 0 项，1 项失败；目标空间不足，请释放空间或选择其他文件夹后重试；本地原文件未修改" desc="" bounds="Rect(166, 1116 - 914, 1212)">
+</node>
+<node text="" desc="" bounds="Rect(166, 1212 - 466, 1344)">
+<node text="选择其他文件夹" desc="" bounds="Rect(199, 1254 - 433, 1302)">
+</node>
+<node text="" desc="" bounds="Rect(166, 1223 - 466, 1333)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(299, 1410 - 459, 1542)">
+<node text="关闭" desc="" bounds="Rect(345, 1452 - 413, 1500)">
+</node>
+<node text="" desc="" bounds="Rect(299, 1421 - 459, 1531)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(481, 1410 - 914, 1542)">
+<node text="重试失败项到上次文件夹" desc="" bounds="Rect(514, 1452 - 881, 1500)">
+</node>
+<node text="" desc="" bounds="Rect(481, 1421 - 914, 1531)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>

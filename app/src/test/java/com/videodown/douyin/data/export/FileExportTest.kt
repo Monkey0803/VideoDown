@@ -2,6 +2,8 @@ package com.videodown.douyin.data.export
 
 import androidx.lifecycle.ViewModelStore
 import com.videodown.douyin.domain.repository.FileExportRepository
+import com.videodown.douyin.domain.repository.FileExportFailureKind
+import com.videodown.douyin.domain.repository.fileExportFailureKind
 import com.videodown.douyin.presentation.library.FileExportViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.*
@@ -52,5 +54,51 @@ class FileExportTest {
         assertFalse(vm.state.value.busy)
         assertTrue(vm.state.value.finished)
         assertEquals(setOf("wait", "last"), vm.state.value.failedIds)
+    }
+    @Test fun `revoked permission invalidates only the failed target and preserves retry IDs`() = runTest {
+        val repo = object : FileExportRepository {
+            override suspend fun export(id: String, treeUri: String) =
+                if (id == "bad") Result.failure<String>(SecurityException("grant revoked")) else Result.success("uri/$id")
+        }
+        val vm = FileExportViewModel(repo); store.put("exports", vm)
+        vm.export(listOf("good", "bad"), "revoked-tree"); advanceUntilIdle()
+        assertEquals("revoked-tree", vm.state.value.invalidTreeUri)
+        assertEquals(setOf("bad"), vm.state.value.failedIds)
+        assertEquals(mapOf(FileExportFailureKind.ACCESS_LOST to 1), vm.state.value.failureCounts)
+        assertTrue(vm.state.value.message!!.contains("重新选择文件夹"))
+        assertTrue(vm.state.value.message!!.contains("已导出 1 项"))
+    }
+    @Test fun `storage full has actionable feedback and allows retry to the same target`() = runTest {
+        var full = true
+        val repo = object : FileExportRepository {
+            override suspend fun export(id: String, treeUri: String) = if (full)
+                Result.failure<String>(java.io.IOException("write failed", java.io.IOException("ENOSPC (No space left on device)")))
+                else Result.success("uri/$id")
+        }
+        val vm = FileExportViewModel(repo); store.put("exports", vm)
+        vm.export(listOf("saved"), "tree"); advanceUntilIdle()
+        assertNull(vm.state.value.invalidTreeUri)
+        assertTrue(vm.state.value.message!!.contains("空间不足"))
+        assertTrue(vm.state.value.message!!.contains("释放空间"))
+        assertEquals(mapOf(FileExportFailureKind.SPACE_FULL to 1), vm.state.value.failureCounts)
+        full = false
+        vm.export(vm.state.value.failedIds.toList(), "tree"); advanceUntilIdle()
+        assertTrue(vm.state.value.failedIds.isEmpty()); assertTrue(vm.state.value.failureCounts.isEmpty())
+        assertTrue(vm.state.value.message!!.contains("已导出 1 项"))
+    }
+    @Test fun `failure classification handles provider wrappers without mislabelling other IO errors`() {
+        assertEquals(FileExportFailureKind.SPACE_FULL, fileExportFailureKind(java.io.IOException("EDQUOT (Disk quota exceeded)")))
+        assertEquals(FileExportFailureKind.ACCESS_LOST, fileExportFailureKind(java.io.IOException("provider", SecurityException())))
+        assertEquals(FileExportFailureKind.OTHER, fileExportFailureKind(java.io.IOException("network unavailable")))
+    }
+    @Test fun `cleanup status query failure still finishes with actionable feedback`() = runTest {
+        val repo = object : FileExportRepository {
+            override suspend fun export(id: String, treeUri: String) = Result.success("uri/$id")
+            override suspend fun pendingCleanupCount(): Int = throw SecurityException("provider unavailable")
+        }
+        val vm = FileExportViewModel(repo); store.put("exports", vm)
+        vm.export(listOf("good"), "tree"); advanceUntilIdle()
+        assertTrue(vm.state.value.finished); assertFalse(vm.state.value.busy)
+        assertTrue(vm.state.value.message!!.contains("无法检查中断副本"))
     }
 }

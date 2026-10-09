@@ -1,0 +1,41 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ReleaseUiBridgeDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2ReleaseUiBridgeDeviceTest:
+INSTRUMENTATION_STATUS: test=actualReleaseUiClickAndCapture
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ReleaseUiBridgeDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=org.junit.ComparisonFailure: expected:<com.[videodown.douyin]> but was:<com.[android.settings]>
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.actualReleaseUiClickAndCapture(P2ReleaseUiBridgeDeviceTest.kt:43)
+
+INSTRUMENTATION_STATUS: stream=
+Error in actualReleaseUiClickAndCapture(com.videodown.douyin.P2ReleaseUiBridgeDeviceTest):
+org.junit.ComparisonFailure: expected:<com.[videodown.douyin]> but was:<com.[android.settings]>
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.actualReleaseUiClickAndCapture(P2ReleaseUiBridgeDeviceTest.kt:43)
+
+INSTRUMENTATION_STATUS: test=actualReleaseUiClickAndCapture
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 0.033
+There was 1 failure:
+1) actualReleaseUiClickAndCapture(com.videodown.douyin.P2ReleaseUiBridgeDeviceTest)
+org.junit.ComparisonFailure: expected:<com.[videodown.douyin]> but was:<com.[android.settings]>
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.actualReleaseUiClickAndCapture(P2ReleaseUiBridgeDeviceTest.kt:43)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

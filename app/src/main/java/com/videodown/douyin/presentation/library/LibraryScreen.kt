@@ -375,8 +375,7 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
 private fun LibraryMetadata(record: DownloadRecord, modifier: Modifier = Modifier) {
     if (record.isAudio) Text("音频 · M4A", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
     Text(
-        listOf(record.resolutionLabel, formatRelativeTime(record.updatedAt))
-            .filter(String::isNotBlank).joinToString(" · "),
+        formatRelativeTime(record.updatedAt),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.labelSmall,
         modifier = modifier,

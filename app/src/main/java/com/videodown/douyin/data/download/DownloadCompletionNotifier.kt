@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.videodown.douyin.core.AppPreferences
@@ -15,13 +16,15 @@ class DownloadCompletionNotifier(private val context: Context, private val prefe
     fun notifyCompleted(record: DownloadRecord) {
         if (!preferences.notifyOnCompletion || !areNotificationsEnabled(context)) return
         val intent = Intent(context, MainActivity::class.java)
-            .setAction(ACTION_OPEN_LIBRARY)
+            .setAction(ACTION_OPEN_COMPLETED)
+            .setData(Uri.Builder().scheme("shiying").authority("completed").appendPath(record.id).build())
+            .putExtra(EXTRA_RECORD_ID, record.id)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(com.videodown.douyin.R.drawable.ic_shiying_notification_complete)
             .setContentTitle("下载完成")
             .setContentText(record.title)
-            .setStyle(NotificationCompat.BigTextStyle().bigText("${record.title}\n${record.resolutionLabel} · 点击查看已存视频"))
+            .setStyle(NotificationCompat.BigTextStyle().bigText("${record.title}\n${record.resolutionLabel} · 点击查看"))
             .setAutoCancel(true)
             .setContentIntent(PendingIntent.getActivity(context, 2, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
@@ -37,6 +40,8 @@ class DownloadCompletionNotifier(private val context: Context, private val prefe
     companion object {
         const val CHANNEL_ID = "download_completions"
         const val ACTION_OPEN_LIBRARY = "com.videodown.douyin.action.OPEN_LIBRARY"
+        const val ACTION_OPEN_COMPLETED = "com.videodown.douyin.action.OPEN_COMPLETED"
+        const val EXTRA_RECORD_ID = "record_id"
 
         fun createChannel(context: Context) {
             context.getSystemService(NotificationManager::class.java).createNotificationChannel(

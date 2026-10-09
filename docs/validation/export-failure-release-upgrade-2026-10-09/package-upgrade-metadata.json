@@ -1,0 +1,10 @@
+{
+  "path": "/Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/build/outputs/apk/release/videodown-arm64-v8a-release.apk",
+  "bytes": 78301719,
+  "sha256": "793b62f0e41a58977964f42a7a0d6bbbef021507180c211e45bdeb9faa8a0b91",
+  "versionCode": 2,
+  "versionName": "1.0.1",
+  "sameCertificateSha256": "925e4c248ba7f70e9eb5e3b8587ee7bde384476799cbd097dd65746a6d29c50d",
+  "baselineInstalledApk": "/tmp/videodown-code1-upgrade-baseline/installed-code1.apk",
+  "baselineSha256": "c83b9281b0b699917b19b9e5ebe899ab4d467e9129e771a94f27ce8cb500e53f"
+}

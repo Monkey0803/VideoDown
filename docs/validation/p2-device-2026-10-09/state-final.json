@@ -1,0 +1,30 @@
+{
+  "device": "4f0ef8ac",
+  "keyguard": "KeyguardServiceDelegate\n      showing=false\n      showingAndNotOccluded=true\n      inputRestricted=false\n      occluded=false\n      secure=true\n      dreaming=false\n      systemIsReady=true",
+  "wifi": "1",
+  "mobileData": "0",
+  "size": "Physical size: 1080x2400",
+  "density": "Physical density: 440",
+  "nightMode": "1",
+  "releaseServices": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+  "debugServices": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+  "releasePreferencesRestored": {
+    "quality": "BEST",
+    "notifyOnCompletion": false
+  },
+  "ownedReleaseRecordsRemoved": 2,
+  "ownedPublicCopiesRemoved": 3,
+  "releaseInstalledRetained": true,
+  "noUninstallOrClearData": true,
+  "noReleasePrivateStorageAccess": true,
+  "releaseCrashSinceInstall": "No FATAL/native crash entry; only system smartpolicy package event",
+  "currentPage": "Release Home (public test URL retained in input)",
+  "debugOwnedEvidenceCacheRemoved": [
+    "p2-audio-evidence",
+    "p2-export-evidence",
+    "p2-release-ui-evidence"
+  ],
+  "remainingPublicGalleryFiles": 0,
+  "liveInstrumentation": false,
+  "liveGradle": false
+}

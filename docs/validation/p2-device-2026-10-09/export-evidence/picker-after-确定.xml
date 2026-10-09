@@ -1,0 +1,94 @@
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/action_bar_root" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="android:id/content" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/coordinator_layout" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/drawer_layout" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/app_bar" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" id="com.google.android.documentsui:id/collapsing_toolbar" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" id="com.google.android.documentsui:id/directory_header" bounds="Rect(0, 215 - 1080, 512)">
+<node text="" desc="" id="com.google.android.documentsui:id/horizontal_breadcrumb" bounds="Rect(0, 215 - 1080, 347)">
+<node text="" desc="" id="null" bounds="Rect(0, 215 - 324, 347)">
+<node text="SHARK PRS-A0" desc="" id="com.google.android.documentsui:id/breadcrumb_text" bounds="Rect(0, 215 - 258, 347)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/breadcrumb_arrow" bounds="Rect(258, 248 - 324, 314)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(324, 215 - 1080, 347)">
+<node text="P2-export-282c735f-9616-4cae-9ba5-18c8010e5ec1" desc="" id="com.google.android.documentsui:id/breadcrumb_text" bounds="Rect(324, 215 - 1080, 347)">
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 347 - 1080, 347)">
+<node text="" desc="" id="null" bounds="Rect(0, 347 - 0, 347)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(66, 347 - 1014, 512)">
+<node text="P2-EXPORT-282C735F-9616-4CAE-9BA5-18C8010E5EC1 中的文件" desc="" id="com.google.android.documentsui:id/header_title" bounds="Rect(66, 347 - 882, 512)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/sub_menu" bounds="Rect(882, 363 - 1014, 495)">
+<node text="" desc="网格视图" id="com.google.android.documentsui:id/sub_menu_grid" bounds="Rect(882, 363 - 1014, 495)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/toolbar" bounds="Rect(0, 80 - 1080, 212)">
+<node text="P2-export-282c735f-9616-4cae-9ba5-18c8010e5ec1" desc="" id="null" bounds="Rect(44, 114 - 662, 177)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(684, 80 - 1080, 212)">
+<node text="" desc="新建文件夹" id="com.google.android.documentsui:id/option_menu_create_dir" bounds="Rect(684, 80 - 816, 212)">
+</node>
+<node text="" desc="排序方式…" id="com.google.android.documentsui:id/option_menu_sort" bounds="Rect(816, 80 - 948, 212)">
+</node>
+<node text="" desc="更多选项" id="null" bounds="Rect(948, 80 - 1080, 212)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/container_search_fragment" bounds="Rect(0, 80 - 1080, 2400)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/container_directory" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/refresh_layout" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/dir_list" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="android:id/empty" bounds="Rect(0, 512 - 1080, 1459)">
+<node text="" desc="" id="com.google.android.documentsui:id/content" bounds="Rect(0, 512 - 1080, 1459)">
+<node text="" desc="" id="com.google.android.documentsui:id/artwork" bounds="Rect(0, 581 - 1080, 1269)">
+</node>
+<node text="无任何文件" desc="" id="com.google.android.documentsui:id/message" bounds="Rect(0, 1338 - 1080, 1390)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/drawer_edge" bounds="Rect(0, 80 - 33, 2400)">
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/container_save" bounds="Rect(0, 2224 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 2224 - 1080, 2356)">
+<node text="" desc="" id="null" bounds="Rect(28, 2224 - 1052, 2356)">
+<node text="使用此文件夹" desc="" id="android:id/button1" bounds="Rect(39, 2224 - 1041, 2356)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="android:id/statusBarBackground" bounds="Rect(0, 0 - 1080, 80)">
+</node>
+<node text="" desc="" id="android:id/navigationBarBackground" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

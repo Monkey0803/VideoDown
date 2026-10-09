@@ -1,0 +1,3 @@
+Final actual Release PID=2592
+
+Earlier post-upgrade Release PID=30604; exit-info contains only normal install USER REQUESTED / WebView EXIT_SELF, no CRASH/NATIVE_CRASH. Debug UiAutomation registration failure is preserved separately and is not a Release crash.

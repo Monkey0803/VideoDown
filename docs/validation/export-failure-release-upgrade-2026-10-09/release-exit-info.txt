@@ -1,0 +1,52 @@
+ACTIVITY MANAGER PROCESS EXIT INFO (dumpsys activity exit-info)
+Last Timestamp of Persistence Into Persistent Storage: 2026-10-09 17:12:41.594
+  package: com.videodown.douyin
+    Historical Process Exit for userId=10272
+        ApplicationExitInfo #0:
+          timestamp=2026-10-09 17:26:50.524
+          pid=23600
+          realUid=99007
+          packageUid=10272
+          definingUid=10272
+          user=0
+          process=com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0
+          reason=1 (EXIT_SELF)
+          status=0
+          importance=300
+          pss=82MB
+          rss=195MB
+          description=isolated not needed
+          state=empty
+          trace=null
+        ApplicationExitInfo #1:
+          timestamp=2026-10-09 17:26:50.282
+          pid=19873
+          realUid=10272
+          packageUid=10272
+          definingUid=10272
+          user=0
+          process=com.videodown.douyin
+          reason=10 (USER REQUESTED)
+          status=0
+          importance=100
+          pss=147MB
+          rss=310MB
+          description=stop com.videodown.douyin due to installPackageLI
+          state=72 bytes
+          trace=null
+        ApplicationExitInfo #2:
+          timestamp=2026-10-09 16:28:28.702
+          pid=17807
+          realUid=10272
+          packageUid=10272
+          definingUid=10272
+          user=0
+          process=com.videodown.douyin
+          reason=10 (USER REQUESTED)
+          status=0
+          importance=100
+          pss=147MB
+          rss=281MB
+          description=stop com.videodown.douyin due to installPackageLI
+          state=empty
+          trace=null

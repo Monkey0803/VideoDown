@@ -1,0 +1,5 @@
+      showing=false
+      secure=true
+      screenState=SCREEN_STATE_ON
+      interactiveState=INTERACTIVE_STATE_AWAKE
+Owned test provider folder empty; own external UUID directory absent; both owned Release records deleted through actual UI; three exact public copies removed. Original Wi-Fi/mobile/size/density/night unchanged; Release quality BEST, completion notifications false restored. Debug only owned evidence cache removed after pull.

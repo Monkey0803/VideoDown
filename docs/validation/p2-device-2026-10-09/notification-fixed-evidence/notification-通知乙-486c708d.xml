@@ -1,0 +1,40 @@
+<node text="" desc="" clickable="true" bounds="Rect(106, 751 - 974, 1030)">
+<node text="" desc="" clickable="true" bounds="Rect(36, 732 - 168, 732)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(36, 732 - 1044, 732)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(36, 732 - 1044, 1067)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(36, 732 - 1044, 1067)">
+<node text="" desc="" clickable="false" bounds="Rect(36, 732 - 1044, 1011)">
+<node text="" desc="" clickable="false" bounds="Rect(36, 732 - 1044, 870)">
+<node text="" desc="" clickable="false" bounds="Rect(80, 776 - 138, 826)">
+<node text="" desc="" clickable="false" bounds="Rect(80, 776 - 126, 826)">
+</node>
+</node>
+<node text="拾影" desc="" clickable="false" bounds="Rect(146, 783 - 198, 819)">
+</node>
+<node text="•" desc="" clickable="false" bounds="Rect(210, 783 - 219, 819)">
+</node>
+<node text="现在" desc="" clickable="false" bounds="Rect(231, 783 - 283, 819)">
+</node>
+<node text="" desc="已提醒" clickable="false" bounds="Rect(300, 784 - 333, 817)">
+</node>
+<node text="" desc="" clickable="true" bounds="Rect(928, 801 - 928, 801)">
+</node>
+<node text="" desc="展开" clickable="true" bounds="Rect(903, 735 - 1035, 867)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(80, 859 - 1000, 956)">
+<node text="" desc="" clickable="false" bounds="Rect(80, 859 - 1000, 911)">
+<node text="下载完成" desc="" clickable="false" bounds="Rect(80, 859 - 1000, 911)">
+</node>
+</node>
+<node text="通知乙-486c708d" desc="" clickable="false" bounds="Rect(80, 912 - 1000, 956)">
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(36, 732 - 1044, 1067)">
+</node>
+</node>

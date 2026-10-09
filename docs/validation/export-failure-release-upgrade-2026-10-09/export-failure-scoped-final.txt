@@ -1,0 +1,133 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2ExportFailureDeviceTest:
+INSTRUMENTATION_STATUS: test=realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=BEFORE_PICKER: own tree query denied; initial URI provides navigation only
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [使用此文件夹, Use this folder]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [使用此文件夹, Use this folder]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [允许, Allow]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [允许, Allow]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_TREE_GRANTED: test provider persistent read/write granted by DocumentsUI
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=QUOTA_OS_STATS: bytesWritten=4096, enospcCount=1
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=INJECTED_OS_ENOSPC_RECOVERED: actual UI retry copies=[content://com.videodown.douyin.test.quotaexport/tree/root/document/export-failure-a957373e-8417-4b45-9f9b-e58eace342d4.mp4]; original bytes/media unchanged
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=CLEANUP: own provider files/record/source removed; prior tree and grants preserved
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=revokedActualTreeGrantRequiresReselectionAndRecovers
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=BEFORE_PICKER: own tree query denied; initial URI provides navigation only
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [使用此文件夹, Use this folder]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [使用此文件夹, Use this folder]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [允许, Allow]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [允许, Allow]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_TREE_GRANTED: test provider persistent read/write granted by DocumentsUI
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=OWNER_REVOKE_DIAGNOSTIC: afterChildren=-1, afterTree=-1, beforeChildren=0, beforeTree=0, callerUid=10271, providerPackage=com.videodown.douyin.debug.test, providerUid=10271, targetUid=10270
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=AFTER_OWNER_REVOKE: persistent and temporary tree access denied by Android
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [显示根目录]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [显示根目录]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [P2 空间配额测试]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [P2 空间配额测试]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [使用此文件夹, Use this folder]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=CLEANUP: own provider files/record/source removed; prior tree and grants preserved
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stack=kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 7000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+INSTRUMENTATION_STATUS: stream=
+Error in revokedActualTreeGrantRequiresReselectionAndRecovers(com.videodown.douyin.P2ExportFailureDeviceTest):
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 7000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+INSTRUMENTATION_STATUS: test=revokedActualTreeGrantRequiresReselectionAndRecovers
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 17.753
+There was 1 failure:
+1) revokedActualTreeGrantRequiresReselectionAndRecovers(com.videodown.douyin.P2ExportFailureDeviceTest)
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 7000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+FAILURES!!!
+Tests run: 2,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

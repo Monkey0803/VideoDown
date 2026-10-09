@@ -1,0 +1,28 @@
+<node class="android.view.ViewGroup" id="com.android.systemui:id/qs_media_controls" text="" desc="" bounds="Rect(35, 433 - 1045, 924)">
+<node class="android.widget.TextView" id="com.android.systemui:id/app_name" text="拾影" desc="" bounds="Rect(88, 480 - 992, 509)">
+</node>
+<node class="android.widget.TextView" id="com.android.systemui:id/header_title" text="后台音频-f0efe0a7" desc="" bounds="Rect(88, 526 - 992, 587)">
+</node>
+<node class="android.widget.TextView" id="com.android.systemui:id/header_artist" text="未知作者" desc="" bounds="Rect(88, 604 - 992, 640)">
+</node>
+<node class="android.widget.FrameLayout" id="com.android.systemui:id/actions" text="" desc="" bounds="Rect(55, 640 - 331, 640)">
+</node>
+<node class="android.widget.ImageButton" id="com.android.systemui:id/action0" text="" desc="跳转到上一项" bounds="Rect(61, 654 - 193, 786)">
+</node>
+<node class="android.widget.ImageButton" id="com.android.systemui:id/action1" text="" desc="暂停" bounds="Rect(193, 654 - 325, 786)">
+</node>
+<node class="android.widget.SeekBar" id="com.android.systemui:id/media_progress_bar" text="" desc="" bounds="Rect(36, 800 - 1044, 872)">
+</node>
+<node class="android.widget.FrameLayout" id="com.android.systemui:id/notification_media_progress_time" text="" desc="" bounds="Rect(88, 850 - 992, 877)">
+<node class="android.widget.TextView" id="com.android.systemui:id/media_elapsed_time" text="00:02" desc="" bounds="Rect(88, 850 - 992, 877)">
+</node>
+<node class="android.widget.TextView" id="com.android.systemui:id/media_total_time" text="00:30" desc="" bounds="Rect(88, 850 - 992, 877)">
+</node>
+</node>
+<node class="android.widget.ImageView" id="com.android.systemui:id/media_control_artwork" text="" desc="" bounds="Rect(553, 433 - 1044, 924)">
+</node>
+<node class="android.widget.LinearLayout" id="com.android.systemui:id/media_seamless" text="" desc="" bounds="Rect(903, 673 - 997, 767)">
+<node class="android.widget.ImageView" id="com.android.systemui:id/media_seamless_image" text="" desc="手机" bounds="Rect(903, 673 - 997, 767)">
+</node>
+</node>
+</node>

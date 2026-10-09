@@ -1,0 +1,59 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalExportDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2PhysicalExportDeviceTest:
+INSTRUMENTATION_STATUS: test=actualGalleryMusicAndDocumentTreeCopiesRemainReadable
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=MEDIASTORE: Movies, p2-export-e748cea6-01e6-41be-be5a-7b800d97f3b8.mp4, full bytes=10542, track/duration valid, IS_PENDING=0
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=MEDIASTORE: Music, p2-export-a028e226-5a89-403f-9af8-02d3b837830c.m4a, full bytes=485649, track/duration valid, IS_PENDING=0
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=EXPORT_CLEANUP: only own outputs/records/files removed; previous tree and grants preserved
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalExportDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 7000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+INSTRUMENTATION_STATUS: stream=
+Error in actualGalleryMusicAndDocumentTreeCopiesRemainReadable(com.videodown.douyin.P2PhysicalExportDeviceTest):
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 7000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+INSTRUMENTATION_STATUS: test=actualGalleryMusicAndDocumentTreeCopiesRemainReadable
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 13.688
+There was 1 failure:
+1) actualGalleryMusicAndDocumentTreeCopiesRemainReadable(com.videodown.douyin.P2PhysicalExportDeviceTest)
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 7000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

@@ -1,0 +1,86 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalExportDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2PhysicalExportDeviceTest:
+INSTRUMENTATION_STATUS: test=actualGalleryMusicAndDocumentTreeCopiesRemainReadable
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=MEDIASTORE: Movies, p2-export-3de54f7c-7d7f-41eb-ad60-ac838e1b61a9.mp4, full bytes=10542, track/duration valid, IS_PENDING=0
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=MEDIASTORE: Music, p2-export-866dbc47-fffa-4df6-80ff-e4448add8163.m4a, full bytes=485649, track/duration valid, IS_PENDING=0
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SAF_FOLDER: actual picker created own P2-export-7d9d7384-e98f-4fc3-bb1f-f53c12eb0920
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SAF: actual system folder selection and persistent read/write authorization granted
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SAF_COPY: p2-export-3de54f7c-7d7f-41eb-ad60-ac838e1b61a9.mp4, full bytes and media track/duration verified; source retained=true
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SAF_COPY: p2-export-866dbc47-fffa-4df6-80ff-e4448add8163.m4a, full bytes and media track/duration verified; source retained=true
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalExportDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Cleanup failures after preferences restored: [release only added permission: SecurityException]
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.P2PhysicalExportDeviceTest$actualGalleryMusicAndDocumentTreeCopiesRemainReadable$1$10.invokeSuspend(P2PhysicalExportDeviceTest.kt:207)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2PhysicalExportDeviceTest.actualGalleryMusicAndDocumentTreeCopiesRemainReadable(P2PhysicalExportDeviceTest.kt:106)
+
+INSTRUMENTATION_STATUS: stream=
+Error in actualGalleryMusicAndDocumentTreeCopiesRemainReadable(com.videodown.douyin.P2PhysicalExportDeviceTest):
+java.lang.AssertionError: Cleanup failures after preferences restored: [release only added permission: SecurityException]
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.P2PhysicalExportDeviceTest$actualGalleryMusicAndDocumentTreeCopiesRemainReadable$1$10.invokeSuspend(P2PhysicalExportDeviceTest.kt:207)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2PhysicalExportDeviceTest.actualGalleryMusicAndDocumentTreeCopiesRemainReadable(P2PhysicalExportDeviceTest.kt:106)
+
+INSTRUMENTATION_STATUS: test=actualGalleryMusicAndDocumentTreeCopiesRemainReadable
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 11.197
+There was 1 failure:
+1) actualGalleryMusicAndDocumentTreeCopiesRemainReadable(com.videodown.douyin.P2PhysicalExportDeviceTest)
+java.lang.AssertionError: Cleanup failures after preferences restored: [release only added permission: SecurityException]
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.P2PhysicalExportDeviceTest$actualGalleryMusicAndDocumentTreeCopiesRemainReadable$1$10.invokeSuspend(P2PhysicalExportDeviceTest.kt:207)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2PhysicalExportDeviceTest.actualGalleryMusicAndDocumentTreeCopiesRemainReadable(P2PhysicalExportDeviceTest.kt:106)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

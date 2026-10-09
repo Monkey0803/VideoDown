@@ -1,0 +1,50 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2CompletionNotificationDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2CompletionNotificationDeviceTest:
+INSTRUMENTATION_STATUS: test=productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=COMPLETED: title=通知关闭-c29c352f, id=230a6205-238f-4a90-900b-7cae5f434856, bytes=10542
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=DISABLED: actual completed download posted no notification
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=COMPLETED: title=通知甲-d1461856, id=83392043-970c-437c-9309-4f71fbd563e1, bytes=10542
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=COMPLETED: title=通知乙-de32620b, id=df7832c9-5a5c-4a90-aeae-583e58d538a6, bytes=10542
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ENABLED: two actual completed downloads have independent notification cards and PendingIntents
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_NOTIFICATION_CLICK: opened corresponding detail 83392043-970c-437c-9309-4f71fbd563e1
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_NOTIFICATION_CLICK: opened corresponding detail df7832c9-5a5c-4a90-aeae-583e58d538a6
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=CONSUMED: recreated Home did not reopen completed media
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=CLEANUP: only own 3 tasks/files removed; completion preference restored to false
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2CompletionNotificationDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 10.826
+
+OK (1 test)
+
+
+INSTRUMENTATION_CODE: -1

@@ -1,0 +1,4 @@
+Signed production Release com.videodown.douyin versionCode=2 versionName=1.0.1
+No quotaexport/quotacontrol or test provider declarations in full aapt2 Manifest XML.
+APK: /Users/huxiaohui/Documents/YostarWork/Github/android/VideoDown/app/build/outputs/apk/release/videodown-arm64-v8a-release.apk
+SHA256: 793b62f0e41a58977964f42a7a0d6bbbef021507180c211e45bdeb9faa8a0b91
