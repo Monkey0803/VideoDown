@@ -1,0 +1,50 @@
+Wi-Fi:
+1
+
+Mobile data:
+0
+
+SIM:
+ABSENT,ABSENT
+
+Display:
+Physical size: 1080x2400
+
+Density:
+Physical density: 440
+
+Theme:
+1
+
+Activity:
+    mResumedActivity: ActivityRecord{e9fa6d8 u0 com.videodown.douyin.debug/com.videodown.douyin.presentation.MainActivity t73}
+
+Services:
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  (nothing)
+
+Cache:
+Crash Reports
+WebView
+image_cache
+
+History:
+[]
+
+External downloads:
+
+
+PID:
+1796
+
+Recorded target-process native crashes (historical pre-fix, preserved):
+10-09 13:52:22.676 29881 29881 F DEBUG   : pid: 29816, tid: 29872, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:52:22.676 29881 29881 F DEBUG   : Tombstone written to: pid: 29816, tid: 29872, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:54:02.559 30262 30262 F DEBUG   : pid: 30062, tid: 30088, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+10-09 13:54:02.559 30262 30262 F DEBUG   : Tombstone written to: pid: 30062, tid: 30088, name: roidJUnitRunner  >>> com.videodown.douyin.debug <<<
+
+LAN port closed: True
+
+Restored Home confirmed by after.png / after.xml: empty input, no browser overlay, no dialogs.
+No additional target-process crash after final sample-first installation; historical native crashes remain in crash buffer as RED evidence.
+No app data clear/uninstall, no account login, no secure lock, no mobile-data or display/theme changes. Own task history [] and download directory empty; own test cache directories removed; WebView/Cookies/Crash Reports preserved.

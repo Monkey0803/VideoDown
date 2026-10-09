@@ -1,0 +1,23 @@
+
+com.videodown.douyin.P3PictureInPictureDeviceTest:PIP_LOCKED: cycle=1, interactive=false, keyguardLocked=true, samePlayer/media=true
+MANUAL_UNLOCK_READY: PiP cycle 1; unlock normally within 120 seconds
+
+Error in pipScreenOffThenReturnKeepsActivityAndPlayer(com.videodown.douyin.P3PictureInPictureDeviceTest):
+java.lang.AssertionError: Manual unlock not completed within 120 seconds
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertFalse(Assert.java:65)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.pipScreenOffThenReturnKeepsActivityAndPlayer(P3PictureInPictureDeviceTest.kt:145)
+
+
+Time: 128.241
+There was 1 failure:
+1) pipScreenOffThenReturnKeepsActivityAndPlayer(com.videodown.douyin.P3PictureInPictureDeviceTest)
+java.lang.AssertionError: Manual unlock not completed within 120 seconds
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertFalse(Assert.java:65)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.pipScreenOffThenReturnKeepsActivityAndPlayer(P3PictureInPictureDeviceTest.kt:145)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

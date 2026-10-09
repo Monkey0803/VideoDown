@@ -1,0 +1,4 @@
+
+com.videodown.douyin.PublicSiteAcceptanceDeviceTest:NEGATIVE_PTS: timestamp=-107700, track=0
+INSTRUMENTATION_RESULT: shortMsg=Process crashed.
+INSTRUMENTATION_CODE: 0

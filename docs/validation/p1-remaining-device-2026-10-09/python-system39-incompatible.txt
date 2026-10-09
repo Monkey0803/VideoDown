@@ -1,0 +1,32 @@
+test_commented_sources_are_not_active_media (test_generic_html.GenericHtmlTest) ... ok
+test_packaged_extractor_uses_only_active_sources (test_generic_html.GenericHtmlTest) ... FAIL
+test_script_and_style_payloads_are_preserved (test_generic_html.GenericHtmlTest) ... ok
+test_unicode_crlf_offsets_preserve_all_other_content (test_generic_html.GenericHtmlTest) ... ok
+test_engine_executable_and_version_failures_are_runtime (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_explicit_login_and_storage_override_generic_http_denial (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_format_protection_and_unknown_cases (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_http_categories_are_distinct (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_local_ffmpeg_stderr_keeps_actionable_categories_without_details (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_malformed_requests_emit_structured_errors_without_traceback (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_signed_urls_and_cookies_never_become_returned_details (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+test_storage_access_failures_keep_storage_recovery (test_video_engine_errors.EngineErrorClassificationTest) ... ok
+
+======================================================================
+FAIL: test_packaged_extractor_uses_only_active_sources (test_generic_html.GenericHtmlTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/dev/Documents/YostarWork/Github/android/VideoDown/app/src/test/python/test_generic_html.py", line 58, in test_packaged_extractor_uses_only_active_sources
+    self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+AssertionError: 0 != 1 : {"event": "pid", "pid": 20419}
+Traceback (most recent call last):
+  File "/Users/dev/Documents/YostarWork/Github/android/VideoDown/app/src/main/assets/video_engine.py", line 97, in <module>
+    import yt_dlp
+  File "<frozen zipimport>", line 259, in load_module
+  File "/Users/dev/Documents/YostarWork/Github/android/VideoDown/app/src/main/assets/engine/yt-dlp/yt_dlp/__init__.py", line 4, in <module>
+ImportError: You are using an unsupported version of Python. Only Python versions 3.10 and above are supported by yt-dlp
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.518s
+
+FAILED (failures=1)

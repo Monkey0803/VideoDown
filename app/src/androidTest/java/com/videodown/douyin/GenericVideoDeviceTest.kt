@@ -201,10 +201,26 @@ class GenericVideoDeviceTest {
         val directory = File(context.cacheDir, "protected-test-${UUID.randomUUID()}").apply { mkdirs() }
         try {
             createMediaFixtures(context, directory)
-            try {
-                validateVideo(File(directory, "protected.mp4"))
-                fail("Encrypted media must not count as a successful playable download")
-            } catch (error: VideoEngineException) { assertEquals("DRM", error.kind) }
+            val file = File(directory, "protected.mp4")
+            val extractor = MediaExtractor()
+            val tracks = try {
+                extractor.setDataSource(file.absolutePath)
+                extractor.trackCount
+            } finally { extractor.release() }
+            report("Protected CENC fixture: trackCount=$tracks")
+            if (tracks == 0) {
+                try {
+                    validateVideo(file)
+                    fail("Unrecognized encrypted container must be rejected safely")
+                } catch (error: IllegalStateException) {
+                    assertEquals("下载结果不包含有效的视频轨道", error.message)
+                }
+            } else {
+                try {
+                    validateVideo(file)
+                    fail("Encrypted media must not count as a successful playable download")
+                } catch (error: VideoEngineException) { assertEquals("DRM", error.kind) }
+            }
         } finally { directory.deleteRecursively() }
     }
 

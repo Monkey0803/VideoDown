@@ -2,6 +2,7 @@ package com.videodown.douyin.presentation.home
 
 import androidx.lifecycle.ViewModelStore
 import com.videodown.douyin.core.AppResult
+import com.videodown.douyin.core.AppError
 import com.videodown.douyin.domain.model.*
 import com.videodown.douyin.domain.repository.Downloader
 import com.videodown.douyin.domain.repository.VideoRepository
@@ -54,6 +55,31 @@ class HomeVideoSelectionTest {
         assertNull(vm.state.value.video)
         assertFalse(vm.state.value.isParsing)
         assertTrue(vm.state.value.videos.isEmpty())
+    }
+
+    @Test fun `reparsing same browser URL retains new request after immediate failure`() = runTest(dispatcher) {
+        val url = "https://example.com/video"
+        val repo = object : VideoRepository {
+            override suspend fun parseShareText(shareText: String): AppResult<DouyinVideo> = error("Use media list")
+            override suspend fun parseVideos(shareText: String) = AppResult.Failure(AppError.Parse("受限", DownloadFailureKind.ACCESS_DENIED))
+        }
+        val vm = HomeViewModel(repo, downloader, { it.defaultVariant }, { null }).also { store.put("test", it) }
+        vm.requestBrowserAssistance(url)
+        vm.onBrowserRequestConsumed()
+        val initial = vm.state.value.parseRequestId
+        repeat(2) { index ->
+            vm.parseSharedText(url)
+            runCurrent()
+            assertFalse(vm.state.value.isParsing)
+            assertEquals(url, vm.state.value.input)
+            assertEquals(initial + index + 1, vm.state.value.parseRequestId)
+            assertEquals(DownloadFailureKind.ACCESS_DENIED, vm.state.value.errorKind)
+            assertNull(vm.state.value.browserRequestUrl)
+        }
+        val latest = vm.state.value.parseRequestId
+        vm.requestBrowserAssistance(url)
+        assertEquals(url, vm.state.value.browserRequestUrl)
+        assertEquals(latest, vm.state.value.parseRequestId)
     }
 
     @Test fun `late size probe for previous media never changes selected media`() = runTest(dispatcher) {

@@ -118,13 +118,15 @@ internal fun validateVideo(file: File) {
     val extractor = MediaExtractor()
     try {
         extractor.setDataSource(file.absolutePath)
-        if (extractor.drmInitData != null || !extractor.psshInfo.isNullOrEmpty()) throw VideoEngineException("DRM")
         val videoTrack = (0 until extractor.trackCount).firstOrNull {
             extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("video/") == true
         } ?: error("下载结果不包含有效的视频轨道")
         extractor.selectTrack(videoTrack)
         if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_ENCRYPTED != 0) throw VideoEngineException("DRM")
-        require(extractor.sampleTime >= 0) { "下载结果没有完整的视频数据" }
+        // A valid first sample can have a negative presentation timestamp (edit-list preroll).
+        require(extractor.sampleTrackIndex == videoTrack) { "下载结果没有完整的视频数据" }
+        // Reject malformed/empty tracks and encrypted samples before native file-level metadata.
+        if (extractor.drmInitData != null || !extractor.psshInfo.isNullOrEmpty()) throw VideoEngineException("DRM")
     } finally { extractor.release() }
 }
 

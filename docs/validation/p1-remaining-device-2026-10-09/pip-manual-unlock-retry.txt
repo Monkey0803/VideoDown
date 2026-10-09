@@ -1,0 +1,21 @@
+
+com.videodown.douyin.P3PictureInPictureDeviceTest:PIP_LOCKED: cycle=1, interactive=false, keyguardLocked=true, samePlayer/media=true
+MANUAL_UNLOCK_READY: PiP cycle 1; unlock normally within 120 seconds
+
+Error in pipScreenOffThenReturnKeepsActivityAndPlayer(com.videodown.douyin.P3PictureInPictureDeviceTest):
+java.lang.AssertionError: PiP state did not reach expected condition
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.await(P3PictureInPictureDeviceTest.kt:88)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.pipScreenOffThenReturnKeepsActivityAndPlayer(P3PictureInPictureDeviceTest.kt:152)
+
+
+Time: 21.062
+There was 1 failure:
+1) pipScreenOffThenReturnKeepsActivityAndPlayer(com.videodown.douyin.P3PictureInPictureDeviceTest)
+java.lang.AssertionError: PiP state did not reach expected condition
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.await(P3PictureInPictureDeviceTest.kt:88)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.pipScreenOffThenReturnKeepsActivityAndPlayer(P3PictureInPictureDeviceTest.kt:152)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

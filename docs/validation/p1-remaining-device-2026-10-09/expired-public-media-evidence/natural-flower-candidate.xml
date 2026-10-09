@@ -1,0 +1,4188 @@
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 80 - 132, 212)">
+<node text="" bounds="Rect(33, 113 - 99, 179)">
+</node>
+<node text="" bounds="Rect(11, 91 - 121, 201)">
+</node>
+</node>
+<node text="" bounds="Rect(474, 80 - 606, 212)">
+<node text="" bounds="Rect(507, 113 - 573, 179)">
+</node>
+<node text="" bounds="Rect(485, 91 - 595, 201)">
+</node>
+</node>
+<node text="" bounds="Rect(948, 80 - 1080, 212)">
+<node text="" bounds="Rect(981, 113 - 1047, 179)">
+</node>
+<node text="" bounds="Rect(959, 91 - 1069, 201)">
+</node>
+</node>
+<node text="developer.mozilla.org" bounds="Rect(33, 212 - 311, 250)">
+</node>
+<node text="" bounds="Rect(0, 250 - 1080, 1948)">
+<node text="" bounds="Rect(0, 250 - 1080, 1948)">
+<node text="" bounds="Rect(0, 250 - 1080, 1949)">
+<node text="" bounds="Rect(112, 250 - 1075, 250)">
+<node text="" bounds="Rect(2, 250 - 1075, 250)">
+<node text="" bounds="Rect(2, 250 - 1075, 250)">
+<node text="Skip to main content" bounds="Rect(352, 250 - 726, 250)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(2, 250 - 1075, 250)">
+<node text="" bounds="Rect(2, 250 - 1075, 250)">
+<node text="Skip to search" bounds="Rect(409, 250 - 671, 250)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(0, 250 - 1080, 467)">
+<node text="" bounds="Rect(0, 250 - 1080, 379)">
+<node text="" bounds="Rect(5, 255 - 283, 371)">
+<node text="" bounds="Rect(27, 277 - 261, 349)">
+</node>
+</node>
+<node text="" bounds="Rect(720, 266 - 943, 360)">
+<node text="Search the site" bounds="Rect(720, 266 - 943, 360)">
+</node>
+</node>
+<node text="" bounds="Rect(951, 250 - 1080, 379)">
+</node>
+</node>
+<node text="" bounds="Rect(0, 376 - 1080, 467)">
+</node>
+<node text="" bounds="Rect(0, 376 - 93, 464)">
+<node text="" bounds="Rect(0, 376 - 93, 464)">
+<node text="" bounds="Rect(0, 376 - 93, 464)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(101, 384 - 849, 456)">
+<node text="" bounds="Rect(107, 393 - 269, 450)">
+<node text="" bounds="Rect(107, 393 - 192, 450)">
+<node text="Web" bounds="Rect(107, 395 - 192, 445)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(264, 393 - 451, 450)">
+<node text="" bounds="Rect(264, 393 - 374, 450)">
+<node text="HTML" bounds="Rect(264, 395 - 374, 445)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(448, 393 - 709, 450)">
+<node text="" bounds="Rect(448, 393 - 632, 450)">
+<node text="Reference" bounds="Rect(448, 395 - 632, 445)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(706, 393 - 951, 450)">
+<node text="" bounds="Rect(706, 393 - 874, 450)">
+<node text="Elements" bounds="Rect(706, 395 - 874, 445)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(946, 393 - 1080, 450)">
+<node text="" bounds="Rect(946, 393 - 1080, 450)">
+<node text="&lt;video&gt;" bounds="Rect(946, 395 - 1080, 445)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(869, 376 - 970, 464)">
+<node text="" bounds="Rect(869, 376 - 970, 390)">
+<node text="" bounds="Rect(869, 376 - 970, 464)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(979, 376 - 1080, 464)">
+<node text="" bounds="Rect(979, 376 - 1080, 390)">
+<node text="" bounds="Rect(979, 376 - 1080, 464)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 508 - 1036, 1949)">
+<node text="&lt;video&gt; HTML video embed element" bounds="Rect(44, 508 - 1036, 747)">
+</node>
+<node text="" bounds="Rect(44, 789 - 1036, 1094)">
+<node text="Baseline Check Baseline WIDELY AVAILABLE * Chrome check Edge check Firefox check Safari check" bounds="Rect(44, 791 - 1034, 1091)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1135 - 1036, 1468)">
+<node text="" bounds="Rect(44, 1135 - 1036, 1468)">
+<node text="The " bounds="Rect(44, 1143 - 123, 1193)">
+</node>
+<node text="" bounds="Rect(121, 1143 - 297, 1193)">
+<node text="&lt;video&gt;" bounds="Rect(121, 1138 - 297, 1201)">
+</node>
+</node>
+<node text=" " bounds="Rect(294, 1143 - 308, 1193)">
+</node>
+<node text="" bounds="Rect(305, 1143 - 415, 1193)">
+<node text="HTML" bounds="Rect(305, 1143 - 415, 1193)">
+</node>
+</node>
+<node text=" element embeds a media player which supports video playback into the document. You can use " bounds="Rect(44, 1143 - 1017, 1328)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(192, 1270 - 368, 1333)">
+</node>
+<node text=" for audio content as well, but the " bounds="Rect(365, 1278 - 962, 1328)">
+</node>
+<node text="" bounds="Rect(44, 1344 - 217, 1394)">
+<node text="&lt;audio&gt;" bounds="Rect(44, 1336 - 217, 1399)">
+</node>
+</node>
+<node text=" element may provide a more appropriate user experience." bounds="Rect(44, 1344 - 1036, 1460)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1509 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1509 - 481, 1949)">
+<node text="In this article" bounds="Rect(44, 1509 - 481, 1759)">
+</node>
+<node text="" bounds="Rect(44, 1757 - 481, 1949)">
+<node text="" bounds="Rect(44, 1757 - 481, 1839)">
+<node text="" bounds="Rect(46, 1757 - 184, 1839)">
+<node text="Try it" bounds="Rect(68, 1770 - 162, 1820)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1834 - 481, 1916)">
+<node text="" bounds="Rect(46, 1834 - 266, 1916)">
+<node text="Attributes" bounds="Rect(68, 1850 - 244, 1900)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1913 - 481, 1949)">
+<node text="" bounds="Rect(46, 1913 - 214, 1949)">
+<node text="Events" bounds="Rect(68, 1927 - 192, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 481, 1949)">
+<node text="" bounds="Rect(46, 1949 - 316, 1949)">
+<node text="Usage notes" bounds="Rect(68, 1949 - 294, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 481, 1949)">
+<node text="" bounds="Rect(46, 1949 - 319, 1949)">
+<node text="Accessibility" bounds="Rect(68, 1949 - 297, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 481, 1949)">
+<node text="" bounds="Rect(46, 1949 - 266, 1949)">
+<node text="Examples" bounds="Rect(68, 1949 - 244, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 481, 1949)">
+<node text="" bounds="Rect(46, 1949 - 440, 1949)">
+<node text="Technical summary" bounds="Rect(68, 1949 - 418, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 481, 1949)">
+<node text="" bounds="Rect(46, 1949 - 346, 1949)">
+<node text="Specifications" bounds="Rect(68, 1949 - 324, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 481, 1949)">
+<node text="" bounds="Rect(46, 1949 - 481, 1949)">
+<node text="Browser compatibility" bounds="Rect(68, 1949 - 459, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 481, 1949)">
+<node text="" bounds="Rect(46, 1949 - 247, 1949)">
+<node text="See also" bounds="Rect(68, 1949 - 225, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Try it" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 258, 1949)">
+<node text="Try it" bounds="Rect(44, 1949 - 206, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="HTML Demo: &lt;video&gt;" bounds="Rect(88, 1949 - 481, 1949)">
+</node>
+<node text="" bounds="Rect(874, 1949 - 1012, 1949)">
+<node text="Reset" bounds="Rect(874, 1949 - 1012, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="HTML" bounds="Rect(44, 1949 - 299, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(44, 250 - 1034, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="&lt;video controls width=&quot;250&quot;&gt;
+  &lt;source src=&quot;/shared-assets/videos/flower.webm&quot; type=&quot;video/webm&quot; /&gt;
+  &lt;source src=&quot;/shared-assets/videos/flower.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+  Download the
+  &lt;a href=&quot;/shared-assets/videos/flower.webm&quot;&gt;WEBM&lt;/a&gt;
+  or
+  &lt;a href=&quot;/shared-assets/videos/flower.mp4&quot;&gt;MP4&lt;/a&gt;
+  video.
+&lt;/video&gt;
+" bounds="Rect(110, 1949 - 1034, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="OUTPUT" bounds="Rect(792, 1949 - 1034, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="The above example shows how to use the " bounds="Rect(44, 1949 - 800, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(794, 1949 - 973, 1949)">
+</node>
+<node text=" element. Similar to the " bounds="Rect(44, 1949 - 451, 1949)">
+</node>
+<node text="" bounds="Rect(448, 1949 - 583, 1949)">
+<node text="&lt;img&gt;" bounds="Rect(448, 1949 - 583, 1949)">
+</node>
+</node>
+<node text=" element, we include a path to the media we want to display inside the " bounds="Rect(44, 1949 - 979, 1949)">
+</node>
+<node text="src" bounds="Rect(885, 1949 - 976, 1949)">
+</node>
+<node text=" attribute; we can include other attributes to specify information such as video width and height, whether we want it to autoplay and loop, or to show the browser&#39;s default video controls, and so on." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="The content inside the opening and closing " bounds="Rect(44, 1949 - 819, 1949)">
+</node>
+<node text="&lt;video&gt;&lt;/video&gt;" bounds="Rect(44, 1949 - 981, 1949)">
+</node>
+<node text=" tags is shown as a fallback in browsers that don&#39;t support the element." bounds="Rect(44, 1949 - 1012, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Attributes" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 412, 1949)">
+<node text="Attributes" bounds="Rect(44, 1949 - 360, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Like all other HTML elements, this element supports the " bounds="Rect(44, 1949 - 1034, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 332, 1949)">
+<node text="global attributes" bounds="Rect(44, 1949 - 332, 1949)">
+</node>
+</node>
+<node text="." bounds="Rect(330, 1949 - 343, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="autoplay" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 239, 1949)">
+<node text="autoplay" bounds="Rect(44, 1949 - 239, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A Boolean attribute; if specified, the video automatically begins to play back as soon as it can without stopping to finish loading the data." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(222, 1949 - 992, 1949)">
+<node text="Note:" bounds="Rect(222, 1949 - 327, 1949)">
+</node>
+<node text=" Modern browsers block audio (or videos with an unmuted audio track) from autoplaying, as sites that automatically play audio can be an unpleasant experience for users. See our " bounds="Rect(222, 1949 - 962, 1949)">
+</node>
+<node text="" bounds="Rect(222, 1949 - 913, 1949)">
+<node text="autoplay guide" bounds="Rect(222, 1949 - 913, 1949)">
+</node>
+</node>
+<node text=" for additional information about how to properly use autoplay." bounds="Rect(222, 1949 - 976, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="To disable video autoplay, " bounds="Rect(88, 1949 - 561, 1949)">
+</node>
+<node text="autoplay=&quot;false&quot;" bounds="Rect(558, 1949 - 929, 1949)">
+</node>
+<node text=" will not work; the video will autoplay if the attribute is there in the " bounds="Rect(88, 1949 - 998, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(297, 1949 - 473, 1949)">
+</node>
+<node text=" tag at all. To remove autoplay, the attribute needs to be removed altogether." bounds="Rect(88, 1949 - 1017, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(222, 1949 - 992, 1949)">
+<node text="Note:" bounds="Rect(222, 1949 - 327, 1949)">
+</node>
+<node text=" Videos with the " bounds="Rect(321, 1949 - 621, 1949)">
+</node>
+<node text="" bounds="Rect(618, 1949 - 946, 1949)">
+<node text="loading=&quot;lazy&quot;" bounds="Rect(618, 1949 - 946, 1949)">
+</node>
+</node>
+<node text=" attribute set will not start downloading and autoplaying until the element is near or within the viewport." bounds="Rect(222, 1949 - 984, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="controls" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 239, 1949)">
+<node text="controls" bounds="Rect(44, 1949 - 239, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="If this attribute is present, the browser will offer controls to allow the user to control video playback, including volume, seeking, and pause/resume playback." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="controlslist" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 327, 1949)">
+<node text="controlslist" bounds="Rect(44, 1949 - 327, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The " bounds="Rect(88, 1949 - 167, 1949)">
+</node>
+<node text="" bounds="Rect(165, 1949 - 500, 1949)">
+<node text="controlslist" bounds="Rect(165, 1949 - 448, 1949)">
+</node>
+<node text="" bounds="Rect(451, 1949 - 500, 1949)">
+</node>
+</node>
+<node text=" attribute, when specified, helps the browser select what controls to show for the " bounds="Rect(88, 1949 - 987, 1949)">
+</node>
+<node text="video" bounds="Rect(154, 1949 - 286, 1949)">
+</node>
+<node text=" element whenever the browser shows its own set of controls (that is, when the " bounds="Rect(88, 1949 - 1023, 1949)">
+</node>
+<node text="controls" bounds="Rect(753, 1949 - 951, 1949)">
+</node>
+<node text=" attribute is specified)." bounds="Rect(88, 1949 - 473, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The allowed values are " bounds="Rect(88, 1949 - 511, 1949)">
+</node>
+<node text="nodownload" bounds="Rect(506, 1949 - 748, 1949)">
+</node>
+<node text=", " bounds="Rect(742, 1949 - 759, 1949)">
+</node>
+<node text="nofullscreen" bounds="Rect(88, 1949 - 371, 1949)">
+</node>
+<node text=" and " bounds="Rect(365, 1949 - 456, 1949)">
+</node>
+<node text="noremoteplayback" bounds="Rect(453, 1949 - 825, 1949)">
+</node>
+<node text="." bounds="Rect(819, 1949 - 836, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Use the " bounds="Rect(88, 1949 - 236, 1949)">
+</node>
+<node text="" bounds="Rect(233, 1949 - 753, 1949)">
+<node text="disablepictureinpicture" bounds="Rect(233, 1949 - 753, 1949)">
+</node>
+</node>
+<node text=" attribute if you want to disable the Picture-In-Picture mode (and the control)." bounds="Rect(88, 1949 - 1025, 1949)">
+</node>
+</node>
+</node>
+<node text="crossorigin" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 305, 1949)">
+<node text="crossorigin" bounds="Rect(44, 1949 - 305, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="This " bounds="Rect(88, 1949 - 176, 1949)">
+</node>
+<node text="" bounds="Rect(170, 1949 - 387, 1949)">
+<node text="enumerated" bounds="Rect(170, 1949 - 387, 1949)">
+</node>
+</node>
+<node text=" attribute indicates whether to use CORS to fetch the related video. " bounds="Rect(88, 1949 - 990, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 935, 1949)">
+<node text="CORS-enabled resources" bounds="Rect(88, 1949 - 935, 1949)">
+</node>
+</node>
+<node text=" can be reused in the " bounds="Rect(264, 1949 - 649, 1949)">
+</node>
+<node text="" bounds="Rect(643, 1949 - 841, 1949)">
+<node text="&lt;canvas&gt;" bounds="Rect(643, 1949 - 841, 1949)">
+</node>
+</node>
+<node text=" element without being " bounds="Rect(88, 1949 - 995, 1949)">
+</node>
+<node text="tainted" bounds="Rect(338, 1949 - 462, 1949)">
+</node>
+<node text=". The allowed values are:" bounds="Rect(459, 1949 - 904, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="anonymous" bounds="Rect(132, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(132, 1949 - 352, 1949)">
+<node text="anonymous" bounds="Rect(132, 1949 - 352, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="Sends a cross-origin request without a credential. In other words, it sends the " bounds="Rect(176, 1949 - 866, 1949)">
+</node>
+<node text="Origin:" bounds="Rect(176, 1949 - 352, 1949)">
+</node>
+<node text=" HTTP header without a cookie, X.509 certificate, or performing HTTP Basic authentication. If the server does not give credentials to the origin site (by not setting the " bounds="Rect(176, 1949 - 1025, 1949)">
+</node>
+<node text="Access-Control-Allow-Origin:" bounds="Rect(176, 1949 - 805, 1949)">
+</node>
+<node text=" HTTP header), the resource will be " bounds="Rect(176, 1949 - 915, 1949)">
+</node>
+<node text="tainted" bounds="Rect(695, 1949 - 822, 1949)">
+</node>
+<node text=", and its usage restricted." bounds="Rect(176, 1949 - 959, 1949)">
+</node>
+</node>
+</node>
+<node text="use-credentials" bounds="Rect(132, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(132, 1949 - 481, 1949)">
+<node text="use-credentials" bounds="Rect(132, 1949 - 481, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="Sends a cross-origin request with a credential. In other words, it sends the " bounds="Rect(176, 1949 - 1006, 1949)">
+</node>
+<node text="Origin:" bounds="Rect(673, 1949 - 849, 1949)">
+</node>
+<node text=" HTTP header with a cookie, a certificate, or performing HTTP Basic authentication. If the server does not give credentials to the origin site (through " bounds="Rect(176, 1949 - 973, 1949)">
+</node>
+<node text="Access-Control-Allow-Credentials:" bounds="Rect(176, 1949 - 877, 1949)">
+</node>
+<node text=" HTTP header), the resource will be " bounds="Rect(176, 1949 - 1023, 1949)">
+</node>
+<node text="tainted" bounds="Rect(231, 1949 - 357, 1949)">
+</node>
+<node text=" and its usage restricted." bounds="Rect(354, 1949 - 794, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="When not present, the resource is fetched without a CORS request (i.e., without sending the " bounds="Rect(88, 1949 - 1006, 1949)">
+</node>
+<node text="Origin:" bounds="Rect(792, 1949 - 968, 1949)">
+</node>
+<node text=" HTTP header), preventing its non-tainted use in " bounds="Rect(88, 1949 - 932, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 283, 1949)">
+<node text="&lt;canvas&gt;" bounds="Rect(88, 1949 - 283, 1949)">
+</node>
+</node>
+<node text=" elements. If invalid, it is handled as if the enumerated keyword " bounds="Rect(88, 1949 - 1020, 1949)">
+</node>
+<node text="anonymous" bounds="Rect(470, 1949 - 690, 1949)">
+</node>
+<node text=" was used. See " bounds="Rect(687, 1949 - 957, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 522, 1949)">
+<node text="CORS settings attributes" bounds="Rect(88, 1949 - 522, 1949)">
+</node>
+</node>
+<node text=" for additional information." bounds="Rect(519, 1949 - 987, 1949)">
+</node>
+</node>
+</node>
+<node text="disablepictureinpicture" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 563, 1949)">
+<node text="disablepictureinpicture" bounds="Rect(44, 1949 - 563, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Prevents the browser from suggesting a Picture-in-Picture context menu or to request Picture-in-Picture automatically in some cases." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="disableremoteplayback" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 519, 1949)">
+<node text="disableremoteplayback" bounds="Rect(44, 1949 - 519, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A Boolean attribute used to disable the capability of remote playback in devices that are attached using wired (HDMI, DVI, etc.) and wireless technologies (Miracast, Chromecast, DLNA, AirPlay, etc.)." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="In Safari, you can use " bounds="Rect(88, 1949 - 489, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 1006, 1949)">
+<node text="x-webkit-airplay=&quot;deny&quot;" bounds="Rect(484, 1949 - 1006, 1949)">
+</node>
+<node text="" bounds="Rect(90, 1949 - 140, 1949)">
+</node>
+</node>
+<node text=" as a fallback." bounds="Rect(134, 1949 - 374, 1949)">
+</node>
+</node>
+</node>
+<node text="height" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 198, 1949)">
+<node text="height" bounds="Rect(44, 1949 - 198, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The height of the video&#39;s display area, in " bounds="Rect(88, 1949 - 819, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 893, 1949)">
+<node text="CSS pixels" bounds="Rect(88, 1949 - 893, 1949)">
+</node>
+<node text="" bounds="Rect(195, 1949 - 242, 1949)">
+</node>
+</node>
+<node text=" (absolute values only; " bounds="Rect(239, 1949 - 654, 1949)">
+</node>
+<node text="" bounds="Rect(649, 1949 - 979, 1949)">
+<node text="no percentages" bounds="Rect(649, 1949 - 929, 1949)">
+</node>
+<node text="" bounds="Rect(932, 1949 - 979, 1949)">
+</node>
+</node>
+<node text=")." bounds="Rect(976, 1949 - 1003, 1949)">
+</node>
+</node>
+</node>
+<node text="loading Experimental" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 272, 1949)">
+<node text="loading" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+<node text="" bounds="Rect(225, 1949 - 272, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Indicates how the browser should load the video (including any poster image):" bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="eager" bounds="Rect(132, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(132, 1949 - 264, 1949)">
+<node text="eager" bounds="Rect(132, 1949 - 264, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="Loads the video immediately, regardless of whether or not the video is currently within the visible viewport (this is the default value)." bounds="Rect(176, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="lazy" bounds="Rect(132, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(132, 1949 - 244, 1949)">
+<node text="lazy" bounds="Rect(132, 1949 - 244, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="Defers loading the video until it reaches a calculated distance from the viewport, as defined by the browser." bounds="Rect(176, 1949 - 1036, 1949)">
+</node>
+<node text="Lazy loading avoids the network and storage bandwidth required to handle the video until it&#39;s reasonably certain that it will be needed. This improves the performance in most typical use cases." bounds="Rect(176, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="While explicit " bounds="Rect(176, 1949 - 426, 1949)">
+</node>
+<node text="" bounds="Rect(423, 1949 - 558, 1949)">
+<node text="width" bounds="Rect(423, 1949 - 558, 1949)">
+</node>
+</node>
+<node text=" and " bounds="Rect(552, 1949 - 643, 1949)">
+</node>
+<node text="" bounds="Rect(640, 1949 - 794, 1949)">
+<node text="height" bounds="Rect(640, 1949 - 794, 1949)">
+</node>
+</node>
+<node text=" attributes are recommended for all videos to avoid layout shift, they are especially important for lazy-loaded ones. Lazy-loaded videos will never be loaded if they do not intersect a visible part of an element, even if loading them would change that, because unloaded videos have a " bounds="Rect(176, 1949 - 1017, 1949)">
+</node>
+<node text="width" bounds="Rect(858, 1949 - 990, 1949)">
+</node>
+<node text=" and " bounds="Rect(176, 1949 - 255, 1949)">
+</node>
+<node text="height" bounds="Rect(253, 1949 - 407, 1949)">
+</node>
+<node text=" of " bounds="Rect(404, 1949 - 464, 1949)">
+</node>
+<node text="0" bounds="Rect(462, 1949 - 508, 1949)">
+</node>
+<node text=". It creates an even more disruptive user experience when the content visible in the viewport reflows in the middle of reading it." bounds="Rect(176, 1949 - 992, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="Lazy-loaded videos located in the visual viewport may not yet be visible when the Window " bounds="Rect(176, 1949 - 904, 1949)">
+</node>
+<node text="" bounds="Rect(330, 1949 - 442, 1949)">
+<node text="load" bounds="Rect(330, 1949 - 442, 1949)">
+</node>
+</node>
+<node text=" event is fired. This is because the event is fired based on eager-loaded videos — lazy-loaded videos are not considered even if they are located within the visual viewport upon initial page load." bounds="Rect(176, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="Loading is only deferred when JavaScript is enabled. This is an anti-tracking measure, because if a user agent supported lazy loading when scripting is disabled, it would still be possible for a site to track a user&#39;s approximate scroll position throughout a session, by strategically placing videos in a page&#39;s markup such that a server can track how many videos are requested and when." bounds="Rect(176, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(176, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(313, 1949 - 992, 1949)">
+<node text="Note:" bounds="Rect(313, 1949 - 415, 1949)">
+</node>
+<node text=" The " bounds="Rect(412, 1949 - 506, 1949)">
+</node>
+<node text="loading=&quot;lazy&quot;" bounds="Rect(503, 1949 - 830, 1949)">
+</node>
+<node text=" attribute also impacts the " bounds="Rect(313, 1949 - 987, 1949)">
+</node>
+<node text="" bounds="Rect(613, 1949 - 811, 1949)">
+<node text="autoplay" bounds="Rect(613, 1949 - 811, 1949)">
+</node>
+</node>
+<node text=", " bounds="Rect(808, 1949 - 822, 1949)">
+</node>
+<node text="" bounds="Rect(313, 1949 - 467, 1949)">
+<node text="poster" bounds="Rect(313, 1949 - 467, 1949)">
+</node>
+</node>
+<node text=", and " bounds="Rect(464, 1949 - 566, 1949)">
+</node>
+<node text="" bounds="Rect(563, 1949 - 739, 1949)">
+<node text="preload" bounds="Rect(563, 1949 - 739, 1949)">
+</node>
+</node>
+<node text=" attributes, as described in each of those sections of the page." bounds="Rect(313, 1949 - 979, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="loop" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 154, 1949)">
+<node text="loop" bounds="Rect(44, 1949 - 154, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A Boolean attribute; if specified, the browser will automatically seek back to the start upon reaching the end of the video." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="muted" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 176, 1949)">
+<node text="muted" bounds="Rect(44, 1949 - 176, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A Boolean attribute that indicates the default audio mute setting contained in the video. If set, the audio will be initially silenced. Its default value is " bounds="Rect(88, 1949 - 1012, 1949)">
+</node>
+<node text="false" bounds="Rect(852, 1949 - 987, 1949)">
+</node>
+<node text=", meaning the audio will be heard when the video is played." bounds="Rect(88, 1949 - 998, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(222, 1949 - 992, 1949)">
+<node text="Note:" bounds="Rect(222, 1949 - 327, 1949)">
+</node>
+<node text=" To unmute, setting " bounds="Rect(321, 1949 - 676, 1949)">
+</node>
+<node text="muted=&quot;false&quot;" bounds="Rect(673, 1949 - 979, 1949)">
+</node>
+<node text=" will not work; the audio will be muted if the attribute is present at all. To unmute, the attribute must be removed entirely." bounds="Rect(222, 1949 - 987, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="playsinline" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 305, 1949)">
+<node text="playsinline" bounds="Rect(44, 1949 - 305, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A Boolean attribute indicating that the video is to be played &quot;inline&quot;, that is, within the element&#39;s playback area. Note that the absence of this attribute " bounds="Rect(88, 1949 - 1020, 1949)">
+</node>
+<node text="does not" bounds="Rect(866, 1949 - 1023, 1949)">
+</node>
+<node text=" imply that the video will always be played in fullscreen." bounds="Rect(88, 1949 - 869, 1949)">
+</node>
+</node>
+</node>
+<node text="poster" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 198, 1949)">
+<node text="poster" bounds="Rect(44, 1949 - 198, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A URL for an image to be shown while the video is downloading. If this attribute isn&#39;t specified, nothing is displayed until the first frame is available, then the first frame is shown as the poster frame." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(222, 1949 - 992, 1949)">
+<node text="Note:" bounds="Rect(222, 1949 - 327, 1949)">
+</node>
+<node text=" Videos with the " bounds="Rect(321, 1949 - 621, 1949)">
+</node>
+<node text="" bounds="Rect(618, 1949 - 946, 1949)">
+<node text="loading=&quot;lazy&quot;" bounds="Rect(618, 1949 - 946, 1949)">
+</node>
+</node>
+<node text=" attribute set will only download the " bounds="Rect(222, 1949 - 847, 1949)">
+</node>
+<node text="poster" bounds="Rect(222, 1949 - 379, 1949)">
+</node>
+<node text=" resource once the video is near or within the viewport." bounds="Rect(222, 1949 - 946, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="preload" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="preload" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="This " bounds="Rect(88, 1949 - 176, 1949)">
+</node>
+<node text="" bounds="Rect(170, 1949 - 387, 1949)">
+<node text="enumerated" bounds="Rect(170, 1949 - 387, 1949)">
+</node>
+</node>
+<node text=" attribute is intended to provide a hint to the browser about what the author thinks will lead to the best user experience regarding what content is loaded before the video is played. It may have one of the following values:" bounds="Rect(88, 1949 - 1009, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(198, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(165, 1949 - 181, 1949)">
+</node>
+<node text="none" bounds="Rect(198, 1949 - 308, 1949)">
+</node>
+<node text=": Indicates that the video should not be preloaded." bounds="Rect(198, 1949 - 1001, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(198, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(165, 1949 - 181, 1949)">
+</node>
+<node text="metadata" bounds="Rect(198, 1949 - 393, 1949)">
+</node>
+<node text=": Indicates that only video metadata (e.g., length) is fetched." bounds="Rect(198, 1949 - 1031, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(198, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(165, 1949 - 181, 1949)">
+</node>
+<node text="auto" bounds="Rect(198, 1949 - 308, 1949)">
+</node>
+<node text=": Indicates that the whole video file can be downloaded, even if the user is not expected to use it." bounds="Rect(198, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(198, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(165, 1949 - 181, 1949)">
+</node>
+<node text="empty string" bounds="Rect(198, 1949 - 423, 1949)">
+</node>
+<node text=": A synonym of the " bounds="Rect(418, 1949 - 764, 1949)">
+</node>
+<node text="auto" bounds="Rect(761, 1949 - 874, 1949)">
+</node>
+<node text=" value." bounds="Rect(869, 1949 - 990, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The default value is different for each browser. The spec advises it to be set to " bounds="Rect(88, 1949 - 995, 1949)">
+</node>
+<node text="metadata" bounds="Rect(572, 1949 - 767, 1949)">
+</node>
+<node text="." bounds="Rect(764, 1949 - 778, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(222, 1949 - 992, 1949)">
+<node text="Note:" bounds="Rect(222, 1949 - 327, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(222, 1949 - 992, 1949)">
+<node text="" bounds="Rect(332, 1949 - 992, 1949)">
+<node text="• " bounds="Rect(302, 1949 - 319, 1949)">
+</node>
+<node text="Videos with the " bounds="Rect(332, 1949 - 621, 1949)">
+</node>
+<node text="" bounds="Rect(618, 1949 - 943, 1949)">
+<node text="loading=&quot;lazy&quot;" bounds="Rect(618, 1949 - 943, 1949)">
+</node>
+</node>
+<node text=" attribute set will only apply the " bounds="Rect(332, 1949 - 880, 1949)">
+</node>
+<node text="preload" bounds="Rect(332, 1949 - 508, 1949)">
+</node>
+<node text=" behavior once the video is near or within the viewport." bounds="Rect(332, 1949 - 987, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(332, 1949 - 992, 1949)">
+<node text="• " bounds="Rect(302, 1949 - 319, 1949)">
+</node>
+<node text="The " bounds="Rect(332, 1949 - 415, 1949)">
+</node>
+<node text="autoplay" bounds="Rect(412, 1949 - 610, 1949)">
+</node>
+<node text=" attribute has precedence over " bounds="Rect(332, 1949 - 841, 1949)">
+</node>
+<node text="preload" bounds="Rect(643, 1949 - 819, 1949)">
+</node>
+<node text=". If " bounds="Rect(816, 1949 - 871, 1949)">
+</node>
+<node text="autoplay" bounds="Rect(332, 1949 - 530, 1949)">
+</node>
+<node text=" is specified, the browser would obviously need to start downloading the video for playback." bounds="Rect(332, 1949 - 981, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(332, 1949 - 992, 1949)">
+<node text="• " bounds="Rect(302, 1949 - 319, 1949)">
+</node>
+<node text="The specification does not force the browser to follow the value of this attribute; it is a mere hint." bounds="Rect(332, 1949 - 976, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="src" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 132, 1949)">
+<node text="src" bounds="Rect(44, 1949 - 132, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The URL of the video to embed. This is optional; you may instead use the " bounds="Rect(88, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(451, 1949 - 649, 1949)">
+<node text="&lt;source&gt;" bounds="Rect(451, 1949 - 649, 1949)">
+</node>
+</node>
+<node text=" element within the video block to specify the video to embed." bounds="Rect(88, 1949 - 987, 1949)">
+</node>
+</node>
+</node>
+<node text="width" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 176, 1949)">
+<node text="width" bounds="Rect(44, 1949 - 176, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The width of the video&#39;s display area, in " bounds="Rect(88, 1949 - 805, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 880, 1949)">
+<node text="CSS pixels" bounds="Rect(88, 1949 - 880, 1949)">
+</node>
+<node text="" bounds="Rect(195, 1949 - 242, 1949)">
+</node>
+</node>
+<node text=" (absolute values only; " bounds="Rect(239, 1949 - 654, 1949)">
+</node>
+<node text="" bounds="Rect(649, 1949 - 979, 1949)">
+<node text="no percentages" bounds="Rect(649, 1949 - 929, 1949)">
+</node>
+<node text="" bounds="Rect(932, 1949 - 979, 1949)">
+</node>
+</node>
+<node text=")." bounds="Rect(976, 1949 - 1003, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Events" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 319, 1949)">
+<node text="Events" bounds="Rect(44, 1949 - 266, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="audioprocess Deprecated" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 327, 1949)">
+<node text="audioprocess" bounds="Rect(44, 1949 - 327, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(332, 1949 - 401, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The input buffer of a " bounds="Rect(88, 1949 - 462, 1949)">
+</node>
+<node text="" bounds="Rect(459, 1949 - 893, 1949)">
+<node text="ScriptProcessorNode" bounds="Rect(459, 1949 - 893, 1949)">
+</node>
+</node>
+<node text=" is ready to be processed." bounds="Rect(88, 1949 - 932, 1949)">
+</node>
+</node>
+</node>
+<node text="canplay" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="canplay" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The browser can play the media, but estimates that not enough data has been loaded to play the media up to its end without having to stop for further buffering of content." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="canplaythrough" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 368, 1949)">
+<node text="canplaythrough" bounds="Rect(44, 1949 - 368, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The browser estimates it can play the media up to its end without stopping for content buffering." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="complete" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 239, 1949)">
+<node text="complete" bounds="Rect(44, 1949 - 239, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The rendering of an " bounds="Rect(88, 1949 - 451, 1949)">
+</node>
+<node text="" bounds="Rect(445, 1949 - 882, 1949)">
+<node text="OfflineAudioContext" bounds="Rect(445, 1949 - 882, 1949)">
+</node>
+</node>
+<node text=" is terminated." bounds="Rect(88, 1949 - 921, 1949)">
+</node>
+</node>
+</node>
+<node text="durationchange" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 368, 1949)">
+<node text="durationchange" bounds="Rect(44, 1949 - 368, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The " bounds="Rect(88, 1949 - 167, 1949)">
+</node>
+<node text="duration" bounds="Rect(165, 1949 - 363, 1949)">
+</node>
+<node text=" attribute has been updated." bounds="Rect(360, 1949 - 860, 1949)">
+</node>
+</node>
+</node>
+<node text="emptied" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="emptied" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The media has become empty; for example, this event is sent if the media has already been loaded (or partially loaded), and the " bounds="Rect(88, 1949 - 979, 1949)">
+</node>
+<node text="" bounds="Rect(599, 1949 - 753, 1949)">
+<node text="load()" bounds="Rect(599, 1949 - 753, 1949)">
+</node>
+</node>
+<node text=" method is called to reload it." bounds="Rect(88, 1949 - 937, 1949)">
+</node>
+</node>
+</node>
+<node text="ended" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 176, 1949)">
+<node text="ended" bounds="Rect(44, 1949 - 176, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Playback has stopped because the end of the media was reached." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="error" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 176, 1949)">
+<node text="error" bounds="Rect(44, 1949 - 176, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="An error occurred while fetching the media data, or the type of the resource is not a supported media format." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="loadeddata" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 283, 1949)">
+<node text="loadeddata" bounds="Rect(44, 1949 - 283, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The first frame of the media has finished loading." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="loadedmetadata" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 368, 1949)">
+<node text="loadedmetadata" bounds="Rect(44, 1949 - 368, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The metadata has been loaded." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="loadstart" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 261, 1949)">
+<node text="loadstart" bounds="Rect(44, 1949 - 261, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Fired when the browser has started to load the resource." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="pause" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 176, 1949)">
+<node text="pause" bounds="Rect(44, 1949 - 176, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Playback has been paused." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="play" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 154, 1949)">
+<node text="play" bounds="Rect(44, 1949 - 154, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Playback has begun." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="playing" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="playing" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Playback is ready to start after having been paused or delayed due to lack of data." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="progress" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 239, 1949)">
+<node text="progress" bounds="Rect(44, 1949 - 239, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Fired periodically as the browser loads a resource." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="ratechange" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 283, 1949)">
+<node text="ratechange" bounds="Rect(44, 1949 - 283, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The playback rate has changed." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="seeked" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 198, 1949)">
+<node text="seeked" bounds="Rect(44, 1949 - 198, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A " bounds="Rect(88, 1949 - 126, 1949)">
+</node>
+<node text="seek" bounds="Rect(123, 1949 - 209, 1949)">
+</node>
+<node text=" operation completed." bounds="Rect(206, 1949 - 596, 1949)">
+</node>
+</node>
+</node>
+<node text="seeking" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="seeking" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A " bounds="Rect(88, 1949 - 126, 1949)">
+</node>
+<node text="seek" bounds="Rect(123, 1949 - 209, 1949)">
+</node>
+<node text=" operation began." bounds="Rect(206, 1949 - 519, 1949)">
+</node>
+</node>
+</node>
+<node text="stalled" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="stalled" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The user agent is trying to fetch media data, but data is unexpectedly not forthcoming." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="suspend" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="suspend" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Media data loading has been suspended." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="timeupdate" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 283, 1949)">
+<node text="timeupdate" bounds="Rect(44, 1949 - 283, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The time indicated by the " bounds="Rect(88, 1949 - 550, 1949)">
+</node>
+<node text="currentTime" bounds="Rect(544, 1949 - 808, 1949)">
+</node>
+<node text=" attribute has been updated." bounds="Rect(88, 1949 - 965, 1949)">
+</node>
+</node>
+</node>
+<node text="volumechange" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 327, 1949)">
+<node text="volumechange" bounds="Rect(44, 1949 - 327, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="The volume has changed." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="waiting" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="waiting" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="Playback has stopped because of a temporary lack of data." bounds="Rect(88, 1949 - 1036, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Usage notes" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 508, 1949)">
+<node text="Usage notes" bounds="Rect(44, 1949 - 459, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Browsers don&#39;t all support the same video formats; you can provide multiple sources inside nested " bounds="Rect(44, 1949 - 1025, 1949)">
+</node>
+<node text="" bounds="Rect(808, 1949 - 1006, 1949)">
+<node text="&lt;source&gt;" bounds="Rect(808, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text=" elements, and the browser will then use the first one it understands." bounds="Rect(44, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="HTML" bounds="Rect(88, 1949 - 198, 1949)">
+</node>
+<node text="" bounds="Rect(880, 1949 - 1012, 1949)">
+<node text="" bounds="Rect(880, 1949 - 1012, 1949)">
+<node text="Copy" bounds="Rect(880, 1949 - 1012, 1949)">
+</node>
+</node>
+</node>
+<node text="&lt;video controls&gt;
+  &lt;source src=&quot;myVideo.webm&quot; type=&quot;video/webm&quot; /&gt;
+  &lt;source src=&quot;myVideo.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+  &lt;p&gt;
+    Your browser doesn&#39;t support HTML video. Here is a
+    &lt;a href=&quot;myVideo.mp4&quot; download=&quot;myVideo.mp4&quot;&gt;link to the video&lt;/a&gt; instead.
+  &lt;/p&gt;
+&lt;/video&gt;
+" bounds="Rect(44, 1949 - 1034, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="When using " bounds="Rect(44, 1949 - 266, 1949)">
+</node>
+<node text="" bounds="Rect(264, 1949 - 459, 1949)">
+<node text="&lt;source&gt;" bounds="Rect(264, 1949 - 459, 1949)">
+</node>
+</node>
+<node text=" elements, the browser attempts to load each source sequentially. If a source fails (e.g., due to an invalid URL or unsupported format), the next source is attempted, and so on. An " bounds="Rect(44, 1949 - 1031, 1949)">
+</node>
+<node text="error" bounds="Rect(668, 1949 - 800, 1949)">
+</node>
+<node text=" event fires on the " bounds="Rect(44, 1949 - 998, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(165, 1949 - 341, 1949)">
+</node>
+<node text=" element after all sources have failed; " bounds="Rect(335, 1949 - 1003, 1949)">
+</node>
+<node text="error" bounds="Rect(44, 1949 - 176, 1949)">
+</node>
+<node text=" events are not fired on each individual " bounds="Rect(170, 1949 - 860, 1949)">
+</node>
+<node text="&lt;source&gt;" bounds="Rect(44, 1949 - 239, 1949)">
+</node>
+<node text=" element." bounds="Rect(236, 1949 - 404, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="We offer a substantive and thorough " bounds="Rect(44, 1949 - 701, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1028, 1949)">
+<node text="guide to media file types" bounds="Rect(44, 1949 - 1028, 1949)">
+</node>
+</node>
+<node text=" and the " bounds="Rect(140, 1949 - 297, 1949)">
+</node>
+<node text="" bounds="Rect(294, 1949 - 1009, 1949)">
+<node text="guide to the codecs supported for video" bounds="Rect(294, 1949 - 1009, 1949)">
+</node>
+</node>
+<node text=". Also available is a guide to " bounds="Rect(44, 1949 - 1020, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 976, 1949)">
+<node text="audio codecs that can be used with them" bounds="Rect(44, 1949 - 976, 1949)">
+</node>
+</node>
+<node text="." bounds="Rect(313, 1949 - 327, 1949)">
+</node>
+</node>
+<node text="Other usage notes:" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="If you don&#39;t specify the " bounds="Rect(154, 1949 - 580, 1949)">
+</node>
+<node text="controls" bounds="Rect(577, 1949 - 775, 1949)">
+</node>
+<node text=" attribute, the video won&#39;t include the browser&#39;s default controls; you can create your own custom controls using JavaScript and the " bounds="Rect(154, 1949 - 1009, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 522, 1949)">
+<node text="HTMLMediaElement" bounds="Rect(154, 1949 - 522, 1949)">
+</node>
+</node>
+<node text=" API. See " bounds="Rect(519, 1949 - 698, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 1006, 1949)">
+<node text="Creating a cross-browser video player" bounds="Rect(154, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text=" for more details." bounds="Rect(525, 1949 - 827, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="To allow precise control over your video (and audio) content, " bounds="Rect(154, 1949 - 954, 1949)">
+</node>
+<node text="HTMLMediaElement" bounds="Rect(429, 1949 - 800, 1949)">
+</node>
+<node text="s fire many different " bounds="Rect(154, 1949 - 995, 1949)">
+</node>
+<node text="" bounds="Rect(310, 1949 - 431, 1949)">
+<node text="events" bounds="Rect(310, 1949 - 431, 1949)">
+</node>
+</node>
+<node text=". In addition to providing controllability, these events let you monitor the progress of both download and playback of the media, as well as the playback state and position." bounds="Rect(154, 1949 - 1034, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="You can use the " bounds="Rect(154, 1949 - 451, 1949)">
+</node>
+<node text="" bounds="Rect(445, 1949 - 794, 1949)">
+<node text="object-position" bounds="Rect(445, 1949 - 794, 1949)">
+</node>
+</node>
+<node text=" property to adjust the positioning of the video within the element&#39;s frame, and the " bounds="Rect(154, 1949 - 1003, 1949)">
+</node>
+<node text="" bounds="Rect(605, 1949 - 844, 1949)">
+<node text="object-fit" bounds="Rect(605, 1949 - 844, 1949)">
+</node>
+</node>
+<node text=" property to control how the video&#39;s size is adjusted to fit within the frame." bounds="Rect(154, 1949 - 1009, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="To show subtitles/captions along with your video, you can use some JavaScript along with the " bounds="Rect(154, 1949 - 1031, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 327, 1949)">
+<node text="&lt;track&gt;" bounds="Rect(154, 1949 - 327, 1949)">
+</node>
+</node>
+<node text=" element and the " bounds="Rect(324, 1949 - 635, 1949)">
+</node>
+<node text="" bounds="Rect(632, 1949 - 789, 1949)">
+<node text="WebVTT" bounds="Rect(632, 1949 - 789, 1949)">
+</node>
+</node>
+<node text=" format. See " bounds="Rect(783, 1949 - 1003, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 951, 1949)">
+<node text="Adding captions and subtitles to HTML video" bounds="Rect(154, 1949 - 951, 1949)">
+</node>
+</node>
+<node text=" for more information." bounds="Rect(154, 1949 - 1012, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="You can play audio files using a " bounds="Rect(154, 1949 - 726, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(720, 1949 - 899, 1949)">
+</node>
+<node text=" element. This can be useful if, for example, you need to perform audio with a " bounds="Rect(154, 1949 - 995, 1949)">
+</node>
+<node text="" bounds="Rect(673, 1949 - 830, 1949)">
+<node text="WebVTT" bounds="Rect(673, 1949 - 830, 1949)">
+</node>
+</node>
+<node text=" transcript, since the " bounds="Rect(154, 1949 - 1020, 1949)">
+</node>
+<node text="" bounds="Rect(324, 1949 - 500, 1949)">
+<node text="&lt;audio&gt;" bounds="Rect(324, 1949 - 500, 1949)">
+</node>
+</node>
+<node text=" element doesn&#39;t allow captions using WebVTT." bounds="Rect(154, 1949 - 899, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="To test the fallback content on browsers that support the element, you can replace " bounds="Rect(154, 1949 - 946, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(825, 1949 - 1001, 1949)">
+</node>
+<node text=" with a non-existing element like " bounds="Rect(154, 1949 - 728, 1949)">
+</node>
+<node text="&lt;notavideo&gt;" bounds="Rect(726, 1949 - 987, 1949)">
+</node>
+<node text="." bounds="Rect(984, 1949 - 998, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="A good general source of information on using HTML " bounds="Rect(44, 1949 - 987, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+<node text=" is the " bounds="Rect(214, 1949 - 335, 1949)">
+</node>
+<node text="" bounds="Rect(332, 1949 - 734, 1949)">
+<node text="HTML video and audio" bounds="Rect(332, 1949 - 734, 1949)">
+</node>
+</node>
+<node text=" beginner&#39;s tutorial." bounds="Rect(44, 1949 - 935, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Styling with CSS" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 511, 1949)">
+<node text="Styling with CSS" bounds="Rect(44, 1949 - 473, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="The " bounds="Rect(44, 1949 - 123, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(121, 1949 - 297, 1949)">
+</node>
+<node text=" element is a replaced element — its " bounds="Rect(294, 1949 - 940, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 217, 1949)">
+<node text="display" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+</node>
+<node text=" value is " bounds="Rect(214, 1949 - 374, 1949)">
+</node>
+<node text="inline" bounds="Rect(371, 1949 - 525, 1949)">
+</node>
+<node text=" by default — but its default width and height in the viewport is defined by the video being embedded." bounds="Rect(44, 1949 - 1028, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="There are no special considerations for styling " bounds="Rect(44, 1949 - 866, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+<node text="; a common strategy is to give it a " bounds="Rect(214, 1949 - 825, 1949)">
+</node>
+<node text="display" bounds="Rect(819, 1949 - 998, 1949)">
+</node>
+<node text=" value of " bounds="Rect(44, 1949 - 198, 1949)">
+</node>
+<node text="block" bounds="Rect(195, 1949 - 330, 1949)">
+</node>
+<node text=" to make it easier to position, size, etc., and then provide styling and layout information as required. " bounds="Rect(44, 1949 - 1014, 1949)">
+</node>
+<node text="" bounds="Rect(211, 1949 - 690, 1949)">
+<node text="Video player styling basics" bounds="Rect(211, 1949 - 690, 1949)">
+</node>
+</node>
+<node text=" provides some useful styling techniques." bounds="Rect(44, 1949 - 962, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Adding subtitles and other timed text tracks" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 990, 1949)">
+<node text="Adding subtitles and other timed text tracks" bounds="Rect(44, 1949 - 990, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Timed text tracks for subtitles, closed captions, chapter headings, and so on, can be added declaratively by nesting the " bounds="Rect(44, 1949 - 1031, 1949)">
+</node>
+<node text="" bounds="Rect(250, 1949 - 426, 1949)">
+<node text="&lt;track&gt;" bounds="Rect(250, 1949 - 426, 1949)">
+</node>
+</node>
+<node text=" element. The tracks are specified in " bounds="Rect(44, 1949 - 1028, 1949)">
+</node>
+<node text="" bounds="Rect(82, 1949 - 893, 1949)">
+<node text="Web Video Text Tracks File Format (WebVTT)" bounds="Rect(82, 1949 - 893, 1949)">
+</node>
+</node>
+<node text=" (" bounds="Rect(891, 1949 - 918, 1949)">
+</node>
+<node text=".vtt" bounds="Rect(913, 1949 - 1025, 1949)">
+</node>
+<node text=" files)." bounds="Rect(44, 1949 - 143, 1949)">
+</node>
+</node>
+<node text="For example, the HTML below includes the file &quot;captions.vtt&quot;, which will be used to overlay closed captions on the video if captions are enabled by the user." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="HTML" bounds="Rect(88, 1949 - 198, 1949)">
+</node>
+<node text="" bounds="Rect(880, 1949 - 1012, 1949)">
+<node text="" bounds="Rect(880, 1949 - 1012, 1949)">
+<node text="Copy" bounds="Rect(880, 1949 - 1012, 1949)">
+</node>
+</node>
+</node>
+<node text="&lt;video controls src=&quot;video.webm&quot;&gt;
+  &lt;track default kind=&quot;captions&quot; src=&quot;captions.vtt&quot; /&gt;
+&lt;/video&gt;
+" bounds="Rect(44, 1949 - 1034, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Timed text tracks can also be added programmatically using the " bounds="Rect(44, 1949 - 1009, 1949)">
+</node>
+<node text="" bounds="Rect(214, 1949 - 448, 1949)">
+<node text="WebVTT API" bounds="Rect(214, 1949 - 448, 1949)">
+</node>
+</node>
+<node text="." bounds="Rect(445, 1949 - 459, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Detecting track addition and removal" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1025, 1949)">
+<node text="Detecting track addition and removal" bounds="Rect(44, 1949 - 987, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="You can detect when tracks are added to and removed from a " bounds="Rect(44, 1949 - 1014, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(167, 1949 - 343, 1949)">
+</node>
+<node text=" element using the " bounds="Rect(341, 1949 - 679, 1949)">
+</node>
+<node text="" bounds="Rect(676, 1949 - 874, 1949)">
+<node text="addtrack" bounds="Rect(676, 1949 - 874, 1949)">
+</node>
+</node>
+<node text=" and " bounds="Rect(871, 1949 - 951, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 305, 1949)">
+<node text="removetrack" bounds="Rect(44, 1949 - 305, 1949)">
+</node>
+</node>
+<node text=" events. However, these events aren&#39;t sent directly to the " bounds="Rect(44, 1949 - 968, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(382, 1949 - 558, 1949)">
+</node>
+<node text=" element itself. Instead, they&#39;re sent to the track list object within the " bounds="Rect(44, 1949 - 973, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(838, 1949 - 1014, 1949)">
+</node>
+<node text=" element&#39;s " bounds="Rect(44, 1949 - 228, 1949)">
+</node>
+<node text="" bounds="Rect(225, 1949 - 596, 1949)">
+<node text="HTMLMediaElement" bounds="Rect(225, 1949 - 596, 1949)">
+</node>
+</node>
+<node text=" that corresponds to the type of track that was added to the element:" bounds="Rect(44, 1949 - 1020, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="HTMLMediaElement.audioTracks" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 671, 1949)">
+<node text="HTMLMediaElement.audioTracks" bounds="Rect(44, 1949 - 671, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="An " bounds="Rect(88, 1949 - 148, 1949)">
+</node>
+<node text="" bounds="Rect(145, 1949 - 473, 1949)">
+<node text="AudioTrackList" bounds="Rect(145, 1949 - 473, 1949)">
+</node>
+</node>
+<node text=" containing all of the media element&#39;s audio tracks. Add a listener for " bounds="Rect(88, 1949 - 951, 1949)">
+</node>
+<node text="addtrack" bounds="Rect(825, 1949 - 1020, 1949)">
+</node>
+<node text=" to this object to be notified when new audio tracks are added to the element." bounds="Rect(88, 1949 - 981, 1949)">
+</node>
+</node>
+</node>
+<node text="HTMLMediaElement.videoTracks" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 671, 1949)">
+<node text="HTMLMediaElement.videoTracks" bounds="Rect(44, 1949 - 671, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A " bounds="Rect(88, 1949 - 126, 1949)">
+</node>
+<node text="" bounds="Rect(123, 1949 - 451, 1949)">
+<node text="VideoTrackList" bounds="Rect(123, 1949 - 451, 1949)">
+</node>
+</node>
+<node text=" containing all of the media element&#39;s video tracks. Add an " bounds="Rect(88, 1949 - 929, 1949)">
+</node>
+<node text="addtrack" bounds="Rect(643, 1949 - 841, 1949)">
+</node>
+<node text=" listener to this object to be notified when video tracks are added to the element." bounds="Rect(88, 1949 - 1028, 1949)">
+</node>
+</node>
+</node>
+<node text="HTMLMediaElement.textTracks" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 649, 1949)">
+<node text="HTMLMediaElement.textTracks" bounds="Rect(44, 1949 - 649, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1036, 1949)">
+<node text="A " bounds="Rect(88, 1949 - 126, 1949)">
+</node>
+<node text="" bounds="Rect(123, 1949 - 429, 1949)">
+<node text="TextTrackList" bounds="Rect(123, 1949 - 429, 1949)">
+</node>
+</node>
+<node text=" containing all of the media element&#39;s text tracks (which are used for subtitles, closed captions, and so on). Add an " bounds="Rect(88, 1949 - 984, 1949)">
+</node>
+<node text="addtrack" bounds="Rect(731, 1949 - 929, 1949)">
+</node>
+<node text=" listener to this object to be notified when text tracks are added to the element." bounds="Rect(88, 1949 - 1009, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="For example, to detect when audio tracks are added to or removed from a " bounds="Rect(44, 1949 - 1012, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(379, 1949 - 555, 1949)">
+</node>
+<node text=" element, you can use code like this:" bounds="Rect(44, 1949 - 946, 1949)">
+</node>
+</node>
+<node text="JS" bounds="Rect(88, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(880, 1949 - 1012, 1949)">
+<node text="" bounds="Rect(880, 1949 - 1012, 1949)">
+<node text="Copy" bounds="Rect(880, 1949 - 1012, 1949)">
+</node>
+</node>
+</node>
+<node text="const elem = document.querySelector(&quot;video&quot;);
+
+elem.audioTracks.onaddtrack = (event) =&gt; {
+  trackEditor.addTrack(event.track);
+};
+
+elem.audioTracks.onremovetrack = (event) =&gt; {
+  trackEditor.removeTrack(event.track);
+};
+" bounds="Rect(44, 1949 - 1034, 1949)">
+</node>
+<node text="This code watches for audio tracks to be added to and removed from the element, and calls a hypothetical function on a track editor to register and remove the track from the editor&#39;s list of available tracks." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="You can also use " bounds="Rect(44, 1949 - 357, 1949)">
+</node>
+<node text="" bounds="Rect(354, 1949 - 767, 1949)">
+<node text="addEventListener()" bounds="Rect(354, 1949 - 767, 1949)">
+</node>
+</node>
+<node text=" to listen for the " bounds="Rect(44, 1949 - 976, 1949)">
+</node>
+<node text="" bounds="Rect(110, 1949 - 308, 1949)">
+<node text="addtrack" bounds="Rect(110, 1949 - 308, 1949)">
+</node>
+</node>
+<node text=" and " bounds="Rect(302, 1949 - 393, 1949)">
+</node>
+<node text="" bounds="Rect(390, 1949 - 654, 1949)">
+<node text="removetrack" bounds="Rect(390, 1949 - 654, 1949)">
+</node>
+</node>
+<node text=" events." bounds="Rect(649, 1949 - 792, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Server support for video" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 704, 1949)">
+<node text="Server support for video" bounds="Rect(44, 1949 - 668, 1949)">
+</node>
+</node>
+</node>
+<node text="If the MIME type for the video is not set correctly on the server, the video may not show or show a gray box containing an X (if JavaScript is enabled)." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="If you use Apache Web Server to serve WebM videos, you can fix this problem by adding the video file type extensions to the " bounds="Rect(44, 1949 - 1006, 1949)">
+</node>
+<node text="video/webm" bounds="Rect(354, 1949 - 596, 1949)">
+</node>
+<node text=" MIME type (the most common WebM file extension is " bounds="Rect(44, 1949 - 981, 1949)">
+</node>
+<node text=".webm" bounds="Rect(618, 1949 - 750, 1949)">
+</node>
+<node text="). To do this, edit the " bounds="Rect(44, 1949 - 968, 1949)">
+</node>
+<node text="mime.types" bounds="Rect(187, 1949 - 426, 1949)">
+</node>
+<node text=" file in " bounds="Rect(423, 1949 - 544, 1949)">
+</node>
+<node text="/etc/apache" bounds="Rect(541, 1949 - 803, 1949)">
+</node>
+<node text=" or use the " bounds="Rect(800, 1949 - 990, 1949)">
+</node>
+<node text="AddType" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+<node text=" configuration directive in " bounds="Rect(214, 1949 - 679, 1949)">
+</node>
+<node text="httpd.conf" bounds="Rect(676, 1949 - 915, 1949)">
+</node>
+<node text=":" bounds="Rect(913, 1949 - 926, 1949)">
+</node>
+</node>
+<node text="AddType video/webm .webm
+" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="Your web host may provide an easy interface to MIME type configuration changes for new technologies until a global update naturally occurs." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Accessibility" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 508, 1949)">
+<node text="Accessibility" bounds="Rect(44, 1949 - 456, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Videos should provide both captions and transcripts that accurately describe their content (see " bounds="Rect(44, 1949 - 968, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 932, 1949)">
+<node text="Adding captions and subtitles to HTML video" bounds="Rect(44, 1949 - 932, 1949)">
+</node>
+</node>
+<node text=" for more information on how to implement these). Captions allow people who are experiencing hearing loss to understand a video&#39;s audio content as the video is being played, while transcripts allow people who need additional time to be able to review audio content at a pace and format that is comfortable for them." bounds="Rect(44, 1949 - 1031, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="It&#39;s worth noting that while you can caption audio-only media, you can only do so when playing audio in a " bounds="Rect(44, 1949 - 1014, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(44, 1949 - 217, 1949)">
+</node>
+<node text=" element since the video region of the element is used to present the captions. This is one of the special scenarios in which it&#39;s useful to play audio in a video element." bounds="Rect(44, 1949 - 1003, 1949)">
+</node>
+</node>
+<node text="If automatic captioning services are used, it is important to review the generated content to ensure it accurately represents the source video." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="In addition to spoken dialog, subtitles and transcripts should also identify music and sound effects that communicate important information. This includes emotion and tone:" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="14
+00:03:14 --&gt; 00:03:18
+[Dramatic rock music]
+
+15
+00:03:19 --&gt; 00:03:21
+[whispering] What&#39;s that off in the distance?
+
+16
+00:03:22 --&gt; 00:03:24
+It&#39;s… it&#39;s a…
+
+16 00:03:25 --&gt; 00:03:32
+[Loud thumping]
+[Dishes clattering]
+" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Captions should not obstruct the main subject of the video. They can be positioned using " bounds="Rect(44, 1949 - 973, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 979, 1949)">
+<node text="the " bounds="Rect(693, 1949 - 764, 1949)">
+</node>
+<node text="align" bounds="Rect(759, 1949 - 893, 1949)">
+</node>
+<node text=" VTT cue setting" bounds="Rect(44, 1949 - 979, 1949)">
+</node>
+</node>
+<node text="." bounds="Rect(239, 1949 - 253, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 888, 1949)">
+<node text="Web Video Text Tracks Format (WebVTT)" bounds="Rect(154, 1949 - 888, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 910, 1949)">
+<node text="WebAIM: Captions, Transcripts, and Audio Descriptions" bounds="Rect(154, 1949 - 910, 1949)">
+</node>
+<node text="" bounds="Rect(379, 1949 - 426, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 891, 1949)">
+<node text="MDN Understanding WCAG, Guideline 1.2 explanations" bounds="Rect(154, 1949 - 891, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 946, 1949)">
+<node text="Understanding Success Criterion 1.2.1 | W3C Understanding WCAG 2.0" bounds="Rect(154, 1949 - 946, 1949)">
+</node>
+<node text="" bounds="Rect(613, 1949 - 660, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 957, 1949)">
+<node text="Understanding Success Criterion 1.2.2 | W3C Understanding WCAG 2.0" bounds="Rect(154, 1949 - 957, 1949)">
+</node>
+<node text="" bounds="Rect(613, 1949 - 660, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Examples" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 418, 1949)">
+<node text="Examples" bounds="Rect(44, 1949 - 365, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Single source" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 431, 1949)">
+<node text="Single source" bounds="Rect(44, 1949 - 393, 1949)">
+</node>
+</node>
+</node>
+<node text="This example plays a video when activated, providing the user with the browser&#39;s default video controls to control playback." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="HTML" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="HTML" bounds="Rect(88, 1949 - 198, 1949)">
+</node>
+<node text="" bounds="Rect(742, 1949 - 877, 1949)">
+<node text="" bounds="Rect(742, 1949 - 877, 1949)">
+<node text="Copy" bounds="Rect(742, 1949 - 877, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(896, 1949 - 1012, 1949)">
+<node text="" bounds="Rect(896, 1949 - 1012, 1949)">
+<node text="Play" bounds="Rect(918, 1949 - 990, 1949)">
+</node>
+</node>
+</node>
+<node text="&lt;!-- Basic video example --&gt;
+&lt;!-- &#39;Big Buck Bunny&#39; licensed under CC 3.0 by the Blender foundation. Hosted by archive.org --&gt;
+&lt;!-- Poster from peach.blender.org --&gt;
+&lt;video
+  controls
+  src=&quot;https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4&quot;
+  poster=&quot;https://peach.blender.org/wp-content/uploads/title_anouncement.jpg?x11217&quot;
+  width=&quot;620&quot;&gt;
+  Sorry, your browser doesn&#39;t support embedded videos, but don&#39;t worry, you can
+  &lt;a href=&quot;https://archive.org/details/BigBuckBunny_124&quot;&gt;download it&lt;/a&gt;
+  and watch it with your favorite video player!
+&lt;/video&gt;
+" bounds="Rect(44, 1949 - 1034, 1949)">
+</node>
+<node text="Result" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(896, 1949 - 1012, 1949)">
+<node text="" bounds="Rect(896, 1949 - 1012, 1949)">
+<node text="Play" bounds="Rect(918, 1949 - 990, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(88, 1949 - 990, 1949)">
+<node text="" bounds="Rect(88, 1949 - 990, 1949)">
+<node text="" bounds="Rect(88, 1949 - 990, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1080, 1949)">
+<node text="" bounds="Rect(88, 1949 - 1080, 1949)">
+<node text="" bounds="Rect(841, 1949 - 1042, 1949)">
+<node text="" bounds="Rect(841, 1949 - 1042, 1949)">
+<node text="" bounds="Rect(742, 1949 - 943, 1949)">
+<node text="" bounds="Rect(682, 1949 - 1080, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(940, 1949 - 1080, 1949)">
+<node text="" bounds="Rect(676, 1949 - 1080, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1080, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 1080, 1949)">
+<node text="" bounds="Rect(1080, 1949 - 1080, 1949)">
+<node text="" bounds="Rect(1080, 1949 - 1080, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 1080, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Until the video starts playing, the image provided in the " bounds="Rect(44, 1949 - 1023, 1949)">
+</node>
+<node text="poster" bounds="Rect(44, 1949 - 198, 1949)">
+</node>
+<node text=" attribute is displayed in its place. If the browser doesn&#39;t support video playback, it displays the fallback text." bounds="Rect(44, 1949 - 1025, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Multiple sources" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 506, 1949)">
+<node text="Multiple sources" bounds="Rect(44, 1949 - 467, 1949)">
+</node>
+</node>
+</node>
+<node text="This example builds on the last one, offering three different sources for the media; this allows the video to be watched regardless of which video codecs are supported by the browser." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="HTML" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="HTML" bounds="Rect(88, 1949 - 198, 1949)">
+</node>
+<node text="" bounds="Rect(742, 1949 - 877, 1949)">
+<node text="" bounds="Rect(742, 1949 - 877, 1949)">
+<node text="Copy" bounds="Rect(742, 1949 - 877, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(896, 1949 - 1012, 1949)">
+<node text="" bounds="Rect(896, 1949 - 1012, 1949)">
+<node text="Play" bounds="Rect(918, 1949 - 990, 1949)">
+</node>
+</node>
+</node>
+<node text="&lt;!-- Using multiple sources as fallbacks for a video tag --&gt;
+&lt;!-- &#39;Elephants Dream&#39; by Orange Open Movie Project Studio, licensed under CC-3.0, hosted by archive.org --&gt;
+&lt;!-- Poster hosted by Wikimedia --&gt;
+&lt;video
+  width=&quot;620&quot;
+  controls
+  poster=&quot;https://upload.wikimedia.org/wikipedia/commons/e/e8/Elephants_Dream_s5_both.jpg&quot;&gt;
+  &lt;source
+    src=&quot;https://archive.org/download/ElephantsDream/ed_hd.avi&quot;
+    type=&quot;video/avi&quot; /&gt;
+  &lt;source
+    src=&quot;https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4&quot;
+    type=&quot;video/mp4&quot; /&gt;
+
+  Sorry, your browser doesn&#39;t support embedded videos, but don&#39;t worry, you can
+  &lt;a
+    href=&quot;https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4&quot;
+    download=&quot;ed_1024_512kb.mp4&quot;&gt;
+    download the MP4
+  &lt;/a&gt;
+  and watch it with your favorite video player!
+&lt;/video&gt;
+" bounds="Rect(44, 1949 - 1034, 1949)">
+</node>
+<node text="Result" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(896, 1949 - 1012, 1949)">
+<node text="" bounds="Rect(896, 1949 - 1012, 1949)">
+<node text="Play" bounds="Rect(918, 1949 - 990, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(88, 1949 - 990, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="First AVI is tried. If that can&#39;t be played, " bounds="Rect(44, 1949 - 764, 1949)">
+</node>
+<node text="" bounds="Rect(759, 1949 - 844, 1949)">
+<node text="MP4" bounds="Rect(759, 1949 - 844, 1949)">
+</node>
+</node>
+<node text=" is tried. A fallback message is displayed if the video element isn&#39;t supported, but not if all sources fail." bounds="Rect(44, 1949 - 1023, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Some media file types let you provide more specific information using the " bounds="Rect(44, 1949 - 965, 1949)">
+</node>
+<node text="" bounds="Rect(426, 1949 - 583, 1949)">
+<node text="codecs" bounds="Rect(426, 1949 - 583, 1949)">
+</node>
+</node>
+<node text=" parameter as part of the file&#39;s type string. For example, " bounds="Rect(44, 1949 - 1020, 1949)">
+</node>
+<node text="video/webm; codecs=&quot;vp8, vorbis&quot;" bounds="Rect(44, 1949 - 838, 1949)">
+</node>
+<node text=" says that the file is a " bounds="Rect(484, 1949 - 871, 1949)">
+</node>
+<node text="" bounds="Rect(869, 1949 - 984, 1949)">
+<node text="WebM" bounds="Rect(869, 1949 - 984, 1949)">
+</node>
+</node>
+<node text=" video using " bounds="Rect(44, 1949 - 261, 1949)">
+</node>
+<node text="" bounds="Rect(255, 1949 - 332, 1949)">
+<node text="VP8" bounds="Rect(255, 1949 - 332, 1949)">
+</node>
+</node>
+<node text=" for its video and " bounds="Rect(330, 1949 - 638, 1949)">
+</node>
+<node text="" bounds="Rect(635, 1949 - 753, 1949)">
+<node text="Vorbis" bounds="Rect(635, 1949 - 753, 1949)">
+</node>
+</node>
+<node text=" for audio." bounds="Rect(748, 1949 - 929, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Technical summary" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 734, 1949)">
+<node text="Technical summary" bounds="Rect(44, 1949 - 684, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Content categories" bounds="Rect(44, 1949 - 324, 1949)">
+<node text="" bounds="Rect(77, 1949 - 272, 1949)">
+<node text="Content categories" bounds="Rect(77, 1949 - 272, 1949)">
+</node>
+</node>
+</node>
+<node text="Flow content, phrasing content, embedded content. If it has a controls attribute: interactive content and palpable content." bounds="Rect(319, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(352, 1949 - 585, 1949)">
+<node text="Flow content" bounds="Rect(352, 1949 - 585, 1949)">
+</node>
+</node>
+<node text=", phrasing content, embedded content. If it has a " bounds="Rect(352, 1949 - 915, 1949)">
+</node>
+<node text="" bounds="Rect(352, 1949 - 550, 1949)">
+<node text="controls" bounds="Rect(352, 1949 - 550, 1949)">
+</node>
+</node>
+<node text=" attribute: interactive content and palpable content." bounds="Rect(352, 1949 - 915, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Permitted content" bounds="Rect(44, 1949 - 324, 1949)">
+</node>
+<node text="If the element has a src attribute: zero or more &lt;track&gt; elements, followed by transparent content that contains no media elements–that is no &lt;audio&gt; or &lt;video&gt;. Else: zero or more &lt;source&gt; elements, followed by zero or more &lt;track&gt; elements, followed by transparent content that contains no media elements–that is no &lt;audio&gt; or &lt;video&gt;." bounds="Rect(319, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(352, 1949 - 1003, 1949)">
+<node text="If the element has a " bounds="Rect(352, 1949 - 720, 1949)">
+</node>
+<node text="" bounds="Rect(717, 1949 - 808, 1949)">
+<node text="src" bounds="Rect(717, 1949 - 808, 1949)">
+</node>
+</node>
+<node text=" attribute: zero or more " bounds="Rect(352, 1949 - 976, 1949)">
+</node>
+<node text="" bounds="Rect(588, 1949 - 764, 1949)">
+<node text="&lt;track&gt;" bounds="Rect(588, 1949 - 764, 1949)">
+</node>
+</node>
+<node text=" elements, followed by transparent content that contains no media elements–that is no " bounds="Rect(352, 1949 - 998, 1949)">
+</node>
+<node text="" bounds="Rect(407, 1949 - 583, 1949)">
+<node text="&lt;audio&gt;" bounds="Rect(407, 1949 - 583, 1949)">
+</node>
+</node>
+<node text=" or " bounds="Rect(580, 1949 - 640, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(638, 1949 - 814, 1949)">
+</node>
+<node text="." bounds="Rect(811, 1949 - 825, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(352, 1949 - 1003, 1949)">
+<node text="Else: zero or more " bounds="Rect(352, 1949 - 687, 1949)">
+</node>
+<node text="" bounds="Rect(684, 1949 - 882, 1949)">
+<node text="&lt;source&gt;" bounds="Rect(684, 1949 - 882, 1949)">
+</node>
+</node>
+<node text=" elements, followed by zero or more " bounds="Rect(352, 1949 - 981, 1949)">
+</node>
+<node text="" bounds="Rect(352, 1949 - 528, 1949)">
+<node text="&lt;track&gt;" bounds="Rect(352, 1949 - 528, 1949)">
+</node>
+</node>
+<node text=" elements, followed by transparent content that contains no media elements–that is no " bounds="Rect(352, 1949 - 998, 1949)">
+</node>
+<node text="" bounds="Rect(825, 1949 - 1001, 1949)">
+<node text="&lt;audio&gt;" bounds="Rect(825, 1949 - 1001, 1949)">
+</node>
+</node>
+<node text=" or " bounds="Rect(352, 1949 - 404, 1949)">
+</node>
+<node text="&lt;video&gt;" bounds="Rect(398, 1949 - 577, 1949)">
+</node>
+<node text="." bounds="Rect(572, 1949 - 585, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Tag omission" bounds="Rect(44, 1949 - 324, 1949)">
+</node>
+<node text="None, both the starting and ending tag are mandatory." bounds="Rect(319, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Permitted parents" bounds="Rect(44, 1949 - 324, 1949)">
+</node>
+<node text="Any element that accepts embedded content." bounds="Rect(319, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Implicit ARIA role" bounds="Rect(44, 1949 - 324, 1949)">
+</node>
+<node text="No corresponding role (external)" bounds="Rect(319, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(352, 1949 - 803, 1949)">
+<node text="No corresponding role" bounds="Rect(352, 1949 - 753, 1949)">
+</node>
+<node text="" bounds="Rect(756, 1949 - 803, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Permitted ARIA roles" bounds="Rect(44, 1949 - 324, 1949)">
+</node>
+<node text="application" bounds="Rect(319, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(352, 1949 - 616, 1949)">
+<node text="application" bounds="Rect(352, 1949 - 616, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="DOM interface" bounds="Rect(44, 1949 - 324, 1949)">
+</node>
+<node text="HTMLVideoElement" bounds="Rect(319, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(352, 1949 - 723, 1949)">
+<node text="HTMLVideoElement" bounds="Rect(352, 1949 - 723, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Specifications" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 558, 1949)">
+<node text="Specifications" bounds="Rect(44, 1949 - 506, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Specification" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="HTML # the-video-element (external)" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(77, 1949 - 495, 1949)">
+<node text="HTML" bounds="Rect(77, 1949 - 187, 1949)">
+</node>
+<node text="
+" bounds="Rect(184, 1949 - 184, 1949)">
+</node>
+<node text="# the-video-element" bounds="Rect(77, 1949 - 445, 1949)">
+</node>
+<node text="" bounds="Rect(448, 1949 - 495, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Browser compatibility" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 808, 1949)">
+<node text="Browser compatibility" bounds="Rect(44, 1949 - 756, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 715, 1949)">
+<node text="Report problems with this compatibility data" bounds="Rect(44, 1949 - 676, 1949)">
+</node>
+<node text="" bounds="Rect(676, 1949 - 715, 1949)">
+</node>
+</node>
+<node text=" • " bounds="Rect(712, 1949 - 739, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 379, 1949)">
+<node text="View data on GitHub" bounds="Rect(44, 1949 - 338, 1949)">
+</node>
+<node text="" bounds="Rect(341, 1949 - 379, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 283, 1949)">
+<node text="Settings" bounds="Rect(44, 1949 - 283, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="video" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 195, 1949)">
+<node text="video" bounds="Rect(71, 1949 - 187, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera10.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera10.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Aspect ratio computed from width and height attributes" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 957, 1949)">
+<node text="Aspect ratio computed from " bounds="Rect(71, 1949 - 486, 1949)">
+</node>
+<node text="width" bounds="Rect(484, 1949 - 599, 1949)">
+</node>
+<node text=" and " bounds="Rect(596, 1949 - 671, 1949)">
+</node>
+<node text="height" bounds="Rect(665, 1949 - 800, 1949)">
+</node>
+<node text=" attributes" bounds="Rect(797, 1949 - 946, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox71" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox71" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera66" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera66" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android57" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android57" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="autoplay" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 250, 1949)">
+<node text="autoplay" bounds="Rect(71, 1949 - 242, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera10.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera10.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS10" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS10" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS10" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS10" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Autoplay requires muted attribute or no audio track Non-standard" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(79, 1949 - 915, 1949)">
+<node text="Autoplay requires " bounds="Rect(90, 1949 - 357, 1949)">
+</node>
+<node text="muted" bounds="Rect(354, 1949 - 470, 1949)">
+</node>
+<node text=" attribute or no audio track" bounds="Rect(467, 1949 - 852, 1949)">
+</node>
+<node text="Non-standard. Check cross-browser support before using." bounds="Rect(858, 1949 - 907, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome67" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome67" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox67" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox67" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera54" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera54" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari16" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari16" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android67" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android67" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android91 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android91 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android48" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android48" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS10" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS10" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser9" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser9" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android67" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android67" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS10" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS10" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="controls" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 250, 1949)">
+<node text="controls" bounds="Rect(71, 1949 - 242, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera10.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera10.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="controlslist" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 324, 1949)">
+<node text="controlslist" bounds="Rect(71, 1949 - 313, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome58" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome58" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – No support FirefoxNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – No support FirefoxNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera45" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera45" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – No support SafariNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – No support SafariNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android58" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android58" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – No support Firefox for AndroidNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – No support Firefox for AndroidNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android43" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android43" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – No support Safari on iOSNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – No support Safari on iOSNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser7" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser7" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android58" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android58" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – No support WebView on iOSNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – No support WebView on iOSNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="crossorigin" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 305, 1949)">
+<node text="crossorigin" bounds="Rect(71, 1949 - 297, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome33" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome33" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox74 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox74 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera20" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera20" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari10" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari10" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android33" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android33" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android79 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android79 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android20" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android20" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS10" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS10" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser2" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser2" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4.3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4.3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS10" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS10" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="disablepictureinpicture" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 522, 1949)">
+<node text="disablepictureinpicture" bounds="Rect(71, 1949 - 514, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome69" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome69" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Partial support Firefox122 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Partial support Firefox122 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera56" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera56" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari13.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari13.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android105" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android105" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Partial support Firefox for Android122 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Partial support Firefox for Android122 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android72" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android72" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS13.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS13.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser20" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser20" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – No support WebView AndroidNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – No support WebView AndroidNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS13.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS13.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="disableremoteplayback" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 486, 1949)">
+<node text="disableremoteplayback" bounds="Rect(71, 1949 - 478, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome121" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome121" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge121" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge121" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – No support FirefoxNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – No support FirefoxNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera107" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera107" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari13.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari13.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android56" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android56" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – No support Firefox for AndroidNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – No support Firefox for AndroidNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android43" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android43" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS13" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS13" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser6" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser6" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – No support WebView AndroidNo footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – No support WebView AndroidNo footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS13" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS13" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="height" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 214, 1949)">
+<node text="height" bounds="Rect(71, 1949 - 206, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera10.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera10.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="loading Experimental" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 286, 1949)">
+<node text="loading" bounds="Rect(71, 1949 - 222, 1949)">
+</node>
+<node text="Experimental. Expect behavior to change in the future." bounds="Rect(231, 1949 - 277, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome150 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome150 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge150 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge150 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – No support FirefoxNo footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – No support FirefoxNo footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera134 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera134 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – No support SafariNo footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – No support SafariNo footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android150 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android150 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – No support Firefox for AndroidNo footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – No support Firefox for AndroidNo footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android101 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android101 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – No support Safari on iOSNo footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – No support Safari on iOSNo footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – No support Samsung BrowserNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – No support Samsung BrowserNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android150 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android150 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – No support WebView on iOSNo footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – No support WebView on iOSNo footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="loop" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 176, 1949)">
+<node text="loop" bounds="Rect(71, 1949 - 170, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox11" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox11" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera10.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera10.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS6" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS6" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS6" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS6" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="muted" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 195, 1949)">
+<node text="muted" bounds="Rect(71, 1949 - 187, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome30" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome30" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox11" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox11" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera17" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera17" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android30" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android30" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS4.2" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS4.2" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser2" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser2" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS4.2" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS4.2" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="playsinline" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 305, 1949)">
+<node text="playsinline" bounds="Rect(71, 1949 - 297, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome75" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome75" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge79" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge79" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – No support FirefoxNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – No support FirefoxNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera62" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera62" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari10 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari10 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android75" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android75" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – No support Firefox for AndroidNo" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – No support Firefox for AndroidNo" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android54" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android54" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS10 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS10 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser11" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser11" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android75" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android75" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS10 more" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS10 more" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="poster" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 214, 1949)">
+<node text="poster" bounds="Rect(71, 1949 - 206, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox3.6" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox3.6" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera10.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera10.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="preload" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 231, 1949)">
+<node text="preload" bounds="Rect(71, 1949 - 222, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3 footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3 footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera15 footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera15 footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18 footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18 footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14 footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14 footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1 footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1 footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4 footnote" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4 footnote" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="src" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 159, 1949)">
+<node text="src" bounds="Rect(71, 1949 - 151, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera10.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera10.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="width" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="" bounds="Rect(60, 1949 - 195, 1949)">
+<node text="width" bounds="Rect(71, 1949 - 187, 1949)">
+</node>
+</node>
+</node>
+<node text="Chrome – Full support Chrome3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome – Full support Chrome3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Edge – Full support Edge12" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Edge – Full support Edge12" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox – Full support Firefox3.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera – Full support Opera10.5" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera – Full support Opera10.5" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari – Full support Safari3.1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari – Full support Safari3.1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Chrome Android – Full support Chrome Android18" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Firefox for Android – Full support Firefox for Android4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Opera Android – Full support Opera Android14" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Safari on iOS – Full support Safari on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="Samsung Browser – Full support Samsung Browser1" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView Android – Full support WebView Android4.4" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(44, 1949 - 1034, 1949)">
+<node text="WebView on iOS – Full support WebView on iOS3" bounds="Rect(60, 1949 - 1017, 1949)">
+</node>
+<node text="" bounds="Rect(71, 1949 - 1006, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Legend" bounds="Rect(38, 1949 - 44, 1949)">
+</node>
+<node text="Tip: you can click/tap on a cell for more information." bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Full support" bounds="Rect(44, 1949 - 88, 1949)">
+<node text="Full support" bounds="Rect(44, 1949 - 88, 1949)">
+</node>
+</node>
+<node text="Full support" bounds="Rect(110, 1949 - 283, 1949)">
+</node>
+<node text="Partial support" bounds="Rect(343, 1949 - 393, 1949)">
+<node text="Partial support" bounds="Rect(343, 1949 - 393, 1949)">
+</node>
+</node>
+<node text="Partial support" bounds="Rect(409, 1949 - 624, 1949)">
+</node>
+<node text="No support" bounds="Rect(687, 1949 - 734, 1949)">
+<node text="No support" bounds="Rect(687, 1949 - 734, 1949)">
+</node>
+</node>
+<node text="No support" bounds="Rect(753, 1949 - 918, 1949)">
+</node>
+<node text="Experimental. Expect behavior to change in the future." bounds="Rect(44, 1949 - 88, 1949)">
+<node text="Experimental. Expect behavior to change in the future." bounds="Rect(44, 1949 - 88, 1949)">
+</node>
+</node>
+<node text="Experimental. Expect behavior to change in the future." bounds="Rect(110, 1949 - 888, 1949)">
+</node>
+<node text="Non-standard. Check cross-browser support before using." bounds="Rect(44, 1949 - 88, 1949)">
+<node text="Non-standard. Check cross-browser support before using." bounds="Rect(44, 1949 - 88, 1949)">
+</node>
+</node>
+<node text="Non-standard. Check cross-browser support before using." bounds="Rect(110, 1949 - 951, 1949)">
+</node>
+<node text="See implementation notes." bounds="Rect(44, 1949 - 88, 1949)">
+<node text="See implementation notes." bounds="Rect(44, 1949 - 88, 1949)">
+</node>
+</node>
+<node text="See implementation notes." bounds="Rect(110, 1949 - 492, 1949)">
+</node>
+<node text="Uses a non-standard name." bounds="Rect(552, 1949 - 602, 1949)">
+<node text="Uses a non-standard name." bounds="Rect(552, 1949 - 602, 1949)">
+</node>
+</node>
+<node text="Uses a non-standard name." bounds="Rect(618, 1949 - 1020, 1949)">
+</node>
+<node text="Has more compatibility info." bounds="Rect(44, 1949 - 88, 1949)">
+<node text="Has more compatibility info." bounds="Rect(44, 1949 - 88, 1949)">
+</node>
+</node>
+<node text="Has more compatibility info." bounds="Rect(110, 1949 - 511, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="See also" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 376, 1949)">
+<node text="See also" bounds="Rect(44, 1949 - 327, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(154, 1949 - 962, 1949)">
+<node text="Guide to media types and formats on the web" bounds="Rect(154, 1949 - 962, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(264, 1949 - 1036, 1949)">
+<node text="◦ " bounds="Rect(231, 1949 - 247, 1949)">
+</node>
+<node text="" bounds="Rect(264, 1949 - 899, 1949)">
+<node text="Media container formats (file types)" bounds="Rect(264, 1949 - 899, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(264, 1949 - 1036, 1949)">
+<node text="◦ " bounds="Rect(231, 1949 - 247, 1949)">
+</node>
+<node text="" bounds="Rect(264, 1949 - 682, 1949)">
+<node text="Web video codec guide" bounds="Rect(264, 1949 - 682, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(264, 1949 - 1036, 1949)">
+<node text="◦ " bounds="Rect(231, 1949 - 247, 1949)">
+</node>
+<node text="" bounds="Rect(264, 1949 - 684, 1949)">
+<node text="Web audio codec guide" bounds="Rect(264, 1949 - 684, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="Positioning and sizing the picture within its frame: " bounds="Rect(154, 1949 - 1034, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 500, 1949)">
+<node text="object-position" bounds="Rect(154, 1949 - 500, 1949)">
+</node>
+</node>
+<node text=" and " bounds="Rect(497, 1949 - 588, 1949)">
+</node>
+<node text="" bounds="Rect(585, 1949 - 825, 1949)">
+<node text="object-fit" bounds="Rect(585, 1949 - 825, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 327, 1949)">
+<node text="&lt;audio&gt;" bounds="Rect(154, 1949 - 327, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(154, 1949 - 555, 1949)">
+<node text="HTML video and audio" bounds="Rect(154, 1949 - 555, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(154, 1949 - 737, 1949)">
+<node text="Manipulating video using canvas" bounds="Rect(154, 1949 - 737, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="• " bounds="Rect(121, 1949 - 137, 1949)">
+</node>
+<node text="" bounds="Rect(154, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(154, 1949 - 770, 1949)">
+<node text="Configuring servers for Ogg media" bounds="Rect(154, 1949 - 770, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(808, 1949 - 990, 1949)">
+<node text="" bounds="Rect(808, 1949 - 990, 1949)">
+</node>
+</node>
+<node text="Help improve MDN" bounds="Rect(88, 1949 - 990, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 990, 1949)">
+<node text="Was this page helpful to you?" bounds="Rect(88, 1949 - 990, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 250, 1949)">
+<node text="Yes" bounds="Rect(88, 1949 - 250, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(280, 1949 - 440, 1949)">
+<node text="No" bounds="Rect(280, 1949 - 440, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 514, 1949)">
+<node text="Learn how to contribute" bounds="Rect(88, 1949 - 514, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 990, 1949)">
+<node text="This page was last modified on " bounds="Rect(88, 1949 - 654, 1949)">
+</node>
+<node text="Jul 16, 2026" bounds="Rect(649, 1949 - 869, 1949)">
+</node>
+<node text=" by " bounds="Rect(866, 1949 - 924, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 407, 1949)">
+<node text="MDN contributors" bounds="Rect(88, 1949 - 407, 1949)">
+</node>
+</node>
+<node text="." bounds="Rect(401, 1949 - 418, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(88, 1949 - 990, 1949)">
+<node text="" bounds="Rect(88, 1949 - 591, 1949)">
+<node text="View this page on GitHub" bounds="Rect(88, 1949 - 539, 1949)">
+</node>
+<node text="" bounds="Rect(541, 1949 - 591, 1949)">
+</node>
+</node>
+<node text=" • " bounds="Rect(585, 1949 - 632, 1949)">
+</node>
+<node text="" bounds="Rect(88, 1949 - 937, 1949)">
+<node text="Report a problem with this content" bounds="Rect(88, 1949 - 937, 1949)">
+</node>
+<node text="" bounds="Rect(387, 1949 - 434, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(88, 1949 - 992, 1949)">
+<node text="" bounds="Rect(88, 1949 - 992, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(918, 1949 - 981, 1949)">
+<node text="AD" bounds="Rect(932, 1949 - 968, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(0, 1949 - 1080, 1949)">
+<node text="" bounds="Rect(44, 1949 - 275, 1949)">
+<node text="" bounds="Rect(44, 1949 - 275, 1949)">
+</node>
+</node>
+<node text="Your blueprint for a better internet." bounds="Rect(44, 1949 - 660, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 110, 1949)">
+<node text="" bounds="Rect(44, 1949 - 110, 1949)">
+<node text="" bounds="Rect(44, 1949 - 110, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(143, 1949 - 209, 1949)">
+<node text="" bounds="Rect(143, 1949 - 209, 1949)">
+<node text="" bounds="Rect(143, 1949 - 209, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(242, 1949 - 308, 1949)">
+<node text="" bounds="Rect(242, 1949 - 308, 1949)">
+<node text="" bounds="Rect(242, 1949 - 308, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(341, 1949 - 407, 1949)">
+<node text="" bounds="Rect(341, 1949 - 407, 1949)">
+<node text="" bounds="Rect(341, 1949 - 407, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(440, 1949 - 506, 1949)">
+<node text="" bounds="Rect(440, 1949 - 506, 1949)">
+<node text="" bounds="Rect(440, 1949 - 506, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="MDN" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 151, 1949)">
+<node text="About" bounds="Rect(44, 1949 - 151, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 126, 1949)">
+<node text="Blog" bounds="Rect(44, 1949 - 126, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 365, 1949)">
+<node text="Mozilla careers" bounds="Rect(44, 1949 - 316, 1949)">
+</node>
+<node text="" bounds="Rect(319, 1949 - 365, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 352, 1949)">
+<node text="Advertise with us" bounds="Rect(44, 1949 - 352, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 222, 1949)">
+<node text="MDN Plus" bounds="Rect(44, 1949 - 222, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 321, 1949)">
+<node text="Product help" bounds="Rect(44, 1949 - 272, 1949)">
+</node>
+<node text="" bounds="Rect(275, 1949 - 321, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Contribute" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 349, 1949)">
+<node text="MDN Community" bounds="Rect(44, 1949 - 349, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 437, 1949)">
+<node text="Community resources" bounds="Rect(44, 1949 - 437, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 363, 1949)">
+<node text="Writing guidelines" bounds="Rect(44, 1949 - 363, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 330, 1949)">
+<node text="MDN Discord" bounds="Rect(44, 1949 - 283, 1949)">
+</node>
+<node text="" bounds="Rect(283, 1949 - 330, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 374, 1949)">
+<node text="MDN on GitHub" bounds="Rect(44, 1949 - 324, 1949)">
+</node>
+<node text="" bounds="Rect(324, 1949 - 374, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Developers" bounds="Rect(44, 1949 - 1036, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 363, 1949)">
+<node text="Web technologies" bounds="Rect(44, 1949 - 363, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 473, 1949)">
+<node text="Learn web development" bounds="Rect(44, 1949 - 473, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 170, 1949)">
+<node text="Guides" bounds="Rect(44, 1949 - 170, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 198, 1949)">
+<node text="Tutorials" bounds="Rect(44, 1949 - 198, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 203, 1949)">
+<node text="Glossary" bounds="Rect(44, 1949 - 203, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 294, 1949)">
+<node text="Hacks blog" bounds="Rect(44, 1949 - 244, 1949)">
+</node>
+<node text="" bounds="Rect(247, 1949 - 294, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 396, 1949)">
+<node text="" bounds="Rect(44, 1949 - 396, 1949)">
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="" bounds="Rect(44, 1949 - 506, 1949)">
+<node text="" bounds="Rect(44, 1949 - 506, 1949)">
+<node text="Website Privacy Notice" bounds="Rect(44, 1949 - 456, 1949)">
+</node>
+<node text="" bounds="Rect(456, 1949 - 506, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(544, 1949 - 932, 1949)">
+<node text="" bounds="Rect(544, 1949 - 932, 1949)">
+<node text="Telemetry Settings" bounds="Rect(544, 1949 - 880, 1949)">
+</node>
+<node text="" bounds="Rect(882, 1949 - 932, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 192, 1949)">
+<node text="" bounds="Rect(44, 1949 - 192, 1949)">
+<node text="Legal" bounds="Rect(44, 1949 - 143, 1949)">
+</node>
+<node text="" bounds="Rect(145, 1949 - 192, 1949)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(233, 1949 - 918, 1949)">
+<node text="" bounds="Rect(233, 1949 - 918, 1949)">
+<node text="Community Participation Guidelines" bounds="Rect(233, 1949 - 869, 1949)">
+</node>
+<node text="" bounds="Rect(871, 1949 - 918, 1949)">
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(44, 1949 - 1036, 1949)">
+<node text="Portions of this content are ©1998–2026 by individual mozilla.org contributors. Content available under " bounds="Rect(44, 1949 - 1001, 1949)">
+</node>
+<node text="" bounds="Rect(44, 1949 - 940, 1949)">
+<node text="a Creative Commons license" bounds="Rect(44, 1949 - 940, 1949)">
+</node>
+</node>
+<node text="." bounds="Rect(517, 1949 - 533, 1949)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="已检查页面资源。若没有结果，请先点击播放；blob 地址需要底层媒体资源，DRM 视频不支持下载。" bounds="Rect(33, 1981 - 1047, 2059)">
+</node>
+<node text="" bounds="Rect(324, 2092 - 757, 2224)">
+<node text="使用网页登录态重新解析" bounds="Rect(357, 2134 - 724, 2182)">
+</node>
+<node text="" bounds="Rect(324, 2103 - 757, 2213)">
+</node>
+</node>
+<node text="" bounds="Rect(0, 2224 - 1080, 2356)">
+<node text="" bounds="Rect(0, 2224 - 1080, 2356)">
+<node text="WebM · 5b3d53c8-44b1-4d37-b11a-2239d857b033.mdnplay.dev · 选择画质" bounds="Rect(33, 2266 - 1047, 2314)">
+</node>
+<node text="" bounds="Rect(0, 2235 - 1080, 2345)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>

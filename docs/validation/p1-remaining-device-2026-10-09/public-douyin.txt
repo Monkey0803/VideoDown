@@ -1,0 +1,74 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.PublicSiteAcceptanceDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.PublicSiteAcceptanceDeviceTest:
+INSTRUMENTATION_STATUS: test=douyin
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=PUBLIC_douyin: production repository parse
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.PublicSiteAcceptanceDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: PUBLIC_douyin parse: Failure(error=Parse(message=网站要求登录或验证，请打开网页完成后重试, failureKind=LOGIN_REQUIRED))
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:45)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:35)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.douyin(PublicSiteAcceptanceDeviceTest.kt:29)
+
+INSTRUMENTATION_STATUS: stream=
+Error in douyin(com.videodown.douyin.PublicSiteAcceptanceDeviceTest):
+java.lang.AssertionError: PUBLIC_douyin parse: Failure(error=Parse(message=网站要求登录或验证，请打开网页完成后重试, failureKind=LOGIN_REQUIRED))
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:45)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:35)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.douyin(PublicSiteAcceptanceDeviceTest.kt:29)
+
+INSTRUMENTATION_STATUS: test=douyin
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 5.632
+There was 1 failure:
+1) douyin(com.videodown.douyin.PublicSiteAcceptanceDeviceTest)
+java.lang.AssertionError: PUBLIC_douyin parse: Failure(error=Parse(message=网站要求登录或验证，请打开网页完成后重试, failureKind=LOGIN_REQUIRED))
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:45)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:35)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.douyin(PublicSiteAcceptanceDeviceTest.kt:29)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

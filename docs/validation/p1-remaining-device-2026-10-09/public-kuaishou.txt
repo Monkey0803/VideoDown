@@ -1,0 +1,29 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.PublicSiteAcceptanceDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.PublicSiteAcceptanceDeviceTest:
+INSTRUMENTATION_STATUS: test=kuaishou
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=PUBLIC_kuaishou: production repository parse
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=PUBLIC_kuaishou COMPLETE: bytes=75746030, quality=720P, video track and duration verified
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.PublicSiteAcceptanceDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=kuaishou
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 29.681
+
+OK (1 test)
+
+
+INSTRUMENTATION_CODE: -1

@@ -1,0 +1,9 @@
+
+com.videodown.douyin.PublicSiteAcceptanceDeviceTest:NEGATIVE_PTS: timestamp=-107700, track=0
+NEGATIVE_PTS: production validation passed
+NEGATIVE_PTS: validating truncated container
+.
+
+Time: 0.065
+
+OK (1 test)

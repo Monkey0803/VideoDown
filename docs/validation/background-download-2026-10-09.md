@@ -31,7 +31,9 @@
 
 断点计数最后修正后，第 3 项单独复验 `OK (1 test)`，44.584 秒：确认失败记录 downloadedBytes 与 147456 字节实际断点等值，UI 显示 1%，真实按钮续传完成。截图已更新，日志见 `background-device-2026-10-09/instrumentation-checkpoint.txt`。
 
-手机启用了安全锁屏，因此熄屏段未执行，不能宣称锁屏下载已验证。已询问用户是否方便手动解锁，尚未收到配合回复；没有修改锁屏配置。当前真机也不覆盖 Android 15 的系统时限回调。
+前阶段手机启用了安全锁屏，未获得人工解锁配合时没有执行熄屏段，也没有修改锁屏配置。后续用户明确授权并配合正常解锁，追加专项 `secureScreenOffTransferCompletesAfterNormalManualUnlock`，权威 runner `OK (1 test)`，43.649 秒，见 [人工解锁日志](p1-remaining-device-2026-10-09/background-manual-unlock.txt)。
+
+真实安全熄屏时 `interactive=false/secureLocked=true`，进度从 139264 增至 401408 字节。正常人工解锁返回后任务为 `RUNNING`，随后完整下载 8388608 字节，与服务器文件逐字节一致且生产视频校验通过；下载通知和前台服务正常退出。未采集解锁凭据或绕过锁屏。当前真机仍不覆盖 Android 15 系统时限回调或长时间待机限制。
 
 ## 边界
 

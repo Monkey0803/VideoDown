@@ -10,6 +10,35 @@ import signal
 from urllib.parse import urlparse
 import re
 import errno
+from html.parser import HTMLParser
+
+
+def strip_html_comments(webpage):
+    """Remove inactive HTML nodes without changing script/style content or other bytes."""
+    line_offsets = [0] + [match.end() for match in re.finditer("\n", webpage)]
+    spans = []
+
+    class CommentParser(HTMLParser):
+        def handle_comment(self, data):
+            line, column = self.getpos()
+            start = line_offsets[line - 1] + column
+            end = webpage.find("-->", start + 4)
+            if end >= 0:
+                spans.append((start, end + 3))
+
+    parser = CommentParser(convert_charrefs=False)
+    try:
+        parser.feed(webpage)
+        parser.close()
+    except (AssertionError, ValueError):
+        return webpage
+    parts = []
+    previous = 0
+    for start, end in spans:
+        parts.append(webpage[previous:start])
+        previous = end
+    parts.append(webpage[previous:])
+    return "".join(parts)
 
 def classify_failure(error, mode=None):
     """Return an actionable category without disclosing extractor messages or credentials."""
@@ -66,6 +95,17 @@ threading.Thread(target=watch_owner, daemon=True).start()
 print(json.dumps({"event": "pid", "pid": os.getpid()}), flush=True)
 sys.path.insert(0, sys.argv[1])
 import yt_dlp
+from yt_dlp.extractor.generic import GenericIE
+
+
+class CommentAwareGenericIE(GenericIE):
+    @classmethod
+    def ie_key(cls):
+        # Keep persisted extractor identity and the existing fallback position.
+        return GenericIE.ie_key()
+
+    def _extract_embeds(self, url, webpage, **kwargs):
+        return super()._extract_embeds(url, strip_html_comments(webpage), **kwargs)
 
 
 def emit(event, **data):
@@ -165,6 +205,7 @@ try:
         if request.get("audio_only"):
             options["postprocessors"] = [{"key": "FFmpegExtractAudio", "preferredcodec": "m4a", "preferredquality": "0"}]
         with yt_dlp.YoutubeDL(options) as engine:
+            engine.add_info_extractor(CommentAwareGenericIE())
             info = engine.extract_info(request["url"], download=False)
             if info is None:
                 raise ValueError("No media")

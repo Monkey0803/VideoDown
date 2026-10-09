@@ -1,0 +1,83 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.PublicSiteAcceptanceDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.PublicSiteAcceptanceDeviceTest:
+INSTRUMENTATION_STATUS: test=ordinaryWebPage
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=PUBLIC_web: production repository parse
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=PUBLIC_web SELECTION: label=原画 · MP4 · 0, type=DIRECT, extension=mp4, formats=[原画 · MP4 · 0]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=PUBLIC_web VALIDATION_FAILED: IllegalArgumentException: 下载结果没有完整的视频数据
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.PublicSiteAcceptanceDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: PUBLIC_web download: 下载或合并失败，请检查存储空间后重试 expected:<COMPLETED> but was:<FAILED>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:71)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:38)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.ordinaryWebPage(PublicSiteAcceptanceDeviceTest.kt:36)
+
+INSTRUMENTATION_STATUS: stream=
+Error in ordinaryWebPage(com.videodown.douyin.PublicSiteAcceptanceDeviceTest):
+java.lang.AssertionError: PUBLIC_web download: 下载或合并失败，请检查存储空间后重试 expected:<COMPLETED> but was:<FAILED>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:71)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:38)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.ordinaryWebPage(PublicSiteAcceptanceDeviceTest.kt:36)
+
+INSTRUMENTATION_STATUS: test=ordinaryWebPage
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 15.818
+There was 1 failure:
+1) ordinaryWebPage(com.videodown.douyin.PublicSiteAcceptanceDeviceTest)
+java.lang.AssertionError: PUBLIC_web download: 下载或合并失败，请检查存储空间后重试 expected:<COMPLETED> but was:<FAILED>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:71)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:38)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.ordinaryWebPage(PublicSiteAcceptanceDeviceTest.kt:36)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

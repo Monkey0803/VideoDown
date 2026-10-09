@@ -1,0 +1,16 @@
+
+com.videodown.douyin.P3PictureInPictureDeviceTest:PIP_BEFORE_LOCK: cycle=1, position=2301, loops=0, continuous=2301
+PIP_LOCKED: cycle=1, interactive=false, keyguardLocked=true, samePlayer/media=true
+MANUAL_UNLOCK_READY: PiP cycle 1; unlock normally within 120 seconds
+PIP_RETURN_STATE: cycle=1, samePlayer=true, sameMedia=true, state=3, playing=false, playWhenReady=false, position=2875, loops=0, continuous=2875, beforeLock=2301, destroyed=false
+PIP_UNLOCKED: cycle=1, samePlayer/media=true, looping progress advanced, expanded and actual UI play/pause OK
+PIP_BEFORE_LOCK: cycle=2, position=5960, loops=0, continuous=5960
+PIP_LOCKED: cycle=2, interactive=false, keyguardLocked=true, samePlayer/media=true
+MANUAL_UNLOCK_READY: PiP cycle 2; unlock normally within 120 seconds
+PIP_RETURN_STATE: cycle=2, samePlayer=true, sameMedia=true, state=3, playing=false, playWhenReady=false, position=6536, loops=0, continuous=6536, beforeLock=5960, destroyed=false
+PIP_UNLOCKED: cycle=2, samePlayer/media=true, looping progress advanced, expanded and actual UI play/pause OK
+.
+
+Time: 25.155
+
+OK (1 test)

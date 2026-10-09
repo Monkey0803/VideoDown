@@ -1,0 +1,81 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P3PictureInPictureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P3PictureInPictureDeviceTest:
+INSTRUMENTATION_STATUS: test=homeEntersRealPipHidesSpeedDialogAndReturnsWithoutResettingVideo
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=PiP Home/expand iteration 1: same player, advancing progress, play/pause OK
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=PiP Home/expand iteration 2: same player, advancing progress, play/pause OK
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=PiP Home/expand iteration 3: same player, advancing progress, play/pause OK
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P3PictureInPictureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=homeEntersRealPipHidesSpeedDialogAndReturnsWithoutResettingVideo
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P3PictureInPictureDeviceTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=explicitPipEntryThenActivityClosureReleasesVideoAndSavesProgress
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P3PictureInPictureDeviceTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=explicitPipEntryThenActivityClosureReleasesVideoAndSavesProgress
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P3PictureInPictureDeviceTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=systemPipDismissReleasesVideo
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P3PictureInPictureDeviceTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.systemPipDismissReleasesVideo(P3PictureInPictureDeviceTest.kt:147)
+
+INSTRUMENTATION_STATUS: stream=
+Error in systemPipDismissReleasesVideo(com.videodown.douyin.P3PictureInPictureDeviceTest):
+java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.systemPipDismissReleasesVideo(P3PictureInPictureDeviceTest.kt:147)
+
+INSTRUMENTATION_STATUS: test=systemPipDismissReleasesVideo
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 14.601
+There was 1 failure:
+1) systemPipDismissReleasesVideo(com.videodown.douyin.P3PictureInPictureDeviceTest)
+java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.videodown.douyin.P3PictureInPictureDeviceTest.systemPipDismissReleasesVideo(P3PictureInPictureDeviceTest.kt:147)
+
+FAILURES!!!
+Tests run: 3,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

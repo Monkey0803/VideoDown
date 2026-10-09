@@ -1,0 +1,2 @@
+PUBLIC_DIAGNOSTIC DownloadError ERROR: [generic] Got HTTP Error 403 caused by Cloudflare anti-bot challenge; see  https://github.com/yt-dlp/yt-dlp#impersonation  for how to install the required impersonation dependency, and try again with  --extractor-args "generic:impersonate"
+{"event": "error", "kind": "ACCESS"}

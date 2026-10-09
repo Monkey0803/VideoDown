@@ -1,0 +1,10 @@
+
+com.videodown.douyin.PublicSiteAcceptanceDeviceTest:PUBLIC_web: production repository parse
+PUBLIC_web SELECTION: label=原画 · MP4 · 0, type=DIRECT, extension=mp4, formats=[原画 · MP4 · 0]
+PUBLIC_web TRACKS: [video/avc, audio/mp4a-latm]
+PUBLIC_web COMPLETE: bytes=258137, quality=原画 · MP4 · 0, video track and duration verified
+.
+
+Time: 15.74
+
+OK (1 test)

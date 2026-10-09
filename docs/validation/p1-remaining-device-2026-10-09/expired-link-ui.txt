@@ -1,0 +1,47 @@
+
+com.videodown.douyin.ExpiredLinkRecoveryDeviceTest:
+Error in actualExpiredLinkOffersOriginalPageReparse(com.videodown.douyin.ExpiredLinkRecoveryDeviceTest):
+java.lang.AssertionError: expected:<LINK_EXPIRED> but was:<ACCESS_DENIED>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.videodown.douyin.ExpiredLinkRecoveryDeviceTest$actualExpiredLinkOffersOriginalPageReparse$1.invokeSuspend(ExpiredLinkRecoveryDeviceTest.kt:86)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:35)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:47)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.ExpiredLinkRecoveryDeviceTest.actualExpiredLinkOffersOriginalPageReparse(ExpiredLinkRecoveryDeviceTest.kt:21)
+
+
+Time: 6.906
+There was 1 failure:
+1) actualExpiredLinkOffersOriginalPageReparse(com.videodown.douyin.ExpiredLinkRecoveryDeviceTest)
+java.lang.AssertionError: expected:<LINK_EXPIRED> but was:<ACCESS_DENIED>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.videodown.douyin.ExpiredLinkRecoveryDeviceTest$actualExpiredLinkOffersOriginalPageReparse$1.invokeSuspend(ExpiredLinkRecoveryDeviceTest.kt:86)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:35)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:47)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.ExpiredLinkRecoveryDeviceTest.actualExpiredLinkOffersOriginalPageReparse(ExpiredLinkRecoveryDeviceTest.kt:21)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

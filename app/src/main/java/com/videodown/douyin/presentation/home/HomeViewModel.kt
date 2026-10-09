@@ -46,6 +46,8 @@ data class HomeUiState(
     val errorMessage: String? = null,
     val errorKind: DownloadFailureKind? = null,
     val browserRequestUrl: String? = null,
+    /** Retained after fast parse completion so old browser overlays can be dismissed. */
+    val parseRequestId: Long = 0,
     val infoMessage: String? = null,
     /** Id of the record created by the most recent "download" tap. */
     val activeDownloadId: String? = null,
@@ -115,7 +117,7 @@ class HomeViewModel(
         sizeJob?.cancel()
         observeJob?.cancel()
         _state.update {
-            it.copy(isParsing = true, isLoadingSizes = false, errorMessage = null, errorKind = null, browserRequestUrl = null, infoMessage = null,
+            it.copy(parseRequestId = it.parseRequestId + 1, isParsing = true, isLoadingSizes = false, errorMessage = null, errorKind = null, browserRequestUrl = null, infoMessage = null,
                 video = null, videos = emptyList(), selectedMedia = emptySet(), variantChoices = emptyMap(),
                 duplicates = null, isSubmitting = false, queuedCount = null, selectedVariant = null, activeDownloadId = null, activeProgress = null,
                 activeRecord = null)

@@ -1,0 +1,9 @@
+
+com.videodown.douyin.UnavailableLinkRecoveryDeviceTest:UNAVAILABLE_PUBLIC: failureKind=ACCESS_DENIED; original source page retained
+UNAVAILABLE_PUBLIC: unique task recovery button clicked
+UNAVAILABLE_PUBLIC: actual recovery button navigated Home; terminal=ACCESS_DENIED (remote challenge); new download not covered
+.
+
+Time: 18.474
+
+OK (1 test)

@@ -1,0 +1,24 @@
+<windows>
+<node text="" description="" bounds="Rect(508, 2015 - 1036, 2312)" clickable="false">
+<node text="" description="" bounds="Rect(508, 2015 - 1036, 2312)" clickable="false">
+<node text="" description="" bounds="Rect(508, 2015 - 1036, 2312)" clickable="false">
+<node text="" description="" bounds="Rect(508, 2015 - 1036, 2312)" clickable="false">
+<node text="" description="" bounds="Rect(508, 2015 - 1036, 2312)" clickable="false">
+<node text="" description="" bounds="Rect(508, 2048 - 1036, 2229)" clickable="false">
+<node text="" description="展开" bounds="Rect(689, 2056 - 854, 2221)" clickable="true">
+</node>
+</node>
+</node>
+<node text="" description="设置" bounds="Rect(508, 2015 - 640, 2147)" clickable="true">
+</node>
+<node text="" description="" bounds="Rect(519, 2026 - 552, 2059)" clickable="true">
+</node>
+<node text="" description="关闭" bounds="Rect(904, 2015 - 1036, 2147)" clickable="true">
+</node>
+</node>
+</node>
+</node>
+</node>
+
+
+</windows>

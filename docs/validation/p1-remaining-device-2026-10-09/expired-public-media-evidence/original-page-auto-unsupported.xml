@@ -1,0 +1,138 @@
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="" bounds="Rect(0, 80 - 1080, 2136)">
+<node text="拾影" bounds="Rect(61, 113 - 193, 209)">
+</node>
+<node text="粘贴分享链接，保存喜欢的视频。" bounds="Rect(61, 220 - 497, 260)">
+</node>
+<node text="" bounds="Rect(61, 304 - 1019, 1381)">
+<node text="解析视频" bounds="Rect(108, 351 - 259, 408)">
+</node>
+<node text="粘贴链接" bounds="Rect(854, 360 - 972, 400)">
+</node>
+<node text="" bounds="Rect(108, 444 - 972, 703)">
+<node text="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/video" bounds="Rect(108, 444 - 801, 703)">
+<node text="" bounds="Rect(152, 488 - 757, 659)">
+</node>
+</node>
+<node text="" bounds="Rect(801, 508 - 961, 640)">
+<node text="粘贴" bounds="Rect(851, 554 - 911, 594)">
+</node>
+<node text="" bounds="Rect(801, 519 - 961, 629)">
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(108, 736 - 972, 890)">
+<node text="立即解析" bounds="Rect(437, 789 - 571, 837)">
+</node>
+<node text="" bounds="Rect(108, 736 - 972, 890)">
+</node>
+</node>
+<node text="" bounds="Rect(108, 923 - 375, 1055)">
+<node text="打开网页查找视频" bounds="Rect(108, 965 - 375, 1013)">
+</node>
+<node text="" bounds="Rect(108, 934 - 375, 1044)">
+</node>
+</node>
+<node text="当前内容暂不支持" bounds="Rect(108, 1055 - 375, 1103)">
+</node>
+<node text="DRM 和直播无法保存。普通网页可尝试登录或播放后查找视频。" bounds="Rect(108, 1114 - 932, 1154)">
+</node>
+<node text="" bounds="Rect(108, 1154 - 442, 1286)">
+<node text="批量导入多个链接" bounds="Rect(175, 1196 - 442, 1244)">
+</node>
+<node text="" bounds="Rect(108, 1165 - 442, 1275)">
+</node>
+</node>
+<node text="支持主流平台与普通网页视频" bounds="Rect(108, 1294 - 489, 1334)">
+</node>
+</node>
+<node text="最近保存" bounds="Rect(61, 1493 - 212, 1550)">
+</node>
+<node text="" bounds="Rect(798, 1455 - 1019, 1587)">
+<node text="查看全部 →" bounds="Rect(831, 1501 - 986, 1541)">
+</node>
+<node text="" bounds="Rect(798, 1466 - 1019, 1576)">
+</node>
+</node>
+<node text="保存的视频会显示在这里" bounds="Rect(61, 1626 - 381, 1666)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(0, 2136 - 1080, 2400)">
+<node text="" bounds="Rect(0, 2136 - 1080, 2356)">
+<node text="" bounds="Rect(0, 2136 - 253, 2356)">
+<node text="" bounds="Rect(49, 2149 - 203, 2281)">
+</node>
+<node text="" bounds="Rect(60, 2224 - 192, 2356)">
+<node text="解析" bounds="Rect(96, 2270 - 156, 2310)">
+</node>
+</node>
+<node text="" bounds="Rect(93, 2182 - 159, 2248)">
+</node>
+<node text="" bounds="Rect(49, 2149 - 203, 2281)">
+</node>
+<node text="" bounds="Rect(0, 2136 - 253, 2356)">
+</node>
+</node>
+<node text="" bounds="Rect(275, 2136 - 528, 2356)">
+<node text="" bounds="Rect(335, 2149 - 467, 2281)">
+</node>
+<node text="" bounds="Rect(335, 2224 - 467, 2356)">
+<node text="任务" bounds="Rect(371, 2270 - 431, 2310)">
+</node>
+</node>
+<node text="" bounds="Rect(368, 2182 - 434, 2248)">
+</node>
+<node text="" bounds="Rect(324, 2149 - 478, 2281)">
+</node>
+<node text="" bounds="Rect(275, 2136 - 528, 2356)">
+</node>
+</node>
+<node text="" bounds="Rect(550, 2136 - 804, 2356)">
+<node text="" bounds="Rect(611, 2149 - 743, 2281)">
+</node>
+<node text="" bounds="Rect(611, 2224 - 743, 2356)">
+<node text="已存" bounds="Rect(647, 2270 - 707, 2310)">
+</node>
+</node>
+<node text="" bounds="Rect(644, 2182 - 710, 2248)">
+</node>
+<node text="" bounds="Rect(600, 2149 - 754, 2281)">
+</node>
+<node text="" bounds="Rect(550, 2136 - 804, 2356)">
+</node>
+</node>
+<node text="" bounds="Rect(826, 2136 - 1080, 2356)">
+<node text="" bounds="Rect(887, 2149 - 1019, 2281)">
+</node>
+<node text="" bounds="Rect(887, 2224 - 1019, 2356)">
+<node text="我的" bounds="Rect(923, 2270 - 983, 2310)">
+</node>
+</node>
+<node text="" bounds="Rect(920, 2182 - 986, 2248)">
+</node>
+<node text="" bounds="Rect(876, 2149 - 1030, 2281)">
+</node>
+<node text="" bounds="Rect(826, 2136 - 1080, 2356)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

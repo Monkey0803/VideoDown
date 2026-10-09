@@ -1,0 +1,10 @@
+
+com.videodown.douyin.BackgroundDownloadDeviceTest:BACKGROUND_LOCKED: interactive=false, secureLocked=true, bytes=139264->401408
+MANUAL_UNLOCK_READY: background transfer; unlock normally within 120 seconds
+BACKGROUND_UNLOCKED: returned status=RUNNING; natural completion during unlock is allowed
+BACKGROUND_SCREEN_OFF_COMPLETE: full 8388608 bytes verified, valid video, foreground service/notification exited
+.
+
+Time: 43.649
+
+OK (1 test)
