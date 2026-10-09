@@ -106,6 +106,8 @@ sdk.dir=/Users/<you>/Library/Android/sdk
 
 ## 构建与测试
 
+命令速查、架构硬规则与「不要顺手改」清单见 [AGENTS.md](AGENTS.md)；本节保留更完整的说明。
+
 ```bash
 # 单元测试（覆盖四平台解析、匿名访问与备用接口、多视频切换、断点续传、历史兼容、Wi-Fi 限制及完成回调）
 ./gradlew testDebugUnitTest
