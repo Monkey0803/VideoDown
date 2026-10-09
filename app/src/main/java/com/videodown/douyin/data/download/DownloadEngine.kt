@@ -55,7 +55,7 @@ class DownloadEngine(
     maxConcurrent: Int = DEFAULT_CONCURRENCY,
     private val networkPolicy: DownloadNetworkPolicy = DownloadNetworkPolicy.Unrestricted,
     private val onCompleted: (DownloadRecord) -> Unit = {},
-    private val onTaskScheduled: () -> Unit = {},
+    private val onTaskScheduled: suspend () -> Unit = {},
     private val engineDownloader: EngineMediaDownloader? = null,
     private val browserCookie: ((String) -> String?)? = null,
     private val validateFile: ((File) -> Unit)? = null,
@@ -229,6 +229,7 @@ class DownloadEngine(
         val job = scope.launch(start = CoroutineStart.LAZY) {
             var storage: StorageReservations.Lease? = null
             try {
+                onTaskScheduled()
                 scheduler.awaitSlot(record.id)
                 if (record.media?.localRecordId == null && !networkPolicy.isAllowed()) throw WifiRequiredException()
                 // Reordering persists while this job is waiting. Read it after the
@@ -248,14 +249,18 @@ class DownloadEngine(
 
             } catch (e: CancellationException) {
                 withContext(NonCancellable) {
-                    markPaused(record.id, if (e is WifiRequiredException) WIFI_PAUSE_REASON else null)
+                    val backgroundFailure = generateSequence<Throwable>(e) { it.cause }
+                        .filterIsInstance<BackgroundDownloadCancellation>().firstOrNull()
+                    if (backgroundFailure != null) markBackgroundFailure(record.id, backgroundFailure.message.orEmpty())
+                    else markPaused(record.id, if (e is WifiRequiredException) WIFI_PAUSE_REASON else null)
                 }
                 throw e
             } catch (e: Exception) {
+                if (e is DownloadServiceException) Log.w(TAG, "后台下载服务启动失败", e)
                 val latest = history.getById(record.id) ?: record
                 history.upsert(latest.copy(status = DownloadStatus.FAILED,
-                    errorMessage = when (e) { is VideoEngineException -> e.message; is InsufficientStorageException -> e.error.message; else -> "下载或合并失败，请检查存储空间后重试" },
-                    failureKind = when (e) { is VideoEngineException -> e.failureKind; is InsufficientStorageException -> DownloadFailureKind.STORAGE_FULL; else -> DownloadFailureKind.UNKNOWN },
+                    errorMessage = when (e) { is VideoEngineException -> e.message; is InsufficientStorageException -> e.error.message; is DownloadServiceException -> e.message; else -> "下载或合并失败，请检查存储空间后重试" },
+                    failureKind = when (e) { is VideoEngineException -> e.failureKind; is InsufficientStorageException -> DownloadFailureKind.STORAGE_FULL; is DownloadServiceException -> DownloadFailureKind.BACKGROUND_SERVICE; else -> DownloadFailureKind.UNKNOWN },
                     updatedAt = System.currentTimeMillis()))
                 _progress.update { it - record.id }
             } finally {
@@ -268,10 +273,29 @@ class DownloadEngine(
             return
         }
         job.invokeOnCompletion { activeJobs.remove(record.id, job) }
-        // Progress is already registered, so the service cannot stop on an empty initial map.
-        try { onTaskScheduled() }
-        catch (error: Exception) { Log.w(TAG, "无法启动下载进度服务", error) }
-        finally { job.start() }
+        // Progress is registered before the job asks the service for its foreground acknowledgement.
+        job.start()
+    }
+
+    suspend fun interruptForBackgroundFailure(message: String) {
+        // Cancel a snapshot without holding the maintenance gate: jobs may be waiting for it.
+        val jobs = activeJobs.values.toList()
+        jobs.forEach { it.cancel(BackgroundDownloadCancellation(message)) }
+        jobs.forEach { it.join() }
+    }
+
+    private suspend fun markBackgroundFailure(id: String, message: String) {
+        history.getById(id)?.takeIf { it.status != DownloadStatus.COMPLETED }?.let { latest ->
+            val progress = _progress.value[id]
+            val partial = File(latest.partialPath)
+            val downloaded = if (latest.media?.usesEngine != true && partial.isFile) partial.length()
+                else progress?.downloadedBytes ?: latest.downloadedBytes
+            history.upsert(latest.copy(status = DownloadStatus.FAILED, errorMessage = message,
+                downloadedBytes = downloaded, totalBytes = progress?.totalBytes?.takeIf { it > 0 } ?: latest.totalBytes,
+                phase = progress?.phase ?: latest.phase,
+                failureKind = DownloadFailureKind.BACKGROUND_SERVICE, updatedAt = System.currentTimeMillis()))
+        }
+        _progress.update { it - id }
     }
 
     private suspend fun runTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {

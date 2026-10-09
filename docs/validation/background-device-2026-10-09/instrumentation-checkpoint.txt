@@ -1,0 +1,29 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.BackgroundDownloadDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.BackgroundDownloadDeviceTest:
+INSTRUMENTATION_STATUS: test=unexpectedServiceStopFailsWithVisibleGuidanceAndRetryCompletes
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=Background: unexpected stopService -> FAILED/BACKGROUND_SERVICE, stable partial 147456; Chinese reason and retry visible
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=Background: retry after service loss recreated foreground service and completed identical bytes
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.BackgroundDownloadDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=unexpectedServiceStopFailsWithVisibleGuidanceAndRetryCompletes
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 44.584
+
+OK (1 test)
+
+
+INSTRUMENTATION_CODE: -1

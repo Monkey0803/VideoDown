@@ -18,6 +18,49 @@ class P1DownloadIntegrationTest {
     private val history by lazy { DownloadHistoryRepositoryImpl(DownloadHistoryStore(File(temp.root, "history.json"))) }
     private fun variant(server: RangeAwareTestServer) = VideoVariant("http://127.0.0.1:${server.port}/video.mp4", "720P", sizeBytes = payload.size.toLong())
 
+    @Test fun `foreground startup failure never starts HTTP and can retry`() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        var denied = true
+        try {
+            RangeAwareTestServer(payload).use { server ->
+                val engine = DownloadEngine(history, ResumableDownloader(OkHttpClient()), DownloadPaths(temp.root),
+                    scope, "", "test", onTaskScheduled = {
+                        if (denied) throw DownloadServiceException("后台下载服务无法启动")
+                    })
+                val id = engine.start(DouyinVideo("service", "service"), variant(server))
+                val failed = withTimeout(5000) { history.observeRecord(id).first { it?.status == DownloadStatus.FAILED }!! }
+                assertEquals(DownloadFailureKind.BACKGROUND_SERVICE, failed.failureKind)
+                assertEquals(0, server.requestCount)
+                withTimeout(5000) { while (id in engine.activeTaskIds()) delay(10) }
+                denied = false
+                engine.resume(id)
+                val completed = withTimeout(5000) { history.observeRecord(id).first { it?.status == DownloadStatus.COMPLETED }!! }
+                assertArrayEquals(payload, File(completed.filePath!!).readBytes())
+            }
+        } finally { scope.coroutineContext.job.cancelAndJoin() }
+    }
+
+    @Test fun `lost foreground service stops transfer retains partial and resumes`() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            RangeAwareTestServer(payload, chunkSize = 1024, chunkDelayMs = 20).use { server ->
+                val engine = DownloadEngine(history, ResumableDownloader(OkHttpClient()), DownloadPaths(temp.root), scope, "", "test")
+                val id = engine.start(DouyinVideo("lost-service", "lost-service"), variant(server))
+                withTimeout(5000) { engine.progress.first { (it[id]?.downloadedBytes ?: 0) > 0 } }
+                engine.interruptForBackgroundFailure("后台下载服务已中断")
+                val failed = history.getById(id)!!
+                assertEquals(DownloadStatus.FAILED, failed.status)
+                assertEquals(DownloadFailureKind.BACKGROUND_SERVICE, failed.failureKind)
+                assertTrue(File(failed.partialPath).length() > 0)
+                assertEquals(File(failed.partialPath).length(), failed.downloadedBytes)
+                assertFalse(engine.activeTaskIds().contains(id))
+                engine.resume(id)
+                val completed = withTimeout(5000) { history.observeRecord(id).first { it?.status == DownloadStatus.COMPLETED }!! }
+                assertArrayEquals(payload, File(completed.filePath!!).readBytes())
+            }
+        } finally { scope.coroutineContext.job.cancelAndJoin() }
+    }
+
     @Test fun `queue priority and live concurrency control determine actual HTTP starts`() = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
