@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.generic.BrowserSessionStoreTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.721Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="twitter links also query the current X API origin" classname="com.videodown.douyin.data.generic.BrowserSessionStoreTest" time="0.0"/>
+  <testcase name="unrelated pages do not request X session cookies" classname="com.videodown.douyin.data.generic.BrowserSessionStoreTest" time="0.0"/>
+  <testcase name="X session checks API origin through its own WebView cookie lookup" classname="com.videodown.douyin.data.generic.BrowserSessionStoreTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

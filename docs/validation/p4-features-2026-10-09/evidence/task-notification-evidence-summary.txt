@@ -1,0 +1,3 @@
+independent notification ids seen: 1100..1199
+owned tasks: 2
+concurrency preference restored to 3

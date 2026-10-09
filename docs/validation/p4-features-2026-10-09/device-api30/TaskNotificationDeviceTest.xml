@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:59:19" hostname="localhost">
+  <testsuite name="com.videodown.douyin.TaskNotificationDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="2.166" timestamp="2026-10-09T10:59:19" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="independentCardsPauseOnlyTheirOwnTaskAndFollowThePreference" classname="com.videodown.douyin.TaskNotificationDeviceTest" time="2.166" />
+  </testsuite>
+</testsuites>

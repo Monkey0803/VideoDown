@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:49:49" hostname="localhost">
+  <testsuite name="com.videodown.douyin.HomeResultBackDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="3.588" timestamp="2026-10-09T10:49:49" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="systemBackReturnsToInputWithoutFinishingActivity" classname="com.videodown.douyin.HomeResultBackDeviceTest" time="1.583" />
+    <testcase name="simplifiedQualityLabelsKeepDistinctSourcesSelectable" classname="com.videodown.douyin.HomeResultBackDeviceTest" time="0.995" />
+    <testcase name="toolbarBackReturnsToTheSameInput" classname="com.videodown.douyin.HomeResultBackDeviceTest" time="1.010" />
+  </testsuite>
+</testsuites>

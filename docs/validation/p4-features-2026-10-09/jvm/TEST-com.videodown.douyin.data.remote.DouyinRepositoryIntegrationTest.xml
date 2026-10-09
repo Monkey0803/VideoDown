@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.DouyinRepositoryIntegrationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.811Z" hostname="Alias-mini.local" time="0.024">
+  <properties/>
+  <testcase name="reports a clear error for text without a douyin link" classname="com.videodown.douyin.data.remote.DouyinRepositoryIntegrationTest" time="0.005"/>
+  <testcase name="falls back to the legacy api when the share page has no video" classname="com.videodown.douyin.data.remote.DouyinRepositoryIntegrationTest" time="0.01"/>
+  <testcase name="parses a share caption into a video with resolution choices" classname="com.videodown.douyin.data.remote.DouyinRepositoryIntegrationTest" time="0.002"/>
+  <testcase name="reports which video failed when every source is unusable" classname="com.videodown.douyin.data.remote.DouyinRepositoryIntegrationTest" time="0.005"/>
+  <testcase name="prefers the share page over the legacy api" classname="com.videodown.douyin.data.remote.DouyinRepositoryIntegrationTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:56:45" hostname="localhost">
+  <testsuite name="com.videodown.douyin.ClipboardDetectDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="7.551" timestamp="2026-10-09T10:56:45" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="dismissedLinkIsNeverOfferedAgain" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="2.978" />
+    <testcase name="aPlainWebLinkIsNeverOffered" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="1.447" />
+    <testcase name="copiedLinkIsOfferedAndReachesTheInputOnlyAfterConfirmation" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="1.648" />
+    <testcase name="turningThePreferenceOffStopsReadingTheClipboard" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="1.478" />
+  </testsuite>
+</testsuites>

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:56:55" hostname="localhost">
+  <testsuite name="com.videodown.douyin.LauncherShortcutsDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="4.641" timestamp="2026-10-09T10:56:55" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="theThreeEntryShortcutsArePublishedForThisInstalledPackage" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="0.020" />
+    <testcase name="quickParseReadsTheCopiedLinkDirectlyWithoutTheConfirmationBanner" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.640" />
+    <testcase name="theBatchImportShortcutOpensTheImportDialog" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.597" />
+    <testcase name="theTasksShortcutOpensTheTaskPage" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.384" />
+  </testsuite>
+</testsuites>

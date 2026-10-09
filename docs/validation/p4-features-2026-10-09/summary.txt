@@ -1,0 +1,9 @@
+# 汇总（自动生成，来源为各 runner 的 JUnit XML）
+
+JVM testDebugUnitTest: 用例=262 失败=0
+模拟器 Pixel_10_Pro AVD (Android 17 / API 37): 用例=42 失败=1
+真机 SHARK PRS-A0 (Android 11 / API 30): 用例=12 失败=0
+
+  FAILED com.videodown.douyin.P2CompletionNotificationDeviceTest: tests=1 failures=1 errors=0
+
+说明：模拟器集合含 9 个回归用例与 P2CompletionNotificationDeviceTest 的失败样本（见 emulator-api37/P2CompletionNotificationDeviceTest.emulator-failure.xml）；后者在真机通过（见 device-api30/P2CompletionNotificationDeviceTest.xml）。

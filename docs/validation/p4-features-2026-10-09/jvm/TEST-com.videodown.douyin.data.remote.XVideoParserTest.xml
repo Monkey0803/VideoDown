@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.XVideoParserTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.925Z" hostname="Alias-mini.local" time="0.003">
+  <properties/>
+  <testcase name="visibility wrapper and new user shape still resolve author" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.001"/>
+  <testcase name="embed tokens match JavaScript double rounding including large ids" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.0"/>
+  <testcase name="accepts original old domain mobile and indexed links but rejects spoofed hosts" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.001"/>
+  <testcase name="retweets use original media author and source post" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.0"/>
+  <testcase name="quote media stays distinct and explicit index never selects quote accidentally" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.0"/>
+  <testcase name="protected deleted and login restricted posts are terminal failures" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.0"/>
+  <testcase name="syndication and graphql have equivalent identities and formats" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.001"/>
+  <testcase name="invalid json missing data and a different tweet never become success" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.0"/>
+  <testcase name="graphql separates media and preserves original index across photos" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.0"/>
+  <testcase name="hls and foreign media hosts cannot be saved as mp4" classname="com.videodown.douyin.data.remote.XVideoParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.ClipboardLinkPolicyTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.801Z" hostname="Alias-mini.local" time="0.001">
+  <properties/>
+  <testcase name="trailing chinese punctuation does not break detection" classname="com.videodown.douyin.data.remote.ClipboardLinkPolicyTest" time="0.0"/>
+  <testcase name="a plain web link is never offered" classname="com.videodown.douyin.data.remote.ClipboardLinkPolicyTest" time="0.0"/>
+  <testcase name="every supported platform is recognised" classname="com.videodown.douyin.data.remote.ClipboardLinkPolicyTest" time="0.0"/>
+  <testcase name="text without a link or without content is ignored" classname="com.videodown.douyin.data.remote.ClipboardLinkPolicyTest" time="0.0"/>
+  <testcase name="a dismissed link is not offered again" classname="com.videodown.douyin.data.remote.ClipboardLinkPolicyTest" time="0.001"/>
+  <testcase name="a supported platform link is offered" classname="com.videodown.douyin.data.remote.ClipboardLinkPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

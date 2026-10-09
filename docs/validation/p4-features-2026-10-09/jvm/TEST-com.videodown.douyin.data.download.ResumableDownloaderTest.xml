@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.ResumableDownloaderTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.627Z" hostname="Alias-mini.local" time="0.078">
+  <properties/>
+  <testcase name="resumes from the bytes already on disk" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.014"/>
+  <testcase name="reports progress and the range capability" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.013"/>
+  <testcase name="downloads the whole file in one pass" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.01"/>
+  <testcase name="restarts from zero when the server ignores the Range header" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.01"/>
+  <testcase name="disk full preserves partial data and reports a storage failure" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.004"/>
+  <testcase name="416 complete partial reserves fallback copy before writing" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.004"/>
+  <testcase name="surfaces a failure when the server returns an error status" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.005"/>
+  <testcase name="416 without a matching remote length cannot complete a partial file" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.003"/>
+  <testcase name="keeps partial bytes when the connection drops and finishes on the next attempt" classname="com.videodown.douyin.data.download.ResumableDownloaderTest" time="0.015"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

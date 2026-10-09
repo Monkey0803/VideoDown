@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:50:10" hostname="localhost">
+  <testsuite name="com.videodown.douyin.AppearanceModeDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="7.857" timestamp="2026-10-09T10:50:10" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="appearanceSwitchesImmediatelyPersistsAndCanFollowSystem" classname="com.videodown.douyin.AppearanceModeDeviceTest" time="7.857" />
+  </testsuite>
+</testsuites>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.StorageReservationsTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.706Z" hostname="Alias-mini.local" time="0.002">
+  <properties/>
+  <testcase name="external space loss is detected and sums never overflow" classname="com.videodown.douyin.data.download.StorageReservationsTest" time="0.0"/>
+  <testcase name="publishing bytes consume reserved copy space without double counting" classname="com.videodown.douyin.data.download.StorageReservationsTest" time="0.001"/>
+  <testcase name="concurrent admission cannot promise the same bytes twice" classname="com.videodown.douyin.data.download.StorageReservationsTest" time="0.0"/>
+  <testcase name="actual size growth respects other reservations and failure leaves previous budget" classname="com.videodown.douyin.data.download.StorageReservationsTest" time="0.0"/>
+  <testcase name="snapshot never reports a negative share for over-reported footprints" classname="com.videodown.douyin.data.download.StorageReservationsTest" time="0.001"/>
+  <testcase name="written bytes reduce future reservation without double counting disk usage" classname="com.videodown.douyin.data.download.StorageReservationsTest" time="0.0"/>
+  <testcase name="snapshot reports each task's unwritten share and clears on close" classname="com.videodown.douyin.data.download.StorageReservationsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

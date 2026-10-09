@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.DouyinJsonParserTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.803Z" hostname="Alias-mini.local" time="0.006">
+  <properties/>
+  <testcase name="prefers the requested aweme over nested recommendations" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.001"/>
+  <testcase name="builds the profile deep link and web fallback" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.001"/>
+  <testcase name="parses aweme from an iesdouyin share page" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.0"/>
+  <testcase name="exposes every advertised resolution" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.001"/>
+  <testcase name="caps the resolution list at one entry per label" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.0"/>
+  <testcase name="extracts router data when strings contain braces" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.0"/>
+  <testcase name="sorts resolutions from highest to lowest quality" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.001"/>
+  <testcase name="records widths and sizes for each resolution" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.0"/>
+  <testcase name="strips the watermarked path segment when building the play url" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.0"/>
+  <testcase name="parses the signed web detail response shape" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.001"/>
+  <testcase name="returns null when the payload carries no aweme" classname="com.videodown.douyin.data.remote.DouyinJsonParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

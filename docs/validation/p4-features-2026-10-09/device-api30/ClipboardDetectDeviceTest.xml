@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:57:49" hostname="localhost">
+  <testsuite name="com.videodown.douyin.ClipboardDetectDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="6.135" timestamp="2026-10-09T10:57:49" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="dismissedLinkIsNeverOfferedAgain" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="2.500" />
+    <testcase name="aPlainWebLinkIsNeverOffered" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="1.058" />
+    <testcase name="copiedLinkIsOfferedAndReachesTheInputOnlyAfterConfirmation" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="1.275" />
+    <testcase name="turningThePreferenceOffStopsReadingTheClipboard" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="1.302" />
+  </testsuite>
+</testsuites>

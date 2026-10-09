@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.PlaybackStateTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.944Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="only supported speeds survive invalid persisted settings" classname="com.videodown.douyin.domain.model.PlaybackStateTest" time="0.0"/>
+  <testcase name="unfinished media resumes even near its end" classname="com.videodown.douyin.domain.model.PlaybackStateTest" time="0.0"/>
+  <testcase name="ended invalid and out of bounds checkpoints restart" classname="com.videodown.douyin.domain.model.PlaybackStateTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

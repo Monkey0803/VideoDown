@@ -1,9 +1,9 @@
 # 拾影 — 视频下载器
 
 使用 Kotlin + Jetpack Compose 实现的 Android 应用，支持解析抖音、微博、快手、X（Twitter）分享链接及通用 HTTP/HTTPS 视频网址，选择分辨率下载视频、
-记录下载历史、打开原视频与作者主页并播放已下载的视频。界面使用 Compose Material 3，在「我的 → 外观模式」中可选择跟随系统、浅色或深色，确认后立即生效并在重启后保留。默认采用奶白、暖橙与深褐品牌主题，深色模式使用暖褐背景与杏橙强调色。颜色、文字样式与圆角统一由 `MaterialTheme` 管理。
+记录下载历史、打开原视频与作者主页并播放已下载的视频。界面使用 Compose Material 3，在「我的 → 外观模式」中可选择跟随系统、浅色或深色，确认后立即生效并在重启后保留；Android 12 及以上还可在「我的 → 动态取色（Material You）」改用系统壁纸配色。默认采用奶白、暖橙与深褐品牌主题，深色模式使用暖褐背景与杏橙强调色。颜色、文字样式与圆角统一由 `MaterialTheme` 管理。
 
-主导航分为「解析」「任务」「已存」「我的」：解析页支持粘贴分享文案和选择画质；任务页显示实时进度及暂停、续传、删除操作；已存页展示文件仍存在的已完成视频；「我的」可设置默认画质、仅在 Wi-Fi 下下载和完成时通知，偏好在重启后保留。
+主导航分为「解析」「任务」「已存」「我的」：解析页支持粘贴分享文案和选择画质；任务页显示实时进度及暂停、续传、删除操作；已存页展示文件仍存在的已完成视频；「我的」可设置默认画质、仅在 Wi-Fi 下下载、完成时通知、每条任务独立通知、识别剪贴板链接与动态取色，偏好在重启后保留。
 
 图标采用「拾影框」品牌标志及统一的圆角线性图标：桌面使用暖橙渐变，自适应图标提供独立单色主题版；应用内导航、解析、任务、影像库、播放和设置图标随浅深色品牌主题着色。播放、继续下载、收藏、保存到相册及导出文件夹使用不同语义的图标。设计源文件与展示页见 [图标设计](docs/design/shiying-icons/README.md)，接入及模拟器验证见 [图标接入记录](docs/validation/icon-integration-2026-09-30.md)。修改 SVG 后可运行 `python3 scripts/generate_shiying_icons.py` 重新生成 Android VectorDrawable。
 
@@ -55,6 +55,16 @@
 
 实现、验证证据和真机边界见 [P3 验证记录](docs/validation/p3-features-2026-09-30.md)。
 
+## 入口效率与任务管理（P4）
+
+- 复制受支持平台的分享链接后回到应用，解析页出现「检测到 X 链接」横幅，点击「解析」才会解析；点「忽略」后同一链接不再提示。读取剪贴板要求窗口已获得焦点，且「我的 → 识别剪贴板链接」关闭后完全不读取。只识别抖音、微博、快手、X，普通网页链接不会触发提示。
+- 长按桌面图标可用「粘贴解析」「批量导入」「下载任务」三个快捷方式；「粘贴解析」直接读取剪贴板并解析，不再显示确认横幅。
+- 「我的 → 每条任务独立通知」默认关闭。开启后每个任务单独显示进度通知，可逐条暂停或继续，汇总通知同时保留。通知内不提供删除：删除不可逆且需要二次确认，只能在应用内完成。全部任务暂停后后台服务退出，独立通知随之清除。
+- 任务页可搜索标题或作者（多个词按「且」匹配），并可按按状态、最新任务、最早任务、文件最大排序；传输中显示预计剩余时间，无法估算时不显示。
+- 「我的 → 动态取色（Material You）」在 Android 12 及以上可见，默认关闭以保留暖橙品牌色。
+
+验证记录见 [P4 验证记录](docs/validation/p4-features-2026-10-09.md)。
+
 ## 通用网址与网页辅助
 
 粘贴 HTTP/HTTPS 网址或分享文案即可尝试解析。已知平台优先使用原有解析器，失败后进入 yt-dlp；X 推文即使原生解析成功，也会补充通用引擎找到的媒体和画质。自动解析失败时点击「打开网页查找视频」，在内置网页中登录或播放，再选择检测到的媒体资源，也可使用当前网页登录态重新解析。
@@ -93,6 +103,11 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 | 15 | 并发设置与等待任务排序 | `data/download/DownloadQueueScheduler.kt` + `core/AppPreferences.kt` + `presentation/history/` |
 | 16 | 按失败原因恢复与页面跳转 | `domain/model/DownloadFailure.kt` + `presentation/home/` + `presentation/history/` + `presentation/MainActivity.kt` |
 | 17 | 应用更新入口与可配置版本清单 | `data/update/AppUpdateChecker.kt` + `presentation/settings/UpdateDialog.kt` + `presentation/settings/UpdateViewModel.kt` + `core/AppPreferences.kt` + `app/build.gradle.kts`（`-PupdateManifestUrl`） |
+| 18 | 剪贴板链接识别（可关闭，忽略后不再提示） | `data/remote/ClipboardLinkPolicy.kt` + `presentation/home/HomeViewModel.kt` + `presentation/home/HomeScreen.kt`（焦点后读取、确认横幅）+ `core/AppPreferences.kt` |
+| 19 | 通知内单任务暂停 / 继续 | `data/download/DownloadService.kt`（`ACTION_PAUSE_ONE` / `ACTION_RESUME_ONE` + 每任务独立通知）+ `presentation/settings/SettingsScreen.kt` |
+| 20 | 启动器快捷方式（粘贴解析 / 批量导入 / 下载任务） | `LauncherShortcuts.kt` + `presentation/MainActivity.kt` |
+| 21 | 任务页搜索、排序与预计剩余时间 | `presentation/history/TaskQuery.kt` + `presentation/history/HistoryScreen.kt` + `presentation/history/HistoryViewModel.kt` + `core/Formatters.kt`（`formatEta`） |
+| 22 | Material You 动态取色 | `core/AppPreferences.kt` + `presentation/settings/SettingsScreen.kt` + `presentation/MainActivity.kt` + `presentation/theme/Theme.kt` |
 
 ## 环境要求
 

@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:49:25" hostname="localhost">
+  <testsuite name="com.videodown.douyin.Material3NavigationDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="9.774" timestamp="2026-10-09T10:49:25" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="appAndPlayerResourcesStayChineseAfterRecreation" classname="com.videodown.douyin.Material3NavigationDeviceTest" time="2.100" />
+    <testcase name="navigationFiltersAndDialogsRemainUsable" classname="com.videodown.douyin.Material3NavigationDeviceTest" time="4.571" />
+    <testcase name="qualityChangesAreSavedOnlyOnConfirmation" classname="com.videodown.douyin.Material3NavigationDeviceTest" time="3.103" />
+  </testsuite>
+</testsuites>

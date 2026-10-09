@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="1" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:50:33" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2CompletionNotificationDeviceTest" tests="1" failures="1" errors="0" skipped="0" time="15.516" timestamp="2026-10-09T10:50:33" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord" classname="com.videodown.douyin.P2CompletionNotificationDeviceTest" time="15.516">
+      <failure>kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 10000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:1571)
+</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

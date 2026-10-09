@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.AutoResumeDownloadTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:27.292Z" hostname="Alias-mini.local" time="1.738">
+  <properties/>
+  <testcase name="a task that failed with a network error is retried from its saved offset" classname="com.videodown.douyin.data.download.AutoResumeDownloadTest" time="0.186"/>
+  <testcase name="turning the switch off keeps the task paused until it is turned on" classname="com.videodown.douyin.data.download.AutoResumeDownloadTest" time="0.405"/>
+  <testcase name="a pause the user asked for is never continued by the policy" classname="com.videodown.douyin.data.download.AutoResumeDownloadTest" time="0.356"/>
+  <testcase name="older paused history without a cause stays manual" classname="com.videodown.douyin.data.download.AutoResumeDownloadTest" time="0.266"/>
+  <testcase name="network recovery continues the transfer without a tap" classname="com.videodown.douyin.data.download.AutoResumeDownloadTest" time="0.1"/>
+  <testcase name="a task blocked by a full disk waits and then continues" classname="com.videodown.douyin.data.download.AutoResumeDownloadTest" time="0.369"/>
+  <testcase name="a task orphaned by process death resumes on the next start" classname="com.videodown.douyin.data.download.AutoResumeDownloadTest" time="0.056"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

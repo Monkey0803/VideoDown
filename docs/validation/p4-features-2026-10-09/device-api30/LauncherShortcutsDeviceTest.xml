@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:58:18" hostname="localhost">
+  <testsuite name="com.videodown.douyin.LauncherShortcutsDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="4.070" timestamp="2026-10-09T10:58:18" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="theThreeEntryShortcutsArePublishedForThisInstalledPackage" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="0.129" />
+    <testcase name="quickParseReadsTheCopiedLinkDirectlyWithoutTheConfirmationBanner" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.781" />
+    <testcase name="theBatchImportShortcutOpensTheImportDialog" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.187" />
+    <testcase name="theTasksShortcutOpensTheTaskPage" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="0.973" />
+  </testsuite>
+</testsuites>

@@ -8,6 +8,8 @@
 
 平台及通用网址解析、网页辅助、批量导入、画质选择、重复提醒、下载队列与排序、暂停续传、分片合并、失败分类恢复、共享空间预留、残留清理、收藏分类和重命名、相册与文件夹导出、独立音轨及离线提取、播放续播与最高 4× 倍速、后台音频及画中画均已有实现。不要重新列为缺失功能。
 
+2026-10-09 起还具备：剪贴板链接识别（可关闭、忽略后不再提示）、通知内单任务暂停/继续、启动器快捷方式、任务页搜索与排序及预计剩余时间、Material You 动态取色。
+
 并发空间管理本轮完成 199 项 JVM 检查及 4 项真机测试。真机四项限于本地媒体下载、合并取消、离线提取恢复和模拟空间不足监控，不能代替真实站点、后台下载服务、通知或完整播放界面的验收。
 
 ## 优先处理
@@ -29,6 +31,8 @@
 - 空间预算可视化：**已实现**（`domain/model/StorageUsage.kt` 的 `StorageBudget`、`data/download/StorageReservations.snapshot()`、`DownloadEngine.storageBudget()`、`presentation/settings/StorageDialog.kt`）。存储界面在物理可用量和文件占用之外，显示运行任务尚需写入的预算总量、占用比例条和按剩余字节排序的任务明细；预留超过可用空间时给出缺口字节数和清理建议。见 `docs/validation/space-budget-2026-10-09.md`。
 - 下载自动继续：**已实现**（`AppPreferences.autoResume`、`DownloadPauseCause`、`DownloadEngine.autoResume`、`AutoResumeBudget`）。默认开启，网络恢复、空间释放或进程重启后自动继续被网络/空间中断的任务；用户主动暂停永不自动继续，可在「我的」关闭。见 `docs/validation/auto-resume-2026-10-09.md`；设备侧真实 Wi-Fi 断开/恢复与真实磁盘写满的端到端验收仍待补。
 - 更新入口：**已实现**（`data/update/AppUpdateChecker.kt`、`presentation/settings/UpdateDialog.kt`、`core/AppPreferences.updateManifestUrl`）。「我的 → 检查更新」显示当前版本，读取可配置的版本清单 JSON 后提示新版本、更新说明和下载/发布页链接，更新源可用 `-PupdateManifestUrl` 或对话框内设置。引擎仍随 APK 固定更新，不含独立引擎热更新；发布方需自行提供清单托管地址。
+
+> 2026-10-09 补充：同类应用对标产生的 Phase A（剪贴板链接识别、通知内单任务暂停/继续、启动器快捷方式、任务页搜索排序与预计剩余时间、Material You 动态取色）**已实现**，见 `docs/validation/p4-features-2026-10-09.md`；后续排期维护在 [功能待办（TODO）](TODO.md)。
 
 ## 不计入本轮待办
 

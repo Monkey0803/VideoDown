@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.update.AppUpdateCheckerTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.931Z" hostname="Alias-mini.local" time="0.011">
+  <properties/>
+  <testcase name="rejects a malformed manifest" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.003"/>
+  <testcase name="requires a configured http source" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.001"/>
+  <testcase name="reports a newer build with notes and download link" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.001"/>
+  <testcase name="rejects a manifest without any version" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.001"/>
+  <testcase name="stays quiet when the manifest matches the installed build" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.001"/>
+  <testcase name="reports http errors with the status code" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.001"/>
+  <testcase name="accepts a versionName-only manifest" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.001"/>
+  <testcase name="compares dotted version names numerically" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.0"/>
+  <testcase name="treats an older versionName-only manifest as up to date" classname="com.videodown.douyin.data.update.AppUpdateCheckerTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

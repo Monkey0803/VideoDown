@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:57:11" hostname="localhost">
+  <testsuite name="com.videodown.douyin.TaskSearchDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="4.570" timestamp="2026-10-09T10:57:11" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="theTaskListCanBeSearchedAndReordered" classname="com.videodown.douyin.TaskSearchDeviceTest" time="4.570" />
+  </testsuite>
+</testsuites>

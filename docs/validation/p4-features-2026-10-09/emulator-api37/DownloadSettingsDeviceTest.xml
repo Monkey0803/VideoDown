@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="6" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:49:58" hostname="localhost">
+  <testsuite name="com.videodown.douyin.DownloadSettingsDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="5.401" timestamp="2026-10-09T10:49:58" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="enabledCompletionPreferencePostsIndependentNotification" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.001" />
+    <testcase name="wifiRestrictionReactsToRealNetworkAndPreferenceChanges" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="5.371" />
+    <testcase name="preferencesSurviveRecreation" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.009" />
+    <testcase name="disabledCompletionPreferencePostsNothing" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.005" />
+    <testcase name="themeModeDefaultsToSystemAndPersistsEachChoice" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.014" />
+    <testcase name="autoResumeDefaultsToOnAndPersistsBothChoices" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.001" />
+  </testsuite>
+</testsuites>

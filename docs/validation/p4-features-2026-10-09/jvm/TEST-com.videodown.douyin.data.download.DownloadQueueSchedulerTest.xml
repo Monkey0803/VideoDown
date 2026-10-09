@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.DownloadQueueSchedulerTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:31.710Z" hostname="Alias-mini.local" time="0.014">
+  <properties/>
+  <testcase name="boundaries clamp move offsets and concurrency" classname="com.videodown.douyin.data.download.DownloadQueueSchedulerTest" time="0.011"/>
+  <testcase name="FIFO registration is stable and priority changes only waiting tasks" classname="com.videodown.douyin.data.download.DownloadQueueSchedulerTest" time="0.001"/>
+  <testcase name="increasing limit admits waiting jobs and removing a queued job preserves remaining order" classname="com.videodown.douyin.data.download.DownloadQueueSchedulerTest" time="0.001"/>
+  <testcase name="storage estimate accounts for existing bytes merging reserve and overflow" classname="com.videodown.douyin.data.download.DownloadQueueSchedulerTest" time="0.001"/>
+  <testcase name="lower limit drains running jobs and never grants a new slot too early" classname="com.videodown.douyin.data.download.DownloadQueueSchedulerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

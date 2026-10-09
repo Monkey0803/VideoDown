@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.local.DownloadLibraryMetadataTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:55:32.745Z" hostname="Alias-mini.local" time="0.025">
+  <properties/>
+  <testcase name="symlink source is never renamed" classname="com.videodown.douyin.data.local.DownloadLibraryMetadataTest" time="0.005"/>
+  <testcase name="journal recovers a process interruption between file move and history commit" classname="com.videodown.douyin.data.local.DownloadLibraryMetadataTest" time="0.005"/>
+  <testcase name="history write failure rolls file back and preserves existing metadata" classname="com.videodown.douyin.data.local.DownloadLibraryMetadataTest" time="0.002"/>
+  <testcase name="rename changes actual file and persists favorite folder without modifying identity or saved order" classname="com.videodown.douyin.data.local.DownloadLibraryMetadataTest" time="0.003"/>
+  <testcase name="invalid names and active missing or outside files are rejected without loss" classname="com.videodown.douyin.data.local.DownloadLibraryMetadataTest" time="0.002"/>
+  <testcase name="real store persistence failure preserves disk memory and original file" classname="com.videodown.douyin.data.local.DownloadLibraryMetadataTest" time="0.005"/>
+  <testcase name="long existing title may be categorized without renaming" classname="com.videodown.douyin.data.local.DownloadLibraryMetadataTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

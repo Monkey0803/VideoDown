@@ -1,8 +1,8 @@
 # 拾影 功能待办（TODO）
 
-> 更新日期：2026-10-09 ｜ 当前分支：`1.0.2` ｜ 版本：1.0.1 / code 2
+> 更新日期：2026-10-09 ｜ 当前分支：`1.0.2` ｜ 版本：1.0.2 / code 3
 > 依据：同类应用对标（1DM+、ADM、Snaptube、VidMate、Seal、稞麦视频下载器）与当前源码核查
-> 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）
+> 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）、[P4 验收记录](validation/p4-features-2026-10-09.md)
 
 ## 使用说明
 
@@ -13,54 +13,66 @@
 
 ## 前置
 
-- [ ] 提交分支 `1.0.2` 工作区既有未提交改动（README、`AppPreferences`、`ServiceLocator`、`DownloadEngine`、`StorageReservations`、`DownloadHistoryStore`、`DownloadStorageRepository`、`DownloadFailure`、`DownloadRecord`、`StorageUsage`、`Downloader`、`SettingsScreen`、`StorageDialog` 及对应测试），再开始 Phase A，避免混提。
-- [ ] 版本号 `versionCode 2 → 3`、`versionName 1.0.1 → 1.0.2`（`app/build.gradle.kts`）。
+- [x] 提交分支 `1.0.2` 工作区既有未提交改动（README、`AppPreferences`、`ServiceLocator`、`DownloadEngine`、`StorageReservations`、`DownloadHistoryStore`、`DownloadStorageRepository`、`DownloadFailure`、`DownloadRecord`、`StorageUsage`、`Downloader`、`SettingsScreen`、`StorageDialog` 及对应测试），再开始 Phase A。已在 Phase A 开始前提交，工作区当时为干净状态。
+- [x] 版本号 `versionCode 2 → 3`、`versionName 1.0.1 → 1.0.2`（`app/build.gradle.kts`）。
 
-## Phase A — 表配补齐（本轮）
+## Phase A — 表配补齐（已完成）
+
+证据与未覆盖边界见 [P4 验收记录](validation/p4-features-2026-10-09.md)。JVM 262 用例通过；本轮新增设备用例在 Android 17 / API 37 模拟器与 Android 11 / API 30 真机均通过。
 
 ### A1 剪贴板链接识别
 
-- [ ] 新增 `data/remote/ClipboardLinkPolicy.kt`：纯 Kotlin，输入文本 + 上次已提示内容，输出候选；仅已知平台命中，`GENERIC` 不命中。
-- [ ] `core/AppPreferences.kt` 新增 `clipboardDetect`（默认 `true`）与 `lastClipboardOffer`。
-- [ ] `presentation/home/HomeViewModel.kt` 新增 `clipboardOffer` 状态与 `offerClipboardText` / `acceptClipboardOffer` / `dismissClipboardOffer`。
-- [ ] `presentation/home/HomeScreen.kt` 在**窗口获得焦点后**才读剪贴板（`ViewTreeObserver.OnWindowFocusChangeListener`），顺序为 `hasPrimaryClip()` → 描述 MIME → `primaryClip`；提示为横幅而非自动解析。
-- [ ] `presentation/settings/SettingsScreen.kt` 新增「识别剪贴板链接」开关。
-- [ ] 边界：Android 12+ 系统会弹一次剪贴板访问提示，无法消除，靠“内容变化才读”降到最低；Android 13+ 剪贴板自动清空属正常；忽略后同一内容不得再提示；分享/深链入口与剪贴板提示不叠加。
-- [ ] 测试：`ClipboardLinkPolicyTest`（JVM）、`ClipboardDetectDeviceTest`（设备，含关开关不提示）。
+- [x] `data/remote/ClipboardLinkPolicy.kt`：纯 Kotlin，仅已知平台命中，`GENERIC` 不命中，已忽略的链接按 URL 去重。
+- [x] `core/AppPreferences.kt` 新增 `clipboardDetect`（默认 `true`）与 `lastClipboardOffer`。
+- [x] `presentation/home/HomeViewModel.kt` 新增 `clipboardOffer` 状态与 `offerClipboardText` / `acceptClipboardOffer` / `dismissClipboardOffer`。
+- [x] `presentation/home/HomeScreen.kt` 在窗口获得焦点后才读剪贴板，顺序为 `hasPrimaryClip()` → 描述 MIME → `primaryClip`；提示为横幅而非自动解析。
+- [x] `presentation/settings/SettingsScreen.kt` 新增「识别剪贴板链接」开关。
+- [x] 测试：`ClipboardLinkPolicyTest`（JVM 6 例）、`ClipboardDetectDeviceTest`（设备 4 例，含关闭开关不读取）。
 
 ### A2 通知内单任务暂停 / 继续
 
-- [ ] `DownloadService` 新增 `ACTION_PAUSE_ONE` / `ACTION_RESUME_ONE` + `EXTRA_RECORD_ID` 并路由到下载器。
-- [ ] 新增 `AppPreferences.individualTaskNotifications`（默认 `false`）；开启后每个运行中任务一条独立通知（标题 / 百分比 / 速度 / 暂停或继续 / 点击进任务页），汇总通知保留，任务结束即撤销。
-- [ ] 通知内**不提供删除**：不可逆操作需要二次确认，通知栏无法承载。
-- [ ] 测试：action 与 `EXTRA_RECORD_ID` 解析的单测；设备用例真实点击后断言仅目标任务暂停。
+- [x] `DownloadService` 新增 `ACTION_PAUSE_ONE` / `ACTION_RESUME_ONE` + `EXTRA_RECORD_ID`。
+- [x] `AppPreferences.individualTaskNotifications`（默认 `false`）；每任务一条独立通知，汇总通知保留。
+- [x] 通知内不提供删除（不可逆操作需二次确认）。
+- [x] 测试：`TaskNotificationDeviceTest`（真实发送通知卡片自身的 PendingIntent，断言仅目标任务暂停，暂停卡片转为「继续」，关闭开关后卡片撤销）。
 
 ### A3 Material You 动态取色
 
-- [ ] `AppPreferences.dynamicColor`（默认 `false`，保留暖橙品牌色）。
-- [ ] `SettingsScreen` 在「外观模式」下新增开关，API < 31 时隐藏并说明。
-- [ ] `MainActivity` 把 `dynamicColor` 传入 `VideoDownTheme`（`Theme.kt` 已支持，属接线）。
-- [ ] 测试：扩展 `AppearanceModeDeviceTest`。
+- [x] `AppPreferences.dynamicColor`（默认 `false`）。
+- [x] `SettingsScreen` 在 API 31+ 显示开关，低版本隐藏。
+- [x] `MainActivity` 把 `dynamicColor` 传入 `VideoDownTheme`。
+- [x] 测试：`DynamicColorDeviceTest`（API 37 断言调色板确实重绘且偏好持久化；API 30 覆盖「开关不存在」分支）。
 
 ### A4 启动器快捷方式
 
-- [ ] 新增 `res/xml/shortcuts.xml`：「粘贴解析」「批量导入」「下载任务」，复用现有矢量图标。
-- [ ] `AndroidManifest.xml` 增加 `android.app.shortcuts` meta-data 与三个显式 action。
-- [ ] `MainActivity.handleIntent` 与 `VideoDownApp` 接线到对应界面。
-- [ ] 测试：新增 `LauncherShortcutsDeviceTest`。
+- [x] `LauncherShortcuts.publish` 运行时发布 `quick_parse` / `batch_import` / `open_tasks`（不用静态 `res/xml`，因为 debug 变体的 applicationId 带 `.debug` 后缀）。
+- [x] `MainActivity` 处理三个 action，`openTasks` / `openBatchImport` 接线到 `VideoDownApp`。
+- [x] 测试：`LauncherShortcutsDeviceTest`（4 例，断言包名归属与落地页面；`QUICK_PARSE` 不显示被动横幅）。
 
 ### A5 任务页搜索 / 排序筛选 + 剩余时间
 
-- [ ] `HistoryViewModel` 新增 `taskQuery` / `taskSort`（最新、最早、大小、状态）与 setter；筛选排序抽为可 JVM 测试的纯函数。
-- [ ] `HistoryScreen` 增加搜索框与排序控件，区分“无任务”与“当前筛选无结果”。
-- [ ] `core/Formatters.kt` 新增 `formatEta`，进度行显示「· 约剩 …」。
-- [ ] 测试：`TaskQueryTest`、扩展 `FormattersTest`、设备交互用例。
+- [x] `presentation/history/TaskQuery.kt` 的 `TaskListOrder` 纯函数；`HistoryViewModel.setTaskQuery`。
+- [x] `HistoryScreen` 搜索框与排序 chip，区分「无任务」与「当前筛选无结果」。
+- [x] `core/Formatters.kt` 的 `formatEta`，进度行显示「约剩 …」。
+- [x] 测试：`TaskListOrderTest`（JVM 8 例）、`FormattersTest` 新增 3 例、`TaskSearchDeviceTest`（设备 1 例，含排序位置断言）。
 
 ### A6 文档与版本
 
-- [ ] README 增补本轮功能与开关说明。
-- [ ] 新增 `docs/validation/p4-features-<date>.md`，沿用现有验收文档格式。
-- [ ] 把 A1–A5 从 `docs/function-backlog-2026-10-09.md` 的「可选新增功能」移入「已具备」。
+- [x] README 增补 P4 功能、开关与功能对照表（第 18–22 行）。
+- [x] 新增 [P4 验收记录](validation/p4-features-2026-10-09.md) 及 `docs/validation/p4-features-2026-10-09/` 证据（JVM/模拟器/真机 XML、截图与 summary）。
+- [x] `docs/function-backlog-2026-10-09.md` 的「已具备」补记本轮功能。
+
+## Phase A 遗留边界（未完成）
+
+- [ ] **独立通知在后台服务退出后无法继续任务**：全部任务暂停后服务按既有设计退出，独立通知随之清除，因此「从通知继续一个已暂停任务」只在仍有其它任务传输时可用。需要产品决定：是否让服务为已暂停任务保活（涉及 Android 15 前台服务时限与耗电），或改为服务退出后保留通知并由通知动作重新拉起服务。当前未改服务生命周期。
+- [ ] **快捷方式的桌面视觉未验证**：仅断言动态快捷方式集合与 action 落地行为，未覆盖用户手动固定到桌面后的长按菜单呈现。
+- [ ] **剪贴板系统提示未断言**：Android 12+ 首次读取他应用剪贴板时系统会弹一次访问提示，属平台行为，无法由应用消除，用例未覆盖。
+- [ ] **非手机形态未验证**：本轮未在平板/折叠屏验证任务页新增的搜索框、排序 chip 与通知卡片的排布。
+
+## 既有失败项（非本轮引入，供后续处理）
+
+- [ ] **`P2CompletionNotificationDeviceTest` 在 API 37 模拟器上超时失败**，在 API 30 真机通过。已用「临时注释掉本轮独立通知收集器仍以同样方式失败」证明与本轮改动无关，疑似模拟器 SystemUI 通知栏差异。失败日志保留在 `docs/validation/p4-features-2026-10-09/emulator-api37/P2CompletionNotificationDeviceTest.emulator-failure.xml`。
+- [x] **`P1RecoveryNavigationDeviceTest#rateLimitedParseOpensSettingsWithoutRepeatingRequest` 等待的文案「打造专属空间」已在 `94a83b9` 从设置页移除**，断言未同步。本轮把断言改为当前实际渲染的页面标题「我的设置」，用例意图不变，修复后 4/4 通过。
 
 ## Phase B — 差异化（批准后各自出详细计划）
 
@@ -84,12 +96,16 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
 
 ## 已具备（勿重复立项）
 
-平台与通用网址解析、网页辅助嗅探、批量导入（≤50 条）、画质与文件大小选择、重复提醒、下载队列与排序、暂停续传、HLS/DASH/分轨合并与校验、失败分类恢复、共享空间预留、残留清理、收藏/分类/重命名、相册与自定义目录导出、独立音轨与离线提取、续播与 0.5×–4× 倍速、后台音频、画中画、完成通知、检查更新、深浅色主题、`ACTION_SEND` 分享接入与 `VIEW` 深链。
+平台与通用网址解析、网页辅助嗅探、批量导入（≤50 条）、画质与文件大小选择、重复提醒、下载队列与排序、暂停续传、HLS/DASH/分轨合并与校验、失败分类恢复、共享空间预留与预算可视化、残留清理、收藏/分类/重命名、相册与自定义目录导出、独立音轨与离线提取、续播与 0.5×–4× 倍速、后台音频、画中画、完成通知与通知内单任务控制、检查更新、深浅色主题、Material You 动态取色、`ACTION_SEND` 分享接入与 `VIEW` 深链、剪贴板链接识别、启动器快捷方式、任务页搜索与排序。
 
 ## 验收命令
 
 ```bash
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+
 ./gradlew testDebugUnitTest
 ./gradlew connectedDebugAndroidTest -Pabi=universal   # 模拟器需 x86_64；真机用默认 arm64
 ./gradlew assembleDebug && ./gradlew assembleRelease
 ```
+
+> 通知相关设备用例需要系统已允许应用通知；`-Pandroid.testInstrumentationRunnerArguments.class` 一次只接受一个类。

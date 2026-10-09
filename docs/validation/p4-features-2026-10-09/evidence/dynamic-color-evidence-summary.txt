@@ -1,0 +1,4 @@
+sdk=37
+brand-primary pixels=7461
+dynamic-primary pixels=0
+preference persisted=true

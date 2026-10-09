@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="5" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:49:41" hostname="localhost">
+  <testsuite name="com.videodown.douyin.HomeKeyboardDeviceTest" tests="5" failures="0" errors="0" skipped="0" time="11.965" timestamp="2026-10-09T10:49:41" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="leavingHomeAndReturningDoesNotRestoreTheKeyboardOrFocus" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="2.891" />
+    <testcase name="tappingNonInteractiveContentDismissesKeyboardWithoutClearingInput" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="1.929" />
+    <testcase name="keyboardAvoidanceKeepsInputAndSubmitVisibleAndDoneClearsFocus" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="2.519" />
+    <testcase name="systemBackDismissesKeyboardAndTheInputCanBeFocusedAgain" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="2.781" />
+    <testcase name="parseButtonDismissesKeyboardEvenWhenTheInputCannotBeParsed" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="1.845" />
+  </testsuite>
+</testsuites>
