@@ -77,6 +77,8 @@ object ServiceLocator {
             history = historyRepository,
             maxConcurrent = preferences.maxConcurrentDownloads,
             concurrencyChanges = preferences.maxConcurrentChanges,
+            autoResumeChanges = preferences.autoResumeChanges,
+            autoResumeEnabled = { preferences.autoResume },
             maintenanceMutex = maintenanceMutex,
             downloader = ResumableDownloader(douyinApiClient.okHttpClient),
             paths = downloadPaths,
@@ -120,6 +122,8 @@ object ServiceLocator {
             runCatching { fileExportRepository.recoverInterruptedExports() }
             runCatching { libraryMetadataRepository.recoverRenames() }
             runCatching { historyRepository.recoverInterruptedDownloads() }
+            // Continue whatever the previous process left behind, when the user allows it.
+            if (preferences.autoResume) runCatching { downloader.autoResume() }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.videodown.douyin.data.local
 
 import android.util.Log
+import com.videodown.douyin.domain.model.DownloadPauseCause
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import kotlinx.coroutines.Dispatchers
@@ -102,6 +103,9 @@ class DownloadHistoryStore(
                         status = DownloadStatus.PAUSED,
                         updatedAt = now,
                         errorMessage = null,
+                        // Distinguishes a crash restart from a deliberate pause so the
+                        // auto-resume policy can pick this task back up.
+                        pauseCause = DownloadPauseCause.PROCESS,
                     )
                 } else {
                     record

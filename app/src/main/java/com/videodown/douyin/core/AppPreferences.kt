@@ -40,6 +40,22 @@ class AppPreferences(context: Context) {
             _wifiOnly.value = value
         }
 
+    /**
+     * Continue interrupted transfers by themselves once the blocking condition clears.
+     *
+     * Enabled by default because a Wi-Fi interruption is not a user decision; turning it off keeps
+     * every pause manual. A deliberate tap on pause is never auto-resumed either way.
+     */
+    private val _autoResume = MutableStateFlow(store.getBoolean("auto_resume_downloads", true))
+    val autoResumeChanges = _autoResume.asStateFlow()
+
+    var autoResume: Boolean
+        get() = _autoResume.value
+        set(value) {
+            store.edit().putBoolean("auto_resume_downloads", value).apply()
+            _autoResume.value = value
+        }
+
     var notifyOnCompletion: Boolean
         get() = store.getBoolean("notify_on_completion", false)
         set(value) { store.edit().putBoolean("notify_on_completion", value).apply() }

@@ -21,6 +21,26 @@ enum class DownloadStatus {
 }
 
 /**
+ * Why a record is currently [DownloadStatus.PAUSED].
+ *
+ * Only [USER] is a deliberate choice that must never be undone automatically; the others are
+ * interruptions a user-enabled auto-resume policy may continue. Records written before this field
+ * existed load as `null` and are treated as user pauses, so an upgrade cannot resurrect a task the
+ * user had stopped on purpose.
+ */
+@Serializable
+enum class DownloadPauseCause {
+    /** The user tapped pause. */
+    USER,
+
+    /** A network policy (for example Wi-Fi only) interrupted an active transfer. */
+    NETWORK,
+
+    /** A previous process died while the transfer was running. */
+    PROCESS,
+}
+
+/**
  * Persisted record of a single download. Written to disk as JSON so download history
  * (and the byte offset needed for resumable transfer) survives process death.
  */
@@ -61,6 +81,8 @@ data class DownloadRecord(
     val media: MediaDownload? = null,
     val phase: TransferPhase = TransferPhase.DOWNLOADING,
     val failureKind: DownloadFailureKind? = null,
+    /** Why this record is paused; `null` is legacy history and is never auto-resumed. */
+    val pauseCause: DownloadPauseCause? = null,
     val expectedBytes: Long? = null,
     val queueOrder: Long = 0,
     val favorite: Boolean = false,

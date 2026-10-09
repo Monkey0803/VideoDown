@@ -44,6 +44,12 @@ interface Downloader {
     /** Resumes every record that is in a resumable state. */
     suspend fun resumeAll()
 
+    /**
+     * Continues only the records an automatic policy may pick up: transfers interrupted by the
+     * network or by a full disk, never a pause the user chose.
+     */
+    suspend fun autoResume() {}
+
     /** Pauses every active transfer. */
     suspend fun pauseAll()
 

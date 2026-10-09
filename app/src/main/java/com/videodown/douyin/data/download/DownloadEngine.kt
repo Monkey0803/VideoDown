@@ -22,14 +22,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.videodown.douyin.domain.model.canAutoResume
 import com.videodown.douyin.domain.model.canRetryDownload
 import com.videodown.douyin.domain.model.matchesSelection
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.Flow
 import com.videodown.douyin.domain.model.DownloadFailureKind
+import com.videodown.douyin.domain.model.DownloadPauseCause
 import com.videodown.douyin.core.downloadFailureKind
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -63,15 +68,28 @@ class DownloadEngine(
     private val maintenanceMutex: Mutex = Mutex(),
     private val concurrencyChanges: Flow<Int>? = null,
     private val availableBytes: () -> Long = { paths.downloadDir.usableSpace },
+    /** Flips when the user enables or disables automatic resume. */
+    private val autoResumeChanges: Flow<Boolean>? = null,
+    /** Current value of the automatic-resume switch, read before every sweep. */
+    private val autoResumeEnabled: () -> Boolean = { false },
+    /** How often blocked tasks are re-examined while automatic resume is on. */
+    private val autoResumeIntervalMs: Long = DEFAULT_AUTO_RESUME_INTERVAL_MS,
+    /** Failed automatic resumes allowed before a task is left for the user. */
+    private val autoResumeAttemptsLimit: Int = MAX_AUTO_RESUME_ATTEMPTS,
 ) : Downloader {
 
     private val scheduler = DownloadQueueScheduler(maxConcurrent)
     override val queue = scheduler.state
     private val storageReservations = StorageReservations(availableBytes)
+    private val autoResumeMutex = Mutex()
+    private val autoResumeBudget = AutoResumeBudget(autoResumeAttemptsLimit)
 
     fun activeTaskIds(): Set<String> = activeJobs.keys.toSet()
 
-    init { concurrencyChanges?.let { changes -> scope.launch { changes.collect { scheduler.setLimit(it) } } } }
+    init {
+        concurrencyChanges?.let { changes -> scope.launch { changes.collect { scheduler.setLimit(it) } } }
+        startAutoResumeWatchers()
+    }
     override suspend fun setConcurrency(count: Int) { scheduler.setLimit(count) }
     override suspend fun moveInQueue(id: String, offset: Int) = maintenanceMutex.withLock {
         val order = scheduler.move(id, offset)
@@ -152,6 +170,7 @@ class DownloadEngine(
         val partial = File(record.partialPath)
         val existing = if (partial.exists()) partial.length() else 0L
         val queued = record.copy(status = DownloadStatus.PENDING, errorMessage = null, failureKind = null,
+            pauseCause = null,
             queueOrder = (history.snapshot().maxOfOrNull { it.queueOrder } ?: 0L) + 1)
         history.upsert(queued)
         updateProgress(id) {
@@ -168,7 +187,7 @@ class DownloadEngine(
 
         val record = history.getById(id) ?: return@withLock
         if (record.media?.localRecordId == null && !networkPolicy.isAllowed()) {
-            markPaused(id, WIFI_PAUSE_REASON)
+            markPaused(id, WIFI_PAUSE_REASON, DownloadPauseCause.NETWORK)
             return@withLock
         }
         runCatching { File(record.partialPath).delete() }
@@ -181,6 +200,7 @@ class DownloadEngine(
             status = DownloadStatus.PENDING,
             queueOrder = (history.snapshot().maxOfOrNull { it.queueOrder } ?: 0L) + 1,
             errorMessage = null, failureKind = null,
+            pauseCause = null,
             etag = null,
             filePath = null,
             updatedAt = System.currentTimeMillis(),
@@ -213,6 +233,79 @@ class DownloadEngine(
             .filter { (it.status == DownloadStatus.PAUSED || it.status == DownloadStatus.FAILED) && it.canRetryDownload }
             .sortedWith(compareBy<DownloadRecord> { it.queueOrder }.thenBy { it.createdAt })
             .forEach { resume(it.id) }
+    }
+
+    /**
+     * Continues every task the automatic policy may pick up: a transfer stopped by the network or
+     * by a full disk, or one orphaned by a process death. A deliberate pause is never included.
+     *
+     * A task whose blocking condition is still present is skipped without spending an attempt, so a
+     * still-full disk or a still-missing Wi-Fi waits indefinitely for the condition to clear while
+     * a genuinely broken transfer gives up after [autoResumeAttemptsLimit] tries.
+     */
+    override suspend fun autoResume() = autoResumeMutex.withLock {
+        if (!autoResumeEnabled()) return@withLock
+        val records = history.snapshot()
+        // Keep the budget while a task is still mid-attempt (PENDING/RUNNING) or still eligible;
+        // dropping it then would let a failing task retry forever. Anything decided - completed,
+        // cancelled, or failed for a reason automatic resume does not handle - loses its budget.
+        autoResumeBudget.retainOnly(autoResumeBudgetKeepSet(records))
+        val candidates = records
+            .filter { it.canAutoResume && activeJobs[it.id]?.isActive != true }
+            .sortedWith(compareBy<DownloadRecord> { it.queueOrder }.thenBy { it.createdAt })
+        for (record in candidates) {
+            if (autoResumeBudget.isExhausted(record.id)) continue
+            if (record.media?.localRecordId == null && !networkPolicy.isAllowed()) continue
+            if (!storageAllowsAutoResume(record)) continue
+            autoResumeBudget.recordAttempt(record.id)
+            resume(record.id)
+        }
+    }
+
+    /**
+     * Mirrors the space check performed right before a transfer starts, so an automatic resume
+     * never spends an attempt on a disk that is still too full.
+     */
+    private fun storageAllowsAutoResume(record: DownloadRecord): Boolean {
+        val engine = record.media?.usesEngine == true
+        val footprint = if (engine) taskDirectoryBytes(paths.engineDirectory(record.id))
+            else File(record.partialPath).length()
+        val expected = record.expectedBytes ?: record.totalBytes.takeIf { it > 0 }
+        val required = maxOf(requiredStorageBytes(expected, footprint, merging = engine),
+            saturatingStorageAdd(footprint, STORAGE_RESERVE_BYTES))
+        return availableBytes() >= required
+    }
+
+    /**
+     * Wakes the automatic policy when the network returns or the switch is turned on, then keeps
+     * sweeping slowly so freed disk space is noticed even while the network never changes.
+     */
+    private fun startAutoResumeWatchers() {
+        val enabled = autoResumeChanges ?: flowOf(autoResumeEnabled())
+        scope.launch {
+            combine(enabled, networkPolicy.allowed) { on, allowed -> on && allowed }
+                .distinctUntilChanged()
+                .collect { ready ->
+                    // A condition change grants a fresh retry budget.
+                    if (ready) safeAutoResume() else autoResumeBudget.clear()
+                }
+        }
+        scope.launch {
+            while (true) {
+                delay(autoResumeIntervalMs)
+                if (autoResumeEnabled()) safeAutoResume()
+            }
+        }
+    }
+
+    private suspend fun safeAutoResume() {
+        try {
+            autoResume()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "自动继续下载失败", e)
+        }
     }
 
     override suspend fun pauseAll() {
@@ -252,7 +345,8 @@ class DownloadEngine(
                     val backgroundFailure = generateSequence<Throwable>(e) { it.cause }
                         .filterIsInstance<BackgroundDownloadCancellation>().firstOrNull()
                     if (backgroundFailure != null) markBackgroundFailure(record.id, backgroundFailure.message.orEmpty())
-                    else markPaused(record.id, if (e is WifiRequiredException) WIFI_PAUSE_REASON else null)
+                    else markPaused(record.id, if (e is WifiRequiredException) WIFI_PAUSE_REASON else null,
+                        if (e is WifiRequiredException) DownloadPauseCause.NETWORK else DownloadPauseCause.USER)
                 }
                 throw e
             } catch (e: Exception) {
@@ -261,6 +355,7 @@ class DownloadEngine(
                 history.upsert(latest.copy(status = DownloadStatus.FAILED,
                     errorMessage = when (e) { is VideoEngineException -> e.message; is InsufficientStorageException -> e.error.message; is DownloadServiceException -> e.message; else -> "下载或合并失败，请检查存储空间后重试" },
                     failureKind = when (e) { is VideoEngineException -> e.failureKind; is InsufficientStorageException -> DownloadFailureKind.STORAGE_FULL; is DownloadServiceException -> DownloadFailureKind.BACKGROUND_SERVICE; else -> DownloadFailureKind.UNKNOWN },
+                    pauseCause = null,
                     updatedAt = System.currentTimeMillis()))
                 _progress.update { it - record.id }
             } finally {
@@ -293,7 +388,8 @@ class DownloadEngine(
             history.upsert(latest.copy(status = DownloadStatus.FAILED, errorMessage = message,
                 downloadedBytes = downloaded, totalBytes = progress?.totalBytes?.takeIf { it > 0 } ?: latest.totalBytes,
                 phase = progress?.phase ?: latest.phase,
-                failureKind = DownloadFailureKind.BACKGROUND_SERVICE, updatedAt = System.currentTimeMillis()))
+                failureKind = DownloadFailureKind.BACKGROUND_SERVICE, pauseCause = null,
+                updatedAt = System.currentTimeMillis()))
         }
         _progress.update { it - id }
     }
@@ -318,6 +414,7 @@ class DownloadEngine(
                 status = DownloadStatus.RUNNING,
                 downloadedBytes = startBytes,
                 errorMessage = null, failureKind = null,
+                pauseCause = null,
                 updatedAt = now,
             )
             history.upsert(record)
@@ -383,6 +480,7 @@ class DownloadEngine(
                         downloadedBytes = outcome.totalBytes,
                         totalBytes = outcome.totalBytes,
                         errorMessage = null, failureKind = null,
+                        pauseCause = null,
                         updatedAt = System.currentTimeMillis(),
                     )
                     history.upsert(completed)
@@ -401,6 +499,8 @@ class DownloadEngine(
                             totalBytes = outcome.totalBytes,
                             rangeSupported = outcome.rangeSupported,
                             etag = outcome.etag,
+                            // The connection closed before the last byte; the policy may retry it.
+                            pauseCause = DownloadPauseCause.NETWORK,
                             updatedAt = System.currentTimeMillis(),
                         ),
                     )
@@ -446,6 +546,7 @@ class DownloadEngine(
                             status = DownloadStatus.FAILED,
                             errorMessage = outcome.error.message,
                             failureKind = outcome.error.downloadFailureKind(),
+                            pauseCause = null,
                             downloadedBytes = outcome.downloadedBytes,
                             totalBytes = outcome.totalBytes,
                             rangeSupported = outcome.rangeSupported,
@@ -462,7 +563,8 @@ class DownloadEngine(
 
     private suspend fun runEngineTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
         val executor = requireNotNull(engineDownloader) { "未安装通用下载引擎" }
-        var record = initial.copy(status = DownloadStatus.RUNNING, errorMessage = null, failureKind = null, phase = TransferPhase.DOWNLOADING)
+        var record = initial.copy(status = DownloadStatus.RUNNING, errorMessage = null, failureKind = null,
+            pauseCause = null, phase = TransferPhase.DOWNLOADING)
         history.upsert(record)
         var persistedAt = 0L
         val expected = java.util.concurrent.atomic.AtomicLong(record.expectedBytes ?: record.totalBytes.takeIf { it > 0 } ?: 0)
@@ -512,6 +614,7 @@ class DownloadEngine(
             }
             val completed = record.copy(status = DownloadStatus.COMPLETED, filePath = output.absolutePath,
                 fileName = output.name, downloadedBytes = output.length(), totalBytes = output.length(), errorMessage = null, failureKind = null,
+                pauseCause = null,
                 updatedAt = System.currentTimeMillis())
             history.upsert(completed)
             paths.engineDirectory(record.id).deleteRecursively()
@@ -520,7 +623,8 @@ class DownloadEngine(
         }
     }
 
-    private suspend fun markPaused(id: String, reason: String? = null) {
+    private suspend fun markPaused(id: String, reason: String? = null,
+        cause: DownloadPauseCause = DownloadPauseCause.USER) {
         val record = history.getById(id) ?: return
         if (record.status == DownloadStatus.COMPLETED) return
         val partial = File(record.partialPath)
@@ -531,6 +635,7 @@ class DownloadEngine(
                 downloadedBytes = onDisk,
                 errorMessage = reason,
                 failureKind = if (reason == WIFI_PAUSE_REASON) DownloadFailureKind.WIFI_REQUIRED else null,
+                pauseCause = cause,
                 updatedAt = System.currentTimeMillis(),
             ),
         )
@@ -547,5 +652,7 @@ class DownloadEngine(
         const val MAX_RETRIES = 3
         const val RETRY_BASE_DELAY_MS = 1_500L
         const val PERSIST_INTERVAL_MS = 2_000L
+        const val DEFAULT_AUTO_RESUME_INTERVAL_MS = 15_000L
+        const val MAX_AUTO_RESUME_ATTEMPTS = 3
     }
 }

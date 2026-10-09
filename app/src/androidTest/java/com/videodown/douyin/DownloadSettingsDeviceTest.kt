@@ -54,6 +54,17 @@ class DownloadSettingsDeviceTest {
         assertFalse(AppPreferences(context).notifyOnCompletion)
     }
 
+    @Test fun autoResumeDefaultsToOnAndPersistsBothChoices() {
+        assertTrue(preferences.autoResume)
+        assertTrue(preferences.autoResumeChanges.value)
+        assertTrue(AppPreferences(context).autoResume)
+        preferences.autoResume = false
+        assertFalse(preferences.autoResumeChanges.value)
+        assertFalse(AppPreferences(context).autoResume)
+        preferences.autoResume = true
+        assertTrue(AppPreferences(context).autoResume)
+    }
+
     @Test fun themeModeDefaultsToSystemAndPersistsEachChoice() {
         assertEquals(ThemeMode.SYSTEM, preferences.themeMode)
         ThemeMode.entries.forEach { mode ->

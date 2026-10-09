@@ -20,7 +20,7 @@ fun failureGuidance(kind: DownloadFailureKind): FailureGuidance = when (kind) {
     DownloadFailureKind.NO_AUDIO -> FailureGuidance("原视频没有音轨", "该视频不包含可提取的音频，请选择另一个有声音的视频。原视频已保留。", RecoveryAction.NONE)
     DownloadFailureKind.UNSUPPORTED -> FailureGuidance("当前内容暂不支持", "DRM 和直播无法保存。普通网页可尝试登录或播放后查找视频。", RecoveryAction.NONE)
     DownloadFailureKind.RATE_LIMITED -> FailureGuidance("网站暂时限制请求", "请稍后再试，也可降低同时下载数量，避免频繁请求。", RecoveryAction.SETTINGS, RecoveryAction.RETRY)
-    DownloadFailureKind.WIFI_REQUIRED -> FailureGuidance("等待 Wi-Fi", "已启用仅 Wi-Fi 下载。连接 Wi-Fi 后点击继续，或调整下载设置。", RecoveryAction.SETTINGS, RecoveryAction.RETRY)
+    DownloadFailureKind.WIFI_REQUIRED -> FailureGuidance("等待 Wi-Fi", "已启用仅 Wi-Fi 下载。连接 Wi-Fi 后可继续，或调整下载设置。", RecoveryAction.SETTINGS, RecoveryAction.RETRY)
     DownloadFailureKind.BACKGROUND_SERVICE -> FailureGuidance("后台下载已停止", "返回应用后重试，已保存的断点会保留。若反复停止，请检查系统对应用后台运行的限制。", RecoveryAction.RETRY)
     DownloadFailureKind.RUNTIME -> FailureGuidance("解析引擎暂不可用", "检查可用空间；若安装包不完整，请重新安装完整版本。", RecoveryAction.STORAGE)
     DownloadFailureKind.UNKNOWN -> FailureGuidance("下载未完成", "可以保留断点重试；若仍失败，请重新解析原网址。", RecoveryAction.RETRY, RecoveryAction.REPARSE)
@@ -46,3 +46,19 @@ fun legacyFailureKind(message: String?): DownloadFailureKind? {
 /** Applies the same retry boundary to older history and typed engine failures. */
 val DownloadRecord.canRetryDownload: Boolean
     get() = (failureKind ?: legacyFailureKind(errorMessage)) !in setOf(DownloadFailureKind.UNSUPPORTED, DownloadFailureKind.NO_AUDIO)
+
+/**
+ * Typed failures an automatic resume may retry on its own.
+ *
+ * Kept deliberately narrow: only a network interruption or a full disk is a condition that clears
+ * by itself. Authentication, expired links, engine and rate-limit failures need the user.
+ */
+val AUTO_RESUME_FAILURE_KINDS = setOf(DownloadFailureKind.NETWORK, DownloadFailureKind.STORAGE_FULL)
+
+/** True when the record is resumable and the interruption was not the user's own pause. */
+val DownloadRecord.canAutoResume: Boolean
+    get() = canRetryDownload && when (status) {
+        DownloadStatus.PAUSED -> pauseCause != null && pauseCause != DownloadPauseCause.USER
+        DownloadStatus.FAILED -> (failureKind ?: legacyFailureKind(errorMessage)) in AUTO_RESUME_FAILURE_KINDS
+        else -> false
+    }
