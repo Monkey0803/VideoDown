@@ -85,6 +85,27 @@ class ResumableDownloaderTest {
         assertEquals(1024, partial.length())
     }
 
+    @Test fun `416 complete partial reserves fallback copy before writing`() = runBlocking {
+        val srv = server(statusCode = 416)
+        val partial = tempFolder.newFile("complete.part").apply { writeBytes(payload) }
+        // A nonempty destination directory forces rename to fail without depending on filesystems.
+        val final = tempFolder.newFolder("complete.mp4")
+        java.io.File(final, "keep").writeText("keep")
+        val checked = mutableListOf<Long>()
+        val outcome = downloader.download(request(srv, partial, final, payload.size.toLong()).copy(
+            checkStorage = { _, through ->
+                checked.add(through)
+                if (through > payload.size) throw InsufficientStorageException(spaceFailure(0, 1)!!)
+            },
+        ))
+        assertTrue(outcome is ResumableDownloader.Outcome.Failed)
+        assertEquals(com.videodown.douyin.domain.model.DownloadFailureKind.STORAGE_FULL,
+            (outcome as ResumableDownloader.Outcome.Failed).error.failureKind)
+        assertEquals(listOf(payload.size.toLong(), payload.size.toLong() * 2), checked)
+        assertArrayEquals(payload, partial.readBytes())
+        assertTrue(java.io.File(final, "keep").exists())
+    }
+
     @Test
     fun `downloads the whole file in one pass`() = runBlocking {
         val srv = server()

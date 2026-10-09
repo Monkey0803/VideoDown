@@ -16,3 +16,9 @@ internal fun spaceFailure(available: Long, required: Long): AppError.Storage? =
     if (available < required) AppError.Storage("存储空间不足，请清理空间后继续", failureKind = DownloadFailureKind.STORAGE_FULL) else null
 
 internal class InsufficientStorageException(val error: AppError.Storage) : Exception(error.message)
+
+/** The engine owns this task directory; do not follow unexpected symbolic links. */
+internal fun taskDirectoryBytes(directory: java.io.File): Long = directory.walkTopDown()
+    .onEnter { !java.nio.file.Files.isSymbolicLink(it.toPath()) }
+    .filter { it.isFile && !java.nio.file.Files.isSymbolicLink(it.toPath()) }
+    .fold(0L) { bytes, file -> saturatingStorageAdd(bytes, file.length().coerceAtLeast(0)) }

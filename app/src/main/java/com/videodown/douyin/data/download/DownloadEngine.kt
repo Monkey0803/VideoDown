@@ -67,6 +67,8 @@ class DownloadEngine(
 
     private val scheduler = DownloadQueueScheduler(maxConcurrent)
     override val queue = scheduler.state
+    private val storageReservations = StorageReservations(availableBytes)
+
     fun activeTaskIds(): Set<String> = activeJobs.keys.toSet()
 
     init { concurrencyChanges?.let { changes -> scope.launch { changes.collect { scheduler.setLimit(it) } } } }
@@ -225,16 +227,25 @@ class DownloadEngine(
         if (previous != null) { activeJobs.remove(record.id, previous); scheduler.finish(record.id) }
         scheduler.enqueue(record.id)
         val job = scope.launch(start = CoroutineStart.LAZY) {
+            var storage: StorageReservations.Lease? = null
             try {
                 scheduler.awaitSlot(record.id)
                 if (record.media?.localRecordId == null && !networkPolicy.isAllowed()) throw WifiRequiredException()
                 // Reordering persists while this job is waiting. Read it after the
                 // maintenance gate so initial transfer updates retain that durable order.
                 val current = maintenanceMutex.withLock { history.getById(record.id) } ?: return@launch
-                val existing = File(current.partialPath).takeIf { it.isFile }?.length() ?: 0L
-                spaceFailure(availableBytes(), requiredStorageBytes(current.expectedBytes ?: current.totalBytes.takeIf { it > 0 },
-                    if (current.media?.usesEngine == true) 0L else existing, current.media?.usesEngine == true))?.let { throw InsufficientStorageException(it) }
-                runTransfer(current)
+                val engine = current.media?.usesEngine == true
+                val footprint = {
+                    if (engine) taskDirectoryBytes(paths.engineDirectory(current.id))
+                    else File(current.partialPath).length() + paths.finalFileFor(current).length()
+                }
+                val expected = current.expectedBytes ?: current.totalBytes.takeIf { it > 0 }
+                val peak = maxOf(requiredStorageBytes(expected, merging = engine),
+                    saturatingStorageAdd(footprint(), STORAGE_RESERVE_BYTES))
+                val lease = storageReservations.acquire(peak, footprint)
+                storage = lease
+                runTransfer(current, lease)
+
             } catch (e: CancellationException) {
                 withContext(NonCancellable) {
                     markPaused(record.id, if (e is WifiRequiredException) WIFI_PAUSE_REASON else null)
@@ -247,7 +258,10 @@ class DownloadEngine(
                     failureKind = when (e) { is VideoEngineException -> e.failureKind; is InsufficientStorageException -> DownloadFailureKind.STORAGE_FULL; else -> DownloadFailureKind.UNKNOWN },
                     updatedAt = System.currentTimeMillis()))
                 _progress.update { it - record.id }
-            } finally { withContext(NonCancellable) { scheduler.finish(record.id) } }
+            } finally {
+                storage?.close()
+                withContext(NonCancellable) { scheduler.finish(record.id) }
+            }
         }
         if (activeJobs.putIfAbsent(record.id, job) != null) {
             job.cancel()
@@ -260,9 +274,9 @@ class DownloadEngine(
         finally { job.start() }
     }
 
-    private suspend fun runTransfer(initial: DownloadRecord) {
+    private suspend fun runTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
         if (initial.media?.usesEngine == true) {
-            runEngineTransfer(initial)
+            runEngineTransfer(initial, storage)
             return
         }
         var attempt = 0
@@ -306,6 +320,9 @@ class DownloadEngine(
                         cookieForUrl = if (record.media?.useBrowserSession == true) browserCookie else null,
                         networkPolicy = networkPolicy,
                         availableBytes = availableBytes,
+                        checkStorage = { total, writingThrough ->
+                            storage.updatePeak(requiredStorageBytes(maxOf(total, writingThrough)))
+                        },
                         onProgress = { downloaded, total, speed, rangeSupported, etag ->
                             updateProgress(record.id) {
                                 DownloadProgress(
@@ -419,18 +436,37 @@ class DownloadEngine(
         }
     }
 
-    private suspend fun runEngineTransfer(initial: DownloadRecord) {
+    private suspend fun runEngineTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
         val executor = requireNotNull(engineDownloader) { "未安装通用下载引擎" }
         var record = initial.copy(status = DownloadStatus.RUNNING, errorMessage = null, failureKind = null, phase = TransferPhase.DOWNLOADING)
         history.upsert(record)
         var persistedAt = 0L
-        suspend fun transfer() = executor.download(record, paths, if (record.media?.localRecordId != null) DownloadNetworkPolicy.Unrestricted else networkPolicy) { downloaded, total, speed, phase ->
-            updateProgress(record.id) { DownloadProgress(record.id, downloaded, total, DownloadStatus.RUNNING, speed, phase) }
-            val now = System.currentTimeMillis()
-            val phaseChanged = phase != record.phase
-            record = record.copy(downloadedBytes = downloaded, totalBytes = total, phase = phase, updatedAt = now)
-            if (phaseChanged || now - persistedAt > PERSIST_INTERVAL_MS) { history.upsert(record); persistedAt = now }
+        val expected = java.util.concurrent.atomic.AtomicLong(record.expectedBytes ?: record.totalBytes.takeIf { it > 0 } ?: 0)
+        val directory = paths.engineDirectory(record.id)
+        fun checkEngineSpace() {
+            val used = taskDirectoryBytes(directory)
+            storage.updatePeak(maxOf(requiredStorageBytes(expected.get().takeIf { it > 0 }, merging = true),
+                saturatingStorageAdd(used, STORAGE_RESERVE_BYTES)))
         }
+        suspend fun transfer(): File = kotlinx.coroutines.coroutineScope {
+            // FFmpeg may write without reporting download progress. Continue monitoring until
+            // extraction/merging/verification has returned and the subprocess is stopped.
+            val monitor = launch(kotlinx.coroutines.Dispatchers.IO) {
+                while (true) { checkEngineSpace(); delay(250) }
+            }
+            try {
+                executor.download(record, paths, if (record.media?.localRecordId != null) DownloadNetworkPolicy.Unrestricted else networkPolicy) { downloaded, total, speed, phase ->
+                    if (total > 0) expected.updateAndGet { maxOf(it, total) }
+                    checkEngineSpace()
+                    updateProgress(record.id) { DownloadProgress(record.id, downloaded, total, DownloadStatus.RUNNING, speed, phase) }
+                    val now = System.currentTimeMillis()
+                    val phaseChanged = phase != record.phase
+                    record = record.copy(downloadedBytes = downloaded, totalBytes = total, phase = phase, updatedAt = now)
+                    if (phaseChanged || now - persistedAt > PERSIST_INTERVAL_MS) { history.upsert(record); persistedAt = now }
+                }
+            } finally { monitor.cancel(); monitor.join() }
+        }
+
         val stagedOutput = try { transfer() } catch (error: VideoEngineException) {
             if (error.kind !in setOf("AUTH", "ACCESS", "EXPIRED")) throw error
             val fresh = refreshSource?.invoke(record) ?: throw error
@@ -442,8 +478,11 @@ class DownloadEngine(
         kotlinx.coroutines.currentCoroutineContext().ensureActive()
         withContext(NonCancellable + kotlinx.coroutines.Dispatchers.IO) {
             val output = File(paths.downloadDir, record.fileName.substringBeforeLast('.') + "." + stagedOutput.extension)
+            val publishing = File(output.parentFile, output.name + ".publishing")
+            storage.includeUsage { saturatingStorageAdd(output.length(), publishing.length()) }
             if (!stagedOutput.renameTo(output)) {
-                val publishing = File(output.parentFile, output.name + ".publishing")
+                storage.updatePeak(saturatingStorageAdd(taskDirectoryBytes(paths.engineDirectory(record.id)),
+                    saturatingStorageAdd(stagedOutput.length(), STORAGE_RESERVE_BYTES)))
                 try { stagedOutput.copyTo(publishing, overwrite = true); check(publishing.renameTo(output)); stagedOutput.delete() }
                 finally { publishing.delete() }
             }
