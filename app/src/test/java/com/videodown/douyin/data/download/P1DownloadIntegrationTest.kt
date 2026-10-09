@@ -112,6 +112,68 @@ class P1DownloadIntegrationTest {
             }
         } finally { scope.coroutineContext.job.cancelAndJoin() }
     }
+    @Test fun `running downloads share space and pause releases budget for failed task resume`() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val paths = DownloadPaths(temp.root)
+        val capacity = 2 * STORAGE_RESERVE_BYTES + 40000L
+        try {
+            RangeAwareTestServer(payload, chunkSize = 1024, chunkDelayMs = 100).use { firstServer ->
+                RangeAwareTestServer(payload).use { secondServer ->
+                    val engine = DownloadEngine(history, ResumableDownloader(OkHttpClient()), paths, scope, "", "test", maxConcurrent = 2,
+                        availableBytes = { capacity - taskDirectoryBytes(paths.downloadDir) })
+                    val first = engine.start(DouyinVideo("one", "one"), variant(firstServer))
+                    withTimeout(5000) { engine.progress.first { (it[first]?.downloadedBytes ?: 0) > 0 } }
+                    val second = engine.start(DouyinVideo("two", "two"), variant(secondServer))
+                    val failure = withTimeout(5000) { history.observeRecord(second).first { it?.status == DownloadStatus.FAILED }!! }
+                    assertEquals(DownloadFailureKind.STORAGE_FULL, failure.failureKind)
+                    assertEquals(0, secondServer.requestCount)
+                    engine.pause(first)
+                    engine.resume(second)
+                    val completed = withTimeout(5000) { history.observeRecord(second).first { it?.status == DownloadStatus.COMPLETED }!! }
+                    assertArrayEquals(payload, File(completed.filePath!!).readBytes())
+                    assertEquals(1, secondServer.requestCount)
+                    assertTrue(File(history.getById(first)!!.partialPath).length() > 0)
+                    withTimeout(5000) { while (second in engine.activeTaskIds()) delay(10) }
+                    val third = engine.start(DouyinVideo("three", "three"), variant(secondServer))
+                    withTimeout(5000) { history.observeRecord(third).first { it?.status == DownloadStatus.COMPLETED } }
+                    assertEquals(2, secondServer.requestCount)
+                }
+            }
+        } finally { scope.coroutineContext.job.cancelAndJoin() }
+    }
+    @Test fun `response enlargement cannot steal a running task reservation`() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val paths = DownloadPaths(temp.root)
+        try {
+            RangeAwareTestServer(payload, chunkSize = 1024, chunkDelayMs = 100).use { firstServer ->
+                RangeAwareTestServer(payload).use { secondServer ->
+                    val engine = DownloadEngine(history, ResumableDownloader(OkHttpClient()), paths, scope, "", "test", maxConcurrent = 2,
+                        availableBytes = { 2 * STORAGE_RESERVE_BYTES + 40000L - taskDirectoryBytes(paths.downloadDir) })
+                    val first = engine.start(DouyinVideo("one", "one"), variant(firstServer))
+                    withTimeout(5000) { engine.progress.first { (it[first]?.downloadedBytes ?: 0) > 0 } }
+                    val second = engine.start(DouyinVideo("two", "two"), variant(secondServer).copy(sizeBytes = 10))
+                    val failure = withTimeout(5000) { history.observeRecord(second).first { it?.status == DownloadStatus.FAILED }!! }
+                    assertEquals(DownloadFailureKind.STORAGE_FULL, failure.failureKind)
+                    assertEquals(1, secondServer.requestCount)
+                    assertEquals(0, File(failure.partialPath).length())
+                    assertEquals(DownloadStatus.RUNNING, history.getById(first)!!.status)
+                    engine.pause(first)
+                }
+            }
+        } finally { scope.coroutineContext.job.cancelAndJoin() }
+    }
+    @Test fun `unknown response is stopped before writing beyond available working space`() = runBlocking {
+        RangeAwareTestServer(payload, chunkSize = 1024, chunkDelayMs = 5, sendContentLength = false).use { server ->
+            val partial = File(temp.root, "unknown.part")
+            val result = ResumableDownloader(OkHttpClient()).download(ResumableDownloader.DownloadRequest(
+                variant(server).url, partial, File(temp.root, "unknown.mp4"),
+                availableBytes = { STORAGE_RESERVE_BYTES + 4096 - partial.length() }))
+            assertTrue(result is ResumableDownloader.Outcome.Failed)
+            assertEquals(DownloadFailureKind.STORAGE_FULL, (result as ResumableDownloader.Outcome.Failed).error.failureKind)
+            assertTrue(partial.length() in 1..4096)
+            assertFalse(File(temp.root, "unknown.mp4").exists())
+        }
+    }
     @Test fun `known response size is checked again before writing a direct file`() = runBlocking {
         RangeAwareTestServer(payload).use { server ->
             val partial = File(temp.root, "download.part")

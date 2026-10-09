@@ -72,6 +72,7 @@ class ResumableDownloader(
         val cookieForUrl: ((String) -> String?)? = null,
         val networkPolicy: DownloadNetworkPolicy = DownloadNetworkPolicy.Unrestricted,
         val availableBytes: () -> Long = { partialFile.parentFile?.usableSpace ?: 0L },
+        val checkStorage: ((total: Long, writingThrough: Long) -> Unit)? = null,
         val onProgress: suspend (downloaded: Long, total: Long, bytesPerSecond: Long, rangeSupported: Boolean, etag: String?) -> Unit = { _, _, _, _, _ -> },
     )
 
@@ -141,6 +142,12 @@ class ResumableDownloader(
         var speed = 0L
         var writingStorage = false
 
+        fun checkStorage(writingThrough: Long) {
+            if (request.checkStorage != null) request.checkStorage.invoke(totalBytes, writingThrough)
+            else spaceFailure(request.availableBytes(), requiredStorageBytes(maxOf(totalBytes, writingThrough), downloaded))
+                ?.let { throw InsufficientStorageException(it) }
+        }
+
         try {
             checkNetwork()
             call.execute().use { response ->
@@ -151,8 +158,11 @@ class ResumableDownloader(
                         // Everything is already present locally.
                         writingStorage = true
                         val completeSize = request.partialFile.length()
+                        totalBytes = completeSize
+                        checkStorage(completeSize)
                         if (request.finalFile.exists()) request.finalFile.delete()
                         if (!request.partialFile.renameTo(request.finalFile)) {
+                            checkStorage(saturatingStorageAdd(completeSize, completeSize))
                             request.partialFile.copyTo(request.finalFile, overwrite = true)
                             request.partialFile.delete()
                         }
@@ -208,9 +218,7 @@ class ResumableDownloader(
                     }
                 }
 
-                spaceFailure(request.availableBytes(), requiredStorageBytes(totalBytes.takeIf { it > 0 }, downloaded))?.let { error ->
-                    return@use Outcome.Failed(error, downloaded, totalBytes, rangeSupported, etag)
-                }
+                checkStorage(downloaded)
                 val input = body?.byteStream() ?: run {
                     return@use Outcome.Failed(
                         AppError.Network("响应体为空"),
@@ -239,6 +247,7 @@ class ResumableDownloader(
                         val read = input.read(buffer)
                         if (read == -1) break
 
+                        checkStorage(saturatingStorageAdd(downloaded, read.toLong()))
                         writingStorage = true
                         output.write(buffer, 0, read)
                         writingStorage = false
@@ -269,6 +278,7 @@ class ResumableDownloader(
                 writingStorage = true
                 if (request.finalFile.exists()) request.finalFile.delete()
                 if (!request.partialFile.renameTo(request.finalFile)) {
+                    checkStorage(saturatingStorageAdd(downloaded, downloaded))
                     request.partialFile.copyTo(request.finalFile, overwrite = true)
                     request.partialFile.delete()
                 }
@@ -276,6 +286,8 @@ class ResumableDownloader(
                 writingStorage = false
                 Outcome.Completed(request.finalFile, if (totalBytes > 0L) totalBytes else downloaded)
             }
+        } catch (error: InsufficientStorageException) {
+            Outcome.Failed(error.error, downloaded, totalBytes, rangeSupported, etag)
         } catch (e: CancellationException) {
             withContext(NonCancellable) {
                 request.onProgress(downloaded, totalBytes, 0L, rangeSupported, etag)

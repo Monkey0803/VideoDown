@@ -24,6 +24,7 @@ class RangeAwareTestServer(
     private val statusCode: Int = 200,
     private val chunkSize: Int = Int.MAX_VALUE,
     private val chunkDelayMs: Long = 0,
+    private val sendContentLength: Boolean = true,
 ) : Closeable {
 
     private val serverSocket = ServerSocket(0)
@@ -64,7 +65,8 @@ class RangeAwareTestServer(
         rangeHeadersSeen.add(rangeHeader)
 
         if (statusCode != 200) {
-            writeAscii(socket, "HTTP/1.1 $statusCode Error\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+            val range = if (statusCode == 416) "Content-Range: bytes */${payload.size}\r\n" else ""
+            writeAscii(socket, "HTTP/1.1 $statusCode Error\r\n${range}Content-Length: 0\r\nConnection: close\r\n\r\n")
             return
         }
 
@@ -85,7 +87,7 @@ class RangeAwareTestServer(
             append("Accept-Ranges: bytes\r\n")
             append("ETag: \"fixture-etag\"\r\n")
             append("Content-Type: video/mp4\r\n")
-            append("Content-Length: ${slice.size}\r\n")
+            if (sendContentLength) append("Content-Length: ${slice.size}\r\n")
             append("Connection: close\r\n\r\n")
         }
         writeAscii(socket, header)
