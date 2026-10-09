@@ -64,7 +64,14 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 
 此功能面向点播视频，不保证所有网站可用；不支持 DRM、直播录制或整站采集。部分网站会限制 WebView 登录。详细架构、依赖校验和、16 KB 原生库修复与许可来源见 [通用视频引擎说明](docs/research/universal-video-engine.md)，当前通过及未验证项见 [实施验证记录](docs/validation/universal-video-2026-09-29.md)。
 
+## 应用更新入口
 
+- 「我的 → 检查更新」显示当前版本，并读取一个可配置的版本清单 JSON（`versionCode` / `versionName` / `downloadUrl` / `releasePageUrl` / `notes`）判断是否有新版本。
+- 发现新版本时显示版本号与更新说明，并提供「下载新版」或「查看发布页」，在系统浏览器或下载器中打开；应用不申请安装权限，也不静默安装。
+- 更新源地址默认取构建期参数 `-PupdateManifestUrl=…`（写入 `BuildConfig.DEFAULT_UPDATE_MANIFEST_URL`），也可在「检查更新 → 更新源」中按设备修改并保留。未配置、离线或清单格式不正确时给出明确提示并保留当前版本信息。
+- 解析引擎仍随 APK 固定更新，本次不引入独立的引擎热更新。验证记录见 [应用更新入口验证](docs/validation/app-update-entry-2026-10-09.md)。
+
+## 功能对照
 
 | # | 需求 | 实现位置 |
 |---|------|----------|
@@ -84,6 +91,7 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 | 14 | 存储占用、残留清理与空间检查 | `data/local/DownloadStorageRepository.kt` + `data/download/StorageSpaceGuard.kt` + `presentation/settings/StorageDialog.kt` |
 | 15 | 并发设置与等待任务排序 | `data/download/DownloadQueueScheduler.kt` + `core/AppPreferences.kt` + `presentation/history/` |
 | 16 | 按失败原因恢复与页面跳转 | `domain/model/DownloadFailure.kt` + `presentation/home/` + `presentation/history/` + `presentation/MainActivity.kt` |
+| 17 | 应用更新入口与可配置版本清单 | `data/update/AppUpdateChecker.kt` + `presentation/settings/UpdateDialog.kt` + `presentation/settings/UpdateViewModel.kt` + `core/AppPreferences.kt` + `app/build.gradle.kts`（`-PupdateManifestUrl`） |
 
 ## 环境要求
 

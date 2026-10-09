@@ -47,6 +47,22 @@ object ServiceLocator {
 
     val douyinApiClient: DouyinApiClient by lazy { DouyinApiClient() }
 
+    /** Installed version, read from `PackageManager` once per process. */
+    val appVersion: com.videodown.douyin.data.update.AppVersion by lazy {
+        val info = appContext.packageManager.getPackageInfo(appContext.packageName, 0)
+        val code = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            info.longVersionCode.toInt()
+        } else {
+            @Suppress("DEPRECATION") info.versionCode
+        }
+        com.videodown.douyin.data.update.AppVersion(code, info.versionName?.takeIf(String::isNotBlank) ?: "未知版本")
+    }
+
+    /** Reads the remote version manifest; never downloads or installs a package. */
+    val appUpdateChecker: com.videodown.douyin.data.update.AppUpdateChecker by lazy {
+        com.videodown.douyin.data.update.AppUpdateChecker(douyinApiClient.okHttpClient, appVersion)
+    }
+
     val douyinRepository: DouyinRepository by lazy { DouyinRepositoryImpl(douyinApiClient) }
     val browserSessions by lazy { BrowserSessionStore() }
     val videoEngine by lazy { VideoEngineRuntime(appContext) }

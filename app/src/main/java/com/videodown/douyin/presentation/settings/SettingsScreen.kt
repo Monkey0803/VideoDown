@@ -66,9 +66,11 @@ import com.videodown.douyin.data.download.DownloadCompletionNotifier
 @Composable
 fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {},
     storageViewModel: StorageViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    updateViewModel: UpdateViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     preferences: com.videodown.douyin.core.AppPreferences = ServiceLocator.preferences) {
     val context = LocalContext.current
     val wifiOnly by preferences.wifiOnlyChanges.collectAsStateWithLifecycle()
+    val autoResume by preferences.autoResumeChanges.collectAsStateWithLifecycle()
     val maxConcurrent by preferences.maxConcurrentChanges.collectAsStateWithLifecycle()
     var showConcurrency by rememberSaveable { mutableStateOf(false) }
     val themeMode by preferences.themeModeChanges.collectAsStateWithLifecycle()
@@ -102,6 +104,8 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     var showQuality by rememberSaveable { mutableStateOf(false) }
     var showStorage by remember { mutableStateOf(false) }
     var showAbout by remember { mutableStateOf(false) }
+    var showUpdate by rememberSaveable { mutableStateOf(false) }
+    val installedVersion = remember { ServiceLocator.appVersion.versionName }
 
     LaunchedEffect(openStorage) { if (openStorage) { showStorage = true; onStorageOpened() } }
     if (showConcurrency) {
@@ -215,9 +219,10 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         )
     }
     if (showStorage) StorageDialog(storageViewModel) { showStorage = false }
+    if (showUpdate) UpdateDialog(updateViewModel) { showUpdate = false }
     if (showAbout) {
         AlertDialog(onDismissRequest = { showAbout = false }, title = { Text("关于拾影") },
-            text = { Text("拾影支持主流平台与普通网页视频、网页辅助、分片下载和音视频合并。\n\n$engineVersion\n\n采用 yt-dlp、youtubedl-android（GPL-3.0）与 FFmpeg；不支持 DRM 视频和直播。") },
+            text = { Text("拾影 v$installedVersion 支持主流平台与普通网页视频、网页辅助、分片下载和音视频合并。\n\n$engineVersion\n\n采用 yt-dlp、youtubedl-android（GPL-3.0）与 FFmpeg；不支持 DRM 视频和直播。") },
             confirmButton = { TextButton(onClick = { showAbout = false }) { Text("知道了") } })
     }
 
@@ -241,6 +246,14 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 subtitle = if (wifiOnly) "离开 Wi-Fi 自动暂停，连接后可继续" else "允许使用移动网络下载",
                 checked = wifiOnly,
                 onCheckedChange = { preferences.wifiOnly = it },
+            )
+            ToggleRow(
+                icon = { AppIcon(AppIcons.ResumeDownload, null, tint = MaterialTheme.colorScheme.primary) },
+                title = "自动继续下载",
+                subtitle = if (autoResume) "网络恢复或空间充足后自动继续，手动暂停不受影响"
+                    else "中断的任务需手动点击继续",
+                checked = autoResume,
+                onCheckedChange = { preferences.autoResume = it },
             )
             ToggleRow(
                 icon = { AppIcon(AppIcons.Notification, null, tint = MaterialTheme.colorScheme.primary) },
@@ -291,6 +304,8 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "存储空间", value = "占用与残留清理", onClick = { showStorage = true })
+            SettingsRow(icon = { AppIcon(AppIcons.Download, null, tint = MaterialTheme.colorScheme.primary) },
+                title = "检查更新", value = "v$installedVersion", onClick = { showUpdate = true })
             SettingsRow(icon = { AppIcon(AppIcons.Info, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "关于拾影", value = "›", onClick = { showAbout = true })
         }

@@ -26,7 +26,7 @@
 
 - 空间预算可视化：存储界面目前展示物理可用量和文件占用，可增加运行任务尚需空间以及不足原因，帮助用户理解为什么剩余容量仍不足。
 - 下载自动继续：**已实现**（`AppPreferences.autoResume`、`DownloadPauseCause`、`DownloadEngine.autoResume`、`AutoResumeBudget`）。默认开启，网络恢复、空间释放或进程重启后自动继续被网络/空间中断的任务；用户主动暂停永不自动继续，可在「我的」关闭。见 `docs/validation/auto-resume-2026-10-09.md`；设备侧真实 Wi-Fi 断开/恢复与真实磁盘写满的端到端验收仍待补。
-- 更新入口：引擎随 APK 固定更新。若希望无需手动查版本，可增加应用版本检查及更新说明；是否支持独立引擎更新需另行设计和验证。
+- 更新入口：**已实现**（`data/update/AppUpdateChecker.kt`、`presentation/settings/UpdateDialog.kt`、`core/AppPreferences.updateManifestUrl`）。「我的 → 检查更新」显示当前版本，读取可配置的版本清单 JSON 后提示新版本、更新说明和下载/发布页链接，更新源可用 `-PupdateManifestUrl` 或对话框内设置。引擎仍随 APK 固定更新，不含独立引擎热更新；发布方需自行提供清单托管地址。
 
 ## 不计入本轮待办
 
@@ -40,5 +40,6 @@ DRM 解密、直播录制、整站采集不在现有范围；ijkplayer 尚未接
 - `docs/validation/p3-features-2026-09-30.md`
 - `docs/validation/universal-video-2026-09-29.md`
 - `docs/validation/concurrent-storage-2026-10-09.md`
+- `docs/validation/auto-resume-2026-10-09.md`
 - `docs/validation/p2-device-2026-10-09.md`
 - `docs/validation/export-failure-release-upgrade-2026-10-09.md`

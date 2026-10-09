@@ -45,6 +45,13 @@ val abiFiltersForBuild: List<String> = when (targetAbi) {
 /** Short tag used in the output APK file name. */
 val abiTag: String = if ("universal" == targetAbi || "all" == targetAbi) "universal" else abiFiltersForBuild.first()
 
+/**
+ * Default endpoint for the in-app update check. Baked into `BuildConfig` so an official build can
+ * ship a working update source, while users can still override it in 「我的 → 检查更新 → 更新源」.
+ * Pass `-PupdateManifestUrl=https://…/version.json` to set it.
+ */
+val defaultUpdateManifestUrl: String = (findProperty("updateManifestUrl") as String?)?.trim().orEmpty()
+
 android {
     namespace = "com.videodown.douyin"
     compileSdk = 36
@@ -59,6 +66,12 @@ android {
         targetSdk = 36
         versionCode = 2
         versionName = "1.0.1"
+
+        buildConfigField(
+            "String",
+            "DEFAULT_UPDATE_MANIFEST_URL",
+            "\"${defaultUpdateManifestUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"",
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
@@ -127,6 +140,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {

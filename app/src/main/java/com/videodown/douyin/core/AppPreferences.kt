@@ -60,6 +60,17 @@ class AppPreferences(context: Context) {
         get() = store.getBoolean("notify_on_completion", false)
         set(value) { store.edit().putBoolean("notify_on_completion", value).apply() }
 
+    /**
+     * Endpoint of the JSON version manifest used by 「我的 → 检查更新」.
+     *
+     * Defaults to the URL baked in at build time (`-PupdateManifestUrl=…`) and can be overridden
+     * per device from the update dialog. Stored verbatim; the checker rejects non-HTTP values.
+     */
+    var updateManifestUrl: String
+        get() = store.getString("update_manifest_url", null)?.trim().orEmpty()
+            .ifEmpty { com.videodown.douyin.BuildConfig.DEFAULT_UPDATE_MANIFEST_URL }
+        set(value) { store.edit().putString("update_manifest_url", value.trim()).apply() }
+
     var preferredQuality: PreferredQuality
         get() = PreferredQuality.entries.getOrNull(store.getInt("preferred_quality", 0)) ?: PreferredQuality.HIGHEST
         set(value) { store.edit().putInt("preferred_quality", value.ordinal).apply() }
