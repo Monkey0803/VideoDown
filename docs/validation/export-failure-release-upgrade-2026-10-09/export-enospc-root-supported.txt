@@ -1,0 +1,38 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2ExportFailureDeviceTest:
+INSTRUMENTATION_STATUS: test=realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=BEFORE_PICKER: own tree query denied; initial URI provides navigation only
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_TREE_GRANTED: test provider persistent read/write granted by DocumentsUI
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=QUOTA_OS_STATS: bytesWritten=4096, enospcCount=1
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=INJECTED_OS_ENOSPC_RECOVERED: actual UI retry copies=[content://com.videodown.douyin.test.quotaexport/tree/root/document/export-failure-3e916eb2-3511-4243-ab08-4acab0141133.mp4]; original bytes/media unchanged
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=CLEANUP: own provider files/record/source removed; prior tree and grants preserved
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 5.481
+
+OK (1 test)
+
+
+INSTRUMENTATION_CODE: -1

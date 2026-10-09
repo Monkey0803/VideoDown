@@ -1,0 +1,7 @@
+          Intent { act=android.intent.action.OPEN_DOCUMENT_TREE cmp=com.google.android.documentsui/com.android.documentsui.picker.PickActivity }
+          rootOfTask=true task=Task{477eac8 #141 visible=true type=standard mode=fullscreen translucent=true A=10270:com.videodown.douyin.debug mMaglevButton=false mMaglevButtonType=0 mMaglevButtonWidth=0 mMaglevButtonOffset=0 U=0 StackId=141 sz=1}
+          taskAffinity=10109:com.google.android.documentsui
+          mActivityComponent=com.google.android.documentsui/com.android.documentsui.picker.PickActivity
+          baseDir=/system/priv-app/DocumentsUIGoogle/DocumentsUIGoogle.apk
+          dataDir=/data/user/0/com.google.android.documentsui
+          splitDir=[/system/priv-app/DocumentsUIGoogle/DocumentsUIGoogle-xxhdpi.apk]

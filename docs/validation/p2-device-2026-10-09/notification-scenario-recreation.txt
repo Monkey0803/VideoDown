@@ -1,0 +1,122 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2CompletionNotificationDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2CompletionNotificationDeviceTest:
+INSTRUMENTATION_STATUS: test=productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=COMPLETED: title=通知关闭-49c1c724, id=df4700e3-697e-4969-98da-60b40491527e, bytes=10542
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=DISABLED: actual completed download posted no notification
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=COMPLETED: title=通知甲-4caa8208, id=71a9c6c5-0d2d-496d-93c3-96c674abffb5, bytes=10542
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=COMPLETED: title=通知乙-486c708d, id=6a6a741c-3d85-4721-ac25-7ca0f30d90d9, bytes=10542
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ENABLED: two actual completed downloads have independent notification cards and PendingIntents
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_NOTIFICATION_CLICK: opened corresponding detail 71a9c6c5-0d2d-496d-93c3-96c674abffb5
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_NOTIFICATION_CLICK: opened corresponding detail 6a6a741c-3d85-4721-ac25-7ca0f30d90d9
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=CLEANUP: only own 3 tasks/files removed; completion preference restored to false
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2CompletionNotificationDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Activity never becomes requested state "[RESUMED]" (last lifecycle transition = "PAUSED")
+	at androidx.test.core.app.ActivityScenario.waitForActivityToBecomeAnyOf(ActivityScenario.java:454)
+	at androidx.test.core.app.ActivityScenario.moveToState(ActivityScenario.java:689)
+	at androidx.test.core.app.ActivityScenario.recreate(ActivityScenario.java:718)
+	at com.videodown.douyin.P2CompletionNotificationDeviceTest$productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord$1.invokeSuspend(P2CompletionNotificationDeviceTest.kt:143)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:35)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:47)
+	at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:233)
+	at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:152)
+	at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:470)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core(CancellableContinuationImpl.kt:504)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core$default(CancellableContinuationImpl.kt:493)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeUndispatched(CancellableContinuationImpl.kt:596)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedResumeTask.run(EventLoop.common.kt:497)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2CompletionNotificationDeviceTest.productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord(P2CompletionNotificationDeviceTest.kt:114)
+
+INSTRUMENTATION_STATUS: stream=
+Error in productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord(com.videodown.douyin.P2CompletionNotificationDeviceTest):
+java.lang.AssertionError: Activity never becomes requested state "[RESUMED]" (last lifecycle transition = "PAUSED")
+	at androidx.test.core.app.ActivityScenario.waitForActivityToBecomeAnyOf(ActivityScenario.java:454)
+	at androidx.test.core.app.ActivityScenario.moveToState(ActivityScenario.java:689)
+	at androidx.test.core.app.ActivityScenario.recreate(ActivityScenario.java:718)
+	at com.videodown.douyin.P2CompletionNotificationDeviceTest$productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord$1.invokeSuspend(P2CompletionNotificationDeviceTest.kt:143)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:35)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:47)
+	at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:233)
+	at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:152)
+	at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:470)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core(CancellableContinuationImpl.kt:504)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core$default(CancellableContinuationImpl.kt:493)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeUndispatched(CancellableContinuationImpl.kt:596)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedResumeTask.run(EventLoop.common.kt:497)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2CompletionNotificationDeviceTest.productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord(P2CompletionNotificationDeviceTest.kt:114)
+
+INSTRUMENTATION_STATUS: test=productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 55.208
+There was 1 failure:
+1) productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord(com.videodown.douyin.P2CompletionNotificationDeviceTest)
+java.lang.AssertionError: Activity never becomes requested state "[RESUMED]" (last lifecycle transition = "PAUSED")
+	at androidx.test.core.app.ActivityScenario.waitForActivityToBecomeAnyOf(ActivityScenario.java:454)
+	at androidx.test.core.app.ActivityScenario.moveToState(ActivityScenario.java:689)
+	at androidx.test.core.app.ActivityScenario.recreate(ActivityScenario.java:718)
+	at com.videodown.douyin.P2CompletionNotificationDeviceTest$productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord$1.invokeSuspend(P2CompletionNotificationDeviceTest.kt:143)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:35)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:47)
+	at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:233)
+	at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:152)
+	at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:470)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core(CancellableContinuationImpl.kt:504)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core$default(CancellableContinuationImpl.kt:493)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeUndispatched(CancellableContinuationImpl.kt:596)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedResumeTask.run(EventLoop.common.kt:497)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2CompletionNotificationDeviceTest.productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord(P2CompletionNotificationDeviceTest.kt:114)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

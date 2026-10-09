@@ -1,0 +1,324 @@
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/action_bar_root" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="android:id/content" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/coordinator_layout" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/drawer_layout" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/app_bar" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" id="com.google.android.documentsui:id/collapsing_toolbar" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" id="com.google.android.documentsui:id/directory_header" bounds="Rect(0, 215 - 1080, 512)">
+<node text="" desc="" id="com.google.android.documentsui:id/horizontal_breadcrumb" bounds="Rect(0, 215 - 1080, 347)">
+<node text="" desc="" id="null" bounds="Rect(0, 215 - 340, 347)">
+<node text="SHARK PRS-A0" desc="" id="com.google.android.documentsui:id/breadcrumb_text" bounds="Rect(0, 215 - 340, 347)">
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 347 - 1080, 347)">
+<node text="" desc="" id="null" bounds="Rect(0, 347 - 0, 347)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(66, 347 - 1014, 512)">
+<node text="SHARK PRS-A0 上的文件" desc="" id="com.google.android.documentsui:id/header_title" bounds="Rect(66, 347 - 882, 512)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/sub_menu" bounds="Rect(882, 363 - 1014, 495)">
+<node text="" desc="网格视图" id="com.google.android.documentsui:id/sub_menu_grid" bounds="Rect(882, 363 - 1014, 495)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/toolbar" bounds="Rect(0, 80 - 1080, 212)">
+<node text="SHARK PRS-A0" desc="" id="null" bounds="Rect(44, 114 - 368, 177)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(684, 80 - 1080, 212)">
+<node text="" desc="新建文件夹" id="com.google.android.documentsui:id/option_menu_create_dir" bounds="Rect(684, 80 - 816, 212)">
+</node>
+<node text="" desc="排序方式…" id="com.google.android.documentsui:id/option_menu_sort" bounds="Rect(816, 80 - 948, 212)">
+</node>
+<node text="" desc="更多选项" id="null" bounds="Rect(948, 80 - 1080, 212)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/container_search_fragment" bounds="Rect(0, 80 - 1080, 2400)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/container_directory" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/refresh_layout" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/dir_list" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 512 - 1080, 831)">
+<node text="" desc="" id="null" bounds="Rect(66, 523 - 1014, 820)">
+<node text="" desc="" id="null" bounds="Rect(66, 523 - 1014, 820)">
+<node text="" desc="" id="null" bounds="Rect(66, 523 - 1014, 820)">
+<node text="" desc="" id="com.google.android.documentsui:id/message_container" bounds="Rect(66, 523 - 1014, 688)">
+<node text="" desc="" id="com.google.android.documentsui:id/message_icon" bounds="Rect(88, 550 - 198, 660)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(220, 523 - 1014, 655)">
+<node text="无法使用此文件夹" desc="" id="com.google.android.documentsui:id/message_title" bounds="Rect(220, 560 - 524, 612)">
+</node>
+<node text="为保护您的隐私，请选择其他文件夹" desc="" id="com.google.android.documentsui:id/message_subtitle" bounds="Rect(220, 612 - 668, 650)">
+</node>
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/action_view" bounds="Rect(66, 688 - 1014, 820)">
+<node text="新建文件夹" desc="" id="com.google.android.documentsui:id/action_button" bounds="Rect(746, 688 - 970, 820)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 831 - 1080, 1032)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 831 - 1080, 1029)">
+<node text="" desc="" id="null" bounds="Rect(0, 831 - 1080, 1029)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 831 - 198, 1029)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 875 - 154, 985)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 888 - 140, 971)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 897 - 132, 963)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 904 - 1036, 956)">
+<node text="" desc="" id="null" bounds="Rect(198, 904 - 319, 956)">
+<node text="Alarms" desc="" id="android:id/title" bounds="Rect(198, 904 - 319, 956)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1029 - 1058, 1032)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 1032 - 1080, 1233)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 1032 - 1080, 1230)">
+<node text="" desc="" id="null" bounds="Rect(0, 1032 - 1080, 1230)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 1032 - 198, 1230)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 1076 - 154, 1186)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 1089 - 140, 1172)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 1098 - 132, 1164)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1105 - 1036, 1157)">
+<node text="" desc="" id="null" bounds="Rect(198, 1105 - 330, 1157)">
+<node text="Android" desc="" id="android:id/title" bounds="Rect(198, 1105 - 330, 1157)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1230 - 1058, 1233)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 1233 - 1080, 1434)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 1233 - 1080, 1431)">
+<node text="" desc="" id="null" bounds="Rect(0, 1233 - 1080, 1431)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 1233 - 198, 1431)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 1277 - 154, 1387)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 1290 - 140, 1373)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 1299 - 132, 1365)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1306 - 1036, 1358)">
+<node text="" desc="" id="null" bounds="Rect(198, 1306 - 400, 1358)">
+<node text="Audiobooks" desc="" id="android:id/title" bounds="Rect(198, 1306 - 400, 1358)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1431 - 1058, 1434)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 1434 - 1080, 1635)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 1434 - 1080, 1632)">
+<node text="" desc="" id="null" bounds="Rect(0, 1434 - 1080, 1632)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 1434 - 198, 1632)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 1478 - 154, 1588)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 1491 - 140, 1574)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 1500 - 132, 1566)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1507 - 1036, 1559)">
+<node text="" desc="" id="null" bounds="Rect(198, 1507 - 341, 1559)">
+<node text="backups" desc="" id="android:id/title" bounds="Rect(198, 1507 - 341, 1559)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1632 - 1058, 1635)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 1635 - 1080, 1836)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 1635 - 1080, 1833)">
+<node text="" desc="" id="null" bounds="Rect(0, 1635 - 1080, 1833)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 1635 - 198, 1833)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 1679 - 154, 1789)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 1692 - 140, 1775)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 1701 - 132, 1767)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1708 - 1036, 1760)">
+<node text="" desc="" id="null" bounds="Rect(198, 1708 - 291, 1760)">
+<node text="baidu" desc="" id="android:id/title" bounds="Rect(198, 1708 - 291, 1760)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1833 - 1058, 1836)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 1836 - 1080, 2037)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 1836 - 1080, 2034)">
+<node text="" desc="" id="null" bounds="Rect(0, 1836 - 1080, 2034)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 1836 - 198, 2034)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 1880 - 154, 1990)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 1893 - 140, 1976)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 1902 - 132, 1968)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 1909 - 1036, 1961)">
+<node text="" desc="" id="null" bounds="Rect(198, 1909 - 747, 1961)">
+<node text="com.blackshark.aftersaleservice" desc="" id="android:id/title" bounds="Rect(198, 1909 - 747, 1961)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2034 - 1058, 2037)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 2037 - 1080, 2238)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 2037 - 1080, 2235)">
+<node text="" desc="" id="null" bounds="Rect(0, 2037 - 1080, 2235)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 2037 - 198, 2235)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 2081 - 154, 2191)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 2094 - 140, 2177)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 2103 - 132, 2169)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2110 - 1036, 2162)">
+<node text="" desc="" id="null" bounds="Rect(198, 2110 - 594, 2162)">
+<node text="com.example.oaidtest2" desc="" id="android:id/title" bounds="Rect(198, 2110 - 594, 2162)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2235 - 1058, 2238)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 2238 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 2238 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 2238 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 2238 - 198, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 2282 - 154, 2392)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 2295 - 140, 2378)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 2304 - 132, 2370)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2311 - 1036, 2363)">
+<node text="" desc="" id="null" bounds="Rect(198, 2311 - 556, 2363)">
+<node text="com.miui.voiceassist" desc="" id="android:id/title" bounds="Rect(198, 2311 - 556, 2363)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2436 - 1058, 2400)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 2439 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 2439 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 2439 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 2439 - 198, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 2483 - 154, 2400)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 2496 - 140, 2400)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 2505 - 132, 2400)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2512 - 1036, 2400)">
+<node text="" desc="" id="null" bounds="Rect(198, 2512 - 273, 2400)">
+<node text="data" desc="" id="android:id/title" bounds="Rect(198, 2512 - 273, 2400)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2637 - 1058, 2400)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 2640 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/item_root" bounds="Rect(0, 2640 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 2640 - 1080, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon" bounds="Rect(0, 2640 - 198, 2400)">
+<node text="" desc="" id="com.google.android.documentsui:id/icon_thumb" bounds="Rect(44, 2684 - 154, 2400)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_check" bounds="Rect(57, 2697 - 140, 2400)">
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/icon_mime" bounds="Rect(66, 2697 - 132, 2400)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2697 - 1036, 2400)">
+<node text="" desc="" id="null" bounds="Rect(198, 2697 - 291, 2400)">
+<node text="DCIM" desc="" id="android:id/title" bounds="Rect(198, 2697 - 291, 2400)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2697 - 1058, 2400)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/drawer_edge" bounds="Rect(0, 80 - 33, 2400)">
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/container_save" bounds="Rect(0, 2224 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 2224 - 1080, 2356)">
+<node text="" desc="" id="null" bounds="Rect(28, 2224 - 1052, 2356)">
+<node text="" desc="" id="com.google.android.documentsui:id/pick_button_overlay" bounds="Rect(28, 2224 - 1052, 2356)">
+</node>
+<node text="使用此文件夹" desc="" id="android:id/button1" bounds="Rect(39, 2224 - 1041, 2356)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="android:id/statusBarBackground" bounds="Rect(0, 0 - 1080, 80)">
+</node>
+<node text="" desc="" id="android:id/navigationBarBackground" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

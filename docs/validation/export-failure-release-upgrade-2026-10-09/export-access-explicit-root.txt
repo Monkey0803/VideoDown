@@ -1,0 +1,134 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2ExportFailureDeviceTest:
+INSTRUMENTATION_STATUS: test=revokedActualTreeGrantRequiresReselectionAndRecovers
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=BEFORE_PICKER: own tree query denied; initial URI provides navigation only
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [使用此文件夹, Use this folder]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [使用此文件夹, Use this folder]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [允许, Allow]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [允许, Allow]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_TREE_GRANTED: test provider persistent read/write granted by DocumentsUI
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=OWNER_REVOKE_DIAGNOSTIC: afterChildren=-1, afterTree=-1, beforeChildren=0, beforeTree=0, callerUid=10271, providerPackage=com.videodown.douyin.debug.test, providerUid=10271, targetUid=10270
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=AFTER_OWNER_REVOKE: persistent and temporary tree access denied by Android
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [显示根目录]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_DONE: [显示根目录]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SYSTEM_TAP_WAIT: [P2 空间配额测试]
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=CLEANUP: own provider files/record/source removed; prior tree and grants preserved
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.tapSystem(P2ExportFailureDeviceTest.kt:56)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.selectQuotaRoot(P2ExportFailureDeviceTest.kt:68)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$selectQuotaRoot(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$selectQuotaRoot$1.invokeSuspend(Unknown Source:14)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:233)
+	at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:152)
+	at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:470)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core(CancellableContinuationImpl.kt:504)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core$default(CancellableContinuationImpl.kt:493)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeUndispatched(CancellableContinuationImpl.kt:596)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedResumeTask.run(EventLoop.common.kt:497)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.revokedActualTreeGrantRequiresReselectionAndRecovers(P2ExportFailureDeviceTest.kt:82)
+
+INSTRUMENTATION_STATUS: stream=
+Error in revokedActualTreeGrantRequiresReselectionAndRecovers(com.videodown.douyin.P2ExportFailureDeviceTest):
+java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.tapSystem(P2ExportFailureDeviceTest.kt:56)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.selectQuotaRoot(P2ExportFailureDeviceTest.kt:68)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$selectQuotaRoot(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$selectQuotaRoot$1.invokeSuspend(Unknown Source:14)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:233)
+	at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:152)
+	at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:470)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core(CancellableContinuationImpl.kt:504)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core$default(CancellableContinuationImpl.kt:493)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeUndispatched(CancellableContinuationImpl.kt:596)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedResumeTask.run(EventLoop.common.kt:497)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.revokedActualTreeGrantRequiresReselectionAndRecovers(P2ExportFailureDeviceTest.kt:82)
+
+INSTRUMENTATION_STATUS: test=revokedActualTreeGrantRequiresReselectionAndRecovers
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 6.73
+There was 1 failure:
+1) revokedActualTreeGrantRequiresReselectionAndRecovers(com.videodown.douyin.P2ExportFailureDeviceTest)
+java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.tapSystem(P2ExportFailureDeviceTest.kt:56)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.selectQuotaRoot(P2ExportFailureDeviceTest.kt:68)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$selectQuotaRoot(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$selectQuotaRoot$1.invokeSuspend(Unknown Source:14)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:233)
+	at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:152)
+	at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:470)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core(CancellableContinuationImpl.kt:504)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$kotlinx_coroutines_core$default(CancellableContinuationImpl.kt:493)
+	at kotlinx.coroutines.CancellableContinuationImpl.resumeUndispatched(CancellableContinuationImpl.kt:596)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedResumeTask.run(EventLoop.common.kt:497)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.revokedActualTreeGrantRequiresReselectionAndRecovers(P2ExportFailureDeviceTest.kt:82)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

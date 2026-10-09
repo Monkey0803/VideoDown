@@ -1,0 +1,233 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2ExportFailureDeviceTest:
+INSTRUMENTATION_STATUS: test=realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stack=java.lang.SecurityException: Permission Denial: opening provider com.videodown.douyin.QuotaExportFixtureProvider from ProcessRecord{7bcfa06 24009:com.videodown.douyin.debug/u0a270} (pid=24009, uid=10270) requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createExceptionOrNull(Parcel.java:2376)
+	at android.os.Parcel.createException(Parcel.java:2360)
+	at android.os.Parcel.readException(Parcel.java:2343)
+	at android.os.Parcel.readException(Parcel.java:2285)
+	at android.app.IActivityManager$Stub$Proxy.getContentProvider(IActivityManager.java:6023)
+	at android.app.ActivityThread.acquireProvider(ActivityThread.java:7538)
+	at android.app.ContextImpl$ApplicationContentResolver.acquireProvider(ContextImpl.java:2935)
+	at android.content.ContentResolver.acquireProvider(ContentResolver.java:2497)
+	at android.content.ContentResolver.call(ContentResolver.java:2432)
+	at android.content.ContentResolver.call(ContentResolver.java:2417)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.exercise(P2ExportFailureDeviceTest.kt:75)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$exercise(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource$1.invokeSuspend(P2ExportFailureDeviceTest.kt:69)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource(P2ExportFailureDeviceTest.kt:69)
+	... 64 trimmed
+Caused by: android.os.RemoteException: Remote stack trace:
+	at com.android.server.am.ActivityManagerService.getContentProviderImpl(ActivityManagerService.java:7846)
+	at com.android.server.am.ActivityManagerService.getContentProvider(ActivityManagerService.java:8202)
+	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2525)
+	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3038)
+	at android.os.Binder.execTransactInternal(Binder.java:1157)
+
+
+INSTRUMENTATION_STATUS: stream=
+Error in realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource(com.videodown.douyin.P2ExportFailureDeviceTest):
+java.lang.SecurityException: Permission Denial: opening provider com.videodown.douyin.QuotaExportFixtureProvider from ProcessRecord{7bcfa06 24009:com.videodown.douyin.debug/u0a270} (pid=24009, uid=10270) requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createExceptionOrNull(Parcel.java:2376)
+	at android.os.Parcel.createException(Parcel.java:2360)
+	at android.os.Parcel.readException(Parcel.java:2343)
+	at android.os.Parcel.readException(Parcel.java:2285)
+	at android.app.IActivityManager$Stub$Proxy.getContentProvider(IActivityManager.java:6023)
+	at android.app.ActivityThread.acquireProvider(ActivityThread.java:7538)
+	at android.app.ContextImpl$ApplicationContentResolver.acquireProvider(ContextImpl.java:2935)
+	at android.content.ContentResolver.acquireProvider(ContentResolver.java:2497)
+	at android.content.ContentResolver.call(ContentResolver.java:2432)
+	at android.content.ContentResolver.call(ContentResolver.java:2417)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.exercise(P2ExportFailureDeviceTest.kt:75)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$exercise(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource$1.invokeSuspend(P2ExportFailureDeviceTest.kt:69)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource(P2ExportFailureDeviceTest.kt:69)
+	... 64 trimmed
+Caused by: android.os.RemoteException: Remote stack trace:
+	at com.android.server.am.ActivityManagerService.getContentProviderImpl(ActivityManagerService.java:7846)
+	at com.android.server.am.ActivityManagerService.getContentProvider(ActivityManagerService.java:8202)
+	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2525)
+	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3038)
+	at android.os.Binder.execTransactInternal(Binder.java:1157)
+
+
+INSTRUMENTATION_STATUS: test=realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=revokedActualTreeGrantRequiresReselectionAndRecovers
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ExportFailureDeviceTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stack=java.lang.SecurityException: Permission Denial: opening provider com.videodown.douyin.QuotaExportFixtureProvider from ProcessRecord{7bcfa06 24009:com.videodown.douyin.debug/u0a270} (pid=24009, uid=10270) requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createExceptionOrNull(Parcel.java:2376)
+	at android.os.Parcel.createException(Parcel.java:2360)
+	at android.os.Parcel.readException(Parcel.java:2343)
+	at android.os.Parcel.readException(Parcel.java:2285)
+	at android.app.IActivityManager$Stub$Proxy.getContentProvider(IActivityManager.java:6023)
+	at android.app.ActivityThread.acquireProvider(ActivityThread.java:7538)
+	at android.app.ContextImpl$ApplicationContentResolver.acquireProvider(ContextImpl.java:2935)
+	at android.content.ContentResolver.acquireProvider(ContentResolver.java:2497)
+	at android.content.ContentResolver.call(ContentResolver.java:2432)
+	at android.content.ContentResolver.call(ContentResolver.java:2417)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.exercise(P2ExportFailureDeviceTest.kt:75)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$exercise(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$revokedActualTreeGrantRequiresReselectionAndRecovers$1.invokeSuspend(P2ExportFailureDeviceTest.kt:68)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.revokedActualTreeGrantRequiresReselectionAndRecovers(P2ExportFailureDeviceTest.kt:68)
+	... 64 trimmed
+Caused by: android.os.RemoteException: Remote stack trace:
+	at com.android.server.am.ActivityManagerService.getContentProviderImpl(ActivityManagerService.java:7738)
+	at com.android.server.am.ActivityManagerService.getContentProvider(ActivityManagerService.java:8202)
+	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2525)
+	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3038)
+	at android.os.Binder.execTransactInternal(Binder.java:1157)
+
+
+INSTRUMENTATION_STATUS: stream=
+Error in revokedActualTreeGrantRequiresReselectionAndRecovers(com.videodown.douyin.P2ExportFailureDeviceTest):
+java.lang.SecurityException: Permission Denial: opening provider com.videodown.douyin.QuotaExportFixtureProvider from ProcessRecord{7bcfa06 24009:com.videodown.douyin.debug/u0a270} (pid=24009, uid=10270) requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createExceptionOrNull(Parcel.java:2376)
+	at android.os.Parcel.createException(Parcel.java:2360)
+	at android.os.Parcel.readException(Parcel.java:2343)
+	at android.os.Parcel.readException(Parcel.java:2285)
+	at android.app.IActivityManager$Stub$Proxy.getContentProvider(IActivityManager.java:6023)
+	at android.app.ActivityThread.acquireProvider(ActivityThread.java:7538)
+	at android.app.ContextImpl$ApplicationContentResolver.acquireProvider(ContextImpl.java:2935)
+	at android.content.ContentResolver.acquireProvider(ContentResolver.java:2497)
+	at android.content.ContentResolver.call(ContentResolver.java:2432)
+	at android.content.ContentResolver.call(ContentResolver.java:2417)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.exercise(P2ExportFailureDeviceTest.kt:75)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$exercise(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$revokedActualTreeGrantRequiresReselectionAndRecovers$1.invokeSuspend(P2ExportFailureDeviceTest.kt:68)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.revokedActualTreeGrantRequiresReselectionAndRecovers(P2ExportFailureDeviceTest.kt:68)
+	... 64 trimmed
+Caused by: android.os.RemoteException: Remote stack trace:
+	at com.android.server.am.ActivityManagerService.getContentProviderImpl(ActivityManagerService.java:7738)
+	at com.android.server.am.ActivityManagerService.getContentProvider(ActivityManagerService.java:8202)
+	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2525)
+	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3038)
+	at android.os.Binder.execTransactInternal(Binder.java:1157)
+
+
+INSTRUMENTATION_STATUS: test=revokedActualTreeGrantRequiresReselectionAndRecovers
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 2.851
+There were 2 failures:
+1) realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource(com.videodown.douyin.P2ExportFailureDeviceTest)
+java.lang.SecurityException: Permission Denial: opening provider com.videodown.douyin.QuotaExportFixtureProvider from ProcessRecord{7bcfa06 24009:com.videodown.douyin.debug/u0a270} (pid=24009, uid=10270) requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createExceptionOrNull(Parcel.java:2376)
+	at android.os.Parcel.createException(Parcel.java:2360)
+	at android.os.Parcel.readException(Parcel.java:2343)
+	at android.os.Parcel.readException(Parcel.java:2285)
+	at android.app.IActivityManager$Stub$Proxy.getContentProvider(IActivityManager.java:6023)
+	at android.app.ActivityThread.acquireProvider(ActivityThread.java:7538)
+	at android.app.ContextImpl$ApplicationContentResolver.acquireProvider(ContextImpl.java:2935)
+	at android.content.ContentResolver.acquireProvider(ContentResolver.java:2497)
+	at android.content.ContentResolver.call(ContentResolver.java:2432)
+	at android.content.ContentResolver.call(ContentResolver.java:2417)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.exercise(P2ExportFailureDeviceTest.kt:75)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$exercise(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource$1.invokeSuspend(P2ExportFailureDeviceTest.kt:69)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource(P2ExportFailureDeviceTest.kt:69)
+	... 64 trimmed
+Caused by: android.os.RemoteException: Remote stack trace:
+	at com.android.server.am.ActivityManagerService.getContentProviderImpl(ActivityManagerService.java:7846)
+	at com.android.server.am.ActivityManagerService.getContentProvider(ActivityManagerService.java:8202)
+	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2525)
+	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3038)
+	at android.os.Binder.execTransactInternal(Binder.java:1157)
+
+2) revokedActualTreeGrantRequiresReselectionAndRecovers(com.videodown.douyin.P2ExportFailureDeviceTest)
+java.lang.SecurityException: Permission Denial: opening provider com.videodown.douyin.QuotaExportFixtureProvider from ProcessRecord{7bcfa06 24009:com.videodown.douyin.debug/u0a270} (pid=24009, uid=10270) requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createExceptionOrNull(Parcel.java:2376)
+	at android.os.Parcel.createException(Parcel.java:2360)
+	at android.os.Parcel.readException(Parcel.java:2343)
+	at android.os.Parcel.readException(Parcel.java:2285)
+	at android.app.IActivityManager$Stub$Proxy.getContentProvider(IActivityManager.java:6023)
+	at android.app.ActivityThread.acquireProvider(ActivityThread.java:7538)
+	at android.app.ContextImpl$ApplicationContentResolver.acquireProvider(ContextImpl.java:2935)
+	at android.content.ContentResolver.acquireProvider(ContentResolver.java:2497)
+	at android.content.ContentResolver.call(ContentResolver.java:2432)
+	at android.content.ContentResolver.call(ContentResolver.java:2417)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.exercise(P2ExportFailureDeviceTest.kt:75)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.access$exercise(P2ExportFailureDeviceTest.kt:22)
+	at com.videodown.douyin.P2ExportFailureDeviceTest$revokedActualTreeGrantRequiresReselectionAndRecovers$1.invokeSuspend(P2ExportFailureDeviceTest.kt:68)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2ExportFailureDeviceTest.revokedActualTreeGrantRequiresReselectionAndRecovers(P2ExportFailureDeviceTest.kt:68)
+	... 64 trimmed
+Caused by: android.os.RemoteException: Remote stack trace:
+	at com.android.server.am.ActivityManagerService.getContentProviderImpl(ActivityManagerService.java:7738)
+	at com.android.server.am.ActivityManagerService.getContentProvider(ActivityManagerService.java:8202)
+	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2525)
+	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:3038)
+	at android.os.Binder.execTransactInternal(Binder.java:1157)
+
+
+FAILURES!!!
+Tests run: 2,  Failures: 2
+
+
+INSTRUMENTATION_CODE: -1

@@ -1,0 +1,16 @@
+{
+  "packages": [
+    {
+      "path": "/private/tmp/videodown-p2-release-baseline/videodown-old-release.apk",
+      "sizeBytes": 16355203,
+      "sha256": "ae802171735535cc5eaca3d0351c984472a0a4ed2e2866a80e48a97676930460"
+    },
+    {
+      "path": "/Users/dev/Documents/YostarWork/Github/android/VideoDown/app/build/outputs/apk/release/videodown-arm64-v8a-release.apk",
+      "sizeBytes": 78300071,
+      "sha256": "c83b9281b0b699917b19b9e5ebe899ab4d467e9129e771a94f27ce8cb500e53f"
+    }
+  ],
+  "deviceReleaseInstalled": false,
+  "upgradeExecuted": false
+}

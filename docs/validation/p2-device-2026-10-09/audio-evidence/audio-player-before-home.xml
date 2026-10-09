@@ -1,0 +1,128 @@
+<node class="android.widget.FrameLayout" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="android.widget.LinearLayout" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="android.widget.FrameLayout" id="android:id/content" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="androidx.compose.ui.platform.ComposeView" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node class="android.widget.ScrollView" id="null" text="" desc="" bounds="Rect(0, 256 - 1080, 2356)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+<node class="androidx.compose.ui.viewinterop.ViewFactoryHolder" id="null" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+<node class="android.widget.FrameLayout" id="null" text="" desc="隐藏播放器控件" bounds="Rect(0, 256 - 1080, 864)">
+<node class="android.widget.FrameLayout" id="com.videodown.douyin.debug:id/exo_ad_overlay" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node class="android.widget.FrameLayout" id="com.videodown.douyin.debug:id/exo_overlay" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node class="android.widget.FrameLayout" id="com.videodown.douyin.debug:id/exo_content_frame" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node class="android.view.View" id="com.videodown.douyin.debug:id/exo_shutter" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node class="android.widget.FrameLayout" id="com.videodown.douyin.debug:id/exo_subtitles" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+</node>
+</node>
+<node class="android.widget.FrameLayout" id="com.videodown.douyin.debug:id/exo_controller" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+<node class="android.widget.LinearLayout" id="com.videodown.douyin.debug:id/exo_top_controls" text="" desc="" bounds="Rect(1080, 256 - 1080, 256)">
+</node>
+<node class="android.view.View" id="com.videodown.douyin.debug:id/exo_controls_background" text="" desc="" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node class="android.widget.SeekBar" id="com.videodown.douyin.debug:id/exo_progress" text="" desc="00:00" bounds="Rect(0, 589 - 1080, 721)">
+</node>
+<node class="android.widget.LinearLayout" id="com.videodown.douyin.debug:id/exo_center_controls" text="" desc="" bounds="Rect(46, 422 - 1033, 697)">
+<node class="android.widget.ImageButton" id="com.videodown.douyin.debug:id/exo_prev" text="" desc="上一首" bounds="Rect(126, 488 - 269, 631)">
+</node>
+<node class="android.widget.Button" id="com.videodown.douyin.debug:id/exo_rew_with_amount" text="5" desc="快退 5 秒" bounds="Rect(297, 488 - 440, 631)">
+</node>
+<node class="android.widget.ImageButton" id="com.videodown.douyin.debug:id/exo_play_pause" text="" desc="暂停" bounds="Rect(468, 488 - 611, 631)">
+</node>
+<node class="android.widget.Button" id="com.videodown.douyin.debug:id/exo_ffwd_with_amount" text="15" desc="快进 15 秒" bounds="Rect(639, 488 - 782, 631)">
+</node>
+<node class="android.widget.ImageButton" id="com.videodown.douyin.debug:id/exo_next" text="" desc="下一首" bounds="Rect(810, 488 - 953, 631)">
+</node>
+</node>
+<node class="android.widget.FrameLayout" id="com.videodown.douyin.debug:id/exo_bottom_bar" text="" desc="" bounds="Rect(0, 699 - 1080, 864)">
+<node class="android.widget.LinearLayout" id="com.videodown.douyin.debug:id/exo_time" text="" desc="" bounds="Rect(0, 759 - 302, 803)">
+<node class="android.widget.TextView" id="com.videodown.douyin.debug:id/exo_position" text="00:00" desc="" bounds="Rect(28, 759 - 135, 803)">
+</node>
+<node class="android.widget.TextView" id="null" text="·" desc="" bounds="Rect(135, 759 - 167, 803)">
+</node>
+<node class="android.widget.TextView" id="com.videodown.douyin.debug:id/exo_duration" text="00:30" desc="" bounds="Rect(167, 759 - 274, 803)">
+</node>
+</node>
+<node class="android.widget.LinearLayout" id="com.videodown.douyin.debug:id/exo_basic_controls" text="" desc="" bounds="Rect(792, 715 - 1080, 847)">
+<node class="android.widget.ImageButton" id="com.videodown.douyin.debug:id/exo_settings" text="" desc="设置" bounds="Rect(798, 715 - 930, 847)">
+</node>
+<node class="android.widget.ImageButton" id="com.videodown.douyin.debug:id/exo_fullscreen" text="" desc="进入全屏模式" bounds="Rect(942, 715 - 1074, 847)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node class="android.widget.TextView" id="null" text="后台音频-f0efe0a7" desc="" bounds="Rect(44, 908 - 361, 965)">
+</node>
+<node class="android.widget.TextView" id="null" text="未知作者 ·  · 0 B" desc="" bounds="Rect(44, 987 - 282, 1035)">
+</node>
+<node class="android.widget.TextView" id="null" text="下载于 刚刚" desc="" bounds="Rect(44, 1057 - 198, 1097)">
+</node>
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(44, 1119 - 326, 1251)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(44, 1119 - 326, 1251)">
+<node class="android.view.View" id="null" text="" desc="倍速 1.0×" bounds="Rect(44, 1119 - 326, 1251)">
+</node>
+<node class="android.widget.TextView" id="null" text="1.0×" desc="" bounds="Rect(193, 1161 - 260, 1209)">
+</node>
+<node class="android.widget.Button" id="null" text="" desc="" bounds="Rect(44, 1119 - 326, 1251)">
+</node>
+</node>
+</node>
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(348, 1119 - 480, 1251)">
+<node class="android.widget.CheckBox" id="null" text="" desc="循环：开启" bounds="Rect(348, 1119 - 480, 1251)">
+</node>
+</node>
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(44, 1273 - 176, 1405)">
+<node class="android.widget.Button" id="null" text="" desc="转存到音乐" bounds="Rect(44, 1273 - 176, 1405)">
+</node>
+</node>
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(198, 1273 - 330, 1405)">
+<node class="android.widget.Button" id="null" text="" desc="分享" bounds="Rect(198, 1273 - 330, 1405)">
+</node>
+</node>
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(352, 1273 - 484, 1405)">
+<node class="android.widget.Button" id="null" text="" desc="外部播放器" bounds="Rect(352, 1273 - 484, 1405)">
+</node>
+</node>
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(506, 1273 - 638, 1405)">
+<node class="android.widget.Button" id="null" text="" desc="在抖音中查看原视频" bounds="Rect(506, 1273 - 638, 1405)">
+</node>
+</node>
+</node>
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 0 - 1080, 256)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(0, 80 - 1080, 256)">
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(11, 102 - 143, 234)">
+<node class="android.view.View" id="null" text="" desc="返回" bounds="Rect(44, 135 - 110, 201)">
+</node>
+<node class="android.widget.Button" id="null" text="" desc="" bounds="Rect(22, 113 - 132, 223)">
+</node>
+</node>
+<node class="android.view.View" id="null" text="" desc="" bounds="Rect(154, 102 - 587, 234)">
+<node class="android.widget.TextView" id="null" text="后台音频-f0efe0a7" desc="" bounds="Rect(154, 130 - 587, 205)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node class="android.view.View" id="android:id/navigationBarBackground" text="" desc="" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

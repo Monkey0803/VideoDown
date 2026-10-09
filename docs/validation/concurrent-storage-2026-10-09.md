@@ -21,7 +21,16 @@
 
 ## 验证边界
 
-当前 adb 无连接设备，因此本轮未运行 HLS/DASH、FFmpeg 合并取消、离线音频提取恢复的设备回归。引擎监控异常传播和子进程终止仅完成静态审查，尚无本轮设备证据。
+实现阶段无连接设备；随后在 SHARK PRS-A0 真机补充以下验证，全部通过（3 项回归 + 1 项新增专项）：
+
+- `runtimeAndDirectHlsDashDownloadsProduceVideoAndAudio`：本地 MP4、无扩展名视频、网页、HLS、多画质 HLS、DASH 均下载完成，并由 MediaExtractor 确认音视频轨道。
+- `cancellingAtMergeStopsProcessGroupAndCanResume`：合并阶段取消，确认进程组退出，再恢复生成有效媒体。
+- `queuedLocalExtractionCanPauseThenResumeOfflineWithoutLosingOriginal`：离线提取暂停并恢复，确认原文件长度不变和音频样本一致。
+- `engineMonitorStopsForStorageFailureAndReleasedLeaseAllowsResume`：DASH 真实引擎运行时挂起进度回调，模拟可用容量降至零，由周期监控独立触发 STORAGE_FULL；确认运行任务退出、观察到的新增 runtime PID 消失、文件停止增长。恢复为只够单任务预留的容量后续传成功，验证预算已释放。
+
+原三项 runner：`OK (3 tests)`，耗时 68.435 秒；监控专项：`OK (1 test)`，耗时 23.399 秒。测试包构建成功。证据见 [设备验证目录](storage-device-2026-10-09/)，新增测试位于 `ConcurrentStorageDeviceTest.kt`。
+
+测试采用独立 UUID cache 目录和测试 history，未清空用户数据，未真实填满手机磁盘。用户数据备份保存在仓库外 `/tmp/videodown-storage-device-2026-10-09/user-data-backup.tar`。
 
 预留账本协调本应用并发任务，不能阻止其他应用同时占用磁盘。未知大小的引擎输出采用周期监控，检查间隔内的突发写入仍可能超过工作余量；直链下载则在每次写入前检查。
 

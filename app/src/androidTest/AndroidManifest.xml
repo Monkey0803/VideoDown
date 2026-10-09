@@ -6,5 +6,13 @@
             android:permission="android.permission.MANAGE_DOCUMENTS">
             <intent-filter><action android:name="android.content.action.DOCUMENTS_PROVIDER" /></intent-filter>
         </provider>
+        <provider android:name="com.videodown.douyin.QuotaExportFixtureProvider"
+            android:authorities="com.videodown.douyin.test.quotaexport"
+            android:exported="true" android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter><action android:name="android.content.action.DOCUMENTS_PROVIDER" /></intent-filter>
+        </provider>
+        <provider android:name="com.videodown.douyin.QuotaExportControlProvider"
+            android:authorities="com.videodown.douyin.test.quotacontrol" android:exported="true" />
     </application>
 </manifest>

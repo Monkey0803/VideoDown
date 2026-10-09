@@ -1,0 +1,36 @@
+<node text="" desc="" id="null" bounds="Rect(28, 947 - 1052, 1489)">
+<node text="" desc="" id="null" bounds="Rect(94, 980 - 986, 1456)">
+<node text="" desc="" id="null" bounds="Rect(94, 980 - 986, 1456)">
+<node text="" desc="" id="com.google.android.documentsui:id/action_bar_root" bounds="Rect(94, 980 - 986, 1456)">
+<node text="" desc="" id="android:id/content" bounds="Rect(94, 980 - 986, 1456)">
+<node text="" desc="" id="com.google.android.documentsui:id/parentPanel" bounds="Rect(94, 980 - 986, 1456)">
+<node text="" desc="" id="com.google.android.documentsui:id/topPanel" bounds="Rect(94, 980 - 986, 1172)">
+<node text="" desc="" id="com.google.android.documentsui:id/title_template" bounds="Rect(94, 980 - 986, 1150)">
+<node text="要允许拾影访问 P2-export-282c735f-9616-4cae-9ba5-18c8010e5ec1 中的文件吗？" desc="" id="com.google.android.documentsui:id/alertTitle" bounds="Rect(160, 1030 - 920, 1150)">
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/titleDividerNoCustom" bounds="Rect(94, 1150 - 986, 1172)">
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/contentPanel" bounds="Rect(94, 1172 - 986, 1312)">
+<node text="" desc="" id="com.google.android.documentsui:id/scrollView" bounds="Rect(94, 1172 - 986, 1312)">
+<node text="" desc="" id="null" bounds="Rect(94, 1172 - 986, 1312)">
+<node text="这么做可让拾影访问目前及以后存储在 P2-export-282c735f-9616-4cae-9ba5-18c8010e5ec1 中的内容。" desc="" id="android:id/message" bounds="Rect(94, 1172 - 986, 1312)">
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="com.google.android.documentsui:id/buttonPanel" bounds="Rect(94, 1312 - 986, 1456)">
+<node text="" desc="" id="null" bounds="Rect(94, 1312 - 986, 1456)">
+<node text="取消" desc="" id="android:id/button2" bounds="Rect(590, 1318 - 766, 1450)">
+</node>
+<node text="允许" desc="" id="android:id/button1" bounds="Rect(788, 1318 - 964, 1450)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>

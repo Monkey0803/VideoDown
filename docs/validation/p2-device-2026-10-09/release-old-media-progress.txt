@@ -1,0 +1,35 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ReleaseUiBridgeDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2ReleaseUiBridgeDeviceTest:
+INSTRUMENTATION_STATUS: test=actualReleaseUiClickAndCapture
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2ReleaseUiBridgeDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Actual release control absent: 显示播放器控件
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.actualReleaseUiClickAndCapture(P2ReleaseUiBridgeDeviceTest.kt:50)
+
+INSTRUMENTATION_STATUS: stream=
+Error in actualReleaseUiClickAndCapture(com.videodown.douyin.P2ReleaseUiBridgeDeviceTest):
+java.lang.AssertionError: Actual release control absent: 显示播放器控件
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.actualReleaseUiClickAndCapture(P2ReleaseUiBridgeDeviceTest.kt:50)
+
+INSTRUMENTATION_STATUS: test=actualReleaseUiClickAndCapture
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 0.09
+There was 1 failure:
+1) actualReleaseUiClickAndCapture(com.videodown.douyin.P2ReleaseUiBridgeDeviceTest)
+java.lang.AssertionError: Actual release control absent: 显示播放器控件
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.actualReleaseUiClickAndCapture(P2ReleaseUiBridgeDeviceTest.kt:50)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

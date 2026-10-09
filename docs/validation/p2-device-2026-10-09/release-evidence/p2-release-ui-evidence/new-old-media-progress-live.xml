@@ -1,0 +1,114 @@
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="android:id/content" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" id="null" bounds="Rect(0, 256 - 1080, 2356)">
+<node text="" desc="" id="null" bounds="Rect(0, 190 - 1080, 1771)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 1771)">
+<node text="" desc="显示播放器控件" id="null" bounds="Rect(0, 0 - 1080, 1771)">
+<node text="" desc="" id="com.videodown.douyin:id/exo_ad_overlay" bounds="Rect(0, 0 - 1080, 1771)">
+</node>
+<node text="" desc="" id="com.videodown.douyin:id/exo_overlay" bounds="Rect(0, 0 - 1080, 1771)">
+</node>
+<node text="" desc="" id="com.videodown.douyin:id/exo_content_frame" bounds="Rect(0, 0 - 1080, 1771)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 1771)">
+</node>
+<node text="" desc="" id="com.videodown.douyin:id/exo_subtitles" bounds="Rect(0, 0 - 1080, 1771)">
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 1771)">
+</node>
+</node>
+</node>
+<node text="" desc="" id="com.videodown.douyin:id/exo_controller" bounds="Rect(0, 0 - 1080, 1771)">
+<node text="" desc="00:05" id="com.videodown.douyin:id/exo_progress" bounds="Rect(0, 1656 - 1080, 1771)">
+</node>
+<node text="" desc="" id="com.videodown.douyin:id/exo_bottom_bar" bounds="Rect(0, 1766 - 1080, 1771)">
+<node text="" desc="" id="com.videodown.douyin:id/exo_time" bounds="Rect(0, 1826 - 302, 1771)">
+<node text="00:05" desc="" id="com.videodown.douyin:id/exo_position" bounds="Rect(28, 1826 - 135, 1771)">
+</node>
+<node text="·" desc="" id="null" bounds="Rect(135, 1826 - 167, 1771)">
+</node>
+<node text="01:07" desc="" id="com.videodown.douyin:id/exo_duration" bounds="Rect(167, 1826 - 274, 1771)">
+</node>
+</node>
+<node text="" desc="" id="com.videodown.douyin:id/exo_basic_controls" bounds="Rect(792, 1782 - 1080, 1771)">
+<node text="" desc="设置" id="com.videodown.douyin:id/exo_settings" bounds="Rect(798, 1782 - 930, 1771)">
+</node>
+<node text="" desc="进入全屏模式" id="com.videodown.douyin:id/exo_fullscreen" bounds="Rect(942, 1782 - 1074, 1771)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="北京合法但不太正常的行为！#冷知识百科##国内旅游#" desc="" id="null" bounds="Rect(44, 1815 - 964, 1872)">
+</node>
+<node text="环球纪录频道 · 540P · 8.3 M" desc="" id="null" bounds="Rect(44, 1894 - 465, 1942)">
+</node>
+<node text="下载于 16 分钟前" desc="" id="null" bounds="Rect(44, 1964 - 269, 2004)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(44, 2026 - 326, 2158)">
+<node text="" desc="" id="null" bounds="Rect(44, 2026 - 326, 2158)">
+<node text="" desc="倍速 1.0×" id="null" bounds="Rect(44, 2026 - 326, 2158)">
+</node>
+<node text="1.0×" desc="" id="null" bounds="Rect(193, 2068 - 260, 2116)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(44, 2026 - 326, 2158)">
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(348, 2026 - 480, 2158)">
+<node text="" desc="循环：关闭" id="null" bounds="Rect(348, 2026 - 480, 2158)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(44, 2180 - 176, 2312)">
+<node text="" desc="转存到相册" id="null" bounds="Rect(44, 2180 - 176, 2312)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(198, 2180 - 330, 2312)">
+<node text="" desc="分享" id="null" bounds="Rect(198, 2180 - 330, 2312)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(352, 2180 - 484, 2312)">
+<node text="" desc="画中画" id="null" bounds="Rect(352, 2180 - 484, 2312)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(506, 2180 - 638, 2312)">
+<node text="" desc="外部播放器" id="null" bounds="Rect(506, 2180 - 638, 2312)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(660, 2180 - 792, 2312)">
+<node text="" desc="在微博中查看原视频" id="null" bounds="Rect(660, 2180 - 792, 2312)">
+</node>
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(0, 0 - 1080, 256)">
+<node text="" desc="" id="null" bounds="Rect(0, 80 - 1080, 256)">
+<node text="" desc="" id="null" bounds="Rect(11, 102 - 143, 234)">
+<node text="" desc="返回" id="null" bounds="Rect(44, 135 - 110, 201)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(22, 113 - 132, 223)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(154, 102 - 1058, 234)">
+<node text="北京合法但不太正常的行为！#冷知识百科##国内旅游#" desc="" id="null" bounds="Rect(154, 130 - 1058, 205)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" id="android:id/navigationBarBackground" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

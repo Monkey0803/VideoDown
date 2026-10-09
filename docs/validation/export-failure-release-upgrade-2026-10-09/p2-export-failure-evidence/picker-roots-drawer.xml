@@ -1,0 +1,130 @@
+<node text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 512)">
+<node text="" desc="" bounds="Rect(0, 215 - 1080, 512)">
+<node text="" desc="" bounds="Rect(0, 215 - 1080, 347)">
+<node text="" desc="" bounds="Rect(0, 215 - 356, 347)">
+<node text="P2 空间配额测试" desc="" bounds="Rect(0, 215 - 356, 347)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 215 - 356, 347)">
+<node text="P2 空间配额测试" desc="" bounds="Rect(0, 215 - 356, 347)">
+</node>
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 347 - 1080, 347)">
+<node text="" desc="" bounds="Rect(0, 347 - 0, 347)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(66, 347 - 1014, 512)">
+<node text="P2 空间配额测试中的文件" desc="" bounds="Rect(66, 347 - 882, 512)">
+</node>
+<node text="" desc="" bounds="Rect(882, 363 - 1014, 495)">
+<node text="" desc="列表视图" bounds="Rect(882, 363 - 1014, 495)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 212)">
+<node text="" desc="显示根目录" bounds="Rect(0, 80 - 154, 212)">
+</node>
+<node text="P2 空间配额测试" desc="" bounds="Rect(198, 114 - 549, 177)">
+</node>
+<node text="" desc="" bounds="Rect(684, 80 - 1080, 212)">
+<node text="" desc="新建文件夹" bounds="Rect(684, 80 - 816, 212)">
+</node>
+<node text="" desc="排序方式…" bounds="Rect(816, 80 - 948, 212)">
+</node>
+<node text="" desc="更多选项" bounds="Rect(948, 80 - 1080, 212)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 2400)">
+</node>
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 80 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(55, 512 - 1025, 1459)">
+<node text="" desc="" bounds="Rect(55, 512 - 1025, 1459)">
+<node text="" desc="" bounds="Rect(55, 581 - 1025, 1269)">
+</node>
+<node text="无任何文件" desc="" bounds="Rect(55, 1338 - 1025, 1390)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 80 - 33, 2400)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 2224 - 1080, 2400)">
+<node text="" desc="" bounds="Rect(0, 2224 - 1080, 2356)">
+<node text="" desc="" bounds="Rect(28, 2224 - 1052, 2356)">
+<node text="使用此文件夹" desc="" bounds="Rect(39, 2224 - 1041, 2356)">
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 80 - 770, 2400)">
+<node text="" desc="" bounds="Rect(0, 80 - 770, 212)">
+<node text="打开文档" desc="" bounds="Rect(44, 107 - 272, 184)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 212 - 770, 2400)">
+<node text="" desc="" bounds="Rect(0, 212 - 770, 2356)">
+<node text="" desc="" bounds="Rect(0, 234 - 770, 388)">
+<node text="" desc="" bounds="Rect(66, 256 - 132, 366)">
+<node text="" desc="" bounds="Rect(66, 256 - 132, 366)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(132, 267 - 748, 355)">
+<node text="SHARK PRS-A0" desc="" bounds="Rect(176, 289 - 748, 333)">
+</node>
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 388 - 770, 457)">
+<node text="" desc="" bounds="Rect(0, 421 - 770, 424)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 457 - 770, 627)">
+<node text="" desc="" bounds="Rect(66, 487 - 132, 597)">
+<node text="" desc="" bounds="Rect(66, 487 - 132, 597)">
+</node>
+</node>
+<node text="" desc="" bounds="Rect(132, 479 - 748, 605)">
+<node text="P2 空间配额测试" desc="" bounds="Rect(176, 501 - 748, 545)">
+</node>
+<node text="可用空间：4.10 kB" desc="" bounds="Rect(176, 545 - 748, 583)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" bounds="Rect(0, 0 - 1080, 80)">
+</node>
+<node text="" desc="" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

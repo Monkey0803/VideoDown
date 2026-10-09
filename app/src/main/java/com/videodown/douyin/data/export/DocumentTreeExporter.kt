@@ -8,6 +8,7 @@ import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.videoMimeType
 import com.videodown.douyin.domain.repository.DownloadHistoryRepository
 import com.videodown.douyin.domain.repository.FileExportRepository
+import com.videodown.douyin.domain.repository.FileExportTargetUnavailable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -60,7 +61,9 @@ class DocumentTreeExporter(
                 activeJournals.add(journal)
                 recoverLocked()
                 val tree = Uri.parse(treeUri)
-                require(tree.scheme == "content" && DocumentsContract.isTreeUri(tree)) { "请重新选择导出文件夹" }
+                if (tree.scheme != "content" || !DocumentsContract.isTreeUri(tree)) {
+                    throw FileExportTargetUnavailable("请重新选择导出文件夹")
+                }
                 val parent = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
                 val record = history.getById(id) ?: error("记录已不存在")
                 require(record.status == DownloadStatus.COMPLETED) { "文件尚未保存完成" }
@@ -69,9 +72,13 @@ class DocumentTreeExporter(
                     !Files.isSymbolicLink(paths.downloadDir.toPath()) && source.canonicalFile.parentFile == paths.downloadDir.canonicalFile) { "本地文件不可用" }
                 val names = mutableSetOf<String>()
                 val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
-                resolver.query(children, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)?.use { cursor ->
-                    while (cursor.moveToNext()) names.add(cursor.getString(0).orEmpty())
-                } ?: throw IOException("无法读取目标文件夹，请重新选择")
+                try {
+                    resolver.query(children, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)?.use { cursor ->
+                        while (cursor.moveToNext()) names.add(cursor.getString(0).orEmpty())
+                    } ?: throw FileExportTargetUnavailable("无法读取目标文件夹，请重新选择")
+                } catch (error: java.io.FileNotFoundException) {
+                    throw FileExportTargetUnavailable("目标文件夹已不可用，请重新选择", error)
+                }
                 val name = availableExportName(source.name, names)
                 created = DocumentsContract.createDocument(resolver, parent, videoMimeType(source.extension), name)
                     ?: throw IOException("无法创建导出文件")

@@ -1,0 +1,44 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalExportDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2PhysicalExportDeviceTest:
+INSTRUMENTATION_STATUS: test=actualGalleryMusicAndDocumentTreeCopiesRemainReadable
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=MEDIASTORE: Movies, p2-export-c5230649-2566-4d55-9a26-6e3fe0609eee.mp4, full bytes=10542, track/duration valid, IS_PENDING=0
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=MEDIASTORE: Music, p2-export-b79e9c88-c678-41fd-b183-9d8e03ad916f.m4a, full bytes=485649, track/duration valid, IS_PENDING=0
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SAF_FOLDER: actual picker created own P2-export-282c735f-9616-4cae-9ba5-18c8010e5ec1
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SAF: actual system folder selection and persistent read/write authorization granted
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SAF_COPY: p2-export-c5230649-2566-4d55-9a26-6e3fe0609eee.mp4, full bytes and media track/duration verified; source retained=true
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=SAF_COPY: p2-export-b79e9c88-c678-41fd-b183-9d8e03ad916f.m4a, full bytes and media track/duration verified; source retained=true
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=EXPORT_CLEANUP: only own outputs/records/files removed; previous tree and grants preserved
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalExportDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualGalleryMusicAndDocumentTreeCopiesRemainReadable
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 11.159
+
+OK (1 test)
+
+
+INSTRUMENTATION_CODE: -1

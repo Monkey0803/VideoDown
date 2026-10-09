@@ -1,0 +1,130 @@
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 2400)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 2356)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+<node text="" desc="隐藏播放器控件" clickable="true" bounds="Rect(0, 256 - 1080, 864)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+<node text="" desc="" clickable="false" bounds="Rect(1080, 256 - 1080, 256)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(0, 256 - 1080, 864)">
+</node>
+<node text="" desc="00:00" clickable="false" bounds="Rect(0, 589 - 1080, 721)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(46, 422 - 1033, 697)">
+<node text="" desc="上一首" clickable="true" bounds="Rect(126, 488 - 269, 631)">
+</node>
+<node text="5" desc="快退 5 秒" clickable="true" bounds="Rect(297, 488 - 440, 631)">
+</node>
+<node text="" desc="暂停" clickable="true" bounds="Rect(468, 488 - 611, 631)">
+</node>
+<node text="15" desc="快进 15 秒" clickable="true" bounds="Rect(639, 488 - 782, 631)">
+</node>
+<node text="" desc="下一首" clickable="true" bounds="Rect(810, 488 - 953, 631)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(0, 699 - 1080, 864)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 759 - 302, 803)">
+<node text="00:00" desc="" clickable="false" bounds="Rect(28, 759 - 135, 803)">
+</node>
+<node text="·" desc="" clickable="false" bounds="Rect(135, 759 - 167, 803)">
+</node>
+<node text="01:00" desc="" clickable="false" bounds="Rect(167, 759 - 274, 803)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(792, 715 - 1080, 847)">
+<node text="" desc="设置" clickable="true" bounds="Rect(798, 715 - 930, 847)">
+</node>
+<node text="" desc="进入全屏模式" clickable="true" bounds="Rect(942, 715 - 1074, 847)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="通知甲-4980227a" desc="" clickable="false" bounds="Rect(44, 908 - 342, 965)">
+</node>
+<node text="未知作者 · 720P · 10 KB" desc="" clickable="false" bounds="Rect(44, 987 - 402, 1035)">
+</node>
+<node text="下载于 刚刚" desc="" clickable="false" bounds="Rect(44, 1057 - 198, 1097)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(44, 1119 - 326, 1251)">
+<node text="" desc="" clickable="true" bounds="Rect(44, 1119 - 326, 1251)">
+<node text="" desc="倍速 1.0×" clickable="false" bounds="Rect(44, 1119 - 326, 1251)">
+</node>
+<node text="1.0×" desc="" clickable="false" bounds="Rect(193, 1161 - 260, 1209)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(44, 1119 - 326, 1251)">
+</node>
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(348, 1119 - 480, 1251)">
+<node text="" desc="循环：关闭" clickable="true" bounds="Rect(348, 1119 - 480, 1251)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(44, 1273 - 176, 1405)">
+<node text="" desc="转存到相册" clickable="true" bounds="Rect(44, 1273 - 176, 1405)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(198, 1273 - 330, 1405)">
+<node text="" desc="分享" clickable="true" bounds="Rect(198, 1273 - 330, 1405)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(352, 1273 - 484, 1405)">
+<node text="" desc="画中画" clickable="true" bounds="Rect(352, 1273 - 484, 1405)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(506, 1273 - 638, 1405)">
+<node text="" desc="外部播放器" clickable="true" bounds="Rect(506, 1273 - 638, 1405)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(660, 1273 - 792, 1405)">
+<node text="" desc="在网页中查看原视频" clickable="true" bounds="Rect(660, 1273 - 792, 1405)">
+</node>
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(0, 0 - 1080, 256)">
+<node text="" desc="" clickable="false" bounds="Rect(0, 80 - 1080, 256)">
+<node text="" desc="" clickable="true" bounds="Rect(11, 102 - 143, 234)">
+<node text="" desc="返回" clickable="false" bounds="Rect(44, 135 - 110, 201)">
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(22, 113 - 132, 223)">
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(154, 102 - 559, 234)">
+<node text="通知甲-4980227a" desc="" clickable="false" bounds="Rect(154, 130 - 559, 205)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+<node text="" desc="" clickable="false" bounds="Rect(0, 2356 - 1080, 2400)">
+</node>
+</node>

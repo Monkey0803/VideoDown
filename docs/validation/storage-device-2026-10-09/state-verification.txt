@@ -1,0 +1,8 @@
+Device: SHARK PRS-A0, arm64-v8a, API 30.
+Original and restored screen: empty Home / Parse, confirmed by screenshot and hierarchy.
+App remained resumed, PID21047. First restore screenshot was captured during launch; replaced after UI stabilized.
+Before backup: /tmp/videodown-storage-device-2026-10-09/user-data-backup.tar
+SHA256: 64769505ff417bf16ae0854c36eb148ad276c2dd2673cd6c3d64f2f27cd9e9aa
+Original files and preferences were empty. Afterward only runtime youtubedl-android.xml preference was created; no user history/media changed.
+App cache listing empty: no UUID test directories remain. No videodown app fatal crash found in crash buffer; unrelated existing system/Google service traces excluded from evidence.
+No clear-data, uninstall, device setting changes, real disk exhaustion, gallery writes or public network test.

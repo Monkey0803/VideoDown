@@ -1,0 +1,32 @@
+<node text="" desc="" id="null" bounds="Rect(100, 876 - 980, 1560)">
+<node text="" desc="" id="null" bounds="Rect(100, 876 - 980, 1560)">
+<node text="" desc="" id="android:id/content" bounds="Rect(100, 876 - 980, 1560)">
+<node text="" desc="" id="null" bounds="Rect(100, 876 - 980, 1560)">
+<node text="" desc="" id="null" bounds="Rect(100, 876 - 980, 1560)">
+<node text="" desc="" id="null" bounds="Rect(100, 876 - 980, 1560)">
+<node text="" desc="" id="null" bounds="Rect(100, 876 - 980, 1560)">
+<node text="" desc="" id="null" bounds="Rect(100, 876 - 980, 1560)">
+<node text="导出到文件夹" desc="" id="null" bounds="Rect(166, 942 - 502, 1024)">
+</node>
+<node text="复制所选 1 项，保留本地原文件。同名文件会添加序号，不覆盖已有文件。" desc="" id="null" bounds="Rect(166, 1068 - 914, 1164)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(166, 1164 - 400, 1296)">
+<node text="选择文件夹" desc="" id="null" bounds="Rect(199, 1206 - 367, 1254)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(166, 1175 - 400, 1285)">
+</node>
+</node>
+<node text="" desc="" id="null" bounds="Rect(754, 1362 - 914, 1494)">
+<node text="关闭" desc="" id="null" bounds="Rect(800, 1404 - 868, 1452)">
+</node>
+<node text="" desc="" id="null" bounds="Rect(754, 1373 - 914, 1483)">
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>
+</node>

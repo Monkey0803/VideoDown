@@ -1,0 +1,68 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest:
+INSTRUMENTATION_STATUS: test=actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=AUDIO_HOME: playing=true, same media=p2-audio-452aa3e0-f1ec-4ec7-920a-49084880bded, continuousPosition=258->1267
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_SHADE_PAUSE: paused position=1957
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_SHADE_PLAY: playback advanced after actual UI action
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=AUDIO_LOCKED: secureLocked=true, interactive=false, sameMedia=p2-audio-452aa3e0-f1ec-4ec7-920a-49084880bded, continuousPosition=2257->3839
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=MANUAL_UNLOCK_READY: background AUDIO; normal human unlock required within 120 seconds
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=AUDIO_CLEANUP: own record/file removed, audio options restored, keyguardLocked=true
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 120000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+INSTRUMENTATION_STATUS: stream=
+Error in actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback(com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest):
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 120000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+INSTRUMENTATION_STATUS: test=actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 129.133
+There was 1 failure:
+1) actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback(com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest)
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 120000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:923)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

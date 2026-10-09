@@ -1,0 +1,47 @@
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest:
+INSTRUMENTATION_STATUS: test=actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: stream=AUDIO_HOME: playing=true, same media=p2-audio-b0972130-5e93-4306-8514-ec6bb8a18bb6, continuousPosition=259->1274
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_SHADE_PAUSE: paused position=1982
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=ACTUAL_SHADE_PLAY: playback advanced after actual UI action
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=AUDIO_LOCKED: secureLocked=true, interactive=false, sameMedia=p2-audio-b0972130-5e93-4306-8514-ec6bb8a18bb6, continuousPosition=2274->3863
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=MANUAL_UNLOCK_READY: background AUDIO; normal human unlock required within 120 seconds
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=CAPTURE_SKIPPED: own media card unavailable; no unrelated notification screenshot saved
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=AUDIO_UNLOCKED: same media and playing retained; position=26237
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: stream=AUDIO_CLEANUP: own record/file removed, audio options restored, keyguardLocked=false
+
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 35.029
+
+OK (1 test)
+
+
+INSTRUMENTATION_CODE: -1
