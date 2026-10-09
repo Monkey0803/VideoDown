@@ -88,11 +88,25 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             showNotificationSettings = true
         }
     }
+    val individualNotifications by preferences.individualTaskNotificationsChanges.collectAsStateWithLifecycle()
+    var enableIndividualAfterSettings by rememberSaveable { mutableStateOf(false) }
+    var showIndividualNotificationSettings by rememberSaveable { mutableStateOf(false) }
+    val individualNotificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        notificationsAvailable = DownloadCompletionNotifier.areNotificationsEnabled(context)
+        if (granted && notificationsAvailable) preferences.individualTaskNotifications = true
+        else showIndividualNotificationSettings = true
+    }
+    val dynamicColor by preferences.dynamicColorChanges.collectAsStateWithLifecycle()
+    val clipboardDetect by preferences.clipboardDetectChanges.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         notificationsAvailable = DownloadCompletionNotifier.areNotificationsEnabled(context)
         if (enableAfterSettings) {
             if (notificationsAvailable) preferences.notifyOnCompletion = true
             enableAfterSettings = false
+        }
+        if (enableIndividualAfterSettings) {
+            if (notificationsAvailable) preferences.individualTaskNotifications = true
+            enableIndividualAfterSettings = false
         }
         notifyOnCompletion = preferences.notifyOnCompletion
     }
@@ -171,6 +185,20 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             dismissButton = { TextButton(onClick = { showNotificationSettings = false }) { Text("取消") } },
         )
     }
+    if (showIndividualNotificationSettings) {
+        AlertDialog(
+            onDismissRequest = { showIndividualNotificationSettings = false },
+            title = { Text("开启每条任务独立通知") },
+            text = { Text("系统尚未允许发送通知，请在系统设置中开启应用通知和「下载任务」提醒。") },
+            confirmButton = { TextButton(onClick = {
+                showIndividualNotificationSettings = false
+                enableIndividualAfterSettings = true
+                context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+            }) { Text("前往设置") } },
+            dismissButton = { TextButton(onClick = { showIndividualNotificationSettings = false }) { Text("取消") } },
+        )
+    }
     if (showQuality) {
         var selectedQuality by rememberSaveable(quality) { mutableStateOf(quality) }
         AlertDialog(
@@ -233,6 +261,15 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
                 title = "外观模式", value = themeMode.label, onClick = { showThemeMode = true })
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                ToggleRow(
+                    icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
+                    title = "动态取色（Material You）",
+                    subtitle = if (dynamicColor) "跟随系统壁纸配色" else "使用拾影暖橙品牌配色",
+                    checked = dynamicColor,
+                    onCheckedChange = { preferences.dynamicColor = it },
+                )
+            }
         }
         SectionLabel("下载偏好")
         SettingsCard {
@@ -281,6 +318,36 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                         else -> showNotificationSettings = true
                     }
                 },
+            )
+            ToggleRow(
+                icon = { AppIcon(AppIcons.Notification, null, tint = MaterialTheme.colorScheme.primary) },
+                title = "每条任务独立通知",
+                subtitle = when {
+                    !notificationsAvailable -> "系统通知未开启，打开开关以授权"
+                    individualNotifications -> "每个下载任务单独显示，可逐条暂停或继续"
+                    else -> "所有任务汇总在一条通知里"
+                },
+                checked = individualNotifications && notificationsAvailable,
+                onCheckedChange = { enabled ->
+                    when {
+                        !enabled -> preferences.individualTaskNotifications = false
+                        DownloadCompletionNotifier.areNotificationsEnabled(context) -> {
+                            notificationsAvailable = true
+                            preferences.individualTaskNotifications = true
+                        }
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED ->
+                            individualNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        else -> showIndividualNotificationSettings = true
+                    }
+                },
+            )
+            ToggleRow(
+                icon = { AppIcon(AppIcons.Link, null, tint = MaterialTheme.colorScheme.primary) },
+                title = "识别剪贴板链接",
+                subtitle = if (clipboardDetect) "复制受支持平台的链接后回到拾影会提示解析" else "不读取剪贴板，只用粘贴按钮",
+                checked = clipboardDetect,
+                onCheckedChange = { preferences.clipboardDetect = it },
             )
         }
         Text("解析新视频时使用此画质；仍可在结果页逐条选择。", color = MaterialTheme.colorScheme.onSurfaceVariant,

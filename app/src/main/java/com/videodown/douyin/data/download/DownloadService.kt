@@ -15,7 +15,9 @@ import com.videodown.douyin.R
 import com.videodown.douyin.VideoDownApp
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.formatBytes
+import com.videodown.douyin.core.formatSpeed
 import com.videodown.douyin.domain.model.DownloadProgress
+import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +25,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 /**
@@ -37,10 +40,17 @@ class DownloadService : Service() {
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + serviceJob)
     private var progressJob: Job? = null
+    private var individualJob: Job? = null
     private var foregroundError: DownloadServiceException? = null
     private var foregroundReady = false
     private var expectedStop = false
     private var latestStartId = 0
+
+    /** Tasks this service run has shown an individual notification for. */
+    private val trackedIds = mutableSetOf<String>()
+
+    /** Stable notification slot per task, so two tasks never share a pending intent. */
+    private val notificationSlots = mutableMapOf<String, Int>()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -63,9 +73,16 @@ class DownloadService : Service() {
         if (!foregroundReady) { stopSelf(); return START_NOT_STICKY }
         expectedStop = false
         if (progressJob == null) observeProgress()
+        if (individualJob == null) observeIndividualNotifications()
         when (intent?.action) {
             ACTION_PAUSE_ALL -> serviceScope.launch { ServiceLocator.downloader.pauseAll() }
             ACTION_RESUME_ALL -> serviceScope.launch { ServiceLocator.downloader.resumeAll() }
+            ACTION_PAUSE_ONE -> intent.getStringExtra(EXTRA_RECORD_ID)?.let { id ->
+                serviceScope.launch { ServiceLocator.downloader.pause(id) }
+            }
+            ACTION_RESUME_ONE -> intent.getStringExtra(EXTRA_RECORD_ID)?.let { id ->
+                serviceScope.launch { ServiceLocator.downloader.resume(id) }
+            }
             ACTION_STOP -> {
                 expectedStop = true
                 failTransfers("后台下载服务已停止，请返回应用后重试")
@@ -93,6 +110,119 @@ class DownloadService : Service() {
                 notify(buildNotification(map))
             }
         }
+    }
+
+    /**
+     * Mirrors each task of this service run into its own notification, so one task can be paused
+     * or resumed without opening 拾影.
+     *
+     * Opt-in: a busy queue would otherwise post one notification per task. A task leaves the set
+     * once it completes, fails or disappears, and every individual notification is dropped with the
+     * service — with nothing left to transfer the service exits by design, and a leftover control
+     * for a task nothing is transferring would be misleading.
+     */
+    private fun observeIndividualNotifications() {
+        individualJob?.cancel()
+        individualJob = serviceScope.launch {
+            // Hydrate history first: an empty snapshot would otherwise look like "task deleted".
+            runCatching { ServiceLocator.historyRepository.snapshot() }
+            combine(
+                ServiceLocator.downloader.progress,
+                ServiceLocator.historyRepository.observeAll(),
+            ) { progress, records -> progress to records.associateBy { it.id } }
+                .collect { (progress, recordsById) ->
+                    if (!ServiceLocator.preferences.individualTaskNotifications) {
+                        clearIndividualNotifications()
+                        return@collect
+                    }
+                    trackedIds.addAll(progress.keys)
+                    trackedIds.filter { id ->
+                        val status = progress[id]?.status ?: recordsById[id]?.status
+                        status == null || status == DownloadStatus.COMPLETED || status == DownloadStatus.FAILED
+                    }.forEach { id ->
+                        trackedIds -= id
+                        cancelIndividualNotification(id)
+                    }
+                    trackedIds.forEach { id ->
+                        recordsById[id]?.let { record -> postIndividualNotification(record, progress[id]) }
+                    }
+                }
+        }
+    }
+
+    private fun slotFor(id: String): Int {
+        notificationSlots[id]?.let { return it }
+        val used = notificationSlots.values.toSet()
+        var slot = 0
+        while (slot in used) slot++
+        notificationSlots[id] = slot
+        return slot
+    }
+
+    private fun postIndividualNotification(record: DownloadRecord, progress: DownloadProgress?) {
+        if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) return
+        val slot = slotFor(record.id)
+        val status = progress?.status ?: record.status
+        val running = status == DownloadStatus.RUNNING || status == DownloadStatus.PENDING
+        val downloaded = progress?.downloadedBytes ?: record.downloadedBytes
+        val total = progress?.totalBytes?.takeIf { it > 0 } ?: record.totalBytes
+        val percent = if (total > 0) ((downloaded * 100) / total).toInt().coerceIn(0, 100) else 0
+        val detail = buildString {
+            append(if (running) "$percent%" else "已暂停")
+            if (running) {
+                append("  ·  ${formatSpeed(progress?.bytesPerSecond ?: 0L)}")
+                if (total > 0) append("  ·  ${formatBytes(downloaded)} / ${formatBytes(total)}")
+            }
+        }
+        val contentIntent = PendingIntent.getActivity(
+            this,
+            OPEN_TASKS_REQUEST,
+            Intent().setClassName(packageName, "com.videodown.douyin.presentation.MainActivity")
+                .setAction(ACTION_OPEN_TASKS),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val action = if (running) {
+            taskAction(slot, record.id, ACTION_PAUSE_ONE, "暂停", R.drawable.ic_shiying_pause, 0)
+        } else {
+            taskAction(slot, record.id, ACTION_RESUME_ONE, "继续", R.drawable.ic_shiying_resume_download, 1)
+        }
+        val notification = NotificationCompat.Builder(this, VideoDownApp.DOWNLOAD_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_shiying_notification_download)
+            .setContentTitle(record.title)
+            .setContentText(detail)
+            .setProgress(100, percent, total <= 0L)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setContentIntent(contentIntent)
+            .addAction(action)
+            .build()
+        // An extra per-task control is a convenience: failing to post it must never interrupt the
+        // transfer itself, which the summary notification still reports.
+        runCatching { NotificationManagerCompat.from(this).notify(INDIVIDUAL_NOTIFICATION_BASE + slot, notification) }
+    }
+
+    private fun taskAction(slot: Int, id: String, action: String, label: String, icon: Int, offset: Int): NotificationCompat.Action =
+        NotificationCompat.Action(
+            icon,
+            label,
+            PendingIntent.getService(
+                this,
+                INDIVIDUAL_ACTION_REQUEST_BASE + slot * 2 + offset,
+                Intent(this, DownloadService::class.java).setAction(action).putExtra(EXTRA_RECORD_ID, id),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            ),
+        )
+
+    private fun cancelIndividualNotification(id: String) {
+        val slot = notificationSlots.remove(id) ?: return
+        NotificationManagerCompat.from(this).cancel(INDIVIDUAL_NOTIFICATION_BASE + slot)
+    }
+
+    private fun clearIndividualNotifications() {
+        val manager = NotificationManagerCompat.from(this)
+        notificationSlots.values.forEach { slot -> manager.cancel(INDIVIDUAL_NOTIFICATION_BASE + slot) }
+        notificationSlots.clear()
+        trackedIds.clear()
     }
 
     private fun buildNotification(progress: Map<String, DownloadProgress>): Notification {
@@ -175,6 +305,8 @@ class DownloadService : Service() {
 
     override fun onDestroy() {
         if (!expectedStop && foregroundError == null) failTransfers("后台下载服务已中断，请返回应用后重试")
+        clearIndividualNotifications()
+        individualJob?.cancel()
         progressJob?.cancel()
         serviceScope.cancel()
         super.onDestroy()
@@ -182,10 +314,17 @@ class DownloadService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1001
+        private const val INDIVIDUAL_NOTIFICATION_BASE = 1100
+        private const val INDIVIDUAL_ACTION_REQUEST_BASE = 2100
+        private const val OPEN_TASKS_REQUEST = 8703
         const val ACTION_START = "com.videodown.douyin.action.START_DOWNLOAD"
         const val ACTION_PAUSE_ALL = "com.videodown.douyin.action.PAUSE_ALL"
         const val ACTION_RESUME_ALL = "com.videodown.douyin.action.RESUME_ALL"
+        const val ACTION_PAUSE_ONE = "com.videodown.douyin.action.PAUSE_ONE"
+        const val ACTION_RESUME_ONE = "com.videodown.douyin.action.RESUME_ONE"
+        const val ACTION_OPEN_TASKS = "com.videodown.douyin.action.OPEN_TASKS"
         const val ACTION_STOP = "com.videodown.douyin.action.STOP"
+        const val EXTRA_RECORD_ID = "download_record_id"
 
         private const val EXTRA_REQUEST = "download_service_request"
         private val requests = DownloadServiceRequests()

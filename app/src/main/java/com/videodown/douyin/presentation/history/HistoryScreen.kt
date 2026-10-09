@@ -33,12 +33,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,8 +53,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,6 +64,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.formatBytes
+import com.videodown.douyin.core.formatEta
 import com.videodown.douyin.core.formatRelativeTime
 import com.videodown.douyin.core.formatSpeed
 import com.videodown.douyin.domain.model.DownloadRecord
@@ -73,10 +79,12 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     onRecovery: (DownloadRecord, RecoveryAction) -> Unit = { _, _ -> }) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
     val snackbar = remember { SnackbarHostState() }
     var selecting by remember { mutableStateOf(false) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     var pendingBatchDelete by remember { mutableStateOf<Set<String>?>(null) }
+    fun queryChanged(query: TaskQuery) { selectedIds = emptySet(); viewModel.setTaskQuery(query) }
     val visibleIds = state.visibleRecords.map { it.id }.toSet()
     LaunchedEffect(visibleIds) { selectedIds = selectedIds.intersect(visibleIds) }
     LaunchedEffect(state.batchResult) {
@@ -115,6 +123,14 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                     StatCard(state.records.count { state.statusFor(it) in listOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) }, "可续传", Modifier.weight(1f))
                 }
             }
+            OutlinedTextField(value = state.taskQuery.text,
+                onValueChange = { queryChanged(state.taskQuery.copy(text = it)) },
+                label = { Text("搜索标题或作者") }, singleLine = true, enabled = !state.batchBusy,
+                leadingIcon = { AppIcon(AppIcons.Search, null) },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+                trailingIcon = { if (state.taskQuery.text.isNotEmpty()) TextButton(onClick = { queryChanged(state.taskQuery.copy(text = "")) }) { Text("清除") } },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp).testTag("task-search"))
             Text("同时下载 ${state.queue.maxConcurrent} 个 · ${state.queue.pendingIds.size} 个排队",
                 style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp))
             if (state.queue.runningIds.size > state.queue.maxConcurrent) Text("正在运行的任务继续完成，新任务等待名额", modifier = Modifier.padding(horizontal = 22.dp), style = MaterialTheme.typography.labelSmall)
@@ -139,6 +155,21 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                     }
                 }
             }
+            LazyRow(
+                modifier = Modifier.testTag("task-sort"),
+                contentPadding = PaddingValues(horizontal = 22.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                item {
+                    Text("排序", style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                items(TaskSort.entries) { sort ->
+                    FilterChip(selected = state.taskQuery.sort == sort, enabled = !state.batchBusy,
+                        onClick = { queryChanged(state.taskQuery.copy(sort = sort)) }, label = { Text(sort.label) })
+                }
+            }
             TextButton(onClick = { selecting = !selecting; selectedIds = emptySet() }, enabled = !state.batchBusy && state.records.isNotEmpty(),
                 modifier = Modifier.padding(horizontal = 16.dp)) { Text(if (selecting) "取消多选" else "多选任务") }
             if (selecting) SelectionToolbar(selectedIds.size, state.batchBusy, selectedIds == visibleIds && visibleIds.isNotEmpty(),
@@ -150,7 +181,8 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
             if (state.batchBusy) Text("正在处理 ${state.batchDone}/${state.batchTotal}…", modifier = Modifier.padding(horizontal = 22.dp))
             if (state.visibleRecords.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("这里还没有任务", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    Text(if (state.records.isEmpty()) "这里还没有任务" else "没有符合条件的任务",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
             } else {
                 LazyColumn(
@@ -298,7 +330,15 @@ private fun TaskCard(
                             else -> formatSpeed(progress?.bytesPerSecond ?: 0L)
                         } else statusLabel(status),
                         color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
-                    if (record.rangeSupported) Text("支持断点续传", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                    // While bytes are actually moving the estimate is more useful than the static
+                    // resume hint; the hint returns whenever no estimate is possible.
+                    val eta = if (status == DownloadStatus.RUNNING &&
+                        (progress?.phase ?: record.phase) == com.videodown.douyin.domain.model.TransferPhase.DOWNLOADING
+                    ) formatEta(state.totalFor(record) - state.downloadedFor(record), progress?.bytesPerSecond ?: 0L) else null
+                    when {
+                        eta != null -> Text(eta, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                        record.rangeSupported -> Text("支持断点续传", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                    }
                 }
             }
             if (position != null) {

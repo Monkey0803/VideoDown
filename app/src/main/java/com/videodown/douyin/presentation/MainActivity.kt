@@ -13,6 +13,8 @@ import android.app.PictureInPictureParams
 import android.app.RemoteAction
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
+import android.content.ClipDescription
+import android.content.ClipboardManager
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.drawable.Icon as AndroidIcon
@@ -67,13 +69,18 @@ import com.videodown.douyin.presentation.player.PlayerScreen
 import com.videodown.douyin.presentation.settings.SettingsScreen
 import com.videodown.douyin.presentation.theme.VideoDownTheme
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
+import com.videodown.douyin.data.remote.ClipboardLinkPolicy
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.ThemeMode
 
 class MainActivity : ComponentActivity() {
     private var sharedText by mutableStateOf<String?>(null)
     private var openLibrary by mutableStateOf(false)
+    private var openTasks by mutableStateOf(false)
+    private var openBatchImport by mutableStateOf(false)
     private var openPlayerId by mutableStateOf<String?>(null)
+    /** 「粘贴解析」 arrived before the window had input focus, so the clipboard cannot be read yet. */
+    private var pendingQuickParse = false
     var inPictureInPicture by mutableStateOf(false)
         private set
     private var pipPlayer: Player? = null
@@ -145,6 +152,7 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
         setContent {
             val themeMode by ServiceLocator.preferences.themeModeChanges.collectAsStateWithLifecycle()
+            val dynamicColor by ServiceLocator.preferences.dynamicColorChanges.collectAsStateWithLifecycle()
             val darkTheme = when (themeMode) {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.LIGHT -> false
@@ -156,9 +164,14 @@ class MainActivity : ComponentActivity() {
                     isAppearanceLightNavigationBars = !darkTheme
                 }
             }
-            VideoDownTheme(darkTheme = darkTheme) {
+            VideoDownTheme(
+                darkTheme = darkTheme,
+                dynamicColor = dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+            ) {
                 VideoDownApp(sharedText, onSharedTextConsumed = { sharedText = null },
                     openLibrary = openLibrary, onLibraryOpened = { openLibrary = false },
+                    openTasks = openTasks, onTasksOpened = { openTasks = false },
+                    openBatchImport = openBatchImport, onBatchImportOpened = { openBatchImport = false },
                     openPlayerId = openPlayerId, onPlayerOpened = {
                         openPlayerId = null
                         // Consume this notification destination so recreation restores the current tab.
@@ -180,6 +193,13 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
     }
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (!hasFocus || !pendingQuickParse) return
+        pendingQuickParse = false
+        copiedClipboardLink()?.let { sharedText = it }
+    }
+
     private fun handleIntent(intent: Intent?) {
         when (intent?.action) {
             DownloadCompletionNotifier.ACTION_OPEN_LIBRARY -> openLibrary = true
@@ -189,11 +209,29 @@ class MainActivity : ComponentActivity() {
             }
             com.videodown.douyin.data.playback.AudioPlaybackService.ACTION_OPEN_PLAYER ->
                 openPlayerId = intent.getStringExtra(com.videodown.douyin.data.playback.AudioPlaybackService.EXTRA_RECORD_ID)?.takeIf(String::isNotBlank)
+            com.videodown.douyin.data.download.DownloadService.ACTION_OPEN_TASKS -> openTasks = true
+            com.videodown.douyin.LauncherShortcuts.ACTION_BATCH_IMPORT -> openBatchImport = true
+            com.videodown.douyin.LauncherShortcuts.ACTION_QUICK_PARSE ->
+                if (hasWindowFocus()) copiedClipboardLink()?.let { sharedText = it } else pendingQuickParse = true
             Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)?.takeIf(String::isNotBlank)
                 ?.let { sharedText = it }
             Intent.ACTION_VIEW -> intent.dataString?.takeIf(String::isNotBlank)
                 ?.let { sharedText = it }
         }
+    }
+
+    /**
+     * Reads the clipboard for the explicit 「粘贴解析」 shortcut.
+     *
+     * Only a known platform link qualifies, and the generic-confirmation banner of the passive
+     * detector is skipped because tapping the shortcut already is the confirmation.
+     */
+    private fun copiedClipboardLink(): String? {
+        val clipboard = getSystemService(ClipboardManager::class.java) ?: return null
+        if (!clipboard.hasPrimaryClip()) return null
+        if (clipboard.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) != true) return null
+        val text = clipboard.primaryClip?.getItemAt(0)?.coerceToText(this)?.toString() ?: return null
+        return ClipboardLinkPolicy.candidate(text, null)?.text
     }
 }
 
@@ -212,7 +250,9 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     openLibrary: Boolean, onLibraryOpened: () -> Unit,
     historyViewModel: HistoryViewModel = viewModel(),
     homeViewModel: HomeViewModel = viewModel(),
-    openPlayerId: String? = null, onPlayerOpened: () -> Unit = {}) {
+    openPlayerId: String? = null, onPlayerOpened: () -> Unit = {},
+    openTasks: Boolean = false, onTasksOpened: () -> Unit = {},
+    openBatchImport: Boolean = false, onBatchImportOpened: () -> Unit = {}) {
     val navController = rememberNavController()
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -255,6 +295,13 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
         if (openLibrary) {
             navigateTab(Routes.LIBRARY)
             onLibraryOpened()
+        }
+    }
+
+    LaunchedEffect(openTasks) {
+        if (openTasks) {
+            navigateTab(Routes.TASKS)
+            onTasksOpened()
         }
     }
 
@@ -304,6 +351,8 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                     viewModel = homeViewModel,
                     onOpenStorage = { requestedStorage = true; navigateTab(Routes.SETTINGS) },
                     onOpenSettings = { navigateTab(Routes.SETTINGS) },
+                    openBatchImport = openBatchImport,
+                    onBatchImportOpened = onBatchImportOpened,
                 )
             }
             composable(Routes.TASKS) {

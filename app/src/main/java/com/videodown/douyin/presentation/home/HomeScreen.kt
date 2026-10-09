@@ -4,8 +4,10 @@ import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
+import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
+import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -63,6 +65,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,6 +87,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -98,8 +102,10 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.videodown.douyin.core.DouyinIntents
+import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.formatDuration
+import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.VideoVariant
@@ -118,6 +124,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onOpenStorage: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    openBatchImport: Boolean = false,
+    onBatchImportOpened: () -> Unit = {},
     batchImportModel: BatchImportViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -131,6 +139,9 @@ fun HomeScreen(
     var showBrowser by remember(state.parseRequestId) { mutableStateOf(false) }
     var showBatchImport by rememberSaveable { mutableStateOf(false) }
     if (showBatchImport) BatchImportDialog(batchImportModel, { showBatchImport = false }, onOpenHistory)
+    LaunchedEffect(openBatchImport) {
+        if (openBatchImport) { showBatchImport = true; onBatchImportOpened() }
+    }
     LaunchedEffect(state.browserRequestUrl) {
         if (state.browserRequestUrl != null) { showBrowser = true; viewModel.onBrowserRequestConsumed() }
     }
@@ -187,6 +198,29 @@ fun HomeScreen(
     }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { dismissKeyboard() }
 
+    // Reading the clipboard is gated on window focus: `hasPrimaryClip()` and `getPrimaryClip()`
+    // both report nothing without input focus, and Android 12+ shows a system notice the first time
+    // another app's clip is read. Checking the description first does not trigger that notice.
+    val clipboardDetect by ServiceLocator.preferences.clipboardDetectChanges.collectAsStateWithLifecycle()
+    val rootView = LocalView.current
+    fun offerCopiedLink() {
+        if (!clipboardDetect) return
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
+        if (!clipboard.hasPrimaryClip()) return
+        if (clipboard.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) != true) return
+        val copied = clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString() ?: return
+        viewModel.offerClipboardText(copied)
+    }
+    DisposableEffect(rootView, clipboardDetect) {
+        if (!clipboardDetect) return@DisposableEffect onDispose { }
+        val listener = ViewTreeObserver.OnWindowFocusChangeListener { focused -> if (focused) offerCopiedLink() }
+        val observer = rootView.viewTreeObserver
+        observer.addOnWindowFocusChangeListener(listener)
+        // A window that is already focused never fires the listener, so cover that entry path too.
+        if (rootView.hasWindowFocus()) offerCopiedLink()
+        onDispose { if (observer.isAlive) observer.removeOnWindowFocusChangeListener(listener) }
+    }
+
     LaunchedEffect(sharedText) {
         sharedText?.takeIf(String::isNotBlank)?.let {
             dismissKeyboard()
@@ -227,6 +261,13 @@ fun HomeScreen(
                             Text("解析视频", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                             Spacer(Modifier.weight(1f))
                             Text("粘贴链接", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
+                        }
+                        state.clipboardOffer?.let { copied ->
+                            ClipboardOfferBanner(
+                                platformLabel = VideoLinkExtractor.extract(copied)?.platform?.label,
+                                onParse = { dismissKeyboard(); viewModel.acceptClipboardOffer() },
+                                onDismiss = { dismissKeyboard(); viewModel.dismissClipboardOffer() },
+                            )
                         }
                         Column(Modifier.bringIntoViewRequester(inputArea).padding(bottom = 12.dp)) {
                             Row(Modifier.fillMaxWidth().padding(top = 13.dp).clip(MaterialTheme.shapes.large)
@@ -585,6 +626,40 @@ private fun PrimaryButton(
             Text(text, fontWeight = FontWeight.Bold)
             Spacer(Modifier.width(8.dp))
             AppIcon(AppIcons.Forward, null, modifier = Modifier.size(18.dp))
+        }
+    }
+}
+
+/**
+ * Offers a link found on the clipboard.
+ *
+ * It never parses on its own: the user confirms, or dismisses and is not asked about that link
+ * again. The hint says where the switch lives so the behaviour is discoverable rather than magic.
+ */
+@Composable
+private fun ClipboardOfferBanner(platformLabel: String?, onParse: () -> Unit, onDismiss: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(top = 13.dp).testTag("clipboard-offer"),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 11.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AppIcon(AppIcons.Link, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                Text(
+                    text = if (platformLabel.isNullOrBlank()) "检测到视频链接" else "检测到 $platformLabel 链接",
+                    style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+            Row(Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("复制后回到拾影即可解析，可在「我的」关闭此提示。",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.weight(1f))
+                TextButton(onClick = onDismiss, modifier = Modifier.testTag("clipboard-offer-dismiss")) { Text("忽略") }
+                TextButton(onClick = onParse, modifier = Modifier.testTag("clipboard-offer-parse")) { Text("解析") }
+            }
         }
     }
 }

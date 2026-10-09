@@ -61,6 +61,57 @@ class AppPreferences(context: Context) {
         set(value) { store.edit().putBoolean("notify_on_completion", value).apply() }
 
     /**
+     * Offer a link found on the clipboard when 拾影 returns to the foreground.
+     *
+     * On by default because copying a share link and switching back is the shortest path into the
+     * app; it stays opt-out because reading the clipboard is a privacy-relevant action.
+     */
+    private val _clipboardDetect = MutableStateFlow(store.getBoolean("clipboard_detect", true))
+    val clipboardDetectChanges = _clipboardDetect.asStateFlow()
+
+    var clipboardDetect: Boolean
+        get() = _clipboardDetect.value
+        set(value) {
+            store.edit().putBoolean("clipboard_detect", value).apply()
+            _clipboardDetect.value = value
+        }
+
+    /** Link of the last clipboard offer the user dismissed, so it is not offered again. */
+    var lastClipboardOffer: String?
+        get() = store.getString("last_clipboard_offer", null)
+        set(value) {
+            val editor = store.edit()
+            if (value.isNullOrBlank()) editor.remove("last_clipboard_offer") else editor.putString("last_clipboard_offer", value)
+            editor.apply()
+        }
+
+    /**
+     * Mirror each running task into its own notification so it can be paused on its own.
+     *
+     * Off by default: a busy queue would otherwise post one notification per task.
+     */
+    private val _individualTaskNotifications = MutableStateFlow(store.getBoolean("individual_task_notifications", false))
+    val individualTaskNotificationsChanges = _individualTaskNotifications.asStateFlow()
+
+    var individualTaskNotifications: Boolean
+        get() = _individualTaskNotifications.value
+        set(value) {
+            store.edit().putBoolean("individual_task_notifications", value).apply()
+            _individualTaskNotifications.value = value
+        }
+
+    /** Use the system wallpaper palette (Material You) instead of the fixed 拾影 warm brand colors. */
+    private val _dynamicColor = MutableStateFlow(store.getBoolean("dynamic_color", false))
+    val dynamicColorChanges = _dynamicColor.asStateFlow()
+
+    var dynamicColor: Boolean
+        get() = _dynamicColor.value
+        set(value) {
+            store.edit().putBoolean("dynamic_color", value).apply()
+            _dynamicColor.value = value
+        }
+
+    /**
      * Endpoint of the JSON version manifest used by 「我的 → 检查更新」.
      *
      * Defaults to the URL baked in at build time (`-PupdateManifestUrl=…`) and can be overridden

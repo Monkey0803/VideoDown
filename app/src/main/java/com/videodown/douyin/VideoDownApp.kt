@@ -15,6 +15,7 @@ class VideoDownApp : Application() {
         ServiceLocator.bootstrap()
         createNotificationChannels()
         DownloadCompletionNotifier.createChannel(this)
+        LauncherShortcuts.publish(this)
     }
 
     private fun createNotificationChannels() {

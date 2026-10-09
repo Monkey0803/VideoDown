@@ -45,6 +45,27 @@ class FormattersTest {
     }
 
     @Test
+    fun `estimates remaining time without guessing`() {
+        assertEquals("约剩 10 秒", formatEta(10L * 1024, 1024L))
+        assertEquals("约剩 2 分 10 秒", formatEta(130L * 1024, 1024L))
+        assertEquals("约剩 1 小时 0 分", formatEta(3600L * 1024, 1024L))
+    }
+
+    @Test
+    fun `no estimate is produced for an unknown size or a stalled transfer`() {
+        assertEquals(null, formatEta(0L, 1024L))
+        assertEquals(null, formatEta(-1L, 1024L))
+        assertEquals(null, formatEta(1024L, 0L))
+        assertEquals(null, formatEta(1024L, -5L))
+    }
+
+    @Test
+    fun `a partial second still rounds up to one second`() {
+        assertEquals("约剩 1 秒", formatEta(1L, 1024L))
+        assertEquals("约剩 2 秒", formatEta(1025L, 1024L))
+    }
+
+    @Test
     fun `formats relative time`() {
         val now = 1_700_000_000_000L
         assertEquals("刚刚", formatRelativeTime(now - 30_000, now))

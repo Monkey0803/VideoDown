@@ -18,6 +18,26 @@ fun formatBytes(bytes: Long): String {
 fun formatSpeed(bytesPerSecond: Long): String =
     if (bytesPerSecond <= 0L) "--" else "${formatBytes(bytesPerSecond)}/s"
 
+/**
+ * Estimated time left as `约剩 2 分 10 秒`, or `null` when it cannot be estimated.
+ *
+ * Never guesses: an unknown remaining size or a stalled transfer yields no estimate at all, which
+ * is better than showing a number that keeps jumping or is simply wrong.
+ */
+fun formatEta(remainingBytes: Long, bytesPerSecond: Long): String? {
+    if (remainingBytes <= 0L || bytesPerSecond <= 0L) return null
+    // Round up without overflowing on a large remaining size.
+    val seconds = remainingBytes / bytesPerSecond + if (remainingBytes % bytesPerSecond > 0L) 1L else 0L
+    if (seconds <= 0L) return null
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    return when {
+        hours > 0 -> "约剩 $hours 小时 $minutes 分"
+        minutes > 0 -> "约剩 $minutes 分 ${seconds % 60} 秒"
+        else -> "约剩 $seconds 秒"
+    }
+}
+
 /** Formats a duration given in milliseconds as `1:23` or `1:02:03`. */
 fun formatDuration(durationMs: Long): String {
     if (durationMs <= 0L) return "0:00"

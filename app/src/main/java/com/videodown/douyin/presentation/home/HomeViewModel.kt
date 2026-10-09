@@ -11,6 +11,7 @@ import com.videodown.douyin.domain.model.DownloadProgress
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.VideoVariant
+import com.videodown.douyin.data.remote.ClipboardLinkPolicy
 import com.videodown.douyin.data.remote.VideoSizeProbe
 import com.videodown.douyin.domain.repository.VideoRepository
 import com.videodown.douyin.domain.repository.Downloader
@@ -53,6 +54,8 @@ data class HomeUiState(
     val activeDownloadId: String? = null,
     val activeProgress: DownloadProgress? = null,
     val activeRecord: DownloadRecord? = null,
+    /** Link copied elsewhere and offered for parsing; shown as a dismissible banner. */
+    val clipboardOffer: String? = null,
 ) {
     val canParse: Boolean get() = input.isNotBlank() && !isParsing
     val canDownload: Boolean get() = video != null && selectedVariant != null && !isSubmitting && duplicates == null
@@ -72,6 +75,9 @@ class HomeViewModel(
     private val downloader: Downloader = ServiceLocator.downloader,
     private val selectDefaultVariant: (DouyinVideo) -> VideoVariant? = { ServiceLocator.preferences.selectVariant(it) },
     private val fetchSize: suspend (VideoVariant) -> Long? = { VideoSizeProbe(ServiceLocator.douyinApiClient.okHttpClient).sizeBytes(it) },
+    private val clipboardDetectEnabled: () -> Boolean = { ServiceLocator.preferences.clipboardDetect },
+    private val lastClipboardOffer: () -> String? = { ServiceLocator.preferences.lastClipboardOffer },
+    private val rememberDismissedClipboard: (String) -> Unit = { ServiceLocator.preferences.lastClipboardOffer = it },
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
@@ -97,10 +103,37 @@ class HomeViewModel(
         _state.update { it.copy(errorMessage = null, infoMessage = null) }
     }
 
+    /**
+     * Offers a copied link for parsing instead of parsing it outright.
+     *
+     * Reading the clipboard is only ever a hint: acting on it without a tap would download a video
+     * the user never asked for. The offer is also skipped whenever the screen is already busy, so a
+     * share intent or an in-flight parse is never interrupted.
+     */
+    fun offerClipboardText(text: String) {
+        if (!clipboardDetectEnabled()) return
+        val current = _state.value
+        if (current.clipboardOffer != null || current.isParsing || current.video != null || current.input.isNotBlank()) return
+        val candidate = ClipboardLinkPolicy.candidate(text, lastClipboardOffer()) ?: return
+        _state.update { it.copy(clipboardOffer = candidate.text) }
+    }
+
+    fun acceptClipboardOffer() {
+        val offer = _state.value.clipboardOffer ?: return
+        _state.update { it.copy(clipboardOffer = null) }
+        parseSharedText(offer)
+    }
+
+    fun dismissClipboardOffer() {
+        val offer = _state.value.clipboardOffer ?: return
+        ClipboardLinkPolicy.candidate(offer, null)?.let { rememberDismissedClipboard(it.url) }
+        _state.update { it.copy(clipboardOffer = null) }
+    }
+
     /** Called when the app receives a share intent; parses immediately. */
     fun parseSharedText(text: String) {
         _state.update { it.copy(input = text, errorMessage = null, video = null, selectedVariant = null,
-            activeDownloadId = null, activeProgress = null, activeRecord = null) }
+            activeDownloadId = null, activeProgress = null, activeRecord = null, clipboardOffer = null) }
         parse()
     }
 
@@ -353,6 +386,7 @@ class HomeViewModel(
                 activeRecord = null,
                 errorMessage = null, errorKind = null, browserRequestUrl = null,
                 infoMessage = null,
+                clipboardOffer = null,
             )
         }
     }

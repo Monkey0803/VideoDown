@@ -34,6 +34,7 @@ data class HistoryUiState(
     val progress: Map<String, DownloadProgress> = emptyMap(),
     val queue: DownloadQueueState = DownloadQueueState(),
     val filter: HistoryFilter = HistoryFilter.ALL,
+    val taskQuery: TaskQuery = TaskQuery(),
     val message: String? = null,
     val libraryQuery: LibraryQuery = LibraryQuery(),
     val batchBusy: Boolean = false,
@@ -48,9 +49,13 @@ data class HistoryUiState(
                 HistoryFilter.RUNNING -> records.filter { statusFor(it) == DownloadStatus.RUNNING || statusFor(it) == DownloadStatus.PENDING }
                 HistoryFilter.COMPLETED -> records.filter { statusFor(it) == DownloadStatus.COMPLETED }
             }
-            return matching.sortedWith(compareBy<DownloadRecord> {
-                when (statusFor(it)) { DownloadStatus.RUNNING -> 0; DownloadStatus.PENDING -> 1; else -> 2 }
-            }.thenBy { queue.position(it.id) ?: Int.MAX_VALUE }.thenByDescending { it.createdAt })
+            return TaskListOrder.apply(
+                records = matching,
+                text = taskQuery.text,
+                sort = taskQuery.sort,
+                statusOf = { record -> statusFor(record) },
+                queuePosition = { id -> queue.position(id) },
+            )
         }
 
     val activeCount: Int
@@ -144,6 +149,10 @@ class HistoryViewModel(
 
     fun setFilter(filter: HistoryFilter) {
         _state.update { it.copy(filter = filter) }
+    }
+
+    fun setTaskQuery(query: TaskQuery) {
+        _state.update { it.copy(taskQuery = query) }
     }
 
     fun showMessage(message: String) { _state.update { it.copy(message = message) } }
