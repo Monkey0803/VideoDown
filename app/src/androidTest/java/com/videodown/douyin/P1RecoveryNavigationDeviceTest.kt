@@ -105,7 +105,9 @@ class P1RecoveryNavigationDeviceTest {
         compose.runOnUiThread { home.onInputChange("http://127.0.0.1/source-page"); home.parse() }
         compose.waitUntil(5000) { home.state.value.errorKind == DownloadFailureKind.RATE_LIMITED }
         compose.onNodeWithText(RecoveryAction.SETTINGS.label, substring = false).performScrollTo().performClick()
-        compose.waitUntil(5000) { compose.onAllNodes(hasText("打造专属空间")).fetchSemanticsNodes().isNotEmpty() }
+        // The settings page hero copy was replaced by the current page title; assert what is
+        // actually rendered, since the intent here is only that the settings page opened.
+        compose.waitUntil(5000) { compose.onAllNodes(hasText("我的设置")).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("同时下载数量", substring = false).performScrollTo().assertIsDisplayed()
         assertEquals(1, parsed.size)
     }
