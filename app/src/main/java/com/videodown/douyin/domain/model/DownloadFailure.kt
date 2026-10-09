@@ -3,7 +3,7 @@ package com.videodown.douyin.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class DownloadFailureKind { NETWORK, LOGIN_REQUIRED, ACCESS_DENIED, LINK_EXPIRED, STORAGE_FULL, STORAGE_ACCESS, FORMAT_CHANGED, UNSUPPORTED, RATE_LIMITED, WIFI_REQUIRED, RUNTIME, NO_AUDIO, UNKNOWN }
+enum class DownloadFailureKind { NETWORK, LOGIN_REQUIRED, ACCESS_DENIED, LINK_EXPIRED, STORAGE_FULL, STORAGE_ACCESS, FORMAT_CHANGED, UNSUPPORTED, RATE_LIMITED, WIFI_REQUIRED, BACKGROUND_SERVICE, RUNTIME, NO_AUDIO, UNKNOWN }
 
 enum class RecoveryAction(val label: String) { RETRY("重试下载"), REPARSE("重新解析原网址"), BROWSER("打开网页登录/验证"), STORAGE("管理存储空间"), SETTINGS("检查下载设置"), NONE("暂无可用操作") }
 
@@ -21,6 +21,7 @@ fun failureGuidance(kind: DownloadFailureKind): FailureGuidance = when (kind) {
     DownloadFailureKind.UNSUPPORTED -> FailureGuidance("当前内容暂不支持", "DRM 和直播无法保存。普通网页可尝试登录或播放后查找视频。", RecoveryAction.NONE)
     DownloadFailureKind.RATE_LIMITED -> FailureGuidance("网站暂时限制请求", "请稍后再试，也可降低同时下载数量，避免频繁请求。", RecoveryAction.SETTINGS, RecoveryAction.RETRY)
     DownloadFailureKind.WIFI_REQUIRED -> FailureGuidance("等待 Wi-Fi", "已启用仅 Wi-Fi 下载。连接 Wi-Fi 后点击继续，或调整下载设置。", RecoveryAction.SETTINGS, RecoveryAction.RETRY)
+    DownloadFailureKind.BACKGROUND_SERVICE -> FailureGuidance("后台下载已停止", "返回应用后重试，已保存的断点会保留。若反复停止，请检查系统对应用后台运行的限制。", RecoveryAction.RETRY)
     DownloadFailureKind.RUNTIME -> FailureGuidance("解析引擎暂不可用", "检查可用空间；若安装包不完整，请重新安装完整版本。", RecoveryAction.STORAGE)
     DownloadFailureKind.UNKNOWN -> FailureGuidance("下载未完成", "可以保留断点重试；若仍失败，请重新解析原网址。", RecoveryAction.RETRY, RecoveryAction.REPARSE)
 }

@@ -311,6 +311,9 @@ private fun TaskCard(
             }
             if (guidance != null) {
                 Text(guidance.title, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 8.dp))
+                if (issue == com.videodown.douyin.domain.model.DownloadFailureKind.BACKGROUND_SERVICE) {
+                    record.errorMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp)) }
+                }
                 Text(guidance.description, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
                 if (!hasSourcePage && (guidance.action in setOf(RecoveryAction.BROWSER, RecoveryAction.REPARSE) || guidance.secondaryAction in setOf(RecoveryAction.BROWSER, RecoveryAction.REPARSE)))
                     Text("原始网址未保留，请在解析页重新粘贴视频链接。", style = MaterialTheme.typography.labelSmall)

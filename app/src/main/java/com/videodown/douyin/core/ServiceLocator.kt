@@ -139,7 +139,11 @@ object ServiceLocator {
             File(appContext.filesDir, "library-renames"), maintenanceMutex, { downloadEngine.activeTaskIds() })
     }
 
-    fun startDownloadService() {
-        runCatching { DownloadService.start(appContext) }
+    suspend fun startDownloadService() {
+        DownloadService.start(appContext)
+    }
+
+    fun interruptBackgroundDownloads(message: String) {
+        appScope.launch { downloadEngine.interruptForBackgroundFailure(message) }
     }
 }

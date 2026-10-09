@@ -1,0 +1,6 @@
+files:
+download_history.json
+Physical size: 1080x2400
+Physical density: 440
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  (nothing)

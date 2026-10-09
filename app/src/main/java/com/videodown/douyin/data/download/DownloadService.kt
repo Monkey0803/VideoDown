@@ -37,25 +37,44 @@ class DownloadService : Service() {
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + serviceJob)
     private var progressJob: Job? = null
+    private var foregroundError: DownloadServiceException? = null
+    private var foregroundReady = false
+    private var expectedStop = false
+    private var latestStartId = 0
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        startForegroundCompat(buildNotification(emptyMap()))
-        observeProgress()
+        try {
+            startForegroundCompat(buildNotification(ServiceLocator.downloader.progress.value))
+            foregroundReady = true
+        } catch (error: Exception) {
+            android.util.Log.w("DownloadService", "无法进入前台下载服务", error)
+            foregroundError = DownloadServiceException("后台下载服务无法启动，请返回应用后重试", error)
+            requests.failPending(foregroundError!!)
+            failTransfers(foregroundError!!.message.orEmpty())
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        latestStartId = startId
+        requests.acknowledge(intent?.getStringExtra(EXTRA_REQUEST), foregroundError)
+        if (!foregroundReady) { stopSelf(); return START_NOT_STICKY }
+        expectedStop = false
+        if (progressJob == null) observeProgress()
         when (intent?.action) {
             ACTION_PAUSE_ALL -> serviceScope.launch { ServiceLocator.downloader.pauseAll() }
             ACTION_RESUME_ALL -> serviceScope.launch { ServiceLocator.downloader.resumeAll() }
             ACTION_STOP -> {
+                expectedStop = true
+                failTransfers("后台下载服务已停止，请返回应用后重试")
                 stopSelf()
                 return START_NOT_STICKY
             }
         }
-        return START_STICKY
+        // A restart without the original foreground request must not silently resurrect jobs.
+        return START_NOT_STICKY
     }
 
     private fun observeProgress() {
@@ -64,8 +83,11 @@ class DownloadService : Service() {
             ServiceLocator.downloader.progress.collectLatest { map ->
                 val active = map.values.filter { it.isActive }
                 if (active.isEmpty()) {
-                    stopForegroundCompat()
-                    stopSelf()
+                    kotlinx.coroutines.delay(150)
+                    if (ServiceLocator.downloader.progress.value.values.any { it.isActive }) return@collectLatest
+                    expectedStop = true
+                    if (stopSelfResult(latestStartId)) stopForegroundCompat()
+                    else expectedStop = false
                     return@collectLatest
                 }
                 notify(buildNotification(map))
@@ -119,7 +141,8 @@ class DownloadService : Service() {
 
     private fun notify(notification: Notification) {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) return
-        runCatching { NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification) }
+        try { NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification) }
+        catch (error: Exception) { failTransfers("后台下载通知更新失败，请返回应用后重试"); stopSelf() }
     }
 
     private fun startForegroundCompat(notification: Notification) {
@@ -128,9 +151,7 @@ class DownloadService : Service() {
         } else {
             0
         }
-        runCatching {
-            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, type)
-        }
+        ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, type)
     }
 
     private fun stopForegroundCompat() {
@@ -139,7 +160,21 @@ class DownloadService : Service() {
         }
     }
 
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        failTransfers("系统后台下载时限已到，请返回应用后继续")
+        expectedStop = true
+        stopSelf()
+    }
+
+    private fun failTransfers(message: String) {
+        foregroundReady = false
+        foregroundError = DownloadServiceException(message)
+        requests.failPending(foregroundError!!)
+        ServiceLocator.interruptBackgroundDownloads(message)
+    }
+
     override fun onDestroy() {
+        if (!expectedStop && foregroundError == null) failTransfers("后台下载服务已中断，请返回应用后重试")
         progressJob?.cancel()
         serviceScope.cancel()
         super.onDestroy()
@@ -152,16 +187,16 @@ class DownloadService : Service() {
         const val ACTION_RESUME_ALL = "com.videodown.douyin.action.RESUME_ALL"
         const val ACTION_STOP = "com.videodown.douyin.action.STOP"
 
-        /** Starts (or nudges) the foreground service. Safe to call repeatedly. */
-        fun start(context: Context) {
+        private const val EXTRA_REQUEST = "download_service_request"
+        private val requests = DownloadServiceRequests()
+
+        /** Wait until Android has actually promoted this service to foreground. */
+        suspend fun start(context: Context) = requests.awaitStart { token ->
             val intent = Intent(context, DownloadService::class.java).setAction(ACTION_START)
-            runCatching {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    context.startForegroundService(intent)
-                } else {
-                    context.startService(intent)
-                }
-            }
+                .putExtra(EXTRA_REQUEST, token)
+            val component = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent)
+                else context.startService(intent)
+            if (component == null) throw IllegalStateException("Download service is unavailable")
         }
     }
 }
