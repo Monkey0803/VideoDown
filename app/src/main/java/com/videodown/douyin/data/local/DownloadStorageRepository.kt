@@ -18,6 +18,8 @@ class DownloadStorageRepository(
     private val maintenanceMutex: Mutex,
     private val activeIds: () -> Set<String>,
     private val available: (File) -> Long = { it.usableSpace },
+    /** Running-download reservation ledger; kept as a provider so the screen always sees it live. */
+    private val budget: () -> StorageBudget = { StorageBudget() },
 ) : StorageRepository {
     override suspend fun inspect(): StorageUsage = withContext(Dispatchers.IO) {
         maintenanceMutex.withLock { inspectLocked() }
@@ -41,7 +43,7 @@ class DownloadStorageRepository(
         }
         val missing = records.filter { it.status == DownloadStatus.COMPLETED && it.id !in active &&
             it.filePath?.let { path -> File(path).isFile } != true }.map { it.id }.toSet()
-        return StorageUsage(videoBytes, temporaryBytes, available(root).coerceAtLeast(0), candidates, missing)
+        return StorageUsage(videoBytes, temporaryBytes, available(root).coerceAtLeast(0), candidates, missing, budget = budget())
     }
 
     override suspend fun clean(plan: StorageUsage): StorageCleanupResult = withContext(Dispatchers.IO) {

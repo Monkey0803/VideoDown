@@ -146,7 +146,7 @@ object ServiceLocator {
     /** Keeps the process alive while a transfer runs and mirrors progress to a notification. */
     val storageRepository: com.videodown.douyin.domain.repository.StorageRepository by lazy {
         com.videodown.douyin.data.local.DownloadStorageRepository({ downloadPaths.downloadDir }, historyRepository,
-            maintenanceMutex, { downloadEngine.activeTaskIds() })
+            maintenanceMutex, { downloadEngine.activeTaskIds() }, budget = { downloadEngine.storageBudget() })
     }
 
     val fileExportRepository: com.videodown.douyin.domain.repository.FileExportRepository by lazy {

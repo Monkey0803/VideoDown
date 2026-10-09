@@ -103,6 +103,30 @@ class P1FeaturesDeviceTest {
         compose.waitUntil(5000) { compose.onAllNodes(hasText("文件已丢失的记录：0 条")).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("文件已丢失的记录：0 条").assertIsDisplayed()
     }
+    @Test fun storageDialogVisualizesTheRunningSpaceBudget() {
+        HoldingServer().use { server ->
+            val budgeted = DownloadStorageRepository({ paths.downloadDir }, history, gate, { engine.activeTaskIds() },
+                budget = { engine.storageBudget() })
+            val id = runBlocking { engine.start(DouyinVideo("budget", "预算任务"), VideoVariant(server.url, "720P")) }
+            compose.waitUntil(10000) { engine.storageBudget().taskCount == 1 }
+            compose.runOnUiThread {
+                val model = StorageViewModel(budgeted); models.put("storage", model)
+                compose.activity.setContent { VideoDownTheme { SettingsScreen(storageViewModel = model, preferences = preferences) } }
+            }
+            compose.onNodeWithText("存储空间", substring = false).performScrollTo().performClick()
+            compose.waitUntil(5000) { compose.onAllNodes(hasText("运行任务尚需", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNode(hasText("预算任务", substring = true)).performScrollTo().assertIsDisplayed()
+            compose.onNode(hasText("预算在可用空间内", substring = true)).performScrollTo().assertIsDisplayed()
+            compose.onNode(hasText("预算占用", substring = true)).performScrollTo().assertIsDisplayed()
+            captureScreenshot("budget-running")
+            runBlocking { engine.pause(id) }
+            compose.waitUntil(5000) { engine.storageBudget().isEmpty }
+            compose.onNodeWithText("刷新", substring = false).performClick()
+            compose.waitUntil(5000) { compose.onAllNodes(hasText("运行任务空间预算：无")).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithText("当前没有运行中的下载任务占用空间预算。").performScrollTo().assertIsDisplayed()
+            captureScreenshot("budget-empty")
+        }
+    }
     @Test fun priorityControlChangesVisibleQueueAndTheNextActualHttpRequest() {
         HoldingServer().use { server ->
             val ids = runBlocking {
@@ -168,6 +192,16 @@ class P1FeaturesDeviceTest {
         compose.onNode(hasContentDescription("重新下载") and hasAnyAncestor(hasTestTag("task-unsupported"))).assertDoesNotExist()
         runBlocking { history.delete("missing-page"); engine.resumeAll(); engine.resume("unsupported") }
         assertTrue(engine.activeTaskIds().isEmpty())
+    }
+
+    private fun captureScreenshot(name: String) {
+        compose.waitForIdle()
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.uiAutomation.waitForIdle(500, 5_000)
+        val directory = File(instrumentation.targetContext.getExternalFilesDir(null), "space-budget").apply { mkdirs() }
+        val bitmap = instrumentation.uiAutomation.takeScreenshot()
+        File(directory, "$name.png").outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+        bitmap.recycle()
     }
 
     private class HoldingServer : java.io.Closeable {

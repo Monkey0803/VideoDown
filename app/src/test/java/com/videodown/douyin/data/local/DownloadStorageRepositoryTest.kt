@@ -77,4 +77,17 @@ class DownloadStorageRepositoryTest {
         val forged = StorageUsage(orphanEntries = listOf(StorageCleanupEntry(outside.path, outside.length(), "fake")))
         assertEquals(1, repo.clean(forged).skipped); assertTrue(outside.exists())
     }
+    @Test fun `inspect surfaces the live running budget and headroom`() = runBlocking {
+        assertTrue(repo.inspect().budget.isEmpty)
+        var reserved = StorageBudgetEntry("task", 400)
+        val withBudget = DownloadStorageRepository({ root }, history, Mutex(), { active }, { 1000 },
+            budget = { StorageBudget(reserved.remainingBytes, listOf(reserved)) })
+        val usage = withBudget.inspect()
+        assertEquals(400L, usage.budget.reservedBytes); assertEquals("task", usage.budget.entries.single().title)
+        assertEquals(600L, usage.budgetHeadroomBytes)
+        reserved = StorageBudgetEntry("task", 1500)
+        val short = withBudget.inspect()
+        assertEquals(500L, short.budget.shortfallBytes(short.availableBytes))
+        assertEquals(0L, short.budgetHeadroomBytes)
+    }
 }

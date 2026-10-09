@@ -7,11 +7,21 @@ internal class StorageReservations(private val availableBytes: () -> Long) {
     private val leases = mutableSetOf<Lease>()
 
     @Synchronized
-    fun acquire(peakBytes: Long, usedBytes: () -> Long): Lease {
-        val lease = Lease(peakBytes.coerceAtLeast(0), usedBytes)
+    fun acquire(peakBytes: Long, usedBytes: () -> Long, label: String = ""): Lease {
+        val lease = Lease(peakBytes.coerceAtLeast(0), usedBytes, label)
         checkBudget(lease, lease.peakBytes)
         leases.add(lease)
         return lease
+    }
+
+    /**
+     * Read-only view of every open lease for the storage screen: each task's display label and the
+     * bytes it still has to write. Mirrors [checkBudget]'s own footprint so the shown budget is the
+     * same number admission uses; already written bytes are excluded and reflected by free space.
+     */
+    @Synchronized
+    fun snapshot(): List<LedgerEntry> = leases.map { lease ->
+        LedgerEntry(lease.label, (lease.peakBytes - lease.usedBytes().coerceAtLeast(0)).coerceAtLeast(0))
     }
 
     // Read footprints before free space: writes racing with this snapshot make admission
@@ -26,7 +36,9 @@ internal class StorageReservations(private val availableBytes: () -> Long) {
         spaceFailure(availableBytes(), needed)?.let { throw InsufficientStorageException(it) }
     }
 
-    inner class Lease internal constructor(internal var peakBytes: Long, internal var usedBytes: () -> Long) : AutoCloseable {
+    inner class Lease internal constructor(
+        internal var peakBytes: Long, internal var usedBytes: () -> Long, internal val label: String = "",
+    ) : AutoCloseable {
         fun updatePeak(peak: Long) = synchronized(this@StorageReservations) {
             check(this in leases) { "Storage reservation is closed" }
             val next = peak.coerceAtLeast(0)
@@ -46,3 +58,6 @@ internal class StorageReservations(private val availableBytes: () -> Long) {
 
 internal fun saturatingStorageAdd(first: Long, second: Long): Long =
     if (first > Long.MAX_VALUE - second) Long.MAX_VALUE else first + second
+
+/** One open reservation as shown on the storage screen. */
+internal data class LedgerEntry(val label: String, val remainingBytes: Long)

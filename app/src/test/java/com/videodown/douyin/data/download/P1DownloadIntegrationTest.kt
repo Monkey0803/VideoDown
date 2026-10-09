@@ -166,6 +166,9 @@ class P1DownloadIntegrationTest {
                         availableBytes = { capacity - taskDirectoryBytes(paths.downloadDir) })
                     val first = engine.start(DouyinVideo("one", "one"), variant(firstServer))
                     withTimeout(5000) { engine.progress.first { (it[first]?.downloadedBytes ?: 0) > 0 } }
+                    val budget = engine.storageBudget()
+                    assertEquals(1, budget.taskCount); assertEquals("one", budget.entries.single().title)
+                    assertTrue(budget.reservedBytes > 0)
                     val second = engine.start(DouyinVideo("two", "two"), variant(secondServer))
                     val failure = withTimeout(5000) { history.observeRecord(second).first { it?.status == DownloadStatus.FAILED }!! }
                     assertEquals(DownloadFailureKind.STORAGE_FULL, failure.failureKind)
@@ -176,6 +179,8 @@ class P1DownloadIntegrationTest {
                     assertArrayEquals(payload, File(completed.filePath!!).readBytes())
                     assertEquals(1, secondServer.requestCount)
                     assertTrue(File(history.getById(first)!!.partialPath).length() > 0)
+                    withTimeout(5000) { while (first in engine.activeTaskIds()) delay(10) }
+                    assertTrue(engine.storageBudget().isEmpty)
                     withTimeout(5000) { while (second in engine.activeTaskIds()) delay(10) }
                     val third = engine.start(DouyinVideo("three", "three"), variant(secondServer))
                     withTimeout(5000) { history.observeRecord(third).first { it?.status == DownloadStatus.COMPLETED } }

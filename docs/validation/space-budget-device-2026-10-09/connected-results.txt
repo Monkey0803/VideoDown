@@ -1,0 +1,13 @@
+# 空间预算可视化设备测试结果（2026-10-09）
+
+设备：Pixel_10_Pro(AVD)，Android API 37，arm64-v8a（emulator-5554）
+命令：:app:connectedDebugAndroidTest --offline -Pandroid.testInstrumentationRunnerArguments.class=...
+
+## SpaceBudgetDeviceTest（固定账本，含缺口与空预算）
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:25:39" hostname="localhost">
+  <testcase name="emptyLedgerExplainsThereIsNoRunningBudget" classname="com.videodown.douyin.SpaceBudgetDeviceTest" time="1.869" />
+  <testcase name="overCommittedBudgetShowsTheShortfallAndAsksToFreeSpace" classname="com.videodown.douyin.SpaceBudgetDeviceTest" time="1.688" />
+
+## P1FeaturesDeviceTest#storageDialogVisualizesTheRunningSpaceBudget（真实引擎运行中）
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T10:25:46" hostname="localhost">
+  <testcase name="storageDialogVisualizesTheRunningSpaceBudget" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="3.130" />

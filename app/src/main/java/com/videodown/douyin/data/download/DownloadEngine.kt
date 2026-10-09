@@ -35,6 +35,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.Flow
 import com.videodown.douyin.domain.model.DownloadFailureKind
 import com.videodown.douyin.domain.model.DownloadPauseCause
+import com.videodown.douyin.domain.model.StorageBudget
+import com.videodown.douyin.domain.model.StorageBudgetEntry
 import com.videodown.douyin.core.downloadFailureKind
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -85,6 +87,20 @@ class DownloadEngine(
     private val autoResumeBudget = AutoResumeBudget(autoResumeAttemptsLimit)
 
     fun activeTaskIds(): Set<String> = activeJobs.keys.toSet()
+
+    /**
+     * Display-only snapshot of the running space budget for the storage screen. Sums each open
+     * lease's unwritten bytes with saturating arithmetic, so an absurd peak can never wrap into a
+     * misleading small number.
+     */
+    fun storageBudget(): StorageBudget {
+        val entries = storageReservations.snapshot().map { entry ->
+            StorageBudgetEntry(entry.label.ifBlank { "下载任务" }, entry.remainingBytes)
+        }
+        var total = 0L
+        entries.forEach { total = saturatingStorageAdd(total, it.remainingBytes) }
+        return StorageBudget(total, entries.sortedByDescending { it.remainingBytes })
+    }
 
     init {
         concurrencyChanges?.let { changes -> scope.launch { changes.collect { scheduler.setLimit(it) } } }
@@ -336,7 +352,7 @@ class DownloadEngine(
                 val expected = current.expectedBytes ?: current.totalBytes.takeIf { it > 0 }
                 val peak = maxOf(requiredStorageBytes(expected, merging = engine),
                     saturatingStorageAdd(footprint(), STORAGE_RESERVE_BYTES))
-                val lease = storageReservations.acquire(peak, footprint)
+                val lease = storageReservations.acquire(peak, footprint, label = current.title.ifBlank { current.fileName })
                 storage = lease
                 runTransfer(current, lease)
 
