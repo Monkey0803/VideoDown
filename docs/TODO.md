@@ -1,6 +1,6 @@
 # 拾影 功能待办（TODO）
 
-> 更新日期：2026-10-10 ｜ 当前分支：`main` ｜ 版本：1.1.0 / code 5（英文名 Keepsake，更新源走 GitHub Releases）
+> 更新日期：2026-10-10 ｜ 当前分支：`main` ｜ 版本：1.1.1 / code 6（英文名 Keepsake，更新源走 GitHub Releases）
 > 依据：同类应用对标（1DM+、ADM、Snaptube、VidMate、Seal、稞麦视频下载器）与当前源码核查
 > 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）、[P4 验收记录](validation/p4-features-2026-10-09.md)、[P5 验收记录](validation/p5-features-2026-10-09.md)
 
