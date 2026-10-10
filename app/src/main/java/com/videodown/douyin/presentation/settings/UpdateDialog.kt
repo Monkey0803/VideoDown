@@ -31,8 +31,12 @@ import com.videodown.douyin.presentation.components.AppIcons
  * Manual update entry: shows the installed version, checks the configured manifest and opens the
  * download or release link in the browser when a newer build is published.
  */
+/**
+ * [englishUi] 由调用方在界面语言已知的地方算好传进来（见 `SettingsScreen`）：更新说明可能带中英两版，
+ * 弹窗自己不去查配置——它渲染在独立的对话框窗口里，那里的 `LocalConfiguration` 未必是应用语言。
+ */
 @Composable
-internal fun UpdateDialog(model: UpdateViewModel, onClose: () -> Unit) {
+internal fun UpdateDialog(model: UpdateViewModel, englishUi: Boolean, onClose: () -> Unit) {
     val state by model.state.collectAsStateWithLifecycle()
     val manifestUrl by model.manifestUrl.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -66,7 +70,8 @@ internal fun UpdateDialog(model: UpdateViewModel, onClose: () -> Unit) {
                 is UpdateUiState.Available -> {
                     Text(stringResource(R.string.update_available, versionText(current.latest.versionName, current.latest.versionCode)),
                         style = MaterialTheme.typography.bodyLarge)
-                    current.notes?.let { Text(it) }
+                    // 说明可能同时带中英两版，按当前界面语言取（缺一版就回落到另一版）。
+                    current.latest.notesFor(englishUi)?.let { Text(it) }
                     when {
                         current.downloadUrl == null && current.releasePageUrl == null ->
                             Text(stringResource(R.string.update_no_link))

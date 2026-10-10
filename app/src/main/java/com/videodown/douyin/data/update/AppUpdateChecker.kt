@@ -9,11 +9,15 @@ import java.io.IOException
 
 /** Outcome of one update check against the configured manifest endpoint. */
 sealed interface UpdateCheckResult {
-    /** A strictly newer build is published. */
+    /**
+     * A strictly newer build is published.
+     *
+     * 更新说明不在这一层选语言（这里没有 Context）：界面按当前语言调用
+     * [AppUpdateManifest.notesFor]。
+     */
     data class UpdateAvailable(
         val current: AppVersion,
         val latest: AppUpdateManifest,
-        val notes: String?,
         val downloadUrl: String?,
         val releasePageUrl: String?,
     ) : UpdateCheckResult
@@ -89,7 +93,6 @@ class AppUpdateChecker(
             UpdateCheckResult.UpdateAvailable(
                 current = currentVersion,
                 latest = manifest,
-                notes = manifest.releaseNotes,
                 downloadUrl = manifest.apkUrl,
                 releasePageUrl = manifest.pageUrl,
             )

@@ -21,7 +21,6 @@ sealed interface UpdateUiState {
     data class UpToDate(val current: AppVersion) : UpdateUiState
     data class Available(
         val latest: AppUpdateManifest,
-        val notes: String?,
         val downloadUrl: String?,
         val releasePageUrl: String?,
     ) : UpdateUiState
@@ -66,7 +65,6 @@ class UpdateViewModel(
                 when (val result = checker.check(mutableUrl.value)) {
                     is UpdateCheckResult.UpdateAvailable -> UpdateUiState.Available(
                         latest = result.latest,
-                        notes = result.notes,
                         downloadUrl = result.downloadUrl,
                         releasePageUrl = result.releasePageUrl,
                     )

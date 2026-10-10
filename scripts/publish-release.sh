@@ -6,8 +6,8 @@
 #   scripts/publish-release.sh v1.1.0 [--notes-file 发行说明.md] [--manifest-notes-file 清单说明.md] [--dry-run]
 #
 #   --notes-file            Releases 页面上的完整发行说明（缺省用 gh 自动生成）。
-#   --manifest-notes-file   应用内「检查更新」弹窗显示的说明；只取该文件第一段，其余忽略。
-#                           清单里的 notes 字段只有一个，所以这里放主语言（中文）的一句话。
+#   --manifest-notes-file   应用内「检查更新」弹窗显示的中文说明；只取该文件第一段，其余忽略。
+#   --manifest-notes-en-file  同上，写入清单的 notesEn；应用按界面语言在 notes / notesEn 之间选。
 #
 # 前置：
 #   - `gh auth status` 已登录，且有该仓库的写权限；
@@ -29,11 +29,13 @@ fi
 TAG="$1"; shift
 NOTES=""
 MANIFEST_NOTES=""
+MANIFEST_NOTES_EN=""
 DRY_RUN=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --notes-file) NOTES="${2:?--notes-file 需要一个文件}"; shift 2 ;;
     --manifest-notes-file) MANIFEST_NOTES="${2:?--manifest-notes-file 需要一个文件}"; shift 2 ;;
+    --manifest-notes-en-file) MANIFEST_NOTES_EN="${2:?--manifest-notes-en-file 需要一个文件}"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     *) echo "未知参数: $1" >&2; exit 2 ;;
   esac
@@ -78,22 +80,25 @@ cp app/build/outputs/apk/release/videodown-arm64-v8a-release.apk "$OUT/"
 ./gradlew assembleRelease -Pabi=universal -PupdateManifestUrl="$MANIFEST_URL"
 cp app/build/outputs/apk/release/videodown-universal-release.apk "$OUT/"
 
-python3 - "$OUT/version.json" "$GRADLE_VERSION_CODE" "$GRADLE_VERSION_NAME" "$ASSET_BASE" "$SLUG" "$MANIFEST_NOTES" <<'PY'
+python3 - "$OUT/version.json" "$GRADLE_VERSION_CODE" "$GRADLE_VERSION_NAME" "$ASSET_BASE" "$SLUG" "$MANIFEST_NOTES" "$MANIFEST_NOTES_EN" <<'PY'
 import json, sys
-out, code, name, asset_base, slug, notes_path = sys.argv[1:7]
-# 清单里的说明只在应用内弹窗显示，取发行说明的第一段；Releases 页面用完整的 --notes-file。
-notes = ""
-if notes_path:
-    text = open(notes_path, encoding="utf-8").read().strip()
+out, code, name, asset_base, slug, notes_path, notes_en_path = sys.argv[1:8]
+
+def first_paragraph(path):
+    """清单里的说明只在应用内弹窗显示，取该文件第一段；Releases 页面用完整的 --notes-file。"""
+    if not path:
+        return ""
+    text = open(path, encoding="utf-8").read().strip()
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip() and not p.lstrip().startswith("#")]
-    if paragraphs:
-        notes = paragraphs[0].replace("\n", " ")
+    return paragraphs[0].replace("\n", " ") if paragraphs else ""
+
 manifest = {
     "versionCode": int(code),
     "versionName": name,
     "downloadUrl": f"{asset_base}/videodown-arm64-v8a-release.apk",
     "releasePageUrl": f"https://github.com/{slug}/releases/latest",
-    "notes": notes,
+    "notes": first_paragraph(notes_path),
+    "notesEn": first_paragraph(notes_en_path),
 }
 with open(out, "w", encoding="utf-8") as f:
     json.dump(manifest, f, ensure_ascii=False, indent=2)

@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
@@ -396,7 +397,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         )
     }
     if (showStorage) StorageDialog(storageViewModel) { showStorage = false }
-    if (showUpdate) UpdateDialog(updateViewModel) { showUpdate = false }
+    if (showUpdate) UpdateDialog(updateViewModel, englishUi = LocalConfiguration.current.locales[0].language == "en") { showUpdate = false }
     if (showAbout) {
         AppConfirmDialog(
             onDismissRequest = { showAbout = false },

@@ -18,6 +18,8 @@ data class AppUpdateManifest(
     @SerialName("downloadUrl") val downloadUrl: String? = null,
     @SerialName("releasePageUrl") val releasePageUrl: String? = null,
     @SerialName("notes") val notes: String? = null,
+    /** 同一份更新说明的英文版；弹窗按界面语言选取（见 [notesFor]）。 */
+    @SerialName("notesEn") val notesEn: String? = null,
     /** Accepted aliases so simple hand-written manifests keep working. */
     @SerialName("url") val plainUrl: String? = null,
     @SerialName("changelog") val changelog: String? = null,
@@ -30,6 +32,15 @@ data class AppUpdateManifest(
     /** Release notes, falling back to the `changelog` alias. */
     val releaseNotes: String? get() = notes?.takeIf(String::isNotBlank) ?: changelog?.takeIf(String::isNotBlank)
 
+    /**
+     * The notes for the interface language: the matching field first, the other language as a
+     * fallback, so a manifest that ships only one of them still shows something.
+     */
+    fun notesFor(english: Boolean): String? {
+        val preferred = if (english) notesEn else releaseNotes
+        val fallback = if (english) releaseNotes else notesEn
+        return preferred?.takeIf(String::isNotBlank) ?: fallback?.takeIf(String::isNotBlank)
+    }
 }
 
 /** The locally installed version, read once from `PackageManager`. */

@@ -38,11 +38,41 @@ class AppUpdateCheckerTest {
             val result = checker().check(urlOf(server))
             val available = result as UpdateCheckResult.UpdateAvailable
             assertEquals("1.0.2", available.latest.versionName)
-            assertEquals("修复导出失败反馈", available.notes)
+            assertEquals("修复导出失败反馈", available.latest.notesFor(english = false))
             assertEquals("https://example.com/app-1.0.2.apk", available.downloadUrl)
             assertEquals("https://example.com/releases/1.0.2", available.releasePageUrl)
             assertEquals(current, available.current)
         }
+    }
+
+    @Test
+    fun `keeps both note languages apart`() = runBlocking {
+        val manifest = """
+            {"versionCode":3,"versionName":"1.0.2","notes":"新增合集解析","notesEn":"Adds collection parsing"}
+        """.trimIndent()
+        serve(manifest).use { server ->
+            val latest = (checker().check(urlOf(server)) as UpdateCheckResult.UpdateAvailable).latest
+            assertEquals("Adds collection parsing", latest.notesFor(english = true))
+            assertEquals("新增合集解析", latest.notesFor(english = false))
+        }
+    }
+
+    @Test
+    fun `falls back to the other language when one note is missing`() {
+        assertEquals("only chinese", AppUpdateManifest(notes = "only chinese").notesFor(english = true))
+        assertEquals("only english", AppUpdateManifest(notesEn = "only english").notesFor(english = false))
+        assertEquals("only english", AppUpdateManifest(versionCode = 3, notesEn = "only english").notesFor(english = true))
+        // 空串与空白不算说明，仍然回落到另一版；两版都没有就是没有。
+        assertEquals("real", AppUpdateManifest(notes = "real", notesEn = "   ").notesFor(english = true))
+        assertEquals(null, AppUpdateManifest(versionCode = 3, notes = "", notesEn = " ").notesFor(english = false))
+        assertEquals(null, AppUpdateManifest(versionCode = 3).notesFor(english = true))
+    }
+
+    @Test
+    fun `english notes win over the changelog alias, and the alias still serves chinese`() {
+        val manifest = AppUpdateManifest(versionCode = 3, changelog = "别名说明", notesEn = "alias note")
+        assertEquals("alias note", manifest.notesFor(english = true))
+        assertEquals("别名说明", manifest.notesFor(english = false))
     }
 
     @Test
