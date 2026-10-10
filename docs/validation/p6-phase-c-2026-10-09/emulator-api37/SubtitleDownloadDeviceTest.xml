@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T02:54:18" hostname="localhost">
+  <testsuite name="com.videodown.douyin.SubtitleDownloadDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="9.324" timestamp="2026-10-10T02:54:18" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="downloadingWithSubtitlesEmbedsATextTrackThePlayerOffers" classname="com.videodown.douyin.SubtitleDownloadDeviceTest" time="6.388" />
+    <testcase name="aPageWithASubtitleTrackOffersExactlyThatLanguage" classname="com.videodown.douyin.SubtitleDownloadDeviceTest" time="2.936" />
+  </testsuite>
+</testsuites>

@@ -22,7 +22,10 @@ class DownloadServiceRequestsTest {
         try { requests.awaitStart { throw SecurityException("denied") }; fail("must report denial") }
         catch (error: DownloadServiceException) { assertTrue(error.cause is SecurityException) }
         try { requests.awaitStart(timeoutMs = 10) { }; fail("must time out") }
-        catch (error: DownloadServiceException) { assertTrue(error.message!!.contains("超时")) }
+        // The failure carries a kind now; the wording lives in resources.
+        catch (error: DownloadServiceException) {
+            assertEquals(com.videodown.douyin.core.ServiceFailure.FOREGROUND_START, error.failure)
+        }
     }
 
     @Test fun `foreground promotion failure releases all waiting starts`() = runBlocking {
@@ -33,7 +36,7 @@ class DownloadServiceRequestsTest {
         val two = async(start = CoroutineStart.UNDISPATCHED) {
             runCatching { requests.awaitStart { } }.exceptionOrNull()
         }
-        requests.failPending(DownloadServiceException("前台服务不可用"))
+        requests.failPending(DownloadServiceException(com.videodown.douyin.core.ServiceFailure.UNKNOWN))
         assertTrue(one.await() is DownloadServiceException)
         assertTrue(two.await() is DownloadServiceException)
     }

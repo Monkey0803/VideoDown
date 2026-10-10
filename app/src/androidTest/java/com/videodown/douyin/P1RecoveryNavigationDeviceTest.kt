@@ -41,7 +41,7 @@ class P1RecoveryNavigationDeviceTest {
     private val parsed = CopyOnWriteArrayList<String>()
     private val downloader = object : Downloader {
         override val progress = MutableStateFlow<Map<String, DownloadProgress>>(emptyMap())
-        override suspend fun start(video: DouyinVideo, variant: VideoVariant) = error("Unexpected download")
+        override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection) = error("Unexpected download")
         override suspend fun pause(id: String) {}
         override suspend fun resume(id: String) {}
         override suspend fun cancel(id: String, removeRecord: Boolean) {}
@@ -77,7 +77,7 @@ class P1RecoveryNavigationDeviceTest {
     @Test fun loginRecoveryOpensOriginalPageInActualBrowser() {
         LocalPage().use { page ->
             addFailure(DownloadFailureKind.LOGIN_REQUIRED, page.url)
-            compose.onNode(hasText(RecoveryAction.BROWSER.label) and hasAnyAncestor(hasTestTag("task-failure"))).performClick()
+            compose.onNode(hasText(actionText(RecoveryAction.BROWSER)) and hasAnyAncestor(hasTestTag("task-failure"))).performClick()
             compose.onNodeWithContentDescription("关闭网页").assertIsDisplayed()
             compose.waitUntil(5000) { page.requests.get() > 0 }
             compose.runOnIdle { assertEquals(page.url, home.state.value.input) }
@@ -87,7 +87,7 @@ class P1RecoveryNavigationDeviceTest {
     }
     @Test fun storageRecoveryOpensActualSettingsStorageDialog() {
         addFailure(DownloadFailureKind.STORAGE_FULL)
-        compose.onNode(hasText(RecoveryAction.STORAGE.label) and hasAnyAncestor(hasTestTag("task-failure"))).performClick()
+        compose.onNode(hasText(actionText(RecoveryAction.STORAGE)) and hasAnyAncestor(hasTestTag("task-failure"))).performClick()
         compose.onNodeWithText("存储管理", substring = false).assertIsDisplayed()
         compose.onNodeWithText("清理残留与无效记录").assertIsDisplayed()
         // Read-only inspection: never clean the app's real download directory.
@@ -96,7 +96,7 @@ class P1RecoveryNavigationDeviceTest {
     @Test fun expiredDownloadReparsesOriginalPageRatherThanCdn() {
         val original = "http://127.0.0.1/source-page?media=one"
         addFailure(DownloadFailureKind.LINK_EXPIRED, original)
-        compose.onNode(hasText(RecoveryAction.REPARSE.label) and hasAnyAncestor(hasTestTag("task-failure"))).performClick()
+        compose.onNode(hasText(actionText(RecoveryAction.REPARSE)) and hasAnyAncestor(hasTestTag("task-failure"))).performClick()
         compose.waitUntil(5000) { parsed.isNotEmpty() }
         assertEquals(listOf(original), parsed)
         compose.onNode(hasSetTextAction()).assertTextContains(original)
@@ -104,7 +104,7 @@ class P1RecoveryNavigationDeviceTest {
     @Test fun rateLimitedParseOpensSettingsWithoutRepeatingRequest() {
         compose.runOnUiThread { home.onInputChange("http://127.0.0.1/source-page"); home.parse() }
         compose.waitUntil(5000) { home.state.value.errorKind == DownloadFailureKind.RATE_LIMITED }
-        compose.onNodeWithText(RecoveryAction.SETTINGS.label, substring = false).performScrollTo().performClick()
+        compose.onNodeWithText(actionText(RecoveryAction.SETTINGS), substring = false).performScrollTo().performClick()
         // The settings page hero copy was replaced by the current page title; assert what is
         // actually rendered, since the intent here is only that the settings page opened.
         compose.waitUntil(5000) { compose.onAllNodes(hasText("我的设置")).fetchSemanticsNodes().isNotEmpty() }
@@ -133,4 +133,8 @@ class P1RecoveryNavigationDeviceTest {
         }.apply { isDaemon = true; start() }
         override fun close() { socket.close(); thread.join(1000) }
     }
+
+    /** The caption lives in resources now, so ask the app for the string it renders. */
+    private fun actionText(action: RecoveryAction): String =
+        context.getString(com.videodown.douyin.presentation.recoveryActionRes(action))
 }

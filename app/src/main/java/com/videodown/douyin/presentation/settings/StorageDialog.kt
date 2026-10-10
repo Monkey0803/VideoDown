@@ -15,6 +15,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import com.videodown.douyin.R
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.videodown.douyin.core.formatBytes
@@ -29,29 +31,30 @@ internal fun StorageDialog(model: StorageViewModel, onClose: () -> Unit) {
     var pendingPlan by remember { mutableStateOf<StorageUsage?>(null) }
     LaunchedEffect(Unit) { model.refresh() }
     pendingPlan?.let { plan ->
-        AlertDialog(onDismissRequest = { pendingPlan = null }, title = { Text("清理残留文件和无效记录？") },
-            text = { Text("将清理 ${plan.orphanEntries.size} 项残留临时文件（${formatBytes(plan.reclaimableBytes)}）和 ${plan.missingRecordIds.size} 条文件已丢失的完成记录。\n\n保留有效视频、相册副本以及暂停/进行中任务的断点。确认后会再次检查，发生变化的项目将跳过。") },
-            confirmButton = { TextButton(onClick = { pendingPlan = null; model.clean(plan) }) { Text("确认清理") } },
-            dismissButton = { TextButton(onClick = { pendingPlan = null }) { Text("取消") } })
+        AlertDialog(onDismissRequest = { pendingPlan = null }, title = { Text(stringResource(R.string.storage_cleanup_title)) },
+            text = { Text(stringResource(R.string.storage_cleanup_body, plan.orphanEntries.size,
+                formatBytes(plan.reclaimableBytes), plan.missingRecordIds.size)) },
+            confirmButton = { TextButton(onClick = { pendingPlan = null; model.clean(plan) }) { Text(stringResource(R.string.storage_cleanup_confirm)) } },
+            dismissButton = { TextButton(onClick = { pendingPlan = null }) { Text(stringResource(R.string.action_cancel)) } })
     }
-    AlertDialog(onDismissRequest = { if (!state.busy) onClose() }, title = { Text("存储管理") },
+    AlertDialog(onDismissRequest = { if (!state.busy) onClose() }, title = { Text(stringResource(R.string.storage_title)) },
         text = { Column(Modifier.heightIn(max = 380.dp).verticalScroll(rememberScrollState())) {
             state.usage?.let { usage ->
-                Text("可用空间：${formatBytes(usage.availableBytes)}")
-                Text("视频文件：${formatBytes(usage.videoBytes)}", modifier = Modifier.padding(top = 8.dp))
-                Text("临时文件：${formatBytes(usage.temporaryBytes)}", modifier = Modifier.padding(top = 8.dp))
-                Text("可清理残留：${formatBytes(usage.reclaimableBytes)} · ${usage.orphanEntries.size} 项", modifier = Modifier.padding(top = 8.dp))
-                Text("文件已丢失的记录：${usage.missingRecordIds.size} 条", modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.storage_available, formatBytes(usage.availableBytes)))
+                Text(stringResource(R.string.storage_videos, formatBytes(usage.videoBytes)), modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.storage_temporary, formatBytes(usage.temporaryBytes)), modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.storage_reclaimable, formatBytes(usage.reclaimableBytes), usage.orphanEntries.size), modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.storage_missing, usage.missingRecordIds.size), modifier = Modifier.padding(top = 8.dp))
                 StorageBudgetSection(usage)
-                Text("临时文件包含下载断点和合并片段，仍被任务引用的文件会保留。要释放已存视频空间，请在「已存」中选择删除。", modifier = Modifier.padding(top = 12.dp))
+                Text(stringResource(R.string.storage_hint), modifier = Modifier.padding(top = 12.dp))
             }
-            if (state.busy) Text("正在处理存储空间…", modifier = Modifier.padding(top = 12.dp))
-            state.message?.let { Text(it, modifier = Modifier.padding(top = 12.dp)) }
+            if (state.busy) Text(stringResource(R.string.storage_working), modifier = Modifier.padding(top = 12.dp))
+            state.notice?.let { Text(storageNoticeText(it), modifier = Modifier.padding(top = 12.dp)) }
         } },
-        confirmButton = { TextButton(onClick = onClose, enabled = !state.busy) { Text("完成") } },
+        confirmButton = { TextButton(onClick = onClose, enabled = !state.busy) { Text(stringResource(R.string.action_done)) } },
         dismissButton = { Column {
-            TextButton(onClick = model::refresh, enabled = !state.busy) { Text("刷新") }
-            TextButton(onClick = { pendingPlan = state.usage }, enabled = !state.busy && state.usage?.let { it.orphanEntries.isNotEmpty() || it.missingRecordIds.isNotEmpty() } == true) { Text("清理残留与无效记录") }
+            TextButton(onClick = model::refresh, enabled = !state.busy) { Text(stringResource(R.string.action_refresh)) }
+            TextButton(onClick = { pendingPlan = state.usage }, enabled = !state.busy && state.usage?.let { it.orphanEntries.isNotEmpty() || it.missingRecordIds.isNotEmpty() } == true) { Text(stringResource(R.string.storage_cleanup_action)) }
         } })
 }
 
@@ -72,13 +75,31 @@ private fun StorageBudgetSection(usage: StorageUsage) {
         Text(storageBudgetPercent(usage), modifier = Modifier.padding(top = 6.dp),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         budget.entries.take(VISIBLE_BUDGET_TASKS).forEach { entry ->
-            Text("· ${entry.title.take(24)} 尚需 ${formatBytes(entry.remainingBytes)}", modifier = Modifier.padding(top = 6.dp),
+            Text(stringResource(R.string.storage_budget_entry, entry.title.ifBlank { stringResource(R.string.storage_budget_task) }.take(24), formatBytes(entry.remainingBytes)), modifier = Modifier.padding(top = 6.dp),
                 style = MaterialTheme.typography.bodySmall)
         }
-        if (budget.entries.size > VISIBLE_BUDGET_TASKS) Text("· 另有 ${budget.entries.size - VISIBLE_BUDGET_TASKS} 个运行任务", modifier = Modifier.padding(top = 6.dp), style = MaterialTheme.typography.bodySmall)
+        if (budget.entries.size > VISIBLE_BUDGET_TASKS) Text(stringResource(R.string.storage_budget_more, budget.entries.size - VISIBLE_BUDGET_TASKS), modifier = Modifier.padding(top = 6.dp), style = MaterialTheme.typography.bodySmall)
     }
     Text(storageBudgetReason(usage), modifier = Modifier.padding(top = 8.dp),
         color = if (shortfall > 0L) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
-    if (!budget.isEmpty) Text("预算含每个任务 32 MiB 工作余量；已写入部分由可用空间反映，不重复计算。",
+    if (!budget.isEmpty) Text(stringResource(R.string.storage_budget_note),
         modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall)
+}
+
+/** The wording for a storage action. */
+@Composable
+private fun storageNoticeText(notice: StorageNotice): String = when (notice) {
+    StorageNotice.InspectFailed -> stringResource(R.string.storage_inspect_failed)
+    StorageNotice.CleanIncomplete -> stringResource(R.string.storage_clean_incomplete)
+    is StorageNotice.Cleaned -> {
+        val base = stringResource(
+            R.string.storage_cleaned,
+            notice.deletedEntries, notice.deletedRecords, formatBytes(notice.freedBytes),
+        )
+        if (notice.skipped + notice.failed > 0) {
+            base + stringResource(R.string.storage_cleaned_detail, notice.skipped, notice.failed)
+        } else {
+            base
+        }
+    }
 }

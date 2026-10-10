@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.AudioFeatureTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.896Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="actual audio formats stay independent of video quality and use m4a engine output" classname="com.videodown.douyin.domain.model.AudioFeatureTest" time="0.0"/>
+  <testcase name="legacy history remains video and audio settings round trip" classname="com.videodown.douyin.domain.model.AudioFeatureTest" time="0.0"/>
+  <testcase name="audio and video identities differ even with the same media and format id" classname="com.videodown.douyin.domain.model.AudioFeatureTest" time="0.0"/>
+  <testcase name="no audio failure has explicit guidance and no futile retry" classname="com.videodown.douyin.domain.model.AudioFeatureTest" time="0.0"/>
+  <testcase name="extraction rejects unfinished or already audio records" classname="com.videodown.douyin.domain.model.AudioFeatureTest" time="0.0"/>
+  <testcase name="local extraction identifies source record and remains separate from other saved renditions" classname="com.videodown.douyin.domain.model.AudioFeatureTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.460Z" hostname="Alias-mini.local" time="0.002">
+  <properties/>
+  <testcase name="a real chinese and english track are both kept, most specific first" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.001"/>
+  <testcase name="an unrelated language falls back to what the source offers" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.0"/>
+  <testcase name="a bare zh is treated as simplified chinese" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.0"/>
+  <testcase name="chat replays and junk keys are not treated as subtitles" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.0"/>
+  <testcase name="one english track is kept, chosen by documented priority not input order" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.0"/>
+  <testcase name="duplicates and casing do not produce two tracks" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.0"/>
+  <testcase name="traditional chinese is labelled as such" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.0"/>
+  <testcase name="a source without subtitles selects nothing at all" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.0"/>
+  <testcase name="machine captions are used only when there is no real track" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.001"/>
+  <testcase name="an unknown language keeps its own code" classname="com.videodown.douyin.domain.model.SubtitleLanguageSelectionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

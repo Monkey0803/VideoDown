@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.generic.EngineRequestTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.231Z" hostname="Alias-mini.local" time="0.002">
+  <properties/>
+  <testcase name="a plain download asks for no subtitles" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.002"/>
+  <testcase name="a plain parse asks for exactly the linked video" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <testcase name="the collection switch carries the flag and the documented cap" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <testcase name="the download keeps its own identity fields" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <testcase name="cookies are attached only for a browser session with a cookie file" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <testcase name="machine captions are declared as such" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <testcase name="the chosen languages travel as a list" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <testcase name="headers are only sent when there is something to send" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <testcase name="the collection switch never leaks into an unrelated field" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <testcase name="an audio-only target never asks for an embedded subtitle" classname="com.videodown.douyin.data.generic.EngineRequestTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

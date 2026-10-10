@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.DownloadServiceRequestsTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:51.672Z" hostname="Alias-mini.local" time="0.018">
+  <properties/>
+  <testcase name="separate starts require separate acknowledgements and cancelled tokens expire" classname="com.videodown.douyin.data.download.DownloadServiceRequestsTest" time="0.002"/>
+  <testcase name="foreground promotion failure releases all waiting starts" classname="com.videodown.douyin.data.download.DownloadServiceRequestsTest" time="0.002"/>
+  <testcase name="startup denial and missing foreground acknowledgement fail explicitly" classname="com.videodown.douyin.data.download.DownloadServiceRequestsTest" time="0.014"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

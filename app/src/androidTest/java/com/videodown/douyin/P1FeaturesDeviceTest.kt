@@ -162,11 +162,11 @@ class P1FeaturesDeviceTest {
         }
         for ((id, action) in listOf("0" to RecoveryAction.BROWSER, "1" to RecoveryAction.REPARSE, "2" to RecoveryAction.STORAGE)) {
             compose.onNodeWithTag("task-list").performScrollToNode(hasTestTag("task-$id"))
-            compose.onNode(hasText(action.label) and hasAnyAncestor(hasTestTag("task-$id"))).performClick()
+            compose.onNode(hasText(actionText(action)) and hasAnyAncestor(hasTestTag("task-$id"))).performClick()
         }
         compose.runOnIdle { assertEquals(listOf("0" to RecoveryAction.BROWSER, "1" to RecoveryAction.REPARSE, "2" to RecoveryAction.STORAGE), recovered) }
         compose.onNodeWithTag("task-list").performScrollToNode(hasTestTag("task-3"))
-        compose.onNode(hasText(RecoveryAction.RETRY.label) and hasAnyAncestor(hasTestTag("task-3"))).performClick()
+        compose.onNode(hasText(actionText(RecoveryAction.RETRY)) and hasAnyAncestor(hasTestTag("task-3"))).performClick()
         compose.waitUntil(5000) { server.requests.get() == 1 && "3" in engine.queue.value.runningIds }
         assertEquals(setOf("3"), engine.activeTaskIds())
         runBlocking { (0..2).forEach { assertEquals(DownloadStatus.FAILED, history.getById("$it")?.status) } }
@@ -185,10 +185,10 @@ class P1FeaturesDeviceTest {
             compose.activity.setContent { VideoDownTheme { HistoryScreen({}, model) } }
         }
         compose.onNodeWithTag("task-list").performScrollToNode(hasTestTag("task-missing-page"))
-        compose.onNode(hasText(RecoveryAction.REPARSE.label) and hasAnyAncestor(hasTestTag("task-missing-page"))).assertIsNotEnabled()
+        compose.onNode(hasText(actionText(RecoveryAction.REPARSE)) and hasAnyAncestor(hasTestTag("task-missing-page"))).assertIsNotEnabled()
         compose.onNodeWithText("原始网址未保留，请在解析页重新粘贴视频链接。").assertExists()
         compose.onNodeWithTag("task-list").performScrollToNode(hasTestTag("task-unsupported"))
-        compose.onNode(hasContentDescription(RecoveryAction.NONE.label) and hasAnyAncestor(hasTestTag("task-unsupported"))).assertIsNotEnabled()
+        compose.onNode(hasContentDescription(actionText(RecoveryAction.NONE)) and hasAnyAncestor(hasTestTag("task-unsupported"))).assertIsNotEnabled()
         compose.onNode(hasContentDescription("重新下载") and hasAnyAncestor(hasTestTag("task-unsupported"))).assertDoesNotExist()
         runBlocking { history.delete("missing-page"); engine.resumeAll(); engine.resume("unsupported") }
         assertTrue(engine.activeTaskIds().isEmpty())
@@ -232,4 +232,8 @@ class P1FeaturesDeviceTest {
         }.apply { isDaemon = true; start() }
         override fun close() { release.countDown(); server.close(); thread.join(1000) }
     }
+
+    /** The caption lives in resources now, so ask the app for the string it renders. */
+    private fun actionText(action: RecoveryAction): String =
+        context.getString(com.videodown.douyin.presentation.recoveryActionRes(action))
 }

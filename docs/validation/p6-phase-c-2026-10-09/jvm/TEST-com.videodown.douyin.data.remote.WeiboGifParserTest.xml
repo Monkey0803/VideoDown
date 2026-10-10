@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.WeiboGifParserTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.376Z" hostname="Alias-mini.local" time="0.001">
+  <properties/>
+  <testcase name="GIF MP4 preserves dimensions author cover and signed query" classname="com.videodown.douyin.data.remote.WeiboGifParserTest" time="0.0"/>
+  <testcase name="normal videos remain first when a post also contains a GIF" classname="com.videodown.douyin.data.remote.WeiboGifParserTest" time="0.0"/>
+  <testcase name="pictures without downloadable MP4 are not exposed as videos" classname="com.videodown.douyin.data.remote.WeiboGifParserTest" time="0.001"/>
+  <testcase name="multiple GIFs retain picture order and independent media identities" classname="com.videodown.douyin.data.remote.WeiboGifParserTest" time="0.0"/>
+  <testcase name="picture order excludes unreferenced media and duplicate picture IDs" classname="com.videodown.douyin.data.remote.WeiboGifParserTest" time="0.0"/>
+  <testcase name="missing picture order and invalid dimensions still allow an MP4" classname="com.videodown.douyin.data.remote.WeiboGifParserTest" time="0.0"/>
+  <testcase name="reposted GIF keeps original post author and source URL" classname="com.videodown.douyin.data.remote.WeiboGifParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

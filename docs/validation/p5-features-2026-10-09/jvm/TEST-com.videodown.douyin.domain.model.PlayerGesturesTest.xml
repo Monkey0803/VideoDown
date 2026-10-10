@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.PlayerGesturesTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.898Z" hostname="Alias-mini.local" time="0.001">
+  <properties/>
+  <testcase name="an unknown width falls back to the left half instead of crashing" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.0"/>
+  <testcase name="a zero height drag is ignored rather than dividing by zero" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.0"/>
+  <testcase name="seeking is clamped to the media bounds" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.0"/>
+  <testcase name="brightness never goes fully black or beyond full" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.0"/>
+  <testcase name="the long press speed is the documented one" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.0"/>
+  <testcase name="a double tap seeks ten seconds in the tapped direction" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.0"/>
+  <testcase name="the screen splits into two halves for seeking" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.0"/>
+  <testcase name="volume follows the same drag direction and stays in range" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.0"/>
+  <testcase name="dragging up increases brightness and dragging down lowers it" classname="com.videodown.douyin.domain.model.PlayerGesturesTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

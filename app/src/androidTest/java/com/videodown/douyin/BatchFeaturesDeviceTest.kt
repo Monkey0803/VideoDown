@@ -56,7 +56,7 @@ class BatchFeaturesDeviceTest {
         override suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant) = history.snapshot().firstOrNull {
             it.matchesSelection(video, variant) && (it.status != DownloadStatus.COMPLETED || it.filePath?.let { path -> File(path).isFile } == true)
         }
-        override suspend fun start(video: DouyinVideo, variant: VideoVariant): String {
+        override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String {
             started += video.awemeId to variant.label
             val id = "new-${started.size}"
             history.upsert(DownloadRecord(id, video.awemeId, video.title, platform = video.platform, resolutionLabel = variant.label))

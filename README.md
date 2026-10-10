@@ -65,6 +65,63 @@
 
 验证记录见 [P4 验证记录](docs/validation/p4-features-2026-10-09.md)。
 
+## 播放手势、字幕与下载节奏（P5）
+
+- 视频播放页在**系统播放控件隐藏时**接管触摸：左右半屏双击快退 / 快进 10 秒，竖向滑动左半屏调亮度、右半屏调音量，长按临时 2× 加速（松手恢复）。控件显示时手势层完全不生效，倍速、循环、进度条与全屏按钮保持原有行为；离开页面时把屏幕亮度交还系统。
+- 与视频同名的 `.srt` / `.vtt` / `.ass` / `.ssa` 字幕文件会作为独立字幕轨道加载，视频内嵌字幕同样渲染。存在字幕轨道时播放页出现「字幕」开关，选择会保留。只有真的存在字幕轨道时才显示该开关。
+- 「我的 → 下载限速」限制**所有直链下载的总速度**（不限速 / 512 KB/s / 1 MB/s / 2 MB/s / 5 MB/s）。任务卡可为单个任务设置上限，或选择「跟随全局」；卡片上显示当前上限。限速在**每次写入前**生效且位于空间检查之后，因此磁盘写满仍然立即失败。**分片引擎下载（yt-dlp / FFmpeg）由独立进程完成，不受该限制。**
+- 「我的 → 下载后自动存入相册」开启后，完成的视频复制到 `Movies/拾影`、音频复制到 `Music/拾影`；完成通知会说明是否已存入。Android 9 及以下需要存储权限，未授权时不复制并在通知中说明原因；保存失败不影响下载本身。
+- 「已存」卡片与首页「最近保存」显示播放进度（进度条 + 「已看 N%」）。只有进度与当前文件的大小和修改时间都一致时才显示，重新下载或转码后不会沿用旧进度。
+- 音频播放页可设「15 / 30 / 60 分钟后暂停」，按钮显示剩余时间。计时按绝对时间保存在本地，关闭页面后仍在后台生效；到点暂停播放并清除定时。
+
+验证记录见 [P5 验证记录](docs/validation/p5-features-2026-10-09.md)。
+
+## 合集解析（C3）
+
+- 「我的 → 解析合集」打开后，粘贴**合集 / 频道 / 播放列表**链接会把整页条目都解析出来（默认关闭，最多 20 条），随后走既有的多选界面：逐条挑画质、批量入队，重复链接沿用既有重复检查。关闭时只解析链接指向的那一个视频——一个单视频链接不该悄悄变成二十条队列。
+- 每个条目保留自己的 id 与来源网址，因此「下载第 2 条」下的就是第 2 条：已用本地两视频页面验证两条各自下到 10542 与 56341 字节、来源网址各自对应 `/one.mp4` / `/two.mp4`。
+- 引擎侧只改了一处：`noplaylist` 现在由「X 帖子」或「应用显式要求合集」决定，`playlistend` 取自应用的 `playlist_limit`，上限与设置页文案共用 `EngineRequest.PLAYLIST_LIMIT`。
+
+## 字幕下载与内嵌（C2）
+
+- 解析结果里带字幕时，结果页会出现「同时保存字幕（中文）」的选项（只在该源真的有字幕、且选的是视频档位时出现）。打开后下载会把字幕**内嵌进视频文件**，离线播放也能用播放页的字幕开关打开它。
+- 语言是应用挑的，不是逐条勾选：优先一个中文轨 + 一个英文轨（`zh-Hans` 优先于 `zh`），都没有时取源提供的第一个；**只有**在没有任何真实字幕轨时才使用自动字幕（机器生成的）。来源可能提供几十上百种语言，全量抓取会把一次视频下载变成字幕仓库。
+- 字幕是引擎能力，所以请求字幕的任务会**改走引擎下载**，即使该档位本身是直链；否则会出现「下载成功但文件里没有字幕」的静默结果。
+- 内嵌后字幕文件会被删除（一个任务只产出一个文件）；mp4 中的字幕轨以 `text/3gpp-tt`（mov_text）形式存在。
+
+## 私有保险箱与应用锁（C4）
+
+- 「已存」最左侧的「保险箱锁」是入口。点击后由**系统弹窗**验证身份：Android 11 及以上可要求生物识别或锁屏凭据，Android 9/10 要求锁屏凭据。验证通过才进入，按「锁定」立刻回到门外（不需要再次验证）。
+- 保险箱是**独立视图**：普通列表永远不混入私密条目，解锁后也只显示私密条目——数量、分类下拉与批量操作全部只针对可见条目计算。
+- 私密条目在下列位置一律不出现，或只显示占位文案「保险箱内容」：「已存」列表、首页「最近保存」、任务列表的标题、下载完成通知与单任务通知的标题。完成通知也不再深链到播放页（只打开应用），否则点一下通知就绕过了门禁。
+- 「移入保险箱 / 移出保险箱」在条目的操作面板里；移入时**不移动也不加密**文件，只改变它出现在哪里。
+- 自动存入相册会跳过私密条目（在保险箱内手动保存仍然可以）；导出链接清单也不会写出私密条目的链接。
+
+## 语言与文案（C1，进行中）
+
+- 应用**跟随系统语言**（Android 13 及以上还能在系统设置里单独为「拾影」选语言）：`values/` 是简体中文，`values-en/` 是英文，`res/xml/locales_config.xml` 声明支持的语言，清单里用 `android:localeConfig` 暴露给系统。
+- 此前 `MainActivity` 会强制覆盖成简体中文，现已移除。
+- **文案一律进 `res/values/strings.xml`，代码里不留中文字面量。** 格式串用 `%1$s` 占位；注意 `ifBlank { }` 这类非 `@Composable` 的 lambda 里不能直接调用 `stringResource`，要先取值再传入。
+- `LocalizationGuardTest` 守着这次迁移：两个语言文件必须 key 一一对应，且 `src/main/java` 下的中文**字面量只许减少**（842 → **0**：未标注理由的中文串已清零）。
+- **ViewModel 不出文案。** `HistoryViewModel` 曾经把「操作名」既当显示文案又当数据键（`operation == "删除"`），现已改为只传 `BatchOperation` / `HistoryNotice` 这类键与数字，句子由界面层用 `stringResource` 拼——这样 ViewModel 里就不需要再有任何用户可见文案。
+- **domain 不持有文案。** `domain/model/DownloadFailure.kt` 只保留失败分类与「可采取哪些恢复动作」，标题/说明/按钮文字全部由 `presentation/FailureText.kt` 映射到资源；测试改为断言**每种 kind 都有标题与说明**（新分类不可能漏翻译）。
+- **枚举只带值，文案在表现层。** `ThemeMode`/`LibraryLayout`/`PreferredQuality`/`TaskSort`/`LibrarySort` 的 `label` 属性已删除，改由 `presentation/Labels.kt` 映射；`AppPreferences.apply()` 也改为返回 `SettingsChange` 键列表，由设置页拼出「已恢复：…」的句子。
+- **错误按状态判断，不按文案判断。** `AppError.Http(code)` 取代了「服务器返回 HTTP 403」这种字符串，下载引擎的重取/重试逻辑改为看状态码——以前是 `message.contains("HTTP 403")`，改一句提示就会悄悄改变重试行为。解析页的失败也改成 `HomeError` 键（`FromApp`/`EmptyInput`/`NoVariant`/`QueueFailed`），由 `presentation/ErrorText.kt` 统一出文案。
+- **钥匙串（keystore）提示、分享面板标题、通用兜底错误**都已进资源；`toAppError()` 也改为返回带 `reasonKey` 的错误（`generic:network` / `generic:unknown`），所以「不要把系统英文消息当提示」这条约束现在由**类型**保证而不是靠拼字符串。
+- **域层用 `null` 表示「不显示」，界面补文案。** `VaultPolicy.title(...)` 对锁定记录返回 `null`（而不是「保险箱内容」），通知与列表各自补上本地化文案；`SleepTimer.remainingRounded` 返回 `Minutes`/`Seconds`，`PlayerGestures.seekLabelSeconds` 只返回 `-10`/`+10`（符号与数字是数据，单位是文案）。
+- **非文案的四种豁免。** 剩余的中文字面量按四类就地标注 `// l10n-ignore: <理由>`：(1) `require`/`check` 内部不变量（失败只显示统一的「操作失败」）、(2) 开发者日志、(3) 开发者诊断异常（消息可能含系统文案或路径，从不作为界面文案）、(4) 持久化内容（记录标题、文件名、MediaStore 目录名、画质标签——随语言改变会让同一内容落到不同名字）。守卫测试只统计**未标注**的中文串，当前为 0，因此新增任何中文文案都会让 `testDebugUnitTest` 失败。
+- **key 只有一个解析入口。** `core/reasonKeyRes(key)` 覆盖全部 key 家族（`engine:` / `download:` / `service:` / `vault:` / `gallery:` / `x:` / `platform:` / `input:` / `update:` / `generic:`），`storedErrorMessage` 就是一次查表——**任何存进记录的 key 都不可能被原样显示**（这条规则在第二十批修掉一个「engine:LIVE 可能泄漏到提示」的隐患后固化下来）。
+- **版本号也是「结构 + 文案」。** `AppVersion` / `AppUpdateManifest` 不再自带 `label`；更新对话框用 `versionText`（清单里的版本名）与 `appVersionText`（本机版本，含内部版本号）分别成句——**两者的措辞本来就不一样**，合并成一个会改掉界面文字（设备测试 `AppUpdateEntryDeviceTest` 抓到过这一点）。
+- **句子的参数也是结构。** `AppError.Parse` 除了 `reasonKey`，还能带 `platform`（平台名）与 `detail`（数据值，例如抖音作品 ID）；`reasonKeyNeedsPlatform` / `reasonKeyNeedsDetail` 显式声明哪些文案需要参数，不靠猜 `%s` 的个数。批量导入的状态同样只报结构（`ImportNotice`、`ImportRowError`），由对话框成句。
+- **通知与导航栏也走资源。** 底部四个标签（解析/任务/已存/我的）、画中画的两个动作、完播通知卡片（「已存入相册 · 点击查看」）都由资源提供；`SubtitleSelection` 只说选中的语言与是否自动字幕，名字由 `subtitleSelectionText` 给；`GalleryAutoSave.Failed` 与 `VaultPolicy.autoGalleryReasonKey` 都返回 key，通知负责成句。
+- **时间与进度也是「结构 + 文案」。** `core/Formatters.kt` 的 `remainingTime()` / `relativeTime()` 返回 `RemainingTime`/`RelativeTime`（小时分、分秒、秒、刚刚、N 分钟前…），`WatchBadge` 只带 `fraction`；句子在 `presentation/TimeText.kt`。domain 里的 `WatchProgress.label()`（「已看 25%」）已删除。
+- **平台名是参数，不是拼进句子的字面量。** `VideoPlatform` 去掉了 `label`（只留 `referer`），名字由 `videoPlatformLabelRes` 提供；「抖音访问失败…」这类句子改成 key + 平台字段，资源写成 `%1$s访问失败…`，并显式声明哪些 key 需要平台参数（`reasonKeyNeedsPlatform`），不靠猜参数个数。
+- **导出的结果报数字和原因，不报句子。** `FileExportViewModel` 原本在后台线程里拼「已导出 3 项，1 项失败；…」整句话；现在返回 `FileExportResult(succeeded, failed, reasons, cleanup, cancelled)`，由 `ExportText.kt` 出文案——新增一种失败原因必须同时给出文案，否则 `exportReasonRes` 编译不过。
+- **失败要有类型，不能靠比对文案。** 相册保存失败原本是把消息文本和 6 条中文字符串比对来区分，改一句提示就会归类错误；现在是 `GalleryExportException(GalleryExportFailure)`，`galleryFailureKindOf(error)` 负责把外部异常（如 `SecurityException`）归到一个类别。批次结果里的失败也改成存 key（`BatchFailure.galleryFailureKey`），由界面出文案。X 的解析失败同理：`XParseResult.Failure(XParseFailure)` 取代 `Failure("中文句子")`，请求本身失败则复用 `AppError.Http(status)`（**HTTP 状态就是 HTTP 状态**，不再有「X 访问失败（HTTP 403）」这类专有文案）。`AppError.Parse.reasonKey` 统一承载 `engine:` / `x:` 两类 key。
+- **持久化的错误存 key，不存句子。** 任务记录会活过一次语言切换，所以引擎失败存成 `engine:<kind>`、后台服务失败存成 `service:<kind>`（`core/ErrorResources.kt`、`core/ServiceFailure.kt`），界面用 `storedErrorMessage(...)` 解析；**旧版本写进历史的中文消息**没有前缀，仍按原文显示并继续被 `legacyFailureKind` 识别。`VideoEngineException` 现在只带 `kind`，`DownloadServiceException` 只带 `ServiceFailure`。
+- **数据不是文案。** `legacyFailureKind` 里的中文是用来**匹配用户设备上已存的历史消息**的，改写就会失效。守卫测试支持按函数名豁免（`DATA_FUNCTIONS`），豁免必须写明理由，不允许用它来放过界面文案。
+- **迁移仍在进行**：解析页、设置页、任务页、已存页、播放页、批量导入、网页辅助与更新/存储/导出对话框均已跟随语言；剩下的是 domain/data 的异常与提示文案。
+
 ## 通用网址与网页辅助
 
 粘贴 HTTP/HTTPS 网址或分享文案即可尝试解析。已知平台优先使用原有解析器，失败后进入 yt-dlp；X 推文即使原生解析成功，也会补充通用引擎找到的媒体和画质。自动解析失败时点击「打开网页查找视频」，在内置网页中登录或播放，再选择检测到的媒体资源，也可使用当前网页登录态重新解析。
@@ -108,6 +165,16 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 | 20 | 启动器快捷方式（粘贴解析 / 批量导入 / 下载任务） | `LauncherShortcuts.kt` + `presentation/MainActivity.kt` |
 | 21 | 任务页搜索、排序与预计剩余时间 | `presentation/history/TaskQuery.kt` + `presentation/history/HistoryScreen.kt` + `presentation/history/HistoryViewModel.kt` + `core/Formatters.kt`（`formatEta`） |
 | 22 | Material You 动态取色 | `core/AppPreferences.kt` + `presentation/settings/SettingsScreen.kt` + `presentation/MainActivity.kt` + `presentation/theme/Theme.kt` |
+| 23 | 播放手势（双击快进退、竖滑亮度音量、长按 2×） | `presentation/player/PlayerScreen.kt` + `domain/model/PlayerGestures.kt` |
+| 24 | 字幕渲染与开关（含同名 sidecar 字幕） | `presentation/player/PlayerScreen.kt` + `data/playback/SubtitleSidecar.kt` + `core/AppPreferences.kt` |
+| 25 | 全局与单任务下载限速 | `data/download/BandwidthLimiter.kt` + `data/download/DownloadEngine.kt` + `data/download/ResumableDownloader.kt` + `presentation/settings/SettingsScreen.kt` + `presentation/history/HistoryScreen.kt` |
+| 26 | 下载后自动存入相册 | `data/gallery/AutoGalleryExport.kt` + `core/ServiceLocator.kt` + `data/download/DownloadCompletionNotifier.kt` + `presentation/settings/SettingsScreen.kt` |
+| 27 | 继续观看进度回填 | `domain/model/PlaybackState.kt` + `data/playback/PlaybackPreferences.kt` + `core/WatchBadge.kt` + `presentation/library/LibraryScreen.kt` + `presentation/home/HomeScreen.kt` |
+| 28 | 音频睡眠定时器 | `domain/model/SleepTimer.kt` + `data/playback/AudioPlaybackService.kt` + `presentation/player/PlayerScreen.kt` |
+| 32 | 私有保险箱与应用锁 | `domain/model/VaultPolicy.kt` + `core/VaultAuthenticator.kt` + `data/local/DownloadLibraryMetadataRepository.kt` + `presentation/library/*` + `presentation/history/HistoryScreen.kt` + `data/download/*Notifier/Service` |
+| 31 | 字幕下载与内嵌 | `data/generic/EngineRequest.kt` + `assets/video_engine.py` + `domain/model/SubtitleLanguageSelection.kt` + `domain/model/DouyinVideo.kt` + `presentation/home/HomeScreen.kt` |
+| 29 | 合集 / 播放列表批量解析 | `data/generic/EngineRequest.kt` + `data/generic/GenericVideoRepository.kt` + `assets/video_engine.py` + `presentation/settings/SettingsScreen.kt` |
+| 30 | 链接导入导出与设置备份 | `data/backup/SettingsSnapshot.kt` + `data/backup/LinkList.kt` + `data/backup/BackupDocuments.kt` + `core/AppPreferences.kt` + `presentation/settings/SettingsScreen.kt` |
 
 ## 环境要求
 
@@ -325,3 +392,14 @@ Android/data/com.videodown.douyin/files/Movies/Douyin/
   此时需要更新 `DouyinJsonParser` 的字段适配。
 - 图文（图集）作品没有视频流，会提示「没有可下载的视频流」。
 - `ratio=` 派生档位属于兜底策略；若接口已提供完整 `bit_rate` 列表，则以官方档位为准。
+- 合集解析最多 20 条，且**取决于各站 extractor 的能力**：需要登录、需要 JS 渲染或受地区限制的合集可能只返回部分条目，甚至与单视频一样只返回一条；实例化结果里只包含引擎能拿到直链的条目，直播、DRM 与私享内容会被过滤掉（不会以占位条目出现）。
+- 合集解析的「整页枚举」只在引擎路径生效；被 `probeDirect` 直接识别的裸视频链接没有合集概念。
+- 字幕同样只在引擎路径可用：被 `probeDirect` 直接识别的裸视频链接没有提取器上下文，结果页不会出现字幕选项。引擎侧的真实字幕可用性取决于站点（需要登录、只提供机器字幕、或字幕单独收费的源另说）。
+- 字幕语言由应用挑选（最多一个中文 + 一个英文），不提供逐语言勾选；最多保留两条轨，不做双语以外的多语内嵌。
+- 音频档位永远不取字幕；任务卡片也不显示「含字幕」，只能从播放页的字幕开关看出。
+- **保险箱需要 Android 9 及以上**，且设备已设置锁屏或已录入指纹/人脸；否则入口会说明「请先在系统中设置锁屏密码或指纹」，而不是假装上锁。更低版本没有可供普通应用使用的验证弹窗，因此不支持。
+- **系统验证弹窗本身没有被自动化测试覆盖**：测试用可替换的实现分别驱动「通过」与「拒绝」两条路径，验证的是门禁两侧的行为（隐藏、显示、通知与导出不外泄）。
+- **保险箱保护的是「看见」，不是「取出」**：文件仍在应用私有目录里，没有额外加密；有 root 或调试备份能力的人仍能拿到文件。
+- 任务列表与首页「最近保存」本身没有门禁，所以私密条目在那里只显示「保险箱内容」；任务列表的搜索仍会匹配被隐藏的标题，只是匹配到的条目依旧显示为「保险箱内容」。
+- 保险箱内手动「保存到相册」与「分享」仍然可用——门禁已经放行，这是用户的明确操作。
+- **不要用 `embedsubtitles` 参数**：它是 yt-dlp 的命令行专用开关，`YoutubeDL` 会直接忽略它（已实测：下载成功、无报错、文件里没有字幕轨）。引擎里必须显式添加 `FFmpegEmbedSubtitle` 后处理器。

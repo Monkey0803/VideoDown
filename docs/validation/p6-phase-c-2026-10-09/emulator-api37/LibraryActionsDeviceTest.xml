@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T03:04:07" hostname="localhost">
+  <testsuite name="com.videodown.douyin.LibraryActionsDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="6.477" timestamp="2026-10-10T03:04:07" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="deletionRequiresConfirmationAndCancelPreservesTheVideo" classname="com.videodown.douyin.LibraryActionsDeviceTest" time="1.952" />
+    <testcase name="missingFileExportReportsFailureWithoutCreatingAnAlbumEntry" classname="com.videodown.douyin.LibraryActionsDeviceTest" time="1.166" />
+    <testcase name="normalTapAndMenuPlayUseTheSelectedVideo" classname="com.videodown.douyin.LibraryActionsDeviceTest" time="1.204" />
+    <testcase name="longPressInBothLayoutsShowsActionsWithoutPlaying" classname="com.videodown.douyin.LibraryActionsDeviceTest" time="2.155" />
+  </testsuite>
+</testsuites>

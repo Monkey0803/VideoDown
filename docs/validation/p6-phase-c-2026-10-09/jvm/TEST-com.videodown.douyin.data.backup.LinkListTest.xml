@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.backup.LinkListTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:48:56.708Z" hostname="Alias-mini.local" time="0.017">
+  <properties/>
+  <testcase name="a record with no http link is skipped instead of written blank" classname="com.videodown.douyin.data.backup.LinkListTest" time="0.003"/>
+  <testcase name="a private record's link never leaves the device in a list" classname="com.videodown.douyin.data.backup.LinkListTest" time="0.0"/>
+  <testcase name="comments and prose are tolerated and duplicates collapse" classname="com.videodown.douyin.data.backup.LinkListTest" time="0.012"/>
+  <testcase name="text without links imports as nothing" classname="com.videodown.douyin.data.backup.LinkListTest" time="0.0"/>
+  <testcase name="the exported file carries a comment header and one link per line" classname="com.videodown.douyin.data.backup.LinkListTest" time="0.0"/>
+  <testcase name="an exported file reads back as exactly the same links" classname="com.videodown.douyin.data.backup.LinkListTest" time="0.001"/>
+  <testcase name="duplicate links are written once, in history order" classname="com.videodown.douyin.data.backup.LinkListTest" time="0.0"/>
+  <testcase name="the source page wins, then the media page, then the direct url" classname="com.videodown.douyin.data.backup.LinkListTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

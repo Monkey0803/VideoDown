@@ -73,6 +73,11 @@ class ResumableDownloader(
         val networkPolicy: DownloadNetworkPolicy = DownloadNetworkPolicy.Unrestricted,
         val availableBytes: () -> Long = { partialFile.parentFile?.usableSpace ?: 0L },
         val checkStorage: ((total: Long, writingThrough: Long) -> Unit)? = null,
+        /**
+         * Paces a chunk before it is written. Called after the storage check, so a throttled
+         * transfer still fails fast on a full disk instead of sleeping first.
+         */
+        val throttle: suspend (bytes: Int) -> Unit = {},
         val onProgress: suspend (downloaded: Long, total: Long, bytesPerSecond: Long, rangeSupported: Boolean, etag: String?) -> Unit = { _, _, _, _, _ -> },
     )
 
@@ -170,7 +175,7 @@ class ResumableDownloader(
                         Outcome.Completed(request.finalFile, completeSize)
                     } else {
                         Outcome.Failed(
-                            AppError.Network("服务器返回 HTTP $code", failureKind = when (code) {
+                            AppError.Http(code, failureKind = when (code) {
                                 401 -> DownloadFailureKind.LOGIN_REQUIRED
                                 403 -> DownloadFailureKind.ACCESS_DENIED
                                 404, 410 -> DownloadFailureKind.LINK_EXPIRED
@@ -192,7 +197,7 @@ class ResumableDownloader(
                 val body = response.body
                 val isPartial = response.code == 206
                 if (isPartial && response.header("Content-Range")?.substringAfter("bytes ")?.substringBefore('-')?.toLongOrNull() != startOffset) {
-                    return@use Outcome.Failed(AppError.Network("服务器返回的续传位置不一致，请重新下载", failureKind = DownloadFailureKind.FORMAT_CHANGED), downloaded, totalBytes, false, etag)
+                    return@use Outcome.Failed(AppError.Network("", failureKind = DownloadFailureKind.FORMAT_CHANGED, reasonKey = "download:resume_mismatch"), downloaded, totalBytes, false, etag)
                 }
 
                 if (startOffset > 0L && !isPartial) {
@@ -221,7 +226,7 @@ class ResumableDownloader(
                 checkStorage(downloaded)
                 val input = body?.byteStream() ?: run {
                     return@use Outcome.Failed(
-                        AppError.Network("响应体为空"),
+                        AppError.Network("", reasonKey = "download:empty_body"),
                         downloaded,
                         totalBytes,
                         rangeSupported,
@@ -248,6 +253,7 @@ class ResumableDownloader(
                         if (read == -1) break
 
                         checkStorage(saturatingStorageAdd(downloaded, read.toLong()))
+                        request.throttle(read)
                         writingStorage = true
                         output.write(buffer, 0, read)
                         writingStorage = false
@@ -301,18 +307,19 @@ class ResumableDownloader(
                 throw WifiRequiredException()
             }
             if (job.isCancelled) {
-                throw CancellationException("下载已取消").also { it.initCause(e) }
+                // l10n-ignore: cancellation is reported by the coroutine machinery, never as user copy
+            throw CancellationException("下载已取消").also { it.initCause(e) }  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
             }
             val outOfSpace = generateSequence<Throwable>(e) { it.cause }.take(8).any {
                 it.message.orEmpty().let { message -> message.contains("ENOSPC", true) || message.contains("no space left", true) }
             }
-            val error = if (outOfSpace) AppError.Storage("存储空间不足，请清理空间后继续", failureKind = DownloadFailureKind.STORAGE_FULL)
-                else if (writingStorage || e is java.io.FileNotFoundException) AppError.Storage("无法写入视频文件，请检查存储空间", failureKind = DownloadFailureKind.STORAGE_ACCESS)
-                else AppError.Network("网络连接失败，请检查连接后重试", failureKind = DownloadFailureKind.NETWORK)
+            val error = if (outOfSpace) AppError.Storage("", failureKind = DownloadFailureKind.STORAGE_FULL, reasonKey = "download:out_of_space")
+                else if (writingStorage || e is java.io.FileNotFoundException) AppError.Storage("", failureKind = DownloadFailureKind.STORAGE_ACCESS, reasonKey = "download:storage_write")
+                else AppError.Network("", failureKind = DownloadFailureKind.NETWORK, reasonKey = "download:network")
             Outcome.Failed(error, downloaded, totalBytes, rangeSupported, etag)
         } catch (e: Exception) {
-            Outcome.Failed(if (writingStorage || e is SecurityException) AppError.Storage("无法写入视频文件，请检查存储空间", failureKind = DownloadFailureKind.STORAGE_ACCESS)
-                else AppError.Network("网络连接失败，请检查连接后重试", failureKind = DownloadFailureKind.NETWORK), downloaded, totalBytes, rangeSupported, etag)
+            Outcome.Failed(if (writingStorage || e is SecurityException) AppError.Storage("", failureKind = DownloadFailureKind.STORAGE_ACCESS, reasonKey = "download:storage_write")
+                else AppError.Network("", failureKind = DownloadFailureKind.NETWORK, reasonKey = "download:network"), downloaded, totalBytes, rangeSupported, etag)
         } finally {
             cancellationWatcher.cancel()
             transferPool.evictAll()

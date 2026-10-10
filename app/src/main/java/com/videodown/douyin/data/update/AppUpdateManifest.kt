@@ -30,16 +30,10 @@ data class AppUpdateManifest(
     /** Release notes, falling back to the `changelog` alias. */
     val releaseNotes: String? get() = notes?.takeIf(String::isNotBlank) ?: changelog?.takeIf(String::isNotBlank)
 
-    /** Human-readable version label, or null when the manifest states no version at all. */
-    val versionLabel: String?
-        get() = versionName?.trim()?.takeIf(String::isNotEmpty) ?: versionCode?.let { "内部版本 $it" }
 }
 
 /** The locally installed version, read once from `PackageManager`. */
-data class AppVersion(val versionCode: Int, val versionName: String) {
-    /** e.g. `1.0.1（内部版本 2）` */
-    val label: String get() = "$versionName（内部版本 $versionCode）"
-}
+data class AppVersion(val versionCode: Int, val versionName: String)
 
 /**
  * Compares dotted numeric version names such as `1.0.2` and `1.10.0`.

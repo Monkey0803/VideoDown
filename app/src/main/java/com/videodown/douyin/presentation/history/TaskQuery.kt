@@ -3,12 +3,7 @@ package com.videodown.douyin.presentation.history
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 
-enum class TaskSort(val label: String) {
-    STATUS("按状态"),
-    RECENT("最新任务"),
-    OLDEST("最早任务"),
-    LARGEST("文件最大"),
-}
+enum class TaskSort { STATUS, RECENT, OLDEST, LARGEST }
 
 /** Search text and ordering for the task list. */
 data class TaskQuery(val text: String = "", val sort: TaskSort = TaskSort.STATUS)

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.gallery.AutoGalleryExportTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.224Z" hostname="Alias-mini.local" time="0.005">
+  <properties/>
+  <testcase name="a missing legacy storage permission is reported as a reason, not as a crash" classname="com.videodown.douyin.data.gallery.AutoGalleryExportTest" time="0.002"/>
+  <testcase name="a private record is never copied even when the switch is on" classname="com.videodown.douyin.data.gallery.AutoGalleryExportTest" time="0.001"/>
+  <testcase name="a successful copy is reported as saved" classname="com.videodown.douyin.data.gallery.AutoGalleryExportTest" time="0.001"/>
+  <testcase name="a copy failure carries the exporter reason" classname="com.videodown.douyin.data.gallery.AutoGalleryExportTest" time="0.0"/>
+  <testcase name="a failure without a message still explains itself" classname="com.videodown.douyin.data.gallery.AutoGalleryExportTest" time="0.001"/>
+  <testcase name="nothing is attempted while the preference is off" classname="com.videodown.douyin.data.gallery.AutoGalleryExportTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

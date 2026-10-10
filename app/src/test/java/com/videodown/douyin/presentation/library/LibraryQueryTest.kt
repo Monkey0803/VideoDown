@@ -34,4 +34,36 @@ class LibraryQueryTest {
         assertTrue(record.copy(media = media).matchesSelection(video, variant.copy(media = media.copy(pageUrl = "new"))))
         assertFalse(record.copy(media = media).matchesSelection(video, variant.copy(media = media.copy(formatId = "other"))))
     }
+
+    @Test fun `the normal library never mixes in private records`() {
+        val mixed = listOf(
+            DownloadRecord("a", "a", "公开", updatedAt = 10),
+            DownloadRecord("p", "p", "私密", updatedAt = 20, isPrivate = true),
+        )
+        assertEquals(listOf("a"), LibraryQuery().apply(mixed).map { it.id })
+        // Even when the vault has been unlocked, the ordinary list stays ordinary.
+        assertEquals(listOf("a"), LibraryQuery(vaultUnlocked = true).apply(mixed).map { it.id })
+    }
+
+    @Test fun `a locked vault yields nothing and an unlocked one yields only private records`() {
+        val mixed = listOf(
+            DownloadRecord("a", "a", "公开", updatedAt = 10),
+            DownloadRecord("p", "p", "私密", updatedAt = 20, isPrivate = true),
+        )
+        assertTrue("A locked vault must not leak a single item", LibraryQuery(vaultOnly = true).apply(mixed).isEmpty())
+        assertEquals(listOf("p"), LibraryQuery(vaultOnly = true, vaultUnlocked = true).apply(mixed).map { it.id })
+    }
+
+    @Test fun `vault search, sort and favourites apply to the private subset`() {
+        val mixed = listOf(
+            DownloadRecord("p1", "p1", "旅行 甲", authorNickname = "Alice", updatedAt = 10, downloadedBytes = 100, isPrivate = true),
+            DownloadRecord("p2", "p2", "旅行 乙", authorNickname = "Bob", updatedAt = 30, downloadedBytes = 300, isPrivate = true, favorite = true),
+            DownloadRecord("a", "a", "旅行 丙", updatedAt = 20),
+        )
+        val vault = LibraryQuery(vaultOnly = true, vaultUnlocked = true)
+        assertEquals(listOf("p2", "p1"), vault.apply(mixed).map { it.id })
+        assertEquals(listOf("p2"), vault.copy(text = "Bob").apply(mixed).map { it.id })
+        assertEquals(listOf("p1", "p2"), vault.copy(sort = LibrarySort.OLDEST).apply(mixed).map { it.id })
+        assertEquals(listOf("p2"), vault.copy(favoritesOnly = true).apply(mixed).map { it.id })
+    }
 }

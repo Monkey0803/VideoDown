@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.local.DownloadStorageRepositoryTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.283Z" hostname="Alias-mini.local" time="0.033">
+  <properties/>
+  <testcase name="symlinks unrecognized directories and unreferenced videos are preserved" classname="com.videodown.douyin.data.local.DownloadStorageRepositoryTest" time="0.011"/>
+  <testcase name="scan separates video temporary and reclaimable bytes while keeping resumable files" classname="com.videodown.douyin.data.local.DownloadStorageRepositoryTest" time="0.01"/>
+  <testcase name="new references changed files and restored completed files are skipped after confirmation" classname="com.videodown.douyin.data.local.DownloadStorageRepositoryTest" time="0.005"/>
+  <testcase name="inspect surfaces the live running budget and headroom" classname="com.videodown.douyin.data.local.DownloadStorageRepositoryTest" time="0.002"/>
+  <testcase name="cleanup refuses injected out of root entries" classname="com.videodown.douyin.data.local.DownloadStorageRepositoryTest" time="0.001"/>
+  <testcase name="active publishing output and engine directory are never reclaimed" classname="com.videodown.douyin.data.local.DownloadStorageRepositoryTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

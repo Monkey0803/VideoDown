@@ -60,8 +60,9 @@ class DownloadService : Service() {
             startForegroundCompat(buildNotification(ServiceLocator.downloader.progress.value))
             foregroundReady = true
         } catch (error: Exception) {
-            android.util.Log.w("DownloadService", "无法进入前台下载服务", error)
-            foregroundError = DownloadServiceException("后台下载服务无法启动，请返回应用后重试", error)
+            // l10n-ignore: a developer log line, never shown to the user
+        android.util.Log.w("DownloadService", "无法进入前台下载服务", error)  // l10n-ignore: 开发者日志行，从不展示给用户
+            foregroundError = DownloadServiceException(com.videodown.douyin.core.ServiceFailure.FOREGROUND_START, error)
             requests.failPending(foregroundError!!)
             failTransfers(foregroundError!!.message.orEmpty())
         }
@@ -85,7 +86,7 @@ class DownloadService : Service() {
             }
             ACTION_STOP -> {
                 expectedStop = true
-                failTransfers("后台下载服务已停止，请返回应用后重试")
+                failTransfers(com.videodown.douyin.core.ServiceFailure.BACKGROUND_STOPPED.storageKey)
                 stopSelf()
                 return START_NOT_STICKY
             }
@@ -168,7 +169,7 @@ class DownloadService : Service() {
         val total = progress?.totalBytes?.takeIf { it > 0 } ?: record.totalBytes
         val percent = if (total > 0) ((downloaded * 100) / total).toInt().coerceIn(0, 100) else 0
         val detail = buildString {
-            append(if (running) "$percent%" else "已暂停")
+            append(if (running) "$percent%" else getString(R.string.history_status_paused))
             if (running) {
                 append("  ·  ${formatSpeed(progress?.bytesPerSecond ?: 0L)}")
                 if (total > 0) append("  ·  ${formatBytes(downloaded)} / ${formatBytes(total)}")
@@ -182,13 +183,14 @@ class DownloadService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val action = if (running) {
-            taskAction(slot, record.id, ACTION_PAUSE_ONE, "暂停", R.drawable.ic_shiying_pause, 0)
+            taskAction(slot, record.id, ACTION_PAUSE_ONE, getString(R.string.action_pause), R.drawable.ic_shiying_pause, 0)
         } else {
-            taskAction(slot, record.id, ACTION_RESUME_ONE, "继续", R.drawable.ic_shiying_resume_download, 1)
+            taskAction(slot, record.id, ACTION_RESUME_ONE, getString(R.string.action_resume), R.drawable.ic_shiying_resume_download, 1)
         }
         val notification = NotificationCompat.Builder(this, VideoDownApp.DOWNLOAD_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_shiying_notification_download)
-            .setContentTitle(record.title)
+            // A private transfer must not name itself on the lock screen.
+            .setContentTitle(com.videodown.douyin.domain.model.VaultPolicy.notificationTitle(record) ?: getString(R.string.vault_locked_title))
             .setContentText(detail)
             .setProgress(100, percent, total <= 0L)
             .setOngoing(true)
@@ -242,7 +244,14 @@ class DownloadService : Service() {
 
         val builder = NotificationCompat.Builder(this, VideoDownApp.DOWNLOAD_CHANNEL_ID)
             .setSmallIcon(com.videodown.douyin.R.drawable.ic_shiying_notification_download)
-            .setContentTitle(if (active.any { it.phase == com.videodown.douyin.domain.model.TransferPhase.EXTRACTING }) "正在提取音频" else if (active.any { it.phase == com.videodown.douyin.domain.model.TransferPhase.MERGING }) "正在合并音视频" else if (count > 1) "正在下载 $count 个视频" else "正在下载视频")
+            .setContentTitle(
+                when {
+                    active.any { it.phase == com.videodown.douyin.domain.model.TransferPhase.EXTRACTING } -> getString(R.string.history_phase_extracting)
+                    active.any { it.phase == com.videodown.douyin.domain.model.TransferPhase.MERGING } -> getString(R.string.history_phase_merging)
+                    count > 1 -> getString(R.string.service_downloading_many, count)
+                    else -> getString(R.string.service_downloading_one)
+                },
+            )
             .setContentText(
                 buildString {
                     append(formatBytes(doneBytes))
@@ -257,7 +266,7 @@ class DownloadService : Service() {
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .addAction(
                 0,
-                "全部暂停",
+                getString(R.string.history_pause_all),
                 PendingIntent.getService(
                     this,
                     1,
@@ -272,7 +281,7 @@ class DownloadService : Service() {
     private fun notify(notification: Notification) {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) return
         try { NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification) }
-        catch (error: Exception) { failTransfers("后台下载通知更新失败，请返回应用后重试"); stopSelf() }
+        catch (error: Exception) { failTransfers(com.videodown.douyin.core.ServiceFailure.NOTIFICATION_UPDATE.storageKey); stopSelf() }
     }
 
     private fun startForegroundCompat(notification: Notification) {
@@ -291,20 +300,20 @@ class DownloadService : Service() {
     }
 
     override fun onTimeout(startId: Int, fgsType: Int) {
-        failTransfers("系统后台下载时限已到，请返回应用后继续")
+        failTransfers(com.videodown.douyin.core.ServiceFailure.TIME_LIMIT.storageKey)
         expectedStop = true
         stopSelf()
     }
 
     private fun failTransfers(message: String) {
         foregroundReady = false
-        foregroundError = DownloadServiceException(message)
+        foregroundError = DownloadServiceException(com.videodown.douyin.core.ServiceFailure.UNKNOWN)
         requests.failPending(foregroundError!!)
         ServiceLocator.interruptBackgroundDownloads(message)
     }
 
     override fun onDestroy() {
-        if (!expectedStop && foregroundError == null) failTransfers("后台下载服务已中断，请返回应用后重试")
+        if (!expectedStop && foregroundError == null) failTransfers(com.videodown.douyin.core.ServiceFailure.INTERRUPTED.storageKey)
         clearIndividualNotifications()
         individualJob?.cancel()
         progressJob?.cancel()

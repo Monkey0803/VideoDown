@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.CompletionSummaryTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:48:58.467Z" hostname="Alias-mini.local" time="0.002">
+  <properties/>
+  <testcase name="a private record says why it skipped the gallery" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.001"/>
+  <testcase name="a saved video says it reached the gallery, not the music library" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.0"/>
+  <testcase name="a missing quality label is reported as blank so the notification can name the kind" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.0"/>
+  <testcase name="a failed copy carries a typed reason on the same card" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.001"/>
+  <testcase name="without auto save the card keeps the plain destination hint" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.0"/>
+  <testcase name="a private record is not named on the notification" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.0"/>
+  <testcase name="saved audio points at the music library instead" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

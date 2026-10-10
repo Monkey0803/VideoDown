@@ -22,7 +22,7 @@ internal class DownloadQueueScheduler(limit: Int) {
         if (id !in permits) { permits[id] = CompletableDeferred(); pending += id; dispatch() }
     }
     suspend fun awaitSlot(id: String) {
-        val permit = mutex.withLock { permits[id] } ?: throw CancellationException("任务已移出队列")
+        val permit = mutex.withLock { permits[id] } ?: throw CancellationException("任务已移出队列")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
         permit.await()
     }
     suspend fun finish(id: String) = mutex.withLock {

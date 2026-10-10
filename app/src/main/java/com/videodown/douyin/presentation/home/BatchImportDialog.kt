@@ -12,11 +12,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.videodown.douyin.domain.model.failureGuidance
+import com.videodown.douyin.R
+import com.videodown.douyin.presentation.failureDescription
 import kotlinx.coroutines.launch
 
 @Composable
@@ -32,30 +34,34 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
             Column(Modifier.padding(16.dp)) {
                 LazyColumn(Modifier.weight(1f).testTag("batch-import-list"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     item {
-                Text("批量链接导入", style = MaterialTheme.typography.titleLarge)
-                Text("一次最多 50 个网址；相同网址自动合并，每个视频可独立选择画质。", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.import_title), style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.import_hint, 50), style = MaterialTheme.typography.bodySmall)
                 OutlinedTextField(value = state.input, onValueChange = model::input, enabled = !state.locked,
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 130.dp), label = { Text("粘贴多条分享文案或网址") }, maxLines = 4)
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 130.dp), label = { Text(stringResource(R.string.import_input_label)) }, maxLines = 4)
                 LazyRow {
-                    item { TextButton(enabled = !state.locked, onClick = { scope.launch { clipboard.getClipEntry()?.clipData?.getItemAt(0)?.coerceToText(context)?.let { model.input(it.toString()) } } }) { Text("粘贴链接") } }
-                    item { TextButton(enabled = !state.locked && state.input.isNotBlank(), onClick = { focus.clearFocus(); model.prepareAndParse() }) { Text("开始批量解析") } }
-                    item { if (state.parsing) TextButton(onClick = model::stop) { Text("停止解析") }
-                        else if (state.rows.any { it.status != ImportStatus.READY }) TextButton(enabled = !state.locked, onClick = model::parseRemaining) { Text("重试未完成链接") } }
+                    item { TextButton(enabled = !state.locked, onClick = { scope.launch { clipboard.getClipEntry()?.clipData?.getItemAt(0)?.coerceToText(context)?.let { model.input(it.toString()) } } }) { Text(stringResource(R.string.home_paste_link)) } }
+                    item { TextButton(enabled = !state.locked && state.input.isNotBlank(), onClick = { focus.clearFocus(); model.prepareAndParse() }) { Text(stringResource(R.string.import_parse)) } }
+                    item { if (state.parsing) TextButton(onClick = model::stop) { Text(stringResource(R.string.import_stop)) }
+                        else if (state.rows.any { it.status != ImportStatus.READY }) TextButton(enabled = !state.locked, onClick = model::parseRemaining) { Text(stringResource(R.string.import_retry)) } }
                 }
                 val ready = state.rows.count { it.status == ImportStatus.READY }
-                Text("解析完成 $ready/${state.rows.size} · 已选择 ${state.selectedCount} 项")
+                Text(stringResource(R.string.import_progress, ready, state.rows.size, state.selectedCount))
                 Row {
-                    TextButton(enabled = !state.locked, onClick = { model.selectAll(true) }) { Text("全选视频") }
-                    TextButton(enabled = !state.locked, onClick = { model.selectAll(false) }) { Text("取消全选") }
+                    TextButton(enabled = !state.locked, onClick = { model.selectAll(true) }) { Text(stringResource(R.string.import_select_all)) }
+                    TextButton(enabled = !state.locked, onClick = { model.selectAll(false) }) { Text(stringResource(R.string.action_deselect_all)) }
                 }
                     }
                     items(state.rows, key = { it.url }) { row ->
                         Card(Modifier.fillMaxWidth().testTag("import-${row.url}")) {
                             Column(Modifier.padding(12.dp)) {
                                 Text(row.url, maxLines = 2, style = MaterialTheme.typography.labelSmall)
-                                Text(when (row.status) { ImportStatus.PENDING -> "等待解析"; ImportStatus.PARSING -> "正在解析…";
-                                    ImportStatus.READY -> "找到 ${row.media.size} 个视频"; ImportStatus.FAILED -> row.error ?: "解析失败" })
-                                row.failureKind?.let { Text(failureGuidance(it).description, style = MaterialTheme.typography.bodySmall) }
+                                Text(when (row.status) {
+                                    ImportStatus.PENDING -> stringResource(R.string.import_row_pending)
+                                    ImportStatus.PARSING -> stringResource(R.string.import_row_parsing)
+                                    ImportStatus.READY -> stringResource(R.string.import_row_ready, row.media.size)
+                                    ImportStatus.FAILED -> row.error?.let { importRowErrorText(it) } ?: stringResource(R.string.import_row_failed)
+                                })
+                                row.failureKind?.let { Text(failureDescription(it), style = MaterialTheme.typography.bodySmall) }
                                 row.media.forEach { media ->
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Checkbox(checked = media.selected && media.choice != null, enabled = !state.locked && media.choice != null,
@@ -71,17 +77,41 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
                         }
                     }
                 }
-                state.message?.let { Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall) }
+                state.notice?.let { Text(importNoticeText(it), maxLines = 3, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall) }
                 Row {
-                    TextButton(enabled = !state.locked && state.selectedCount > 0, onClick = { model.submit() }) { Text("下载所选") }
-                    TextButton(enabled = !state.submitting, onClick = { close(); onTasks() }) { Text("查看任务") }
-                    TextButton(enabled = !state.submitting, onClick = ::close) { Text("关闭") }
+                    TextButton(enabled = !state.locked && state.selectedCount > 0, onClick = { model.submit() }) { Text(stringResource(R.string.import_download_selected)) }
+                    TextButton(enabled = !state.submitting, onClick = { close(); onTasks() }) { Text(stringResource(R.string.home_view_tasks)) }
+                    TextButton(enabled = !state.submitting, onClick = ::close) { Text(stringResource(R.string.action_close)) }
                 }
             }
         }
     }
     if (state.duplicateCount > 0) AlertDialog(onDismissRequest = model::dismissDuplicates,
-        title = { Text("发现 ${state.duplicateCount} 个重复任务") }, text = { Text("可跳过已有任务，或明确再次下载。") },
-        confirmButton = { TextButton(onClick = { model.submit(false) }) { Text("跳过重复项") } },
-        dismissButton = { Row { TextButton(onClick = { model.submit(true) }) { Text("仍然全部下载") }; TextButton(onClick = model::dismissDuplicates) { Text("取消") } } })
+        title = { Text(stringResource(R.string.import_duplicate_title, state.duplicateCount)) },
+            text = { Text(stringResource(R.string.import_duplicate_body)) },
+        confirmButton = { TextButton(onClick = { model.submit(false) }) { Text(stringResource(R.string.home_skip_duplicates)) } },
+        dismissButton = { Row { TextButton(onClick = { model.submit(true) }) { Text(stringResource(R.string.import_download_all)) }; TextButton(onClick = model::dismissDuplicates) { Text(stringResource(R.string.action_cancel)) } } })
+}
+
+/** The wording for an import notice. */
+@Composable
+private fun importNoticeText(notice: ImportNotice): String = when (notice) {
+    ImportNotice.NoLinks -> stringResource(R.string.import_no_links)
+    ImportNotice.TooManyLinks -> stringResource(R.string.import_too_many)
+    ImportNotice.RecordsUnavailable -> stringResource(R.string.import_records_unavailable)
+    is ImportNotice.Queued -> {
+        val base = stringResource(R.string.import_queued, notice.queued, notice.skipped, notice.failedTitles.size)
+        if (notice.failedTitles.isEmpty()) base
+        else {
+            val names = notice.failedTitles.take(3).joinToString(stringResource(R.string.list_separator)) +
+                if (notice.failedTitles.size > 3) stringResource(R.string.import_and_more) else ""
+            base + stringResource(R.string.import_keep_selected, names)
+        }
+    }
+}
+
+@Composable
+private fun importRowErrorText(error: ImportRowError): String = when (error) {
+    ImportRowError.NO_QUALITY -> stringResource(R.string.import_no_quality)
+    ImportRowError.PARSE_FAILED -> stringResource(R.string.import_parse_failed)
 }

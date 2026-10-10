@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.TokenBucketTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.211Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="one second of credit covers a first chunk that fits inside it" classname="com.videodown.douyin.data.download.TokenBucketTest" time="0.0"/>
+  <testcase name="the wait is rounded up and never zero when a wait is genuinely needed" classname="com.videodown.douyin.data.download.TokenBucketTest" time="0.0"/>
+  <testcase name="a chunk beyond the credit waits just long enough for the difference" classname="com.videodown.douyin.data.download.TokenBucketTest" time="0.0"/>
+  <testcase name="a clock that moves backwards cannot create credit out of nothing" classname="com.videodown.douyin.data.download.TokenBucketTest" time="0.0"/>
+  <testcase name="an idle bucket cannot bank more than one second of credit" classname="com.videodown.douyin.data.download.TokenBucketTest" time="0.0"/>
+  <testcase name="credit refills as time passes" classname="com.videodown.douyin.data.download.TokenBucketTest" time="0.0"/>
+  <testcase name="an unlimited rate never asks the caller to wait" classname="com.videodown.douyin.data.download.TokenBucketTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -13,7 +13,7 @@ internal fun requiredStorageBytes(expected: Long?, existing: Long = 0, merging: 
         else remaining * multiplier + STORAGE_RESERVE_BYTES
 }
 internal fun spaceFailure(available: Long, required: Long): AppError.Storage? =
-    if (available < required) AppError.Storage("存储空间不足，请清理空间后继续", failureKind = DownloadFailureKind.STORAGE_FULL) else null
+    if (available < required) AppError.Storage("", failureKind = DownloadFailureKind.STORAGE_FULL, reasonKey = "download:out_of_space") else null
 
 internal class InsufficientStorageException(val error: AppError.Storage) : Exception(error.message)
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.SleepTimerTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.899Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="zero or negative minutes mean no timer" classname="com.videodown.douyin.domain.model.SleepTimerTest" time="0.0"/>
+  <testcase name="a deadline is an absolute wall-clock instant" classname="com.videodown.douyin.domain.model.SleepTimerTest" time="0.0"/>
+  <testcase name="the offered choices are the documented ones" classname="com.videodown.douyin.domain.model.SleepTimerTest" time="0.0"/>
+  <testcase name="the label never claims zero seconds remain" classname="com.videodown.douyin.domain.model.SleepTimerTest" time="0.0"/>
+  <testcase name="a deadline expires exactly at its instant, not before" classname="com.videodown.douyin.domain.model.SleepTimerTest" time="0.0"/>
+  <testcase name="remaining time never goes negative" classname="com.videodown.douyin.domain.model.SleepTimerTest" time="0.0"/>
+  <testcase name="the label counts down from minutes to seconds" classname="com.videodown.douyin.domain.model.SleepTimerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

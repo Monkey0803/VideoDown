@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.BandwidthLimiterTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:48.877Z" hostname="Alias-mini.local" time="0.023">
+  <properties/>
+  <testcase name="an unlimited limiter returns without consuming virtual time" classname="com.videodown.douyin.data.download.BandwidthLimiterTest" time="0.018"/>
+  <testcase name="raising the rate mid-transfer shortens the wait" classname="com.videodown.douyin.data.download.BandwidthLimiterTest" time="0.001"/>
+  <testcase name="a negative rate is treated as unlimited" classname="com.videodown.douyin.data.download.BandwidthLimiterTest" time="0.001"/>
+  <testcase name="a limit is enforced in virtual time" classname="com.videodown.douyin.data.download.BandwidthLimiterTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

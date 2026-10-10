@@ -110,7 +110,8 @@ class DouyinRepositoryIntegrationTest {
 
         assertTrue(result is AppResult.Failure)
         val error = (result as AppResult.Failure).error
-        assertTrue("error should be actionable: ${error.message}", error.message.contains("抖音"))
+        // The wording lives in resources; the reason is typed.
+        assertEquals("input:douyin_unrecognised", (error as com.videodown.douyin.core.AppError.InvalidLink).reasonKey)
     }
 
     @Test
@@ -121,7 +122,10 @@ class DouyinRepositoryIntegrationTest {
         val result = repository.parseShareText("https://www.douyin.com/video/$awemeId")
 
         assertTrue(result is AppResult.Failure)
-        assertTrue((result as AppResult.Failure).error.message.contains(awemeId))
+        // The failure still names the video, now as a data argument to the sentence.
+        val error = (result as AppResult.Failure).error as com.videodown.douyin.core.AppError.Parse
+        assertEquals("douyin:id_unresolved", error.reasonKey)
+        assertEquals(awemeId, error.detail)
     }
 
     private companion object {

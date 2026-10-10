@@ -1,0 +1,1 @@
+languages=[zh] auto=[] label=中文

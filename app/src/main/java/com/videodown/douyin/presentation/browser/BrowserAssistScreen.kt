@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.videodown.douyin.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -31,9 +33,10 @@ import org.json.JSONTokener
 @Composable
 fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (ParsedVideos) -> Unit) {
     val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
     var browser by remember { mutableStateOf<WebView?>(null) }
     var page by remember { mutableStateOf(initialUrl) }
-    var message by remember { mutableStateOf("可在网页中登录并播放视频，然后点击顶部的搜索图标查找视频。部分网站可能限制内置网页登录。") }
+    var message by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     var pageError by remember { mutableStateOf<String?>(null) }
     var parsing by remember { mutableStateOf<Job?>(null) }
@@ -60,7 +63,7 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
         busy = true
         parsing = scope.launch {
             try {
-                message = "正在读取视频和画质…"
+                message = context.getString(R.string.browser_reading)
                 when (val result = ServiceLocator.genericRepository.parse(url, true, referer, browser?.settings?.userAgentString)) {
                     is AppResult.Success -> onResult(result.value)
                     is AppResult.Failure -> message = result.error.message
@@ -82,7 +85,7 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                 val urls = JSONArray(decoded)
                 for (i in 0 until urls.length()) detect(urls.getString(i))
             }
-            message = "已检查页面资源。若没有结果，请先点击播放；blob 地址需要底层媒体资源，DRM 视频不支持下载。"
+            message = context.getString(R.string.browser_scanned)
         }
     }
     DisposableEffect(Unit) { onDispose {
@@ -94,11 +97,11 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
         Surface(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    IconButton(onClick = onClose) { AppIcon(AppIcons.Close, contentDescription = "关闭网页") }
-                    IconButton(onClick = { browser?.reload() }) { AppIcon(AppIcons.Retry, contentDescription = "刷新") }
-                    IconButton(onClick = ::scan) { AppIcon(AppIcons.Search, contentDescription = "查找视频") }
+                    IconButton(onClick = onClose) { AppIcon(AppIcons.Close, contentDescription = stringResource(R.string.browser_close_page)) }
+                    IconButton(onClick = { browser?.reload() }) { AppIcon(AppIcons.Retry, contentDescription = stringResource(R.string.action_refresh)) }
+                    IconButton(onClick = ::scan) { AppIcon(AppIcons.Search, contentDescription = stringResource(R.string.browser_find_videos)) }
                 }
-                Text(page.toUri().host ?: "网页", modifier = Modifier.padding(horizontal = 12.dp), style = MaterialTheme.typography.labelSmall)
+                Text(page.toUri().host ?: stringResource(R.string.browser_page), modifier = Modifier.padding(horizontal = 12.dp), style = MaterialTheme.typography.labelSmall)
                 AndroidView(modifier = Modifier.weight(1f).fillMaxWidth(), factory = { context ->
                     WebView(context).apply {
                         layoutParams = android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
@@ -131,13 +134,13 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                             }
                             override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, response: WebResourceResponse) {
                                 if (request.isForMainFrame && response.statusCode in setOf(401, 403)) {
-                                    pageError = "网站拒绝访问（HTTP ${response.statusCode}），请完成登录或验证；该网站也可能禁止内置浏览器登录。"
+                                    pageError = context.getString(R.string.browser_http_error, response.statusCode)
                                     message = pageError!!
                                 }
                             }
                             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
                                 if (request.isForMainFrame) {
-                                    pageError = "网页加载失败，请检查网络或尝试在原浏览器中打开。"
+                                    pageError = context.getString(R.string.browser_load_failed)
                                     message = pageError!!
                                 }
                             }
@@ -145,16 +148,16 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                         loadUrl(initialUrl)
                     }
                 })
-                Text(message, Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall)
+                Text(message ?: stringResource(R.string.browser_initial_hint), Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    if (busy) TextButton(onClick = { parsing?.cancel(); message = "已取消解析" }) { Text("取消解析") }
-                    else TextButton(onClick = { parse(page, page) }) { Text("使用网页登录态重新解析") }
+                    if (busy) TextButton(onClick = { parsing?.cancel(); message = context.getString(R.string.browser_cancelled) }) { Text(stringResource(R.string.browser_cancel_parse)) }
+                    else TextButton(onClick = { parse(page, page) }) { Text(stringResource(R.string.browser_reparse_with_session)) }
                 }
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 LazyColumn(Modifier.fillMaxWidth().heightIn(max = 180.dp)) {
                     items(candidates.toList(), key = { it.url }) { candidate ->
                         TextButton(enabled = !busy, onClick = { parse(candidate.url, candidate.pageUrl) }, modifier = Modifier.fillMaxWidth()) {
-                            Text("${candidate.type} · ${candidate.url.toUri().host} · 选择画质", maxLines = 1)
+                            Text(stringResource(R.string.browser_candidate, candidate.type, candidate.url.toUri().host.orEmpty()), maxLines = 1)
                         }
                     }
                 }

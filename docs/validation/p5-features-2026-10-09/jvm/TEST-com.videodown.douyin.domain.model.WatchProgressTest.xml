@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.WatchProgressTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.900Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="a finished file shows nothing rather than a full bar" classname="com.videodown.douyin.domain.model.WatchProgressTest" time="0.0"/>
+  <testcase name="an untouched file shows nothing" classname="com.videodown.douyin.domain.model.WatchProgressTest" time="0.0"/>
+  <testcase name="the stored identity must match the file exactly" classname="com.videodown.douyin.domain.model.WatchProgressTest" time="0.0"/>
+  <testcase name="a file with no recorded identity is not trusted" classname="com.videodown.douyin.domain.model.WatchProgressTest" time="0.0"/>
+  <testcase name="an unknown duration cannot produce a fraction" classname="com.videodown.douyin.domain.model.WatchProgressTest" time="0.0"/>
+  <testcase name="a rounded-down percentage is stable at the extremes" classname="com.videodown.douyin.domain.model.WatchProgressTest" time="0.0"/>
+  <testcase name="a partly watched file reports the watched fraction" classname="com.videodown.douyin.domain.model.WatchProgressTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

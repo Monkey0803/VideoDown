@@ -1,5 +1,8 @@
 package com.videodown.douyin.presentation.settings
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.videodown.douyin.R
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.domain.model.StorageBudget
 import com.videodown.douyin.domain.model.StorageUsage
@@ -13,20 +16,22 @@ import com.videodown.douyin.domain.model.StorageUsage
  */
 
 /** Headline for the running budget: how much space running tasks still need. */
+@Composable
 internal fun storageBudgetHeadline(budget: StorageBudget): String =
-    if (budget.isEmpty) "运行任务空间预算：无"
-    else "运行任务尚需 ${formatBytes(budget.reservedBytes)} · ${budget.taskCount} 个任务"
+    if (budget.isEmpty) stringResource(R.string.storage_budget_none)
+    else stringResource(R.string.storage_budget_headline, formatBytes(budget.reservedBytes), budget.taskCount)
 
 /** Bytes missing for the running budget; zero means every reservation still fits. */
 internal fun storageBudgetShortfall(usage: StorageUsage): Long =
     usage.budget.shortfallBytes(usage.availableBytes)
 
 /** Explains whether the running budget fits, and the concrete shortfall when it does not. */
+@Composable
 internal fun storageBudgetReason(usage: StorageUsage): String {
-    if (usage.budget.isEmpty) return "当前没有运行中的下载任务占用空间预算。"
+    if (usage.budget.isEmpty) return stringResource(R.string.storage_budget_idle)
     val shortfall = storageBudgetShortfall(usage)
-    return if (shortfall == 0L) "预算在可用空间内；写入前仍会逐次检查实际剩余空间。"
-    else "空间不足：仍缺 ${formatBytes(shortfall)}，请清理残留或删除已存视频后继续。"
+    return if (shortfall == 0L) stringResource(R.string.storage_budget_fits)
+    else stringResource(R.string.storage_budget_short, formatBytes(shortfall))
 }
 
 /** Fraction of (running reservation + free space) already claimed by running tasks, for the bar. */
@@ -42,5 +47,6 @@ internal fun storageBudgetFraction(usage: StorageUsage): Float {
  * Percentage label for the bar. A bar whose slice is tiny on a mostly empty disk still reads
  * clearly once the exact share is written out.
  */
+@Composable
 internal fun storageBudgetPercent(usage: StorageUsage): String =
-    String.format(java.util.Locale.US, "预算占用 %.1f%%", storageBudgetFraction(usage) * 100)
+    stringResource(R.string.storage_budget_percent, storageBudgetFraction(usage) * 100)

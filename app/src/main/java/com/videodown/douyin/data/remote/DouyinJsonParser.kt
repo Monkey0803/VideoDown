@@ -121,7 +121,7 @@ class DouyinJsonParser {
 
         return DouyinVideo(
             awemeId = aweme.string("aweme_id").orEmpty(),
-            title = aweme.string("desc").orEmpty().ifBlank { "抖音视频" },
+            title = aweme.string("desc").orEmpty().ifBlank { "抖音视频" },  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
             coverUrl = video?.obj("cover")?.firstUrl()
                 ?: video?.obj("origin_cover")?.firstUrl()
                 ?: video?.obj("dynamic_cover")?.firstUrl(),
@@ -208,7 +208,7 @@ class DouyinJsonParser {
                 val height = addr.int("height")
                 candidates += VideoVariant(
                     url = url,
-                    label = "${resolutionLabel(addr.int("width"), height, baseRatio)} 带水印",
+                    label = "${resolutionLabel(addr.int("width"), height, baseRatio)} 带水印",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                     width = addr.int("width"),
                     height = height,
                     sizeBytes = addr.long("data_size"),
@@ -267,7 +267,7 @@ class DouyinJsonParser {
     private fun resolutionLabel(width: Int?, height: Int?, fallbackRatio: String?): String = when {
         shortSide(width, height) != null -> "${shortSide(width, height)}P"
         !fallbackRatio.isNullOrBlank() -> fallbackRatio.uppercase()
-        else -> "原画"
+        else -> "原画"  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
     }
 
     /** Higher is better; the short side dominates and bitrate breaks ties. */

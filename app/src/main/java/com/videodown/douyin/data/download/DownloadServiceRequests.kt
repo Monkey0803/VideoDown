@@ -5,7 +5,10 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-internal class DownloadServiceException(message: String, cause: Throwable? = null) : Exception(message, cause)
+internal class DownloadServiceException(
+    val failure: com.videodown.douyin.core.ServiceFailure,
+    cause: Throwable? = null,
+) : Exception(failure.storageKey, cause)
 internal class BackgroundDownloadCancellation(message: String) : kotlinx.coroutines.CancellationException(message)
 
 /** Each start needs its own acknowledgement; stale services cannot acknowledge a later request. */
@@ -20,10 +23,10 @@ internal class DownloadServiceRequests {
             try { start(token) }
             catch (error: kotlinx.coroutines.CancellationException) { throw error }
             catch (error: Exception) {
-                throw DownloadServiceException("后台下载服务无法启动，请返回应用后重试", error)
+                throw DownloadServiceException(com.videodown.douyin.core.ServiceFailure.FOREGROUND_START, error)
             }
             if (withTimeoutOrNull(timeoutMs) { ready.await(); true } != true) {
-                throw DownloadServiceException("后台下载服务启动超时，请返回应用后重试")
+                throw DownloadServiceException(com.videodown.douyin.core.ServiceFailure.FOREGROUND_START)
             }
         } finally { pending.remove(token) }
     }

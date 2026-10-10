@@ -26,7 +26,7 @@ class DownloadStorageRepository(
     }
     private suspend fun inspectLocked(): StorageUsage {
         val root = directory()
-        if (Files.isSymbolicLink(root.toPath())) error("下载目录不可用")
+        if (Files.isSymbolicLink(root.toPath())) error("下载目录不可用")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
         val records = history.snapshot()
         val active = activeIds()
         val protected = protectedPaths(records, root)

@@ -92,7 +92,8 @@ class XVideoParserTest {
 
     @Test fun `hls and foreign media hosts cannot be saved as mp4`() {
         val onlyHls = XFixtures.embed().replace("video/mp4", "application/x-mpegURL")
-        assertTrue((parser.syndication(onlyHls, link) as XParseResult.Failure).message.contains("格式"))
+        // Assert the typed reason: the wording lives in resources now.
+        assertEquals(XParseFailure.UNSUPPORTED_FORMAT, (parser.syndication(onlyHls, link) as XParseResult.Failure).failure)
         val external = XFixtures.embed().replace("video.twimg.com", "video.twimg.com.evil.example")
         assertTrue(parser.syndication(external, link) is XParseResult.Failure)
     }

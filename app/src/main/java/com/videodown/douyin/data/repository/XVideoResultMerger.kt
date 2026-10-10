@@ -24,7 +24,7 @@ internal object XVideoResultMerger {
             } else if (matches.isEmpty()) {
                 videos.add(video.copy(awemeId = "${post.postId}_${video.awemeId}",
                     platform = VideoPlatform.X, shareUrl = url,
-                    mediaLabel = "视频 ${videos.size + 1}"))
+                    mediaLabel = "视频 ${videos.size + 1}"))  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
             }
             // A duplicate/ambiguous media ID is not a safe basis for another candidate.
         }

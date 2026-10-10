@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.core.DownloadRecordTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:48:56.690Z" hostname="Alias-mini.local" time="0.003">
+  <properties/>
+  <testcase name="an unknown total does not produce a bogus fraction" classname="com.videodown.douyin.core.DownloadRecordTest" time="0.002"/>
+  <testcase name="paused and failed records are resumable" classname="com.videodown.douyin.core.DownloadRecordTest" time="0.0"/>
+  <testcase name="a blank author name stays blank so the screen can substitute wording" classname="com.videodown.douyin.core.DownloadRecordTest" time="0.0"/>
+  <testcase name="a completed record reads as fully downloaded even without a known total" classname="com.videodown.douyin.core.DownloadRecordTest" time="0.0"/>
+  <testcase name="progress fraction reflects downloaded bytes" classname="com.videodown.douyin.core.DownloadRecordTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

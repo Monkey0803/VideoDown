@@ -3,13 +3,24 @@ package com.videodown.douyin.presentation.library
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.VideoPlatform
 
-enum class LibrarySort(val label: String) { NEWEST("最新保存"), OLDEST("最早保存"), LARGEST("文件最大") }
+enum class LibrarySort { NEWEST, OLDEST, LARGEST }
 
-data class LibraryQuery(val text: String = "", val platform: VideoPlatform? = null, val sort: LibrarySort = LibrarySort.NEWEST, val favoritesOnly: Boolean = false, val folder: String? = null) {
+data class LibraryQuery(
+    val text: String = "",
+    val platform: VideoPlatform? = null,
+    val sort: LibrarySort = LibrarySort.NEWEST,
+    val favoritesOnly: Boolean = false,
+    val folder: String? = null,
+    /** The vault view, which only ever contains private records. */
+    val vaultOnly: Boolean = false,
+    /** Whether the user has passed the vault gate in this session. */
+    val vaultUnlocked: Boolean = false,
+) {
     fun apply(records: List<DownloadRecord>): List<DownloadRecord> {
         val words = text.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
         val matching = records.filter { record ->
-            (platform == null || record.platform == platform) && (!favoritesOnly || record.favorite) &&
+            record.isPrivate == vaultOnly && (!vaultOnly || vaultUnlocked) &&
+                (platform == null || record.platform == platform) && (!favoritesOnly || record.favorite) &&
                 (folder == null || record.folder == folder) && words.all { word ->
                 record.title.contains(word, ignoreCase = true) || record.authorNickname.contains(word, ignoreCase = true)
             }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.SpeedLimitTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.459Z" hostname="Alias-mini.local" time="0.001">
+  <properties/>
+  <testcase name="known values render as their offered rate" classname="com.videodown.douyin.domain.model.SpeedLimitTest" time="0.001"/>
+  <testcase name="rates convert to bytes per second" classname="com.videodown.douyin.domain.model.SpeedLimitTest" time="0.0"/>
+  <testcase name="the offered options are distinct and start at unlimited" classname="com.videodown.douyin.domain.model.SpeedLimitTest" time="0.0"/>
+  <testcase name="zero always means unlimited and uses a resource, not a raw rate" classname="com.videodown.douyin.domain.model.SpeedLimitTest" time="0.0"/>
+  <testcase name="an unlisted value is shown as its raw rate rather than hidden" classname="com.videodown.douyin.domain.model.SpeedLimitTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -11,6 +11,18 @@ internal fun webUrl(value: String?): String? = value?.toHttpUrlOrNull()?.takeIf 
     it.username.isEmpty() && it.password.isEmpty()
 }?.toString()
 
+/**
+ * Subtitle language names.
+ *
+ * The bridge sends a curated list of names, but the raw extractor shape (`{language: [formats]}`)
+ * is also accepted so the two ends cannot drift apart unnoticed.
+ */
+internal fun languages(value: JsonElement?): List<String> = when (value) {
+    is JsonArray -> value.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
+    is JsonObject -> value.keys.toList()
+    else -> emptyList()
+}.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+
 class GenericMetadataParser {
     fun parse(info: JsonObject, pageUrl: String, browserSession: Boolean = false, userAgent: String? = null): ParsedVideos {
         val entries = info["entries"] as? JsonArray
@@ -45,9 +57,9 @@ class GenericMetadataParser {
                 if (declaredExt != null && declaredExt !in setOf("mp4", "webm", "mkv", "mov", "m4v", "ts")) return@format null
                 val ext = declaredExt ?: "mp4"
                 VideoVariant(url, buildString {
-                    append(if (rank > 0) "${rank}P" else "原画")
+                    append(if (rank > 0) "${rank}P" else "原画")  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                     append(" · ${ext.uppercase()}")
-                    if (f.text("acodec") == "none" && !separate) append(" · 无音轨")
+                    if (f.text("acodec") == "none" && !separate) append(" · 无音轨")  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                     if (formatId.isNotEmpty()) append(" · $formatId")
                 }, width, height, f.number("tbr")?.times(1000)?.toInt(),
                     if (separate) null else (f.number("filesize") ?: f.number("filesize_approx"))?.toLong(),
@@ -74,12 +86,13 @@ class GenericMetadataParser {
                             formatId = formatId, extension = "m4a", userAgent = userAgent ?: headers?.text("User-Agent"),
                             useBrowserSession = browserSession, extractor = item.text("extractor_key").orEmpty(), audioOnly = true))
                 }.distinctBy { it.media?.formatId }
-            if (variants.isEmpty()) null else DouyinVideo(id, item.text("title") ?: "网页视频",
+            if (variants.isEmpty()) null else DouyinVideo(id, item.text("title") ?: "网页视频",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                 webUrl(item.text("thumbnail")), ((item.number("duration") ?: 0.0) * 1000).toLong(),
                 DouyinAuthor(nickname = item.text("uploader").orEmpty(), platform = VideoPlatform.GENERIC),
-                variants, page, VideoPlatform.GENERIC, audioVariants = audioVariants)
+                variants, page, VideoPlatform.GENERIC, audioVariants = audioVariants,
+                subtitleLanguages = languages(item["subtitles"]), autoCaptionLanguages = languages(item["automatic_captions"]))
         }.distinctBy { it.awemeId to it.shareUrl }
-        require(videos.isNotEmpty()) { "页面没有可下载的点播视频，可能包含 DRM、直播或需要登录验证" }
+        require(videos.isNotEmpty()) { "页面没有可下载的点播视频，可能包含 DRM、直播或需要登录验证" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
         return ParsedVideos(videos)
     }
 }

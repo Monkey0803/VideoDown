@@ -6,7 +6,11 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 internal sealed interface XParseResult {
     data class Success(val value: ParsedVideos) : XParseResult
-    data class Failure(val message: String, val allowFallback: Boolean = true) : XParseResult
+    /**
+     * [failure] is the typed reason; [httpStatus] is set when the request itself failed, which is
+     * reported as an HTTP error rather than as a parse failure.
+     */
+    data class Failure(val failure: XParseFailure, val allowFallback: Boolean = true, val httpStatus: Int? = null) : XParseResult
 }
 
 internal class XVideoJsonParser {
@@ -47,7 +51,7 @@ internal class XVideoJsonParser {
             val username = (user?.text("screen_name") ?: userNode?.obj("core")?.text("screen_name"))
                 ?.takeIf { it.matches(Regex("[A-Za-z0-9_]{1,50}")) }
             val author = DouyinAuthor(uid = userNode?.text("rest_id") ?: user?.text("id_str"), secUid = username,
-                nickname = user?.text("name") ?: userNode?.obj("core")?.text("name") ?: username ?: "X 用户",
+                nickname = user?.text("name") ?: userNode?.obj("core")?.text("name") ?: username ?: "X 用户",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                 avatarUrl = mediaUrl(user?.text("profile_image_url_https") ?: userNode?.obj("avatar")?.text("image_url")),
                 platform = VideoPlatform.X)
             media(source).forEachIndexed mediaLoop@{ index, element ->
@@ -73,34 +77,33 @@ internal class XVideoJsonParser {
                 val key = "${id}_$mediaId"
                 if (sourceIndex == 0 && link.mediaIndex == index + 1) selectedId = key
                 val fullText = source.obj("note_tweet")?.obj("note_tweet_results")?.obj("result")?.text("text")
-                    ?: legacy.text("full_text") ?: legacy.text("text") ?: "X 视频"
+                    ?: legacy.text("full_text") ?: legacy.text("text") ?: "X 视频"  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                 videos.add(DouyinVideo(key, fullText.replace(Regex("https://t\\.co/\\w+"), "")
-                    .replace("&amp;", "&").trim().take(200).ifBlank { "X 视频" },
+                    .replace("&amp;", "&").trim().take(200).ifBlank { "X 视频" },  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                     coverUrl = mediaUrl(item.text("media_url_https") ?: item.text("media_url")),
                     durationMs = info.number("duration_millis") ?: 0L, author = author, variants = variants,
                     shareUrl = "https://x.com/${username ?: "i"}/status/$id/video/${index + 1}", platform = VideoPlatform.X,
-                    mediaLabel = "${if (sourceIndex == 1) "引用 · " else ""}视频 ${index + 1}"))
+                    mediaLabel = "${if (sourceIndex == 1) "引用 · " else ""}视频 ${index + 1}"))  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
             }
         }
         if (link.mediaIndex != null && selectedId == null) {
-            return XParseResult.Failure("指定的视频不存在或没有可下载的 MP4 地址")
+            return XParseResult.Failure(XParseFailure.NOT_FOUND)
         }
-        if (videos.isEmpty()) return XParseResult.Failure(if (hasVideo) "X 视频仅提供暂不支持的格式，未找到可下载的 MP4"
-            else "这条 X 推文未返回可下载的视频，可能仅含图片或外部链接")
+        if (videos.isEmpty()) return XParseResult.Failure(if (hasVideo) XParseFailure.UNSUPPORTED_FORMAT else XParseFailure.NO_VIDEO)
         val unique = videos.distinctBy { it.awemeId }
         return XParseResult.Success(ParsedVideos(unique, selectedId?.let { key -> unique.indexOfFirst { it.awemeId == key } } ?: 0))
     }
 
     private fun blocked(post: JsonObject): XParseResult.Failure? = when {
         post.text("__typename") == "TweetUnavailable" -> XParseResult.Failure(
-            if (post.text("reason") in listOf("Protected", "NsfwLoggedOut", "NsfwViewerHasNoStatedAge"))
-                "这条 X 推文需要登录或访问授权，暂不支持匿名下载" else "这条 X 推文已不可用", false)
+            if (post.text("reason") in listOf("Protected", "NsfwLoggedOut", "NsfwViewerHasNoStatedAge")) XParseFailure.LOGIN_REQUIRED
+            else XParseFailure.UNAVAILABLE, false)
         post.text("__typename") == "TweetTombstone" || post.containsKey("tombstone") ->
-            XParseResult.Failure("这条 X 推文已不可用或限制访问", false)
+            XParseResult.Failure(XParseFailure.RESTRICTED, false)
         else -> null
     }
     private fun unwrap(post: JsonObject): JsonObject = if (post.text("__typename") == "TweetWithVisibilityResults") post.obj("tweet") ?: post else post
     private fun postId(post: JsonObject) = post.text("rest_id") ?: post.obj("legacy")?.text("id_str")
     private fun json(body: String) = runCatching { Json.parseToJsonElement(body) as? JsonObject }.getOrNull()
-    private fun invalid() = XParseResult.Failure("X 暂未返回有效的推文数据，请稍后重试")
+    private fun invalid() = XParseResult.Failure(XParseFailure.INVALID)
 }

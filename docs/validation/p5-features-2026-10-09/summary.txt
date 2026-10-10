@@ -1,0 +1,11 @@
+# 汇总（自动生成，来源为各 runner 的 JUnit XML）
+
+构建：1.0.3 / code 4
+
+JVM testDebugUnitTest: 用例=324 失败=0
+模拟器 Pixel_10_Pro AVD (Android 17 / API 37): 用例=10 失败=0
+真机 SHARK PRS-A0 (Android 11 / API 30): 用例=10 失败=0
+
+无失败用例。
+
+设备集合包含 6 个 Phase B 用例类；同批回归结果另见 p5 验收记录正文。

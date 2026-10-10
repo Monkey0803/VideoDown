@@ -16,17 +16,18 @@ import java.io.IOException
 class GalleryExporter(private val context: Context) {
     suspend fun export(record: DownloadRecord): Result<Uri> = withContext(Dispatchers.IO) {
         runCatching {
-            require(record.status == DownloadStatus.COMPLETED) { "视频尚未下载完成" }
+            if (record.status != DownloadStatus.COMPLETED) throw GalleryExportException(GalleryExportFailure.NOT_COMPLETED)
             val source = record.filePath?.let(::File)
-            require(source != null && source.isFile) { "本地视频文件不存在" }
+            if (source == null || !source.isFile) throw GalleryExportException(GalleryExportFailure.FILE_MISSING)
 
-            require(source.extension.lowercase() in if (record.isAudio) setOf("m4a", "mp3", "aac", "ogg", "opus", "wav", "flac") else setOf("mp4", "m4v", "webm", "mov")) { "此容器暂不支持保存到相册，请使用分享文件" }
+            val containers = if (record.isAudio) setOf("m4a", "mp3", "aac", "ogg", "opus", "wav", "flac") else setOf("mp4", "m4v", "webm", "mov")
+            if (source.extension.lowercase() !in containers) throw GalleryExportException(GalleryExportFailure.UNSUPPORTED_CONTAINER)
             val resolver = context.contentResolver
             val values = ContentValues().apply {
                 put(MediaStore.Video.Media.DISPLAY_NAME, source.name)
                 put(MediaStore.Video.Media.MIME_TYPE, com.videodown.douyin.domain.model.videoMimeType(source.extension))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.Video.Media.RELATIVE_PATH, if (record.isAudio) "Music/拾影" else "Movies/拾影")
+                    put(MediaStore.Video.Media.RELATIVE_PATH, if (record.isAudio) "Music/拾影" else "Movies/拾影")  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                     put(MediaStore.Video.Media.IS_PENDING, 1)
                 }
             }
@@ -37,15 +38,15 @@ class GalleryExporter(private val context: Context) {
                 if (record.isAudio) MediaStore.Audio.Media.EXTERNAL_CONTENT_URI else MediaStore.Video.Media.EXTERNAL_CONTENT_URI
             }
             val target = resolver.insert(collection, values)
-                ?: throw IOException("无法创建相册视频")
+                ?: throw GalleryExportException(GalleryExportFailure.CREATE_FAILED)
             try {
                 val output = resolver.openOutputStream(target, "w")
-                    ?: throw IOException("无法写入相册视频")
+                    ?: throw GalleryExportException(GalleryExportFailure.WRITE_FAILED)
                 output.use { stream -> source.inputStream().use { it.copyTo(stream) } }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val ready = ContentValues().apply { put(MediaStore.Video.Media.IS_PENDING, 0) }
                     if (resolver.update(target, ready, null, null) <= 0) {
-                        throw IOException("无法完成相册保存")
+                        throw GalleryExportException(GalleryExportFailure.FINISH_FAILED)
                     }
                 }
                 target

@@ -1,0 +1,4 @@
+bytes=10542
+perTaskLimit=8 KB/s
+elapsed=330ms
+byte-perfect=true

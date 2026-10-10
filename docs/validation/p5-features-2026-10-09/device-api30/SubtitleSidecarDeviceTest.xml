@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T11:34:35" hostname="localhost">
+  <testsuite name="com.videodown.douyin.SubtitleSidecarDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="5.933" timestamp="2026-10-09T11:34:35" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="aVideoWithoutSubtitlesOffersNoToggle" classname="com.videodown.douyin.SubtitleSidecarDeviceTest" time="4.424" />
+    <testcase name="aSidecarSubtitleBecomesATrackWithAToggleThatPersists" classname="com.videodown.douyin.SubtitleSidecarDeviceTest" time="1.509" />
+  </testsuite>
+</testsuites>

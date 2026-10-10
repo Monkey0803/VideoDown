@@ -18,10 +18,21 @@ import kotlinx.coroutines.launch
 
 enum class ImportStatus { PENDING, PARSING, READY, FAILED }
 data class ImportMedia(val key: String, val video: DouyinVideo, val choice: VideoVariant?, val selected: Boolean = true)
+/** Why one imported link could not be prepared; the dialog words it. */
+enum class ImportRowError { NO_QUALITY, PARSE_FAILED }
+
+/** What an import run did; the dialog words it. */
+sealed interface ImportNotice {
+    data object NoLinks : ImportNotice
+    data object TooManyLinks : ImportNotice
+    data object RecordsUnavailable : ImportNotice
+    data class Queued(val queued: Int, val skipped: Int, val failedTitles: List<String>) : ImportNotice
+}
+
 data class ImportRow(val url: String, val status: ImportStatus = ImportStatus.PENDING,
-    val media: List<ImportMedia> = emptyList(), val error: String? = null, val failureKind: DownloadFailureKind? = null)
+    val media: List<ImportMedia> = emptyList(), val error: ImportRowError? = null, val failureKind: DownloadFailureKind? = null)
 data class BatchImportState(val input: String = "", val rows: List<ImportRow> = emptyList(), val parsing: Boolean = false,
-    val submitting: Boolean = false, val duplicateCount: Int = 0, val message: String? = null) {
+    val submitting: Boolean = false, val duplicateCount: Int = 0, val notice: ImportNotice? = null) {
     val selectedCount get() = rows.sumOf { row -> row.media.count { it.selected && it.choice != null } }
     val locked get() = parsing || submitting || duplicateCount > 0
 }
@@ -39,16 +50,16 @@ class BatchImportViewModel(
         if (mutable.value.locked) return
         val links = VideoLinkExtractor.extractAll(mutable.value.input)
         if (links.isEmpty() || links.size > 50) {
-            mutable.update { it.copy(message = if (links.isEmpty()) "未找到 HTTP/HTTPS 视频网址" else "一次最多导入 50 个网址，请分批粘贴") }; return
+            mutable.update { it.copy(notice = if (links.isEmpty()) ImportNotice.NoLinks else ImportNotice.TooManyLinks) }; return
         }
-        mutable.update { it.copy(rows = links.map { link -> ImportRow(link.url) }, message = null) }
+        mutable.update { it.copy(rows = links.map { link -> ImportRow(link.url) }, notice = null) }
         parseRemaining()
     }
     fun parseRemaining() {
         if (mutable.value.locked) return
         val urls = mutable.value.rows.filter { it.status != ImportStatus.READY }.map { it.url }
         if (urls.isEmpty()) return
-        mutable.update { it.copy(parsing = true, message = null) }
+        mutable.update { it.copy(parsing = true, notice = null) }
         parseJob = viewModelScope.launch {
             try {
                 urls.forEach { url ->
@@ -60,13 +71,14 @@ class BatchImportViewModel(
                                     ImportMedia("$url|${video.selectionKey()}", video, defaultVariant(video))
                                 }
                                 change(url) { it.copy(status = if (media.any { item -> item.choice != null }) ImportStatus.READY else ImportStatus.FAILED,
-                                    media = media, error = if (media.none { item -> item.choice != null }) "未找到可下载的画质" else null) }
+                                    media = media, error = if (media.none { item -> item.choice != null }) ImportRowError.NO_QUALITY else null) }
                             }
                             is AppResult.Failure -> change(url) { it.copy(status = ImportStatus.FAILED,
-                                error = result.error.message, failureKind = result.error.downloadFailureKind()) }
+                                // The failure is typed; the row words it (a parse failure, in practice).
+                                error = ImportRowError.PARSE_FAILED, failureKind = result.error.downloadFailureKind()) }
                         }
                     } catch (error: CancellationException) { throw error
-                    } catch (_: Exception) { change(url) { it.copy(status = ImportStatus.FAILED, error = "解析未完成，请重试") } }
+                    } catch (_: Exception) { change(url) { it.copy(status = ImportStatus.FAILED, error = ImportRowError.PARSE_FAILED) } }
                 }
             } finally {
                 mutable.update { it.copy(parsing = false, rows = it.rows.map { row ->
@@ -88,7 +100,7 @@ class BatchImportViewModel(
         if (mutable.value.parsing || mutable.value.submitting || (mutable.value.duplicateCount > 0 && downloadAgain == null)) return
         val requests = mutable.value.rows.flatMap { it.media }.filter { it.selected && it.choice != null }
         if (requests.isEmpty()) return
-        mutable.update { it.copy(submitting = true, duplicateCount = 0, message = null) }
+        mutable.update { it.copy(submitting = true, duplicateCount = 0, notice = null) }
         viewModelScope.launch {
             try {
                 if (downloadAgain == null) {
@@ -105,10 +117,10 @@ class BatchImportViewModel(
                     } catch (error: CancellationException) { throw error
                     } catch (_: Exception) { failures += item.video.title }
                 }
-                mutable.update { it.copy(message = "已加入 $queued 项，跳过 $skipped 项，失败 ${failures.size} 项" +
-                    if (failures.isNotEmpty()) "；失败项保持勾选：${failures.take(3).joinToString("、") + if (failures.size > 3) "等" else ""}" else "") }
+                // Numbers and titles, not a sentence: the dialog composes the message.
+                mutable.update { it.copy(notice = ImportNotice.Queued(queued, skipped, failures.toList())) }
             } catch (error: CancellationException) { throw error
-            } catch (_: Exception) { mutable.update { it.copy(message = "无法检查下载记录，请稍后重试") }
+            } catch (_: Exception) { mutable.update { it.copy(notice = ImportNotice.RecordsUnavailable) }
             } finally { mutable.update { it.copy(submitting = false) } }
         }
     }

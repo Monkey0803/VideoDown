@@ -46,7 +46,7 @@ class DocumentTreeExporter(
                 require(target.scheme == "content")
                 val exists = try {
                     resolver.query(target, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID), null, null, null)?.use { it.moveToFirst() }
-                        ?: throw IOException("无法读取上次导出目标")
+                        ?: throw IOException("无法读取上次导出目标")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
                 } catch (_: java.io.FileNotFoundException) { false }
                 if (exists) check(DocumentsContract.deleteDocument(resolver, target))
                 check(pending.delete())
@@ -62,33 +62,33 @@ class DocumentTreeExporter(
                 recoverLocked()
                 val tree = Uri.parse(treeUri)
                 if (tree.scheme != "content" || !DocumentsContract.isTreeUri(tree)) {
-                    throw FileExportTargetUnavailable("请重新选择导出文件夹")
+                    throw FileExportTargetUnavailable("请重新选择导出文件夹")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
                 }
                 val parent = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
-                val record = history.getById(id) ?: error("记录已不存在")
-                require(record.status == DownloadStatus.COMPLETED) { "文件尚未保存完成" }
-                val source = record.filePath?.let(::File) ?: error("本地文件不存在")
+                val record = history.getById(id) ?: error("记录已不存在")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                require(record.status == DownloadStatus.COMPLETED) { "文件尚未保存完成" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                val source = record.filePath?.let(::File) ?: error("本地文件不存在")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
                 require(source.isFile && !Files.isSymbolicLink(source.toPath()) &&
-                    !Files.isSymbolicLink(paths.downloadDir.toPath()) && source.canonicalFile.parentFile == paths.downloadDir.canonicalFile) { "本地文件不可用" }
+                    !Files.isSymbolicLink(paths.downloadDir.toPath()) && source.canonicalFile.parentFile == paths.downloadDir.canonicalFile) { "本地文件不可用" } // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
                 val names = mutableSetOf<String>()
                 val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
                 try {
                     resolver.query(children, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)?.use { cursor ->
                         while (cursor.moveToNext()) names.add(cursor.getString(0).orEmpty())
-                    } ?: throw FileExportTargetUnavailable("无法读取目标文件夹，请重新选择")
+                    } ?: throw FileExportTargetUnavailable("无法读取目标文件夹，请重新选择")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
                 } catch (error: java.io.FileNotFoundException) {
-                    throw FileExportTargetUnavailable("目标文件夹已不可用，请重新选择", error)
+                    throw FileExportTargetUnavailable("目标文件夹已不可用，请重新选择", error)  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
                 }
                 val name = availableExportName(source.name, names)
                 created = DocumentsContract.createDocument(resolver, parent, videoMimeType(source.extension), name)
-                    ?: throw IOException("无法创建导出文件")
+                    ?: throw IOException("无法创建导出文件")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
                 val target = checkNotNull(created)
                 journalDirectory.mkdirs()
                 val temporary = File(journalDirectory, journal.name + ".new")
                 temporary.outputStream().use { it.write(target.toString().toByteArray(Charsets.UTF_8)); it.fd.sync() }
-                check(temporary.renameTo(journal)) { "无法保存导出事务" }
+                check(temporary.renameTo(journal)) { "无法保存导出事务" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
                 source.inputStream().use { input ->
-                    val output = resolver.openOutputStream(target, "w") ?: throw IOException("无法写入导出文件")
+                    val output = resolver.openOutputStream(target, "w") ?: throw IOException("无法写入导出文件")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
                     output.use {
                         val buffer = ByteArray(64 * 1024)
                         while (true) {
@@ -105,7 +105,7 @@ class DocumentTreeExporter(
             } }
             withContext(NonCancellable + Dispatchers.IO) {
                 maintenanceMutex.withLock {
-                    check(journal.delete()) { "无法完成导出事务" }
+                    check(journal.delete()) { "无法完成导出事务" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
                     activeJournals.remove(journal)
                 }
             }

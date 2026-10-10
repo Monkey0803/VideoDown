@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.videodown.douyin.core.AppPreferences
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.data.update.AppUpdateManifest
+import com.videodown.douyin.data.update.AppVersion
 import com.videodown.douyin.data.update.AppUpdateChecker
 import com.videodown.douyin.data.update.UpdateCheckResult
 import kotlinx.coroutines.CancellationException
@@ -16,15 +18,19 @@ import kotlinx.coroutines.launch
 sealed interface UpdateUiState {
     data object Idle : UpdateUiState
     data object Checking : UpdateUiState
-    data class UpToDate(val currentLabel: String) : UpdateUiState
+    data class UpToDate(val current: AppVersion) : UpdateUiState
     data class Available(
-        val latestLabel: String,
+        val latest: AppUpdateManifest,
         val notes: String?,
         val downloadUrl: String?,
         val releasePageUrl: String?,
     ) : UpdateUiState
-    /** Not configured, offline, or malformed manifest — [text] is already user-facing. */
-    data class Message(val text: String) : UpdateUiState
+    /**
+     * Not configured, offline, or malformed manifest.
+     *
+     * [reasonKey] names why (see `core/ErrorResources.kt`); the dialog words it.
+     */
+    data class Message(val reasonKey: String, val httpStatus: Int? = null) : UpdateUiState
 }
 
 /**
@@ -36,7 +42,7 @@ class UpdateViewModel(
     private val preferences: AppPreferences = ServiceLocator.preferences,
 ) : ViewModel() {
 
-    val currentLabel: String = ServiceLocator.appVersion.label
+    val currentVersion: AppVersion = ServiceLocator.appVersion
 
     private val mutableUrl = MutableStateFlow(preferences.updateManifestUrl)
     val manifestUrl = mutableUrl.asStateFlow()
@@ -59,19 +65,19 @@ class UpdateViewModel(
             mutableState.value = try {
                 when (val result = checker.check(mutableUrl.value)) {
                     is UpdateCheckResult.UpdateAvailable -> UpdateUiState.Available(
-                        latestLabel = result.latestLabel,
+                        latest = result.latest,
                         notes = result.notes,
                         downloadUrl = result.downloadUrl,
                         releasePageUrl = result.releasePageUrl,
                     )
-                    is UpdateCheckResult.UpToDate -> UpdateUiState.UpToDate(result.currentLabel)
-                    UpdateCheckResult.NotConfigured -> UpdateUiState.Message("尚未配置更新源地址，请先设置版本清单地址")
-                    is UpdateCheckResult.Failed -> UpdateUiState.Message(result.message)
+                    is UpdateCheckResult.UpToDate -> UpdateUiState.UpToDate(result.current)
+                    UpdateCheckResult.NotConfigured -> UpdateUiState.Message("update:not_configured")
+                    is UpdateCheckResult.Failed -> UpdateUiState.Message(result.reasonKey, result.httpStatus)
                 }
             } catch (error: CancellationException) {
                 throw error
             } catch (_: Exception) {
-                UpdateUiState.Message("更新检查失败，请稍后重试")
+                UpdateUiState.Message("update:failed")
             }
         }
     }

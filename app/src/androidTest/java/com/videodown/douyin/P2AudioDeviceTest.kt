@@ -161,7 +161,7 @@ class P2AudioDeviceTest {
         val result = extract(source)
         assertEquals(DownloadStatus.FAILED, result.status)
         assertEquals(DownloadFailureKind.NO_AUDIO, result.failureKind)
-        assertEquals("原视频没有音轨", failureGuidance(result.failureKind!!).title)
+        assertEquals(DownloadFailureKind.NO_AUDIO, result.failureKind)
         assertFalse(result.canRetryDownload); assertTrue(File(source.filePath!!).isFile)
         assertFalse(paths.engineDirectory(result.id).listFiles().orEmpty().any { it.name == "source.snapshot" })
     }

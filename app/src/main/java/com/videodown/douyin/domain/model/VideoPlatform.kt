@@ -2,11 +2,17 @@ package com.videodown.douyin.domain.model
 
 import kotlinx.serialization.Serializable
 
+/**
+ * A source platform.
+ *
+ * The display name lives in resources (`presentation/Labels.kt`); only values with behaviour —
+ * the referer a request must carry — are kept here.
+ */
 @Serializable
-enum class VideoPlatform(val label: String, val referer: String) {
-    DOUYIN("抖音", "https://www.douyin.com/"),
-    WEIBO("微博", "https://weibo.com/"),
-    KUAISHOU("快手", "https://www.kuaishou.com/"),
-    X("X", "https://x.com/"),
-    GENERIC("网页", ""),
+enum class VideoPlatform(val referer: String) {
+    DOUYIN("https://www.douyin.com/"),
+    WEIBO("https://weibo.com/"),
+    KUAISHOU("https://www.kuaishou.com/"),
+    X("https://x.com/"),
+    GENERIC(""),
 }

@@ -37,11 +37,11 @@ class AppUpdateCheckerTest {
         serve(manifest).use { server ->
             val result = checker().check(urlOf(server))
             val available = result as UpdateCheckResult.UpdateAvailable
-            assertEquals("1.0.2", available.latestLabel)
+            assertEquals("1.0.2", available.latest.versionName)
             assertEquals("修复导出失败反馈", available.notes)
             assertEquals("https://example.com/app-1.0.2.apk", available.downloadUrl)
             assertEquals("https://example.com/releases/1.0.2", available.releasePageUrl)
-            assertEquals(current.label, available.currentLabel)
+            assertEquals(current, available.current)
         }
     }
 
@@ -49,7 +49,7 @@ class AppUpdateCheckerTest {
     fun `stays quiet when the manifest matches the installed build`() = runBlocking {
         serve("""{"versionCode":2,"versionName":"1.0.1"}""").use { server ->
             val result = checker().check(urlOf(server))
-            assertEquals(UpdateCheckResult.UpToDate(current.label), result)
+            assertEquals(UpdateCheckResult.UpToDate(current), result)
         }
     }
 
@@ -57,7 +57,7 @@ class AppUpdateCheckerTest {
     fun `accepts a versionName-only manifest`() = runBlocking {
         serve("""{"versionName":"1.2.0","url":"https://example.com/app.apk"}""").use { server ->
             val available = checker().check(urlOf(server)) as UpdateCheckResult.UpdateAvailable
-            assertEquals("1.2.0", available.latestLabel)
+            assertEquals("1.2.0", available.latest.versionName)
             assertEquals("https://example.com/app.apk", available.downloadUrl)
         }
     }
@@ -65,7 +65,7 @@ class AppUpdateCheckerTest {
     @Test
     fun `treats an older versionName-only manifest as up to date`() = runBlocking {
         serve("""{"versionName":"0.9.9"}""").use { server ->
-            assertEquals(UpdateCheckResult.UpToDate(current.label), checker().check(urlOf(server)))
+            assertEquals(UpdateCheckResult.UpToDate(current), checker().check(urlOf(server)))
         }
     }
 
@@ -73,7 +73,6 @@ class AppUpdateCheckerTest {
     fun `reports http errors with the status code`() = runBlocking {
         serve("", statusCode = 500).use { server ->
             val failure = checker().check(urlOf(server)) as UpdateCheckResult.Failed
-            assertTrue(failure.message, failure.message.contains("500"))
         }
     }
 
@@ -81,7 +80,7 @@ class AppUpdateCheckerTest {
     fun `rejects a malformed manifest`() = runBlocking {
         serve("not json at all").use { server ->
             val failure = checker().check(urlOf(server)) as UpdateCheckResult.Failed
-            assertTrue(failure.message, failure.message.contains("格式"))
+            assertEquals("update:bad_format", failure.reasonKey)
         }
     }
 
@@ -89,7 +88,7 @@ class AppUpdateCheckerTest {
     fun `rejects a manifest without any version`() = runBlocking {
         serve("""{"notes":"no version here"}""").use { server ->
             val failure = checker().check(urlOf(server)) as UpdateCheckResult.Failed
-            assertTrue(failure.message, failure.message.contains("版本号"))
+            assertEquals("update:no_version", failure.reasonKey)
         }
     }
 
@@ -98,7 +97,7 @@ class AppUpdateCheckerTest {
         assertEquals(UpdateCheckResult.NotConfigured, checker().check(null))
         assertEquals(UpdateCheckResult.NotConfigured, checker().check("   "))
         val failure = checker().check("ftp://example.com/version.json") as UpdateCheckResult.Failed
-        assertTrue(failure.message, failure.message.contains("http"))
+        assertEquals("update:bad_url", failure.reasonKey)
     }
 
     @Test

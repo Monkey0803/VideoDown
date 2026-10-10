@@ -1,0 +1,3 @@
+sidecar=subtitle-8a70bcbc-ccfe-4717-9041-b55dc1062b15.srt
+toggle shown=true
+off persisted=false, on persisted=true

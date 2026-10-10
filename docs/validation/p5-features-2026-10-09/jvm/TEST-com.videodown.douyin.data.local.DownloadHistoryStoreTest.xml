@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.local.DownloadHistoryStoreTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.706Z" hostname="Alias-mini.local" time="0.014">
+  <properties/>
+  <testcase name="an unreadable history file is preserved instead of destroyed" classname="com.videodown.douyin.data.local.DownloadHistoryStoreTest" time="0.002"/>
+  <testcase name="delete removes a single record" classname="com.videodown.douyin.data.local.DownloadHistoryStoreTest" time="0.002"/>
+  <testcase name="a missing history file yields an empty list" classname="com.videodown.douyin.data.local.DownloadHistoryStoreTest" time="0.0"/>
+  <testcase name="interrupted downloads are demoted to paused so they can be resumed" classname="com.videodown.douyin.data.local.DownloadHistoryStoreTest" time="0.003"/>
+  <testcase name="persists records across store instances" classname="com.videodown.douyin.data.local.DownloadHistoryStoreTest" time="0.002"/>
+  <testcase name="upsert updates an existing record in place" classname="com.videodown.douyin.data.local.DownloadHistoryStoreTest" time="0.001"/>
+  <testcase name="clear without deleteFiles keeps the media" classname="com.videodown.douyin.data.local.DownloadHistoryStoreTest" time="0.002"/>
+  <testcase name="clear with deleteFiles removes downloaded and partial files" classname="com.videodown.douyin.data.local.DownloadHistoryStoreTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

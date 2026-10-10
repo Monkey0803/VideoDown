@@ -33,25 +33,28 @@ class WeiboJsonParser {
             val url = mp4Url(play.text("url")) ?: return@mapNotNull null
             val width = play.number("width")?.toInt()
             val height = play.number("height")?.toInt()
-            VideoVariant(url, qualityLabel(width, height, play.text("quality_desc") ?: "原画"),
+            VideoVariant(url, qualityLabel(width, height, play.text("quality_desc") ?: "原画"),  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                 width, height, bitrate = play.number("bitrate")?.toInt(), sizeBytes = play.number("size")?.takeIf { it > 0 },
                 qualityRank = minOf(width ?: 0, height ?: 0), referer = VideoPlatform.WEIBO.referer)
         }.toMutableList()
         if (variants.isEmpty()) {
-            listOf("mp4_720p_mp4" to "720P", "mp4_hd_url" to "高清", "stream_url_hd" to "高清",
-                "mp4_sd_url" to "标清", "stream_url" to "标清").forEach { (key, label) ->
-                mp4Url(media.text(key))?.let { variants.add(VideoVariant(it, label,
-                    qualityRank = if (label == "720P") 720 else if (label == "高清") 540 else 360,
-                    referer = VideoPlatform.WEIBO.referer)) }
+            // Only the rank is decided here; the visible label comes from qualityLabel, so no
+            // display string is ever compared (which would break the moment it is translated).
+            listOf("mp4_720p_mp4" to 720, "mp4_hd_url" to 540, "stream_url_hd" to 540,
+                "mp4_sd_url" to 360, "stream_url" to 360).forEach { (key, rank) ->
+                mp4Url(media.text(key))?.let {
+                    variants.add(VideoVariant(it, qualityLabel(rank, rank),
+                        qualityRank = rank, referer = VideoPlatform.WEIBO.referer))
+                }
             }
         }
         val user = post.obj("user")
         val id = post.text("mblogid") ?: post.text("idstr") ?: requestedId
         val title = (media.text("video_title") ?: media.text("kol_title") ?: media.text("name")
-            ?: post.text("text_raw") ?: post.text("text") ?: page?.text("page_title") ?: "微博视频")
+            ?: post.text("text_raw") ?: post.text("text") ?: page?.text("page_title") ?: "微博视频")  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
             .replace(Regex("<[^>]*>"), "").replace("&amp;", "&").trim().take(160)
         return DouyinVideo(
-            awemeId = id, title = title.ifBlank { "微博视频" },
+            awemeId = id, title = title.ifBlank { "微博视频" },  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
             coverUrl = mediaUrl(page?.text("page_pic") ?: page?.obj("page_pic")?.text("url")),
             durationMs = ((media.text("duration")?.toDoubleOrNull() ?: 0.0) * 1000).toLong(),
             author = DouyinAuthor(uid = user?.text("idstr") ?: user?.text("id"),
@@ -68,8 +71,8 @@ class WeiboJsonParser {
             ?: pictures.keys.toList()
         val id = post.text("mblogid") ?: post.text("idstr") ?: post.text("id") ?: requestedId
         val user = post.obj("user")
-        val title = (post.text("text_raw") ?: post.text("text") ?: "微博动图")
-            .replace(Regex("<[^>]*>"), "").replace("&amp;", "&").trim().take(160).ifBlank { "微博动图" }
+        val title = (post.text("text_raw") ?: post.text("text") ?: "微博动图")  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+            .replace(Regex("<[^>]*>"), "").replace("&amp;", "&").trim().take(160).ifBlank { "微博动图" }  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
         return pictureIds.distinct().mapNotNull { pictureId ->
             val picture = pictures.obj(pictureId) ?: return@mapNotNull null
             val source = mp4Url(picture.text("video"))?.toHttpUrl() ?: return@mapNotNull null
@@ -95,6 +98,6 @@ class WeiboJsonParser {
                     qualityRank = minOf(width ?: 0, height ?: 0), referer = VideoPlatform.WEIBO.referer)),
                 shareUrl = "https://m.weibo.cn/status/$id", platform = VideoPlatform.WEIBO,
             )
-        }.mapIndexed { index, video -> video.copy(mediaLabel = "动图 ${index + 1}") }
+        }.mapIndexed { index, video -> video.copy(mediaLabel = "动图 ${index + 1}") }  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
     }
 }

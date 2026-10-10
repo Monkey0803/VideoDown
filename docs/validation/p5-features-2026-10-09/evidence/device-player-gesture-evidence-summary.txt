@@ -1,0 +1,4 @@
+seek=+10s/-10s confirmed by the on-screen label
+volume=5 -> 9 (max=25)
+brightness=-1.0 -> 1.0
+longPressBoost=shown while held, cleared on release

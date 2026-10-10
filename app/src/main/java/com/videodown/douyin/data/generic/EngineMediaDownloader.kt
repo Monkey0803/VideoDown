@@ -30,11 +30,11 @@ class EngineMediaDownloader(
             var copyAudio = false
             try {
                 val (stream, size) = maintenanceMutex.withLock {
-                    val original = requireNotNull(history).getById(media.localRecordId) ?: error("原视频已不存在")
-                    require(original.status == DownloadStatus.COMPLETED && !original.isAudio) { "原视频不可用" }
-                    val file = original.filePath?.let(::File) ?: error("原视频已不存在")
+                    val original = requireNotNull(history).getById(media.localRecordId) ?: error("原视频已不存在")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                    require(original.status == DownloadStatus.COMPLETED && !original.isAudio) { "原视频不可用" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                    val file = original.filePath?.let(::File) ?: error("原视频已不存在")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
                     require(file.isFile && !Files.isSymbolicLink(file.toPath()) && !Files.isSymbolicLink(paths.downloadDir.toPath()) &&
-                        file.canonicalFile.parentFile == paths.downloadDir.canonicalFile) { "原视频文件不可用" }
+                        file.canonicalFile.parentFile == paths.downloadDir.canonicalFile) { "原视频文件不可用" } // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
                     file.inputStream() to file.length()
                 }
                 // An opened file descriptor remains valid if the source is renamed or unlinked.
@@ -60,7 +60,7 @@ class EngineMediaDownloader(
                     put("mode", "extract_audio"); put("input", stagedSource.absolutePath); put("copy_audio", copyAudio)
                     put("output", File(directory, "media.m4a").absolutePath)
                 }) { if (it.text("event") == "complete") completed = true }
-                check(completed) { "音频提取未完成" }
+                check(completed) { "音频提取未完成" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
                 val output = File(directory, "media.m4a")
                 progress(output.length(), output.length(), 0, TransferPhase.VERIFYING)
                 validateAudio(output)
@@ -80,17 +80,22 @@ class EngineMediaDownloader(
                 BrowserSessionStore.extractorCookieUrls(media.pageUrl.ifBlank { record.sourceUrl }, record.downloadReferer) +
                     listOfNotNull(record.sourceUrl, media.audioUrl), cookies)
             var completed = false
-            runtime.execute(buildJsonObject {
-                put("mode", "download"); put("url", media.pageUrl.ifBlank { record.sourceUrl })
-                put("media_id", media.mediaId); put("format", media.formatSelector)
-                put("audio_only", media.audioOnly)
-                put("output", File(directory, "media.%(ext)s").absolutePath)
-                putJsonObject("headers") {
-                    record.downloadReferer?.let { put("Referer", it) }
-                    media.userAgent?.let { put("User-Agent", it) }
-                }
-                if (media.useBrowserSession) put("cookies", cookies.absolutePath)
-            }, policy) { event ->
+            runtime.execute(
+                EngineRequest.download(
+                    url = media.pageUrl.ifBlank { record.sourceUrl },
+                    output = File(directory, "media.%(ext)s").absolutePath,
+                    format = media.formatSelector,
+                    audioOnly = media.audioOnly,
+                    mediaId = media.mediaId,
+                    referer = record.downloadReferer,
+                    userAgent = media.userAgent,
+                    browserSession = media.useBrowserSession,
+                    cookieFile = cookies.absolutePath,
+                    subtitles = record.subtitleLanguages,
+                    automaticCaptions = record.subtitleAutomatic,
+                ),
+                policy,
+            ) { event ->
                 when (event.text("event")) {
                     "progress" -> {
                         downloaded = event.number("downloaded")?.toLong() ?: downloaded
@@ -102,10 +107,10 @@ class EngineMediaDownloader(
                 }
             }
             currentCoroutineContext().ensureActive()
-            check(completed) { "下载引擎未确认完成" }
+            check(completed) { "下载引擎未确认完成" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
             progress(downloaded, total, 0, TransferPhase.VERIFYING)
             val file = (if (media.audioOnly) File(directory, "media.m4a").takeIf { it.isFile && it.length() > 0 } else directory.listFiles()?.singleOrNull { it.name.matches(Regex("media\\.(mp4|webm|mkv|mov|m4v|ts)")) && it.length() > 0 })
-                ?: error("未生成完整视频文件，请重新解析")
+                ?: error("未生成完整视频文件，请重新解析")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
             if (media.audioOnly) validateAudio(file) else validateVideo(file)
             currentCoroutineContext().ensureActive()
             // Publication and history commit are one non-cancellable step in DownloadEngine.
@@ -120,18 +125,18 @@ internal fun validateVideo(file: File) {
         extractor.setDataSource(file.absolutePath)
         val videoTrack = (0 until extractor.trackCount).firstOrNull {
             extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("video/") == true
-        } ?: error("下载结果不包含有效的视频轨道")
+        } ?: error("下载结果不包含有效的视频轨道")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
         extractor.selectTrack(videoTrack)
         if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_ENCRYPTED != 0) throw VideoEngineException("DRM")
         // A valid first sample can have a negative presentation timestamp (edit-list preroll).
-        require(extractor.sampleTrackIndex == videoTrack) { "下载结果没有完整的视频数据" }
+        require(extractor.sampleTrackIndex == videoTrack) { "下载结果没有完整的视频数据" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
         // Reject malformed/empty tracks and encrypted samples before native file-level metadata.
         if (extractor.drmInitData != null || !extractor.psshInfo.isNullOrEmpty()) throw VideoEngineException("DRM")
     } finally { extractor.release() }
 }
 
 internal fun validateAudio(file: File) {
-    require(file.isFile && file.length() > 0) { "未生成有效音频文件" }
+    require(file.isFile && file.length() > 0) { "未生成有效音频文件" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
     file.inputStream().use { validateAudioTrack(it.fd, requireAudioOnly = true) }
 }
 
@@ -141,12 +146,12 @@ internal fun validateAudioTrack(descriptor: FileDescriptor, requireAudioOnly: Bo
         extractor.setDataSource(descriptor)
         if (extractor.drmInitData != null || !extractor.psshInfo.isNullOrEmpty()) throw VideoEngineException("DRM")
         val formats = (0 until extractor.trackCount).map { extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME).orEmpty() }
-        if (requireAudioOnly) require(formats.none { it.startsWith("video/") }) { "结果仍包含视频轨道" }
+        if (requireAudioOnly) require(formats.none { it.startsWith("video/") }) { "结果仍包含视频轨道" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
         val track = formats.indexOfFirst { it.startsWith("audio/") }
         if (track < 0) throw VideoEngineException("NO_AUDIO")
         extractor.selectTrack(track)
         if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_ENCRYPTED != 0) throw VideoEngineException("DRM")
-        require(extractor.readSampleData(java.nio.ByteBuffer.allocate(1024 * 1024), 0) > 0) { "音频没有有效数据" }
+        require(extractor.readSampleData(java.nio.ByteBuffer.allocate(1024 * 1024), 0) > 0) { "音频没有有效数据" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
         return formats[track]
     } finally { extractor.release() }
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.CompletionSummaryTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:48.901Z" hostname="Alias-mini.local" time="0.003">
+  <properties/>
+  <testcase name="without auto save the card keeps the plain destination hint" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.001"/>
+  <testcase name="a missing quality label still reads sensibly" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.0"/>
+  <testcase name="saved audio points at the music library instead" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.001"/>
+  <testcase name="a failed copy carries the reason on the same card" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.0"/>
+  <testcase name="a saved video says it reached the gallery" classname="com.videodown.douyin.data.download.CompletionSummaryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

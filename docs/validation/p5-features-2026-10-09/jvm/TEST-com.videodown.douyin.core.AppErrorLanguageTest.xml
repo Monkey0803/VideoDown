@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.core.AppErrorLanguageTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:47.069Z" hostname="Alias-mini.local" time="0.003">
+  <properties/>
+  <testcase name="galleryErrorsPreserveActionableCopyAndTranslateExternalFailures" classname="com.videodown.douyin.core.AppErrorLanguageTest" time="0.001"/>
+  <testcase name="networkExceptionsDoNotExposeEnglishSystemMessages" classname="com.videodown.douyin.core.AppErrorLanguageTest" time="0.0"/>
+  <testcase name="unknownExceptionsDoNotExposeClassNamesOrEnglishMessages" classname="com.videodown.douyin.core.AppErrorLanguageTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.core.FormattersTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:48:56.694Z" hostname="Alias-mini.local" time="0.003">
+  <properties/>
+  <testcase name="formats byte counts" classname="com.videodown.douyin.core.FormattersTest" time="0.002"/>
+  <testcase name="formats relative time" classname="com.videodown.douyin.core.FormattersTest" time="0.0"/>
+  <testcase name="no estimate is produced for an unknown size or a stalled transfer" classname="com.videodown.douyin.core.FormattersTest" time="0.0"/>
+  <testcase name="formats durations" classname="com.videodown.douyin.core.FormattersTest" time="0.0"/>
+  <testcase name="a partial second still rounds up to one second" classname="com.videodown.douyin.core.FormattersTest" time="0.001"/>
+  <testcase name="switches to M and G at their size boundaries" classname="com.videodown.douyin.core.FormattersTest" time="0.0"/>
+  <testcase name="estimates remaining time without guessing" classname="com.videodown.douyin.core.FormattersTest" time="0.0"/>
+  <testcase name="formats transfer speed" classname="com.videodown.douyin.core.FormattersTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T04:26:21" hostname="localhost">
+  <testsuite name="com.videodown.douyin.LocalizationDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="3.983" timestamp="2026-10-10T04:26:21" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="everyMigratedScreenFollowsTheAppLanguage" classname="com.videodown.douyin.LocalizationDeviceTest" time="2.815" />
+    <testcase name="bothLanguagesAreDeclaredSoTheSystemCanOfferThem" classname="com.videodown.douyin.LocalizationDeviceTest" time="1.168" />
+  </testsuite>
+</testsuites>

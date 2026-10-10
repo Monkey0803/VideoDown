@@ -19,12 +19,19 @@ fun formatSpeed(bytesPerSecond: Long): String =
     if (bytesPerSecond <= 0L) "--" else "${formatBytes(bytesPerSecond)}/s"
 
 /**
- * Estimated time left as `约剩 2 分 10 秒`, or `null` when it cannot be estimated.
+ * An estimate of the time left, or `null` when one cannot be made.
  *
- * Never guesses: an unknown remaining size or a stalled transfer yields no estimate at all, which
- * is better than showing a number that keeps jumping or is simply wrong.
+ * Reported as parts rather than as a sentence, because the wording belongs to the screen. Never
+ * guesses: an unknown remaining size or a stalled transfer yields no estimate at all, which is
+ * better than showing a number that keeps jumping or is simply wrong.
  */
-fun formatEta(remainingBytes: Long, bytesPerSecond: Long): String? {
+sealed interface RemainingTime {
+    data class HoursMinutes(val hours: Long, val minutes: Long) : RemainingTime
+    data class MinutesSeconds(val minutes: Long, val seconds: Long) : RemainingTime
+    data class Seconds(val seconds: Long) : RemainingTime
+}
+
+fun remainingTime(remainingBytes: Long, bytesPerSecond: Long): RemainingTime? {
     if (remainingBytes <= 0L || bytesPerSecond <= 0L) return null
     // Round up without overflowing on a large remaining size.
     val seconds = remainingBytes / bytesPerSecond + if (remainingBytes % bytesPerSecond > 0L) 1L else 0L
@@ -32,9 +39,9 @@ fun formatEta(remainingBytes: Long, bytesPerSecond: Long): String? {
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60
     return when {
-        hours > 0 -> "约剩 $hours 小时 $minutes 分"
-        minutes > 0 -> "约剩 $minutes 分 ${seconds % 60} 秒"
-        else -> "约剩 $seconds 秒"
+        hours > 0 -> RemainingTime.HoursMinutes(hours, minutes)
+        minutes > 0 -> RemainingTime.MinutesSeconds(minutes, seconds % 60)
+        else -> RemainingTime.Seconds(seconds)
     }
 }
 
@@ -52,18 +59,24 @@ fun formatDuration(durationMs: Long): String {
     }
 }
 
-/** Relative time for the history list. */
-fun formatRelativeTime(timestamp: Long, now: Long = System.currentTimeMillis()): String {
+/** How long ago something happened, in the unit the history list shows. */
+sealed interface RelativeTime {
+    data object JustNow : RelativeTime
+    data class Minutes(val value: Long) : RelativeTime
+    data class Hours(val value: Long) : RelativeTime
+    data class Days(val value: Long) : RelativeTime
+}
+
+fun relativeTime(timestamp: Long, now: Long = System.currentTimeMillis()): RelativeTime {
     val diff = now - timestamp
-    if (diff < 0) return "刚刚"
+    if (diff < 0) return RelativeTime.JustNow
     val minutes = TimeUnit.MILLISECONDS.toMinutes(diff)
     val hours = TimeUnit.MILLISECONDS.toHours(diff)
     val days = TimeUnit.MILLISECONDS.toDays(diff)
     return when {
-        minutes < 1 -> "刚刚"
-        minutes < 60 -> "$minutes 分钟前"
-        hours < 24 -> "$hours 小时前"
-        days < 30 -> "$days 天前"
-        else -> "$days 天前"
+        minutes < 1 -> RelativeTime.JustNow
+        minutes < 60 -> RelativeTime.Minutes(minutes)
+        hours < 24 -> RelativeTime.Hours(hours)
+        else -> RelativeTime.Days(days)
     }
 }

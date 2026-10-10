@@ -1,8 +1,8 @@
 # 拾影 功能待办（TODO）
 
-> 更新日期：2026-10-09 ｜ 当前分支：`1.0.2` ｜ 版本：1.0.2 / code 3
+> 更新日期：2026-10-09 ｜ 当前分支：`1.0.2` ｜ 版本：1.0.3 / code 4
 > 依据：同类应用对标（1DM+、ADM、Snaptube、VidMate、Seal、稞麦视频下载器）与当前源码核查
-> 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）、[P4 验收记录](validation/p4-features-2026-10-09.md)
+> 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）、[P4 验收记录](validation/p4-features-2026-10-09.md)、[P5 验收记录](validation/p5-features-2026-10-09.md)
 
 ## 使用说明
 
@@ -73,22 +73,35 @@
 
 - [ ] **`P2CompletionNotificationDeviceTest` 在 API 37 模拟器上超时失败**，在 API 30 真机通过。已用「临时注释掉本轮独立通知收集器仍以同样方式失败」证明与本轮改动无关，疑似模拟器 SystemUI 通知栏差异。失败日志保留在 `docs/validation/p4-features-2026-10-09/emulator-api37/P2CompletionNotificationDeviceTest.emulator-failure.xml`。
 - [x] **`P1RecoveryNavigationDeviceTest#rateLimitedParseOpensSettingsWithoutRepeatingRequest` 等待的文案「打造专属空间」已在 `94a83b9` 从设置页移除**，断言未同步。本轮把断言改为当前实际渲染的页面标题「我的设置」，用例意图不变，修复后 4/4 通过。
+- [ ] **`P1DownloadIntegrationTest#known response size is checked again before writing a direct file` 曾偶发一次**（`expected:<STORAGE_FULL> but was:<NETWORK>`，2026-10-10 C1 迁移期间）。与本轮改动无关（本地 HTTP 服务 + 存储检查），强制重跑 3 次均通过，未修改用例。
+- [ ] **`P3PictureInPictureDeviceTest#pipScreenOffThenReturnKeepsActivityAndPlayer` 在 API 37 模拟器上失败**（操作真实熄屏与 PiP）。已用两种独立实验证明与本轮无关：把 `PlayerScreen.kt` 还原到 HEAD 后同样失败；只关闭新增手势覆盖层后同样失败。
 
-## Phase B — 差异化（批准后各自出详细计划）
+## Phase B — 差异化（已完成）
 
-- [ ] **B1 播放器手势与字幕渲染** — 双击快退/快进 10s、竖向滑动调亮度/音量、长按临时 2×；Media3 `PlayerView` 渲染内嵌字幕并加开关。风险：与全屏/旋转/返回手势冲突，需逐条设备验证。
-- [ ] **B2 全局 / 单任务限速** — 令牌桶落在 `ResumableDownloader` 写入循环；必须置于既有空间检查之后，不得破坏 `StorageSpaceGuard` 与预留账本语义。
-- [ ] **B3 下载完成自动存入相册（开关）** — 复用 `GalleryExporter`，沿用 Android 8/9 权限分支与失败分类反馈。
-- [ ] **B4 继续观看** — `PlaybackRepository` 现仅单条 `checkpoint(id, …)` 查询，需新增批量读接口，把进度回填到「已存」卡片与首页「最近保存」。
-- [ ] **B5 音频睡眠定时器** — `AudioPlaybackService` + `PlaybackOptions` 增字段。
+证据与未覆盖边界见 [P5 验收记录](validation/p5-features-2026-10-09.md)。同批 JVM 324 用例通过；10 个 Phase B 设备用例在 Android 17 / API 37 模拟器与 Android 11 / API 30 真机均通过。
+
+- [x] **B1 播放器手势与字幕渲染** — `PlayerGestures` 纯几何 + 仅在系统控件隐藏时接管的覆盖层（双击 ±10s、左滑亮度、右滑音量、长按临时 2×）；内嵌字幕由 `PlayerView` 渲染，同名 `.srt`/`.vtt`/`.ass` 作为外部轨道加载，「字幕」开关按轨道存在与否显示并保留。
+- [x] **B2 全局 / 单任务限速** — `TokenBucket` + 共享/每任务 `BandwidthLimiter`，钩子在 `ResumableDownloader` 写入前且位于空间检查之后；设置页全局限速与任务卡单任务限速。引擎下载不受限速（边界见验收记录）。
+- [x] **B3 下载完成自动存入相册（开关）** — `AutoGalleryExport` 决定是否/能否复制，完成通知在同一张卡上报告去向；拷贝移出传输协程，不再占用队列名额。
+- [x] **B4 继续观看** — `PlaybackRepository.watchProgress()` 返回 `StateFlow<Map<String, WatchProgress>>`，`WatchProgress` 携带文件 size/mtime 用于剔除陈旧进度；「已存」与首页「最近保存」显示进度条与「已看 N%」。
+- [x] **B5 音频睡眠定时器** — 独立键保存**绝对 deadline**（未塞进 `PlaybackOptions`，因为它是全局音频设置而非音视频各自的偏好），`AudioPlaybackService` 每 2 秒检查，到点暂停并清零。
+
+## Phase B 遗留边界（未完成）
+
+- [ ] **分片引擎下载（yt-dlp / FFmpeg）不受限速影响** —— 它们是独立进程，无法按字节节流。若要覆盖，需要在引擎侧改用可限速的下载器或代理。
+- [ ] **手势区域未在平板 / 折叠屏验证**，只在手机竖屏与既有横屏用例上验证。
+- [ ] **字幕未逐像素断言真的画在画面上**，只验证轨道存在与开关行为；字幕下载/内嵌仍属 Phase C 的 C2。
+- [ ] **未测量多任务并发时的全局限速总量精度**，共享桶只由 JVM 虚拟时间用例覆盖。
+- [ ] **自动入库在 Android 9 及以下需要预先授权**，未授权时只报告原因，不弹权限请求（后台完成无法弹窗）。
 
 ## Phase C — 工程与生态
 
-- [ ] **C1 国际化** — 165+ 处硬编码中文迁入 `strings.xml`，新增 `values-en/` 与 `res/xml/locales_config.xml`，移除强制中文覆盖。**工程量最大，单独排期。**
-- [ ] **C2 字幕下载 / 内嵌** — yt-dlp `--write-subs` / `--embed-subs`，扩展通用引擎格式清单与「字幕」选择 UI。
-- [ ] **C3 播放列表 / 合集批量下载** — 复用既有批量导入的分项选择与重复检查。
-- [ ] **C4 私有保险箱 + 应用锁** — 需 `DownloadRecord` 增加可见性标记、库查询过滤、生物识别门禁，并确保导出/分享/通知不泄露标题。
-- [ ] **C5 自定义 UA / 代理、链接导入导出与设置备份** — 扩展 `DouyinApiClient.USER_AGENT` 与 `ResumableDownloader` 的请求头注入点。
+- [x] **C1 国际化** — **所有用户可见文案都来自 `res/values/` 与 `res/values-en/`**（各 622 条 key，一一对应）；`LocalizationGuardTest` 以棘轮方式守着：`src/main/java` 里**未标注理由的中文串数为 0**，两个语言文件 key 必须一一对应、`locales_config` 必须声明两种语言。基础设施：`res/xml/locales_config.xml`、清单 `android:localeConfig`、移除 `MainActivity` 的强制中文覆盖、`LocaleTestRunner` 把设备测试固定在 zh-CN。完成定义与「非文案」清单见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)：共处理 **842 条**中文字面量，其中 **约 726 条搬进资源**，其余 **116 处**按四类逐条就地标注 `// l10n-ignore: <理由>`——(1) `require`/`check` 内部不变量（失败只显示统一的「操作失败」）、(2) 开发者日志、(3) 开发者诊断异常（消息含系统文案或路径，从不作为界面文案）、(4) 持久化内容（记录标题、文件名、MediaStore 目录名、画质标签：随语言改变会让同一内容落到不同名字）；另有 `legacyFailureKind` 的历史消息匹配按函数名豁免。**原则**：`domain`/`core`/`data` 不持有界面文案——它们返回**值、枚举或 key**（`engine:`/`download:`/`service:`/`vault:`/`gallery:`/`x:`/`platform:`/`input:`/`update:`/`generic:`），由 `core/reasonKeyRes(key)` 单点解析、界面成句；持久化的错误只存 key，**旧版本写入的中文消息仍原样可读**。
+- [x] **C2 字幕下载 / 内嵌** — 解析结果带出可用的字幕语言，结果页出现「同时保存字幕」选项；引擎按语言下载并**内嵌**（`embedsubtitles` 是命令行专用开关、API 会忽略，必须显式加 `FFmpegEmbedSubtitle` 后处理器）；请求字幕的任务改走引擎下载。两个条目的解析与内嵌已在本地 `<track>` 页面验证，播放页字幕开关随之出现（见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)）。
+- [x] **C3 播放列表 / 合集批量下载** — 「解析合集」开关（默认关闭，上限 20）把整页条目交给既有分项选择；引擎侧 `noplaylist` / `playlistend` 改为由请求驱动；两个条目的枚举与逐条下载已在本地两视频页面验证（见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)）。
+- [x] **C4 私有保险箱 + 应用锁** — `DownloadRecord.isPrivate` + `VaultPolicy`（纯逻辑）统一决定可见性与脱敏；保险箱是独立视图，门禁用系统弹窗（Android 11+ 生物识别或凭据，9/10 凭据）；通知标题、完成通知深链、首页「最近保存」、导出链接清单与自动入库全部不泄露私密标题（见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)）。
+- [ ] **C5 自定义 UA / 代理**（用户明确本轮不做）— 需扩展 `DouyinApiClient.USER_AGENT`、`ResumableDownloader` 的请求头注入点与代理配置，故保留未做。
+- [x] **C5′ 链接导入导出与设置备份**（C5 去掉自定义 UA / 代理后的部分）— 版本化 JSON 备份编解码与校验、链接清单导出/导入、SAF 文档读写；见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)。
 
 ## 明确不做
 
@@ -97,6 +110,8 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
 ## 已具备（勿重复立项）
 
 平台与通用网址解析、网页辅助嗅探、批量导入（≤50 条）、画质与文件大小选择、重复提醒、下载队列与排序、暂停续传、HLS/DASH/分轨合并与校验、失败分类恢复、共享空间预留与预算可视化、残留清理、收藏/分类/重命名、相册与自定义目录导出、独立音轨与离线提取、续播与 0.5×–4× 倍速、后台音频、画中画、完成通知与通知内单任务控制、检查更新、深浅色主题、Material You 动态取色、`ACTION_SEND` 分享接入与 `VIEW` 深链、剪贴板链接识别、启动器快捷方式、任务页搜索与排序。
+
+2026-10-09 起还具备：播放手势（双击快进退、竖滑亮度音量、长按 2×）、字幕渲染与开关（含同名 sidecar）、全局与单任务限速、下载后自动存入相册、继续观看进度回填、音频睡眠定时器。
 
 ## 验收命令
 

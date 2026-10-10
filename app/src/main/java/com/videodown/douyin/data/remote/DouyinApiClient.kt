@@ -76,7 +76,7 @@ class DouyinApiClient(
             .build()
 
         return okHttpClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("分享页返回 HTTP ${response.code}")
+            if (!response.isSuccessful) throw IOException("分享页返回 HTTP ${response.code}")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
             response.body?.string().orEmpty()
         }
     }

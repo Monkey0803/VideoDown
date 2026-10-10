@@ -80,6 +80,10 @@ data class DouyinVideo(
     val platform: VideoPlatform = VideoPlatform.DOUYIN,
     val mediaLabel: String? = null,
     val audioVariants: List<VideoVariant> = emptyList(),
+    /** Languages the source offers as real subtitle tracks; empty when it offers none. */
+    val subtitleLanguages: List<String> = emptyList(),
+    /** Languages available only as machine captions; used when no real subtitle exists. */
+    val autoCaptionLanguages: List<String> = emptyList(),
 ) {
     /**
      * Variants ordered from best to worst, collapsed to one entry per resolution label.

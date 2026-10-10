@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T03:04:19" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2LibraryOrganizationDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="6.594" timestamp="2026-10-10T03:04:19" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="actualRenameAndCategorySurviveRotationAndFilterSavedFile" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="3.575" />
+    <testcase name="favoriteControlFiltersAndPersistsAfterHistoryReload" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="1.581" />
+    <testcase name="realPersistenceFailureShowsErrorAndRetryPreservesOriginalThenSucceeds" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="1.438" />
+  </testsuite>
+</testsuites>

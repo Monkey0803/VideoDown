@@ -112,6 +112,70 @@ class AppPreferences(context: Context) {
         }
 
     /**
+     * Render subtitles in the player when the media has a text track (embedded or a sidecar file).
+     *
+     * On by default: subtitles the user went to the trouble of providing should not need turning on.
+     */
+    private val _subtitlesEnabled = MutableStateFlow(store.getBoolean("subtitles_enabled", true))
+    val subtitlesEnabledChanges = _subtitlesEnabled.asStateFlow()
+
+    var subtitlesEnabled: Boolean
+        get() = _subtitlesEnabled.value
+        set(value) {
+            store.edit().putBoolean("subtitles_enabled", value).apply()
+            _subtitlesEnabled.value = value
+        }
+
+    /**
+     * Parse every entry of a collection / channel URL instead of only the linked video.
+     *
+     * Off by default: a single-video link must never silently turn into a twenty-item queue.
+     */
+    private val _playlistParsing = MutableStateFlow(store.getBoolean("playlist_parsing", false))
+    val playlistParsingChanges = _playlistParsing.asStateFlow()
+
+    var playlistParsing: Boolean
+        get() = _playlistParsing.value
+        set(value) {
+            store.edit().putBoolean("playlist_parsing", value).apply()
+            _playlistParsing.value = value
+        }
+
+    /**
+     * Global download rate cap in KB/s; `0` means unlimited.
+     *
+     * Enforced by a limiter shared across every direct transfer, so it caps their total rather than
+     * each one separately. Engine downloads (yt-dlp / FFmpeg) run as separate processes and are not
+     * paced by it.
+     */
+    private val _globalSpeedLimitKbps = MutableStateFlow(store.getInt("global_speed_limit_kbps", 0).coerceAtLeast(0))
+    val globalSpeedLimitChanges = _globalSpeedLimitKbps.asStateFlow()
+
+    var globalSpeedLimitKbps: Int
+        get() = _globalSpeedLimitKbps.value
+        set(value) {
+            val safe = value.coerceAtLeast(0)
+            store.edit().putInt("global_speed_limit_kbps", safe).apply()
+            _globalSpeedLimitKbps.value = safe
+        }
+
+    /**
+     * Copy every finished download into the system gallery as well.
+     *
+     * Off by default: the app keeps downloads in its own directory and the user decides what should
+     * also appear in Movies/Music. Failures never affect the download itself.
+     */
+    private val _autoSaveToGallery = MutableStateFlow(store.getBoolean("auto_save_to_gallery", false))
+    val autoSaveToGalleryChanges = _autoSaveToGallery.asStateFlow()
+
+    var autoSaveToGallery: Boolean
+        get() = _autoSaveToGallery.value
+        set(value) {
+            store.edit().putBoolean("auto_save_to_gallery", value).apply()
+            _autoSaveToGallery.value = value
+        }
+
+    /**
      * Endpoint of the JSON version manifest used by 「我的 → 检查更新」.
      *
      * Defaults to the URL baked in at build time (`-PupdateManifestUrl=…`) and can be overridden
@@ -144,21 +208,79 @@ class AppPreferences(context: Context) {
             PreferredQuality.SAVER -> variants.lastOrNull()
         }
     }
+
+    /** Every setting that travels in a backup file. */
+    fun snapshot(): com.videodown.douyin.data.backup.SettingsSnapshot =
+        com.videodown.douyin.data.backup.SettingsSnapshot(
+            version = com.videodown.douyin.data.backup.SettingsBackupCodec.CURRENT_VERSION,
+            themeMode = themeMode.name,
+            dynamicColor = dynamicColor,
+            preferredQuality = preferredQuality.name,
+            libraryLayout = libraryLayout.name,
+            wifiOnly = wifiOnly,
+            autoResume = autoResume,
+            maxConcurrentDownloads = maxConcurrentDownloads,
+            notifyOnCompletion = notifyOnCompletion,
+            individualTaskNotifications = individualTaskNotifications,
+            clipboardDetect = clipboardDetect,
+            autoSaveToGallery = autoSaveToGallery,
+            globalSpeedLimitKbps = globalSpeedLimitKbps,
+            subtitlesEnabled = subtitlesEnabled,
+            playlistParsing = playlistParsing,
+            updateManifestUrl = updateManifestUrl,
+        )
+
+    /**
+     * Applies a backup, leaving every field the file does not carry untouched.
+     *
+     * Returns the labels of the values that actually changed, so the caller can report a restore
+     * without diffing preferences again. Unknown enum names and out-of-range numbers are dropped by
+     * [SettingsSnapshot.sanitized] before anything is written.
+     */
+    fun apply(snapshot: com.videodown.douyin.data.backup.SettingsSnapshot): List<SettingsChange> {
+        val safe = snapshot.sanitized()
+        val applied = mutableListOf<SettingsChange>()
+        safe.themeMode?.let { name ->
+            ThemeMode.entries.firstOrNull { it.name == name }?.takeIf { it != themeMode }?.let {
+                themeMode = it; applied += SettingsChange.THEME_MODE
+            }
+        }
+        safe.preferredQuality?.let { name ->
+            PreferredQuality.entries.firstOrNull { it.name == name }?.takeIf { it != preferredQuality }?.let {
+                preferredQuality = it; applied += SettingsChange.PREFERRED_QUALITY
+            }
+        }
+        safe.libraryLayout?.let { name ->
+            LibraryLayout.entries.firstOrNull { it.name == name }?.takeIf { it != libraryLayout }?.let {
+                libraryLayout = it; applied += SettingsChange.LIBRARY_LAYOUT
+            }
+        }
+        safe.maxConcurrentDownloads?.takeIf { it != maxConcurrentDownloads }?.let {
+            maxConcurrentDownloads = it; applied += SettingsChange.CONCURRENCY
+        }
+        safe.globalSpeedLimitKbps?.takeIf { it != globalSpeedLimitKbps }?.let {
+            globalSpeedLimitKbps = it
+            applied += SettingsChange.SPEED_LIMIT
+        }
+        fun bool(value: Boolean?, current: Boolean, change: SettingsChange, write: (Boolean) -> Unit) {
+            value?.takeIf { it != current }?.let { write(it); applied += change }
+        }
+        bool(safe.dynamicColor, dynamicColor, SettingsChange.DYNAMIC_COLOR) { dynamicColor = it }
+        bool(safe.wifiOnly, wifiOnly, SettingsChange.WIFI_ONLY) { wifiOnly = it }
+        bool(safe.autoResume, autoResume, SettingsChange.AUTO_RESUME) { autoResume = it }
+        bool(safe.notifyOnCompletion, notifyOnCompletion, SettingsChange.NOTIFY_ON_COMPLETION) { notifyOnCompletion = it }
+        bool(safe.individualTaskNotifications, individualTaskNotifications, SettingsChange.INDIVIDUAL_NOTIFICATIONS) { individualTaskNotifications = it }
+        bool(safe.clipboardDetect, clipboardDetect, SettingsChange.CLIPBOARD_DETECT) { clipboardDetect = it }
+        bool(safe.autoSaveToGallery, autoSaveToGallery, SettingsChange.AUTO_SAVE_TO_GALLERY) { autoSaveToGallery = it }
+        bool(safe.subtitlesEnabled, subtitlesEnabled, SettingsChange.SUBTITLES) { subtitlesEnabled = it }
+        bool(safe.playlistParsing, playlistParsing, SettingsChange.PLAYLIST_PARSING) { playlistParsing = it }
+        safe.updateManifestUrl?.takeIf { it != updateManifestUrl }?.let { updateManifestUrl = it; applied += SettingsChange.UPDATE_SOURCE }
+        return applied
+    }
 }
 
-enum class ThemeMode(val label: String) {
-    SYSTEM("跟随系统"),
-    LIGHT("浅色"),
-    DARK("深色"),
-}
+enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-enum class LibraryLayout(val label: String) {
-    WATERFALL("瀑布流布局"),
-    LIST("列表布局"),
-}
+enum class LibraryLayout { WATERFALL, LIST }
 
-enum class PreferredQuality(val label: String) {
-    HIGHEST("最高画质"),
-    STANDARD("标准画质"),
-    SAVER("节省空间"),
-}
+enum class PreferredQuality { HIGHEST, STANDARD, SAVER }

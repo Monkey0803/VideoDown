@@ -21,9 +21,9 @@ object LauncherShortcuts {
 
     fun publish(context: Context) {
         val shortcuts = listOf(
-            shortcut(context, "quick_parse", ACTION_QUICK_PARSE, R.drawable.ic_shiying_paste, "粘贴解析", "解析剪贴板中的视频链接"),
-            shortcut(context, "batch_import", ACTION_BATCH_IMPORT, R.drawable.ic_shiying_batch_import, "批量导入", "一次导入多个链接"),
-            shortcut(context, "open_tasks", DownloadService.ACTION_OPEN_TASKS, R.drawable.ic_shiying_tasks, "下载任务", "查看下载进度"),
+            shortcut(context, "quick_parse", ACTION_QUICK_PARSE, R.drawable.ic_shiying_paste, context.getString(R.string.shortcut_quick_parse), context.getString(R.string.shortcut_quick_parse_desc)),
+            shortcut(context, "batch_import", ACTION_BATCH_IMPORT, R.drawable.ic_shiying_batch_import, context.getString(R.string.shortcut_batch_import), context.getString(R.string.shortcut_batch_import_desc)),
+            shortcut(context, "open_tasks", DownloadService.ACTION_OPEN_TASKS, R.drawable.ic_shiying_tasks, context.getString(R.string.history_header_title), context.getString(R.string.shortcut_open_tasks_desc)),
         )
         // A launcher may refuse new shortcuts (disabled by the user, or rate limited); that only
         // costs a convenience, so it must never affect app startup.

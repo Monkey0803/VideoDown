@@ -79,7 +79,7 @@ object DouyinIntents {
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        val chooser = Intent.createChooser(intent, if (mimeType.startsWith("audio/")) "分享音频" else "分享视频")
+        val chooser = Intent.createChooser(intent, context.getString(if (mimeType.startsWith("audio/")) com.videodown.douyin.R.string.share_audio else com.videodown.douyin.R.string.share_video))
         return runCatching { context.startActivity(chooser) }.isSuccess
     }
 

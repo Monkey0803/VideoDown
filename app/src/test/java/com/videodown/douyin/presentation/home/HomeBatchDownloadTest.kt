@@ -83,8 +83,9 @@ class HomeBatchDownloadTest {
         vm.selectAllMedia(); vm.downloadSelected(); runCurrent()
         assertEquals(listOf("one" to "1080P"), downloader.started)
         assertNull(vm.state.value.queuedCount)
-        assertNotNull(vm.state.value.errorMessage)
-        assertEquals("已加入 1 个下载任务，其余未加入，请重试", vm.state.value.infoMessage)
+        assertNotNull(vm.state.value.error)
+        // The state reports the outcome; the screen words it.
+        assertEquals(HomeInfo.QueuedPartial(1), vm.state.value.info)
         assertFalse(vm.state.value.isSubmitting)
     }
     private fun record(video: DouyinVideo) = DownloadRecord("existing", video.awemeId, video.title,
@@ -95,7 +96,7 @@ class HomeBatchDownloadTest {
         val duplicates = mutableMapOf<String, DownloadRecord>()
         override val progress = MutableStateFlow<Map<String, DownloadProgress>>(emptyMap())
         override suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant) = duplicates[video.selectionKey()]
-        override suspend fun start(video: DouyinVideo, variant: VideoVariant): String { if (video.awemeId == failOnVideo) throw IllegalStateException("queue failure"); started += video.awemeId to variant.label; return "task-${started.size}" }
+        override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String { if (video.awemeId == failOnVideo) throw IllegalStateException("queue failure"); started += video.awemeId to variant.label; return "task-${started.size}" }
         override suspend fun pause(id: String) = Unit
         override suspend fun resume(id: String) = Unit
         override suspend fun cancel(id: String, removeRecord: Boolean) = Unit

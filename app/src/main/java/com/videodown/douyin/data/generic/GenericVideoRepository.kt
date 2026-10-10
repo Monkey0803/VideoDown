@@ -17,22 +17,24 @@ class GenericVideoRepository(
     private val sessions: BrowserSessionStore,
     private val client: OkHttpClient,
     private val privateDirectory: File,
+    /** When true, a collection URL is parsed into every entry the engine can see. */
+    private val playlistEnabled: () -> Boolean = { false },
 ) : VideoRepository {
     override suspend fun parseShareText(shareText: String): AppResult<DouyinVideo> = parseVideos(shareText).map { it.selectedVideo }
     override suspend fun parseVideos(shareText: String): AppResult<ParsedVideos> = parse(shareText)
 
     suspend fun parse(text: String, browserSession: Boolean = false, referer: String? = null, userAgent: String? = null): AppResult<ParsedVideos> {
-        val url = VideoLinkExtractor.extract(text)?.url ?: return AppResult.Failure(AppError.InvalidLink("请输入 HTTP 或 HTTPS 视频网址"))
+        val url = VideoLinkExtractor.extract(text)?.url ?: return AppResult.Failure(AppError.InvalidLink("", reasonKey = "input:generic_link"))
         return try {
             withTimeout(75_000) {
                 probeDirect(url, browserSession, referer, userAgent)?.let { return@withTimeout AppResult.Success(ParsedVideos(listOf(it))) }
                 AppResult.Success(extract(url, browserSession, referer, userAgent))
             }
         } catch (_: TimeoutCancellationException) {
-            AppResult.Failure(AppError.Parse(VideoEngineException("TIMEOUT").message!!, DownloadFailureKind.NETWORK))
+            AppResult.Failure(AppError.Parse("", DownloadFailureKind.NETWORK, reasonKey = com.videodown.douyin.core.engineErrorKey("TIMEOUT")))
         } catch (e: CancellationException) { throw e
-        } catch (e: VideoEngineException) { AppResult.Failure(AppError.Parse(e.message!!, e.failureKind))
-        } catch (_: Exception) { AppResult.Failure(AppError.Parse("网页未返回可下载的视频，可打开网页登录或播放后查找")) }
+        } catch (e: VideoEngineException) { AppResult.Failure(AppError.Parse("", e.failureKind, reasonKey = com.videodown.douyin.core.engineErrorKey(e.kind)))
+        } catch (_: Exception) { AppResult.Failure(AppError.Parse("", reasonKey = "generic:no_video")) }
     }
 
     private suspend fun extract(url: String, browser: Boolean, referer: String?, userAgent: String?): ParsedVideos = withContext(Dispatchers.IO) {
@@ -41,14 +43,16 @@ class GenericVideoRepository(
         try {
             if (browser) sessions.export(BrowserSessionStore.extractorCookieUrls(url, referer), cookieFile)
             var info: JsonObject? = null
-            runtime.execute(buildJsonObject {
-                put("mode", "parse"); put("url", url)
-                putJsonObject("headers") {
-                    referer?.let { put("Referer", it) }
-                    userAgent?.let { put("User-Agent", it) }
-                }
-                if (browser) put("cookies", cookieFile.absolutePath)
-            }) { event -> if (event.text("event") == "metadata") info = event["info"] as? JsonObject }
+            runtime.execute(
+                EngineRequest.parse(
+                    url = url,
+                    browserSession = browser,
+                    cookieFile = cookieFile.absolutePath,
+                    referer = referer,
+                    userAgent = userAgent,
+                    playlist = playlistEnabled(),
+                ),
+            ) { event -> if (event.text("event") == "metadata") info = event["info"] as? JsonObject }
             val metadata = info ?: throw VideoEngineException("UNSUPPORTED")
             if (metadata.flag("has_drm")) throw VideoEngineException("DRM")
             if (metadata.flag("is_live") || metadata.text("live_status") in setOf("is_live", "is_upcoming")) throw VideoEngineException("LIVE")
@@ -93,8 +97,8 @@ class GenericVideoRepository(
                 val id = MessageDigest.getInstance("SHA-256").digest(url.toByteArray()).joinToString("") { "%02x".format(it) }.take(24)
                 val size = response.header("Content-Range")?.substringAfterLast('/')?.toLongOrNull()
                     ?: if (response.code == 200) response.header("Content-Length")?.toLongOrNull() else null
-                DouyinVideo(id, response.request.url.pathSegments.lastOrNull()?.takeIf { it.isNotBlank() } ?: "网页视频",
-                    variants = listOf(VideoVariant(response.request.url.toString(), "原画", sizeBytes = size,
+                DouyinVideo(id, response.request.url.pathSegments.lastOrNull()?.takeIf { it.isNotBlank() } ?: "网页视频",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                    variants = listOf(VideoVariant(response.request.url.toString(), "原画", sizeBytes = size,  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
                         referer = referer ?: url, media = MediaDownload(pageUrl = url, mediaId = id, extension = ext,
                             userAgent = userAgent, useBrowserSession = browser, extractor = "direct"))),
                     shareUrl = referer ?: url, platform = VideoPlatform.GENERIC)

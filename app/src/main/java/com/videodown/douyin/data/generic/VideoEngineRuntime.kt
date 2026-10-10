@@ -15,22 +15,13 @@ import kotlinx.serialization.json.*
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
-class VideoEngineException(val kind: String) : Exception(when (kind) {
-    "NO_AUDIO" -> "原视频不包含可提取的音轨"
-    "DRM" -> "此视频受 DRM 保护，无法下载"
-    "LIVE" -> "暂不支持直播或尚未开始的视频"
-    "CHANGED" -> "视频或所选画质已变化，请重新解析并选择"
-    "ACCESS" -> "网址过期或访问受限，请重新解析或打开网页登录"
-    "EXPIRED" -> "下载网址已失效，请重新解析原网址"
-    "RATE" -> "网站暂时限制请求，请稍后重试或降低同时下载数量"
-    "AUTH" -> "网站要求登录或验证，请打开网页完成后重试"
-    "SPACE" -> "存储空间不足，请清理空间后继续"
-    "STORAGE_ACCESS" -> "无法写入视频文件，请检查应用存储是否可用"
-    "NETWORK" -> "网络连接失败，请检查网络后重试"
-    "TIMEOUT" -> "解析超时，可打开网页查找视频"
-    "RUNTIME" -> "解析引擎无法启动，请检查存储空间或重新安装完整安装包"
-    else -> "未找到可下载的视频，可打开网页登录或播放后查找"
-}) {
+/**
+ * A failure the bundled engine reported.
+ *
+ * Carries only the kind: the wording lives in resources (see `core/ErrorResources.kt`), because the
+ * same failure is shown on the parse page, on a task card and in a notification.
+ */
+class VideoEngineException(val kind: String) : Exception(kind) {
     val failureKind: DownloadFailureKind get() = when (kind) {
         "NO_AUDIO" -> DownloadFailureKind.NO_AUDIO
         "ACCESS" -> DownloadFailureKind.ACCESS_DENIED
@@ -48,7 +39,7 @@ class VideoEngineException(val kind: String) : Exception(when (kind) {
 
 /** Uses the pinned AAR's binaries, in a process group so cancelling also stops FFmpeg. */
 class VideoEngineRuntime(private val context: Context) {
-    private val _version = MutableStateFlow("尚未初始化 · 引擎组件 0.18.1")
+    private val _version = MutableStateFlow(context.getString(com.videodown.douyin.R.string.engine_not_initialised, ENGINE_COMPONENT_VERSION))
     val version = _version.asStateFlow()
     private var ready = false
     private val nativeDir get() = File(context.applicationInfo.nativeLibraryDir)
@@ -67,7 +58,7 @@ class VideoEngineRuntime(private val context: Context) {
                 val destination = File(libraryDirectory, name)
                 val temporary = File(libraryDirectory, "$name.new")
                 context.assets.open("$patch/$name").use { input -> temporary.outputStream().use { input.copyTo(it) } }
-                check(temporary.renameTo(destination)) { "无法安装 16 KB 兼容依赖" }
+                check(temporary.renameTo(destination)) { "无法安装 16 KB 兼容依赖" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
             }
         }
         val bundledVersion = context.assets.open("engine/VERSION.txt").bufferedReader().use { it.readText() }
@@ -76,7 +67,7 @@ class VideoEngineRuntime(private val context: Context) {
             val core = File(base, "yt-dlp/yt-dlp")
             val staging = File(core.parentFile, "yt-dlp.new")
             context.assets.open("engine/yt-dlp").use { input -> staging.outputStream().use { input.copyTo(it) } }
-            check(staging.renameTo(core)) { "无法安装解析引擎" }
+            check(staging.renameTo(core)) { "无法安装解析引擎" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
             marker.writeText(bundledVersion)
         }
         context.assets.open("video_engine.py").use { input -> bridge.outputStream().use { input.copyTo(it) } }
@@ -86,11 +77,18 @@ class VideoEngineRuntime(private val context: Context) {
     suspend fun inspectVersion() {
         try {
             execute(buildJsonObject { put("mode", "version") }) { event ->
-                if (event.text("event") == "version") _version.value = "yt-dlp ${event.text("version")} · 组件 0.18.1 · QuickJS / FFmpeg"
+                if (event.text("event") == "version") _version.value = context.getString(
+                    com.videodown.douyin.R.string.engine_version, event.text("version"), ENGINE_COMPONENT_VERSION,
+                )
             }
         } catch (e: CancellationException) { throw e
-        } catch (e: VideoEngineException) { _version.value = if (e.kind == "SPACE") e.message!! else "引擎初始化失败 · 请检查存储空间或重新安装完整安装包"
-        } catch (_: Exception) { _version.value = "引擎初始化失败 · 请重新安装完整安装包" }
+        } catch (e: VideoEngineException) {
+            _version.value = if (e.kind == "SPACE") {
+                context.getString(com.videodown.douyin.core.engineKindRes(e.kind))
+            } else {
+                context.getString(com.videodown.douyin.R.string.engine_init_failed)
+            }
+        } catch (_: Exception) { _version.value = context.getString(com.videodown.douyin.R.string.engine_reinstall) }
     }
 
     suspend fun execute(
@@ -174,3 +172,6 @@ class VideoEngineRuntime(private val context: Context) {
         }
     }
 }
+
+/** The component version the app pins; shown next to the extracted engine version. */
+private const val ENGINE_COMPONENT_VERSION = "0.18.1"

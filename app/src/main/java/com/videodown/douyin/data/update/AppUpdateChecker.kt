@@ -11,20 +11,25 @@ import java.io.IOException
 sealed interface UpdateCheckResult {
     /** A strictly newer build is published. */
     data class UpdateAvailable(
-        val currentLabel: String,
-        val latestLabel: String,
+        val current: AppVersion,
+        val latest: AppUpdateManifest,
         val notes: String?,
         val downloadUrl: String?,
         val releasePageUrl: String?,
     ) : UpdateCheckResult
 
-    data class UpToDate(val currentLabel: String) : UpdateCheckResult
+    data class UpToDate(val current: AppVersion) : UpdateCheckResult
 
     /** No update source has been configured yet. */
     data object NotConfigured : UpdateCheckResult
 
-    /** The check could not complete; [message] is user-facing Simplified Chinese. */
-    data class Failed(val message: String) : UpdateCheckResult
+    /**
+     * The check could not complete.
+     *
+     * [reasonKey] names the reason (see `core/ErrorResources.kt`) and [httpStatus] is set when the
+     * service answered with a failing status; the dialog owns the wording.
+     */
+    data class Failed(val reasonKey: String, val httpStatus: Int? = null) : UpdateCheckResult
 }
 
 /**
@@ -44,7 +49,7 @@ class AppUpdateChecker(
         val url = manifestUrl?.trim().orEmpty()
         if (url.isEmpty()) return UpdateCheckResult.NotConfigured
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            return UpdateCheckResult.Failed("更新源地址需以 http:// 或 https:// 开头")
+            return UpdateCheckResult.Failed("update:bad_url")
         }
         return withContext(Dispatchers.IO) {
             val request = Request.Builder()
@@ -56,40 +61,40 @@ class AppUpdateChecker(
             try {
                 httpClient.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) {
-                        return@withContext UpdateCheckResult.Failed(
-                            "更新服务返回错误（HTTP ${response.code}），请稍后重试",
-                        )
+                        return@withContext UpdateCheckResult.Failed("update:http_error", httpStatus = response.code)
                     }
                     val body = response.body?.string().orEmpty()
                     val manifest = runCatching { json.decodeFromString<AppUpdateManifest>(body) }
                         .getOrNull()
-                        ?: return@withContext UpdateCheckResult.Failed("更新信息格式不正确，请检查更新源内容")
+                        ?: return@withContext UpdateCheckResult.Failed("update:bad_format")
                     evaluate(manifest)
                 }
             } catch (error: IOException) {
-                return@withContext UpdateCheckResult.Failed("无法连接更新服务，请检查网络后重试")
+                return@withContext UpdateCheckResult.Failed("update:network")
             } catch (error: Exception) {
-                return@withContext UpdateCheckResult.Failed("更新检查失败，请稍后重试")
+                return@withContext UpdateCheckResult.Failed("update:failed")
             }
         }
     }
 
     /** Pure comparison step, kept separate so tests need no network. */
     fun evaluate(manifest: AppUpdateManifest): UpdateCheckResult {
-        val latestLabel = manifest.versionLabel
-            ?: return UpdateCheckResult.Failed("更新信息缺少版本号，请检查更新源内容")
+        val latestName = manifest.versionName?.trim()?.takeIf(String::isNotEmpty)
+        if (latestName == null && manifest.versionCode == null) {
+            return UpdateCheckResult.Failed("update:no_version")
+        }
         val newer = manifest.versionCode?.let { it > currentVersion.versionCode }
-            ?: (compareVersionNames(currentVersion.versionName, latestLabel) < 0)
+            ?: (compareVersionNames(currentVersion.versionName, latestName!!) < 0)
         return if (newer) {
             UpdateCheckResult.UpdateAvailable(
-                currentLabel = currentVersion.label,
-                latestLabel = latestLabel,
+                current = currentVersion,
+                latest = manifest,
                 notes = manifest.releaseNotes,
                 downloadUrl = manifest.apkUrl,
                 releasePageUrl = manifest.pageUrl,
             )
         } else {
-            UpdateCheckResult.UpToDate(currentVersion.label)
+            UpdateCheckResult.UpToDate(currentVersion)
         }
     }
 

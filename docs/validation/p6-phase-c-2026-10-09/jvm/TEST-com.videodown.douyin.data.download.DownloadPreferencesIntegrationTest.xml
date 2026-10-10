@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:48:58.470Z" hostname="Alias-mini.local" time="2.707">
+  <properties/>
+  <testcase name="queued tasks check policy before acquiring a network connection" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="0.085"/>
+  <testcase name="notification failure does not change completed download status" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="0.026"/>
+  <testcase name="retry backoff cannot bypass wifi restriction" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="1.556"/>
+  <testcase name="leaving wifi pauses with bytes preserved and resumes to one completion" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="0.809"/>
+  <testcase name="manual pause while socket is stalled remains paused without completion" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="0.055"/>
+  <testcase name="policy change cancels a stalled socket without waiting for read timeout" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="0.054"/>
+  <testcase name="blocked start resume and restart send no HTTP and keep partial data" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="0.088"/>
+  <testcase name="duplicate lookup prefers playable saved file and works after history reload" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="0.021"/>
+  <testcase name="duplicate lookup ignores missing completed files and finds resumable task" classname="com.videodown.douyin.data.download.DownloadPreferencesIntegrationTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

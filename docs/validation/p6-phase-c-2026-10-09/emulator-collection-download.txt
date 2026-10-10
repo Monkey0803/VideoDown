@@ -1,0 +1,3 @@
+entries=2
+  one.mp4 bytes=10542 source=http://127.0.0.1:39461/one.mp4
+  two.mp4 bytes=56341 source=http://127.0.0.1:39461/two.mp4

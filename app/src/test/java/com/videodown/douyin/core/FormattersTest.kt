@@ -46,32 +46,33 @@ class FormattersTest {
 
     @Test
     fun `estimates remaining time without guessing`() {
-        assertEquals("约剩 10 秒", formatEta(10L * 1024, 1024L))
-        assertEquals("约剩 2 分 10 秒", formatEta(130L * 1024, 1024L))
-        assertEquals("约剩 1 小时 0 分", formatEta(3600L * 1024, 1024L))
+        // Parts, not sentences: the screen words them (and translates them).
+        assertEquals(RemainingTime.Seconds(10), remainingTime(10L * 1024, 1024L))
+        assertEquals(RemainingTime.MinutesSeconds(2, 10), remainingTime(130L * 1024, 1024L))
+        assertEquals(RemainingTime.HoursMinutes(1, 0), remainingTime(3600L * 1024, 1024L))
     }
 
     @Test
     fun `no estimate is produced for an unknown size or a stalled transfer`() {
-        assertEquals(null, formatEta(0L, 1024L))
-        assertEquals(null, formatEta(-1L, 1024L))
-        assertEquals(null, formatEta(1024L, 0L))
-        assertEquals(null, formatEta(1024L, -5L))
+        assertEquals(null, remainingTime(0L, 1024L))
+        assertEquals(null, remainingTime(-1L, 1024L))
+        assertEquals(null, remainingTime(1024L, 0L))
+        assertEquals(null, remainingTime(1024L, -5L))
     }
 
     @Test
     fun `a partial second still rounds up to one second`() {
-        assertEquals("约剩 1 秒", formatEta(1L, 1024L))
-        assertEquals("约剩 2 秒", formatEta(1025L, 1024L))
+        assertEquals(RemainingTime.Seconds(1), remainingTime(1L, 1024L))
+        assertEquals(RemainingTime.Seconds(2), remainingTime(1025L, 1024L))
     }
 
     @Test
     fun `formats relative time`() {
         val now = 1_700_000_000_000L
-        assertEquals("刚刚", formatRelativeTime(now - 30_000, now))
-        assertEquals("5 分钟前", formatRelativeTime(now - 5 * 60_000, now))
-        assertEquals("3 小时前", formatRelativeTime(now - 3 * 3_600_000, now))
-        assertEquals("2 天前", formatRelativeTime(now - 2 * 86_400_000, now))
+        assertEquals(RelativeTime.JustNow, relativeTime(now - 30_000, now))
+        assertEquals(RelativeTime.Minutes(5), relativeTime(now - 5 * 60_000, now))
+        assertEquals(RelativeTime.Hours(3), relativeTime(now - 3 * 3_600_000, now))
+        assertEquals(RelativeTime.Days(2), relativeTime(now - 2 * 86_400_000, now))
     }
 }
 
@@ -115,7 +116,7 @@ class DownloadRecordTest {
     }
 
     @Test
-    fun `blank author names fall back to a placeholder`() {
-        assertEquals("未知作者", record(0, 0, DownloadStatus.PENDING).displayAuthor)
+    fun `a blank author name stays blank so the screen can substitute wording`() {
+        assertEquals("", record(0, 0, DownloadStatus.PENDING).displayAuthor)
     }
 }

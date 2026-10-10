@@ -31,13 +31,13 @@ class DouyinRepositoryImpl(
         withContext(Dispatchers.IO) {
             val trimmed = shareText.trim()
             if (trimmed.isEmpty()) {
-                return@withContext AppResult.Failure(AppError.InvalidLink("请输入抖音分享链接或分享文案"))
+                return@withContext AppResult.Failure(AppError.InvalidLink("", reasonKey = "input:douyin_link"))
             }
 
             val awemeId = resolveAwemeId(trimmed)
                 ?: return@withContext AppResult.Failure(
                     AppError.InvalidLink(
-                        "未能识别抖音视频链接。请粘贴包含 v.douyin.com 或 douyin.com/video/… 的分享内容。",
+                        "", reasonKey = "input:douyin_unrecognised",
                     ),
                 )
 
@@ -53,14 +53,14 @@ class DouyinRepositoryImpl(
 
             // Strategy 1: anonymous share page (SSR payload).
             runCatching { api.fetchSharePageHtml(awemeId) }
-                .onFailure { Log.w(TAG, "分享页获取失败: ${it.message}") }
+                    .onFailure { Log.w(TAG, "分享页获取失败: ${it.message}") }  // l10n-ignore: a developer log line, never shown to the user
                 .getOrNull()
                 ?.let { html -> consider(parser.parseSharePage(html)) }
 
             if (best?.variants.isNullOrEmpty()) {
                 // Strategy 2: signed web detail endpoint.
                 runCatching { api.fetchWebDetailJson(awemeId) }
-                    .onFailure { Log.w(TAG, "web detail 获取失败: ${it.message}") }
+                    .onFailure { Log.w(TAG, "web detail 获取失败: ${it.message}") }  // l10n-ignore: a developer log line, never shown to the user
                     .getOrNull()
                     ?.let { body -> consider(parser.parseJson(body)) }
             }
@@ -68,18 +68,19 @@ class DouyinRepositoryImpl(
             if (best?.variants.isNullOrEmpty()) {
                 // Strategy 3: legacy v2 endpoint.
                 runCatching { api.fetchLegacyItemInfoJson(awemeId) }
-                    .onFailure { Log.w(TAG, "legacy iteminfo 获取失败: ${it.message}") }
+                    .onFailure { Log.w(TAG, "legacy iteminfo 获取失败: ${it.message}") }  // l10n-ignore: a developer log line, never shown to the user
                     .getOrNull()
                     ?.let { body -> consider(parser.parseJson(body)) }
             }
 
             val resolved = best
                 ?: return@withContext AppResult.Failure(
-                    AppError.Parse("已识别视频 ID $awemeId，但未能获取到视频信息。该接口可能已失效或需要 Cookie。"),
+                    // The id is data passed to the sentence, not part of the copy.
+                AppError.Parse("", reasonKey = "douyin:id_unresolved", detail = awemeId),
                 )
 
             if (resolved.variants.isEmpty()) {
-                AppResult.Failure(AppError.Parse("该作品没有可下载的视频流（可能是图文作品或已被删除）。"))
+                AppResult.Failure(AppError.Parse("", reasonKey = "douyin:no_video"))
             } else {
                 AppResult.Success(resolved)
             }
@@ -95,7 +96,7 @@ class DouyinRepositoryImpl(
         if (!DouyinLinkExtractor.isShortLink(shareUrl)) return null
 
         val expanded = runCatching { api.expandShortLink(shareUrl) }
-            .onFailure { Log.w(TAG, "短链展开失败: ${it.message}") }
+                    .onFailure { Log.w(TAG, "短链展开失败: ${it.message}") }  // l10n-ignore: a developer log line, never shown to the user
             .getOrDefault(shareUrl)
 
         return DouyinLinkExtractor.extractAwemeId(expanded)

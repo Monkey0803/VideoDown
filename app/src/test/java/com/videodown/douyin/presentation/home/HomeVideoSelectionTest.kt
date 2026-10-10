@@ -96,7 +96,7 @@ class HomeVideoSelectionTest {
     private class RecordingDownloader : Downloader {
         var started: Pair<DouyinVideo, VideoVariant>? = null
         override val progress = MutableStateFlow<Map<String, DownloadProgress>>(emptyMap())
-        override suspend fun start(video: DouyinVideo, variant: VideoVariant): String { started = video to variant; return "task" }
+        override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String { started = video to variant; return "task" }
         override suspend fun pause(id: String) = Unit
         override suspend fun resume(id: String) = Unit
         override suspend fun cancel(id: String, removeRecord: Boolean) = Unit

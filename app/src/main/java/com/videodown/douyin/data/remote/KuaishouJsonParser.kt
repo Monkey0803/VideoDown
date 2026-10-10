@@ -35,7 +35,7 @@ class KuaishouJsonParser {
         }
         val user = photo.obj("user") ?: objects(root).firstOrNull { it.text("id") == photo.text("userId") && it.containsKey("name") }
         return DouyinVideo(
-            awemeId = id, title = photo.text("caption")?.take(160) ?: "快手视频",
+            awemeId = id, title = photo.text("caption")?.take(160) ?: "快手视频",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
             coverUrl = mediaUrl(photo.array("coverUrls").firstOrNull()?.let { (it as? JsonObject)?.text("url") }
                 ?: photo.text("coverUrl")), durationMs = photo.number("duration") ?: 0L,
             author = DouyinAuthor(uid = photo.text("userId") ?: user?.text("id"), secUid = photo.text("userEid"),

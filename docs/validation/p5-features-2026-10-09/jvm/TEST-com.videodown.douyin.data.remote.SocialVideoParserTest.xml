@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.SocialVideoParserTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.824Z" hostname="Alias-mini.local" time="0.002">
+  <properties/>
+  <testcase name="kuaishou leaves HLS only content without an MP4 download choice" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.001"/>
+  <testcase name="weibo exposes MP4 quality choices but excludes storyboard images" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.0"/>
+  <testcase name="kuaishou extracts assigned JSON without executing it" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.0"/>
+  <testcase name="recognizes the supplied URLs and shared captions" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.001"/>
+  <testcase name="lookalike hosts stay generic and credentials are rejected" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.0"/>
+  <testcase name="kuaishou never substitutes a recommended video with a different id" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.0"/>
+  <testcase name="weibo handles legacy direct streams and wrapped mobile JSON" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.0"/>
+  <testcase name="weibo rejects login HTML and image only posts" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.0"/>
+  <testcase name="recognizes mobile detail and redirected kuaishou URLs" classname="com.videodown.douyin.data.remote.SocialVideoParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

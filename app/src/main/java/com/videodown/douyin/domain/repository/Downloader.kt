@@ -3,6 +3,7 @@ package com.videodown.douyin.domain.repository
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.DownloadProgress
 import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.domain.model.SubtitleSelection
 import com.videodown.douyin.domain.model.VideoVariant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +28,12 @@ interface Downloader {
      * Creates a history record for [video]/[variant] and starts downloading it.
      * Returns the id of the created record.
      */
-    suspend fun start(video: DouyinVideo, variant: VideoVariant): String
+    suspend fun start(
+        video: DouyinVideo,
+        variant: VideoVariant,
+        /** Subtitle track to fetch and embed into the downloaded file; [SubtitleSelection.NONE] keeps none. */
+        subtitles: SubtitleSelection = SubtitleSelection.NONE,
+    ): String
 
     /** Existing matching task, or a completed task whose local file still exists. */
     suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant): DownloadRecord? = null
@@ -55,6 +61,12 @@ interface Downloader {
 
     /** Restarts a failed/paused record from byte zero. */
     suspend fun restart(id: String)
+
+    /**
+     * Applies a per-task rate cap in KB/s (`0` follows the global setting) to a task, running or
+     * not. The cap is persisted on the record so it survives a restart.
+     */
+    suspend fun setSpeedLimit(id: String, kbps: Int) {}
 
     /** Observes one record's persisted state (used to reflect completion in the UI). */
     fun observeRecord(id: String): Flow<DownloadRecord?>

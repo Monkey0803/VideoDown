@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T11:33:32" hostname="localhost">
+  <testsuite name="com.videodown.douyin.SpeedLimitDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="4.690" timestamp="2026-10-09T11:33:32" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="aPerTaskLimitIsAppliedWhenAQueuedTaskStarts" classname="com.videodown.douyin.SpeedLimitDeviceTest" time="1.803" />
+    <testcase name="aPerTaskLimitIsSetFromTheTaskCardAndShowsOnTheCard" classname="com.videodown.douyin.SpeedLimitDeviceTest" time="2.054" />
+    <testcase name="aGlobalLimitPacesARealTransferWithoutCorruptingIt" classname="com.videodown.douyin.SpeedLimitDeviceTest" time="0.833" />
+  </testsuite>
+</testsuites>

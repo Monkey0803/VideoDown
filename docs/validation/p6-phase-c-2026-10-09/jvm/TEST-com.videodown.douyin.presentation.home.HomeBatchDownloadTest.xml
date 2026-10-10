@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.541Z" hostname="Alias-mini.local" time="0.007">
+  <properties/>
+  <testcase name="each selected media retains its chosen quality and only checked items enqueue" classname="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" time="0.003"/>
+  <testcase name="single duplicate waits for explicit action and cancel starts nothing" classname="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" time="0.0"/>
+  <testcase name="changing quality clears old active task and remembers new selection" classname="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" time="0.001"/>
+  <testcase name="batch skip downloads nonduplicate selections only" classname="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" time="0.001"/>
+  <testcase name="force download includes duplicate items and double taps do not enqueue twice" classname="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" time="0.001"/>
+  <testcase name="partial queue failure stays on result screen with success count and error" classname="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" time="0.0"/>
+  <testcase name="removed duplicate is rechecked before skipping" classname="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" time="0.001"/>
+  <testcase name="empty selection does not enqueue and clear removes pending duplicate prompt" classname="com.videodown.douyin.presentation.home.HomeBatchDownloadTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

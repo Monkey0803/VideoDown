@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.AutoResumeBudgetTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:48:56.741Z" hostname="Alias-mini.local" time="0.001">
+  <properties/>
+  <testcase name="rejects a non-positive limit" classname="com.videodown.douyin.data.download.AutoResumeBudgetTest" time="0.001"/>
+  <testcase name="a failing task keeps its budget while the attempt is running" classname="com.videodown.douyin.data.download.AutoResumeBudgetTest" time="0.0"/>
+  <testcase name="only pending running and still-eligible tasks keep a budget" classname="com.videodown.douyin.data.download.AutoResumeBudgetTest" time="0.0"/>
+  <testcase name="a changed blocking condition grants a fresh budget" classname="com.videodown.douyin.data.download.AutoResumeBudgetTest" time="0.0"/>
+  <testcase name="exhausts after the configured number of attempts" classname="com.videodown.douyin.data.download.AutoResumeBudgetTest" time="0.0"/>
+  <testcase name="dropping a task that is no longer a candidate resets its budget" classname="com.videodown.douyin.data.download.AutoResumeBudgetTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -25,7 +25,7 @@ class P1DownloadIntegrationTest {
             RangeAwareTestServer(payload).use { server ->
                 val engine = DownloadEngine(history, ResumableDownloader(OkHttpClient()), DownloadPaths(temp.root),
                     scope, "", "test", onTaskScheduled = {
-                        if (denied) throw DownloadServiceException("后台下载服务无法启动")
+                        if (denied) throw DownloadServiceException(com.videodown.douyin.core.ServiceFailure.UNKNOWN)
                     })
                 val id = engine.start(DouyinVideo("service", "service"), variant(server))
                 val failed = withTimeout(5000) { history.observeRecord(id).first { it?.status == DownloadStatus.FAILED }!! }

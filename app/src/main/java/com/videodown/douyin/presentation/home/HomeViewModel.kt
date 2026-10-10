@@ -9,6 +9,8 @@ import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.DownloadProgress
 import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.domain.model.SubtitleLanguageSelection
+import com.videodown.douyin.domain.model.SubtitleSelection
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.VideoVariant
 import com.videodown.douyin.data.remote.ClipboardLinkPolicy
@@ -29,8 +31,29 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class DownloadRequest(val video: DouyinVideo, val variant: VideoVariant)
+data class DownloadRequest(
+    val video: DouyinVideo,
+    val variant: VideoVariant,
+    val subtitles: SubtitleSelection = SubtitleSelection.NONE,
+)
 data class DuplicateDownloads(val requests: List<DownloadRequest>, val records: Map<String, DownloadRecord>)
+
+/** Why a parse produced nothing usable; the screen words each case. */
+/** A neutral outcome for the parse page; the screen words each case. */
+sealed interface HomeInfo {
+    data object AlreadyQueued : HomeInfo
+    /** A failure already stored on the active record (a `engine:`/`service:` key or older text). */
+    data class StoredFailure(val stored: String) : HomeInfo
+    data class Queued(val count: Int) : HomeInfo
+    data class QueuedPartial(val count: Int) : HomeInfo
+}
+
+sealed interface HomeError {
+    data class FromApp(val error: com.videodown.douyin.core.AppError) : HomeError
+    data object EmptyInput : HomeError
+    data object NoVariant : HomeError
+    data object QueueFailed : HomeError
+}
 
 data class HomeUiState(
     val input: String = "",
@@ -44,16 +67,20 @@ data class HomeUiState(
     val isSubmitting: Boolean = false,
     val duplicates: DuplicateDownloads? = null,
     val queuedCount: Int? = null,
-    val errorMessage: String? = null,
+    /** Why the last parse failed; the screen owns the wording. */
+    val error: HomeError? = null,
     val errorKind: DownloadFailureKind? = null,
     val browserRequestUrl: String? = null,
     /** Retained after fast parse completion so old browser overlays can be dismissed. */
     val parseRequestId: Long = 0,
-    val infoMessage: String? = null,
+    /** A neutral outcome worth telling the user about; the screen words it. */
+    val info: HomeInfo? = null,
     /** Id of the record created by the most recent "download" tap. */
     val activeDownloadId: String? = null,
     val activeProgress: DownloadProgress? = null,
     val activeRecord: DownloadRecord? = null,
+    /** Whether the next download should fetch and embed this video's subtitle track. */
+    val saveSubtitles: Boolean = false,
     /** Link copied elsewhere and offered for parsing; shown as a dismissible banner. */
     val clipboardOffer: String? = null,
 ) {
@@ -96,11 +123,11 @@ class HomeViewModel(
     fun onBrowserRequestConsumed() { _state.update { it.copy(browserRequestUrl = null) } }
 
     fun onInputChange(value: String) {
-        _state.update { it.copy(input = value, errorMessage = null, errorKind = null) }
+        _state.update { it.copy(input = value, error = null, errorKind = null) }
     }
 
     fun onErrorConsumed() {
-        _state.update { it.copy(errorMessage = null, infoMessage = null) }
+        _state.update { it.copy(error = null, info = null) }
     }
 
     /**
@@ -132,7 +159,7 @@ class HomeViewModel(
 
     /** Called when the app receives a share intent; parses immediately. */
     fun parseSharedText(text: String) {
-        _state.update { it.copy(input = text, errorMessage = null, video = null, selectedVariant = null,
+        _state.update { it.copy(input = text, error = null, video = null, selectedVariant = null,
             activeDownloadId = null, activeProgress = null, activeRecord = null, clipboardOffer = null) }
         parse()
     }
@@ -140,7 +167,7 @@ class HomeViewModel(
     fun parse() {
         val text = _state.value.input.trim()
         if (text.isEmpty()) {
-            _state.update { it.copy(errorMessage = "请先粘贴视频网址或分享文案") }
+            _state.update { it.copy(error = HomeError.EmptyInput) }
             return
         }
 
@@ -150,7 +177,7 @@ class HomeViewModel(
         sizeJob?.cancel()
         observeJob?.cancel()
         _state.update {
-            it.copy(parseRequestId = it.parseRequestId + 1, isParsing = true, isLoadingSizes = false, errorMessage = null, errorKind = null, browserRequestUrl = null, infoMessage = null,
+            it.copy(parseRequestId = it.parseRequestId + 1, isParsing = true, isLoadingSizes = false, error = null, errorKind = null, browserRequestUrl = null, info = null,
                 video = null, videos = emptyList(), selectedMedia = emptySet(), variantChoices = emptyMap(),
                 duplicates = null, isSubmitting = false, queuedCount = null, selectedVariant = null, activeDownloadId = null, activeProgress = null,
                 activeRecord = null)
@@ -169,14 +196,14 @@ class HomeViewModel(
                             variantChoices = result.value.videos.mapNotNull { item -> selectDefaultVariant(item)?.let { item.selectionKey() to it } }.toMap(),
                             selectedVariant = selectDefaultVariant(video),
                             isLoadingSizes = video.sortedVariants.any { (it.sizeBytes ?: 0L) <= 0L },
-                            errorMessage = if (video.variants.isEmpty()) "未能解析出可下载的视频地址" else null,
+                            error = if (video.variants.isEmpty()) HomeError.NoVariant else null,
                         )
                     }
                     if (_state.value.isLoadingSizes) loadSizes(video)
                 }
 
                 is AppResult.Failure -> {
-                    _state.update { it.copy(isParsing = false, errorMessage = result.error.message,
+                    _state.update { it.copy(isParsing = false, error = HomeError.FromApp(result.error),
                         errorKind = if (result.error is com.videodown.douyin.core.AppError.InvalidLink) null else result.error.downloadFailureKind()) }
                 }
             }
@@ -191,7 +218,7 @@ class HomeViewModel(
             selectedMedia = emptySet(),
             variantChoices = videos.videos.mapNotNull { item -> selectDefaultVariant(item)?.let { item.selectionKey() to it } }.toMap(),
             duplicates = null, isSubmitting = false, queuedCount = null,
-            isParsing = false, isLoadingSizes = false, errorMessage = null, errorKind = null, browserRequestUrl = null, activeDownloadId = null,
+            isParsing = false, isLoadingSizes = false, error = null, errorKind = null, browserRequestUrl = null, activeDownloadId = null,
             activeProgress = null, activeRecord = null) }
     }
 
@@ -203,7 +230,7 @@ class HomeViewModel(
         observeJob?.cancel()
         _state.update { it.copy(video = video, selectedVariant = it.variantChoices[video.selectionKey()] ?: selectDefaultVariant(video),
             isLoadingSizes = video.sortedVariants.any { variant -> (variant.sizeBytes ?: 0) <= 0 },
-            errorMessage = null, infoMessage = null, activeDownloadId = null, activeProgress = null, activeRecord = null) }
+            error = null, info = null, activeDownloadId = null, activeProgress = null, activeRecord = null) }
         if (_state.value.isLoadingSizes) loadSizes(video)
     }
 
@@ -259,22 +286,32 @@ class HomeViewModel(
         }
     }
 
+    fun toggleSaveSubtitles(value: Boolean) {
+        if (_state.value.isSubmitting || _state.value.duplicates != null) return
+        _state.update { it.copy(saveSubtitles = value) }
+    }
+
+    /** The subtitle track a download of [video] should keep, or nothing when the user opted out. */
+    private fun subtitleSelection(video: DouyinVideo): SubtitleSelection =
+        if (!_state.value.saveSubtitles) SubtitleSelection.NONE
+        else SubtitleLanguageSelection.preferred(video.subtitleLanguages, video.autoCaptionLanguages)
+
     fun download() {
         val video = _state.value.video ?: return
         val variant = _state.value.selectedVariant ?: return
-        submit(listOf(DownloadRequest(video, variant)))
+        submit(listOf(DownloadRequest(video, variant, subtitleSelection(video))))
     }
 
     fun downloadSelected() {
         val state = _state.value
         submit(state.videos.distinctBy { it.selectionKey() }.filter { it.selectionKey() in state.selectedMedia }.mapNotNull { video ->
-            state.variantChoices[video.selectionKey()]?.let { DownloadRequest(video, it) }
+            state.variantChoices[video.selectionKey()]?.let { DownloadRequest(video, it, subtitleSelection(video)) }
         })
     }
 
     private fun submit(requests: List<DownloadRequest>) {
         if (requests.isEmpty() || _state.value.isSubmitting || _state.value.duplicates != null) return
-        _state.update { it.copy(isSubmitting = true, infoMessage = null, errorMessage = null) }
+        _state.update { it.copy(isSubmitting = true, info = null, error = null) }
         val generation = resultGeneration
         submissionJob = viewModelScope.launch {
             try {
@@ -285,7 +322,7 @@ class HomeViewModel(
                 else enqueue(requests, generation)
             } catch (error: CancellationException) { throw error
             } catch (error: Exception) {
-                _state.update { it.copy(errorMessage = "无法加入下载队列，请重试") }
+                _state.update { it.copy(error = HomeError.QueueFailed) }
             } finally { if (generation == resultGeneration) _state.update { it.copy(isSubmitting = false) } }
         }
     }
@@ -305,9 +342,9 @@ class HomeViewModel(
                     downloader.findDuplicate(it.video, it.variant) == null
                 }
                 enqueue(requests, generation)
-                if (requests.isEmpty()) _state.update { it.copy(infoMessage = "所选视频已有记录，无需重复下载") }
+                if (requests.isEmpty()) _state.update { it.copy(info = HomeInfo.AlreadyQueued) }
             } catch (error: CancellationException) { throw error
-            } catch (error: Exception) { _state.update { it.copy(errorMessage = "无法加入下载队列，请重试") }
+            } catch (error: Exception) { _state.update { it.copy(error = HomeError.QueueFailed) }
             } finally { if (generation == resultGeneration) _state.update { it.copy(isSubmitting = false) } }
         }
     }
@@ -316,7 +353,7 @@ class HomeViewModel(
         var count = 0
         try {
             requests.forEach { request ->
-                val id = downloader.start(request.video, request.variant)
+                val id = downloader.start(request.video, request.variant, request.subtitles)
                 count++
                 if (generation == resultGeneration && _state.value.video?.selectionKey() == request.video.selectionKey()) {
                     _state.update { it.copy(activeDownloadId = id) }
@@ -324,10 +361,10 @@ class HomeViewModel(
                 }
             }
         } catch (error: Exception) {
-            if (count > 0 && generation == resultGeneration) _state.update { it.copy(infoMessage = "已加入 $count 个下载任务，其余未加入，请重试") }
+            if (count > 0 && generation == resultGeneration) _state.update { it.copy(info = HomeInfo.QueuedPartial(count)) }
             throw error
         }
-        if (count > 0 && generation == resultGeneration) _state.update { it.copy(queuedCount = count, infoMessage = "已加入 $count 个下载任务") }
+        if (count > 0 && generation == resultGeneration) _state.update { it.copy(queuedCount = count, info = HomeInfo.Queued(count)) }
     }
 
     private fun observeDownload(id: String) {
@@ -337,8 +374,10 @@ class HomeViewModel(
                 downloader.observeRecord(id).collect { record ->
                     _state.update {
                         if (it.activeDownloadId == id) it.copy(activeRecord = record,
-                            infoMessage = if (record?.errorMessage != it.activeRecord?.errorMessage)
-                                record?.errorMessage else it.infoMessage) else it
+                            // The stored value is a key or an older record's message; the screen
+                            // resolves it rather than showing the key itself.
+                            info = if (record?.errorMessage != it.activeRecord?.errorMessage)
+                                record?.errorMessage?.let(HomeInfo::StoredFailure) else it.info) else it
                     }
                 }
             }
@@ -384,8 +423,8 @@ class HomeViewModel(
                 activeDownloadId = null,
                 activeProgress = null,
                 activeRecord = null,
-                errorMessage = null, errorKind = null, browserRequestUrl = null,
-                infoMessage = null,
+                error = null, errorKind = null, browserRequestUrl = null,
+                info = null,
                 clipboardOffer = null,
             )
         }

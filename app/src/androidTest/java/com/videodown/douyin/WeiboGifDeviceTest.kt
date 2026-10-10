@@ -75,7 +75,7 @@ class WeiboGifDeviceTest {
         }
         val downloads = CopyOnWriteArrayList<Pair<DouyinVideo, VideoVariant>>()
         val recorder = object : Downloader by engine {
-            override suspend fun start(video: DouyinVideo, variant: VideoVariant): String {
+            override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String {
                 downloads += video to variant
                 return "fixture-task"
             }
@@ -167,8 +167,8 @@ class WeiboGifDeviceTest {
     private fun parseThroughUi() {
         compose.onNode(hasSetTextAction()).performScrollTo().performTextReplacement(URL)
         compose.onNodeWithText("立即解析").performClick()
-        compose.waitUntil(60_000) { vm.state.value.video != null || (!vm.state.value.isParsing && vm.state.value.errorMessage != null) }
-        assertNotNull(vm.state.value.errorMessage, vm.state.value.video)
+        compose.waitUntil(60_000) { vm.state.value.video != null || (!vm.state.value.isParsing && vm.state.value.error != null) }
+        assertNotNull(vm.state.value.error?.toString(), vm.state.value.video)
     }
 
     private fun findPlayerView(view: View): PlayerView? {

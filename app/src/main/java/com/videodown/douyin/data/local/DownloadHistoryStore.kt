@@ -128,7 +128,7 @@ class DownloadHistoryStore(
             val text = historyFile.readText()
             if (text.isBlank()) emptyList() else json.decodeFromString(listSerializer, text)
         }.onFailure { error ->
-            Log.e(TAG, "无法读取下载历史，将从空历史开始", error)
+            Log.e(TAG, "无法读取下载历史，将从空历史开始", error)  // l10n-ignore: 开发者日志行，从不展示给用户
             // Preserve the unreadable file instead of silently destroying the user's data.
             runCatching { historyFile.renameTo(File(historyFile.parentFile, "${historyFile.name}.corrupt")) }
         }.getOrDefault(emptyList())
@@ -145,14 +145,14 @@ class DownloadHistoryStore(
             }
             // Both files have the same parent: rename replaces the old snapshot atomically.
             // Never delete the previous snapshot or copy over it after a failed rename.
-            if (!temp.renameTo(historyFile)) throw IOException("无法替换下载历史")
+            if (!temp.renameTo(historyFile)) throw IOException("无法替换下载历史")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
             _records.value = next
         } catch (error: IOException) {
             if (durable) throw error
             // Existing task progress can continue in memory; metadata transactions require
             // the strict path above so they can roll back their associated file move.
             _records.value = next
-            Log.e(TAG, "无法写入下载历史", error)
+            Log.e(TAG, "无法写入下载历史", error)  // l10n-ignore: 开发者日志行，从不展示给用户
         }
     }
 

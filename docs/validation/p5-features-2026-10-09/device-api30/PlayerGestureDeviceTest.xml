@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-09T11:34:02" hostname="localhost">
+  <testsuite name="com.videodown.douyin.PlayerGestureDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="3.291" timestamp="2026-10-09T11:34:02" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="doubleTapSeeksSwipeChangesVolumeAndBrightnessAndLongPressBoosts" classname="com.videodown.douyin.PlayerGestureDeviceTest" time="3.291" />
+  </testsuite>
+</testsuites>

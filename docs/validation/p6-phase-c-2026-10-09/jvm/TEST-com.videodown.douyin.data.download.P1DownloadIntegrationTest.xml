@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.P1DownloadIntegrationTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:01.256Z" hostname="Alias-mini.local" time="0.854">
+  <properties/>
+  <testcase name="queue priority and live concurrency control determine actual HTTP starts" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.018"/>
+  <testcase name="individual and all resume never schedule unsupported typed or legacy failures" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.002"/>
+  <testcase name="running downloads share space and pause releases budget for failed task resume" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.016"/>
+  <testcase name="unknown response is stopped before writing beyond available working space" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.028"/>
+  <testcase name="reordered and restarted queue retains its order after starts and history reload" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.017"/>
+  <testcase name="lost foreground service stops transfer retains partial and resumes" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.708"/>
+  <testcase name="logged in retry bypasses anonymous auth failure but saved files still prevent duplicates" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.009"/>
+  <testcase name="known response size is checked again before writing a direct file" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.013"/>
+  <testcase name="HTTP status is persisted as actionable auth access expiration or rate category" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.01"/>
+  <testcase name="out of space fails before making HTTP request and retains typed recovery" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.004"/>
+  <testcase name="response enlargement cannot steal a running task reservation" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.014"/>
+  <testcase name="foreground startup failure never starts HTTP and can retry" classname="com.videodown.douyin.data.download.P1DownloadIntegrationTest" time="0.013"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

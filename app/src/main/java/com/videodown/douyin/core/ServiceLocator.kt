@@ -19,6 +19,7 @@ import com.videodown.douyin.domain.repository.DouyinRepository
 import com.videodown.douyin.domain.repository.DownloadHistoryRepository
 import com.videodown.douyin.domain.repository.Downloader
 import com.videodown.douyin.domain.repository.VideoRepository
+import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.VideoPlatform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,7 +56,8 @@ object ServiceLocator {
         } else {
             @Suppress("DEPRECATION") info.versionCode
         }
-        com.videodown.douyin.data.update.AppVersion(code, info.versionName?.takeIf(String::isNotBlank) ?: "未知版本")
+        // A blank name is data: the update dialog substitutes its own wording.
+        com.videodown.douyin.data.update.AppVersion(code, info.versionName?.takeIf(String::isNotBlank).orEmpty())
     }
 
     /** Reads the remote version manifest; never downloads or installs a package. */
@@ -67,14 +69,56 @@ object ServiceLocator {
     val browserSessions by lazy { BrowserSessionStore() }
     val videoEngine by lazy { VideoEngineRuntime(appContext) }
     private val sessionDirectory by lazy { File(appContext.noBackupFilesDir, "media-sessions") }
-    val genericRepository by lazy { GenericVideoRepository(videoEngine, browserSessions, douyinApiClient.okHttpClient, sessionDirectory) }
+    val genericRepository by lazy {
+        GenericVideoRepository(videoEngine, browserSessions, douyinApiClient.okHttpClient, sessionDirectory,
+            playlistEnabled = { preferences.playlistParsing })
+    }
     val videoRepository: VideoRepository by lazy { MultiPlatformVideoRepository(douyinRepository, fallback = genericRepository) }
 
     val galleryExporter by lazy { com.videodown.douyin.data.gallery.GalleryExporter(appContext) }
 
     val preferences: AppPreferences by lazy { AppPreferences(appContext) }
+
+    /**
+     * The vault gate. A `var` on purpose: device tests replace it so both answers of the system
+     * prompt can be exercised without driving system UI.
+     */
+    var vaultAuthenticator: VaultAuthenticator = SystemVaultAuthenticator()
     private val networkPolicy by lazy { WifiDownloadNetworkPolicy(appContext, preferences) }
     private val completionNotifier by lazy { DownloadCompletionNotifier(appContext, preferences) }
+
+    /**
+     * Copies finished downloads into the system gallery when the user enabled it.
+     *
+     * Android 9 and below write through MediaStore, which needs the legacy storage permission; a
+     * background completion cannot ask for it, so the outcome is reported as a reason instead.
+     */
+    private val autoGalleryExport by lazy {
+        com.videodown.douyin.data.gallery.AutoGalleryExport(
+            enabled = { preferences.autoSaveToGallery },
+            canWrite = {
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q ||
+                    androidx.core.content.ContextCompat.checkSelfPermission(
+                        appContext, android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            },
+            export = { record -> galleryExporter.export(record).getOrThrow() },
+        )
+    }
+
+    /**
+     * Runs the optional gallery copy off the transfer coroutine.
+     *
+     * The engine calls this before releasing the queue slot, so the copy must not block it. The
+     * completion notification is posted afterwards, so one card can report both facts.
+     */
+    private fun completeDownload(record: DownloadRecord) {
+        appScope.launch {
+            val gallery = runCatching { autoGalleryExport.save(record) }
+                .getOrElse { com.videodown.douyin.data.gallery.GalleryAutoSave.Failed(com.videodown.douyin.data.gallery.GalleryExportFailure.WRITE_FAILED.storageKey) }
+            runCatching { completionNotifier.notifyCompleted(record, gallery) }
+        }
+    }
 
     val downloadPaths: DownloadPaths by lazy { DownloadPaths(appContext) }
 
@@ -95,6 +139,8 @@ object ServiceLocator {
             concurrencyChanges = preferences.maxConcurrentChanges,
             autoResumeChanges = preferences.autoResumeChanges,
             autoResumeEnabled = { preferences.autoResume },
+            globalSpeedLimitChanges = preferences.globalSpeedLimitChanges,
+            globalSpeedLimitKbps = { preferences.globalSpeedLimitKbps },
             maintenanceMutex = maintenanceMutex,
             downloader = ResumableDownloader(douyinApiClient.okHttpClient),
             paths = downloadPaths,
@@ -102,7 +148,7 @@ object ServiceLocator {
             referer = DouyinApiClient.REFERER,
             userAgent = DouyinApiClient.USER_AGENT,
             networkPolicy = networkPolicy,
-            onCompleted = completionNotifier::notifyCompleted,
+            onCompleted = ::completeDownload,
             onTaskScheduled = ::startDownloadService,
             engineDownloader = EngineMediaDownloader(videoEngine, browserSessions, sessionDirectory, historyRepository, maintenanceMutex),
             validateFile = ::validateVideo,

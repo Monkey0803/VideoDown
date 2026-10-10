@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.export.FileExportTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.213Z" hostname="Alias-mini.local" time="0.01">
+  <properties/>
+  <testcase name="partial failure continues remaining exports and retry excludes successful IDs" classname="com.videodown.douyin.data.export.FileExportTest" time="0.004"/>
+  <testcase name="failure classification handles provider wrappers without mislabelling other IO errors" classname="com.videodown.douyin.data.export.FileExportTest" time="0.0"/>
+  <testcase name="storage full has actionable feedback and allows retry to the same target" classname="com.videodown.douyin.data.export.FileExportTest" time="0.001"/>
+  <testcase name="collisions keep extension and never reuse an existing filename" classname="com.videodown.douyin.data.export.FileExportTest" time="0.001"/>
+  <testcase name="revoked permission invalidates only the failed target and preserves retry IDs" classname="com.videodown.douyin.data.export.FileExportTest" time="0.001"/>
+  <testcase name="cleanup status query failure still finishes with actionable feedback" classname="com.videodown.douyin.data.export.FileExportTest" time="0.001"/>
+  <testcase name="cancellation preserves completed outputs and selects only unfinished IDs" classname="com.videodown.douyin.data.export.FileExportTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

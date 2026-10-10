@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.backup.SettingsBackupCodecTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:48:56.726Z" hostname="Alias-mini.local" time="0.014">
+  <properties/>
+  <testcase name="a snapshot survives a round trip unchanged" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.009"/>
+  <testcase name="an unknown enum name is dropped rather than applied" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.0"/>
+  <testcase name="unknown keys from a newer build are ignored" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.004"/>
+  <testcase name="a manifest url must look like an http endpoint" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.0"/>
+  <testcase name="only the fields a file carries are non-null" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.0"/>
+  <testcase name="the encoded file is human readable json" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.0"/>
+  <testcase name="an absurd speed limit is treated as unusable instead of clamped" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.0"/>
+  <testcase name="text that is not a backup is rejected instead of guessed" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.001"/>
+  <testcase name="known enum names survive sanitizing" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.0"/>
+  <testcase name="concurrency and speed limits are clamped to what the UI can express" classname="com.videodown.douyin.data.backup.SettingsBackupCodecTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

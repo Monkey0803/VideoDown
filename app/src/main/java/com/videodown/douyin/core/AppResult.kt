@@ -10,16 +10,65 @@ sealed interface AppError {
     val message: String
     val failureKind: DownloadFailureKind? get() = null
 
-    data class Network(override val message: String, val cause: Throwable? = null, override val failureKind: DownloadFailureKind? = null) : AppError
-    data class Parse(override val message: String, override val failureKind: DownloadFailureKind? = null) : AppError
-    data class InvalidLink(override val message: String, override val failureKind: DownloadFailureKind? = null) : AppError
-    data class Storage(override val message: String, val cause: Throwable? = null, override val failureKind: DownloadFailureKind? = null) : AppError
-    data class Unknown(override val message: String, val cause: Throwable? = null, override val failureKind: DownloadFailureKind? = null) : AppError
+    data class Network(
+        override val message: String,
+        val cause: Throwable? = null,
+        override val failureKind: DownloadFailureKind? = null,
+        /** Set when the failure belongs to one platform, so the UI can name it. */
+        val platform: com.videodown.douyin.domain.model.VideoPlatform? = null,
+        val reasonKey: String? = null,
+    ) : AppError
+
+    /**
+     * A non-2xx HTTP response.
+     *
+     * Carries the status as a number because retry and refresh decisions depend on it; the message
+     * stays technical on purpose, and the UI words the status from resources.
+     */
+    data class Http(
+        val code: Int,
+        val cause: Throwable? = null,
+        override val failureKind: DownloadFailureKind? = null,
+        val platform: com.videodown.douyin.domain.model.VideoPlatform? = null,
+    ) : AppError {
+        override val message: String get() = "HTTP $code"
+    }
+    data class Parse(
+        override val message: String,
+        override val failureKind: DownloadFailureKind? = null,
+        /**
+         * Set when a parser reported a typed reason (see `core/ErrorResources.kt`), so the UI can
+         * word it from resources instead of relying on [message].
+         */
+        val reasonKey: String? = null,
+        /** Set when the failure belongs to one platform, so the UI can name it. */
+        val platform: com.videodown.douyin.domain.model.VideoPlatform? = null,
+        /** A data value that belongs in the sentence (an id, a count). */
+        val detail: String? = null,
+    ) : AppError
+    data class InvalidLink(
+        override val message: String,
+        override val failureKind: DownloadFailureKind? = null,
+        val reasonKey: String? = null,
+    ) : AppError
+    data class Storage(
+        override val message: String,
+        val cause: Throwable? = null,
+        override val failureKind: DownloadFailureKind? = null,
+        val reasonKey: String? = null,
+    ) : AppError
+    data class Unknown(
+        override val message: String,
+        val cause: Throwable? = null,
+        override val failureKind: DownloadFailureKind? = null,
+        val reasonKey: String? = null,
+    ) : AppError
 }
 
 fun Throwable.toAppError(): AppError = when (this) {
-    is java.io.IOException -> AppError.Network("网络连接失败，请检查网络后重试", this)
-    else -> AppError.Unknown("操作失败，请稍后重试", this)
+    // A key rather than a sentence: the UI words it, and this type is used from every layer.
+    is java.io.IOException -> AppError.Network("", this, reasonKey = "generic:network")
+    else -> AppError.Unknown("", this, reasonKey = "generic:unknown")
 }
 
 /**
@@ -49,14 +98,27 @@ fun <T> AppResult<T>.getOrNull(): T? = (this as? AppResult.Success)?.value
 
 fun <T> AppResult<T>.errorOrNull(): AppError? = (this as? AppResult.Failure)?.error
 
-/** External exceptions may contain untranslated OS messages or file paths. */
-fun Throwable.galleryErrorMessage(): String = when (message) {
-    "视频尚未下载完成", "本地视频文件不存在", "此容器暂不支持保存到相册，请使用分享文件",
-    "无法创建相册视频", "无法写入相册视频", "无法完成相册保存" -> message!!
-    else -> when (this) {
-        is SecurityException -> "没有相册访问权限，请检查系统权限设置"
-        else -> "请检查存储空间和相册权限后重试"
-    }
-}
+/**
+ * The reason a gallery save failed.
+ *
+ * Reads the typed failure when there is one; a `SecurityException` means the permission is missing,
+ * and anything else gets the generic wording. External exceptions may carry untranslated OS text or
+ * file paths, so their own message is never shown.
+ */
+fun galleryFailureKindOf(error: Throwable): com.videodown.douyin.data.gallery.GalleryExportFailure =
+    (error as? com.videodown.douyin.data.gallery.GalleryExportException)?.failure
+        ?: if (error is SecurityException) com.videodown.douyin.data.gallery.GalleryExportFailure.PERMISSION
+        else com.videodown.douyin.data.gallery.GalleryExportFailure.WRITE_FAILED
 
-fun AppError.downloadFailureKind(): DownloadFailureKind = failureKind ?: legacyFailureKind(message) ?: DownloadFailureKind.UNKNOWN
+fun AppError.downloadFailureKind(): DownloadFailureKind = failureKind
+    ?: (this as? AppError.Http)?.let { http ->
+        when (http.code) {
+            401 -> DownloadFailureKind.LOGIN_REQUIRED
+            403 -> DownloadFailureKind.ACCESS_DENIED
+            404, 410 -> DownloadFailureKind.LINK_EXPIRED
+            429 -> DownloadFailureKind.RATE_LIMITED
+            else -> DownloadFailureKind.NETWORK
+        }
+    }
+    ?: legacyFailureKind(message)
+    ?: DownloadFailureKind.UNKNOWN

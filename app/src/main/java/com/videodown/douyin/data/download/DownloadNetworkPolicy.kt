@@ -23,7 +23,13 @@ interface DownloadNetworkPolicy {
     }
 }
 
-const val WIFI_PAUSE_REASON = "已暂停：仅在 Wi-Fi 下下载，请连接 Wi-Fi 后点击继续"
+/**
+ * The key stored on a record paused by the Wi-Fi-only setting.
+ *
+ * A key rather than a sentence: records outlive the app language, and the UI words it through
+ * `storedErrorMessage`. Kept public because the engine also compares against it.
+ */
+const val WIFI_PAUSE_REASON = "download:wifi_paused"
 
 class WifiRequiredException : CancellationException(WIFI_PAUSE_REASON)
 

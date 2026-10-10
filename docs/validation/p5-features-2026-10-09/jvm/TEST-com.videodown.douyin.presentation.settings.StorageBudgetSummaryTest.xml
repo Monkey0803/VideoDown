@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.presentation.settings.StorageBudgetSummaryTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.927Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="empty budget reads as no running reservation" classname="com.videodown.douyin.presentation.settings.StorageBudgetSummaryTest" time="0.0"/>
+  <testcase name="saturated totals and zero free space cannot break the bar" classname="com.videodown.douyin.presentation.settings.StorageBudgetSummaryTest" time="0.0"/>
+  <testcase name="fitting budget reports amount tasks and positive headroom" classname="com.videodown.douyin.presentation.settings.StorageBudgetSummaryTest" time="0.0"/>
+  <testcase name="shortfall names the missing bytes as the reason" classname="com.videodown.douyin.presentation.settings.StorageBudgetSummaryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

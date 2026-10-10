@@ -1,6 +1,8 @@
 package com.videodown.douyin.presentation.library
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.res.stringResource
+import com.videodown.douyin.R
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,17 +22,17 @@ internal fun LibraryOrganizationDialog(record: DownloadRecord, model: LibraryOrg
     var title by rememberSaveable(record.id) { mutableStateOf(record.title) }
     var folder by rememberSaveable(record.id) { mutableStateOf(record.folder) }
     LaunchedEffect(record.id) { model.clearError() }
-    AlertDialog(onDismissRequest = { if (!state.busy) onClose() }, title = { Text("重命名与分类") },
+    AlertDialog(onDismissRequest = { if (!state.busy) onClose() }, title = { Text(stringResource(R.string.library_organize)) },
         text = { Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
-            OutlinedTextField(value = title, onValueChange = { title = it }, enabled = !state.busy, label = { Text("文件名称") }, singleLine = true,
+            OutlinedTextField(value = title, onValueChange = { title = it }, enabled = !state.busy, label = { Text(stringResource(R.string.organize_file_name)) }, singleLine = true,
                 leadingIcon = { AppIcon(AppIcons.Rename, null) })
-            Text("保留原扩展名；更名后的文件会用于播放、分享和导出。", style = MaterialTheme.typography.bodySmall)
-            OutlinedTextField(value = folder, onValueChange = { folder = it }, enabled = !state.busy, label = { Text("分类名称（留空表示未分类）") }, singleLine = true,
+            Text(stringResource(R.string.organize_file_name_note), style = MaterialTheme.typography.bodySmall)
+            OutlinedTextField(value = folder, onValueChange = { folder = it }, enabled = !state.busy, label = { Text(stringResource(R.string.organize_folder)) }, singleLine = true,
                 leadingIcon = { AppIcon(AppIcons.Category, null) })
-            Text("分类用于影像库筛选，不移动到外部目录。", style = MaterialTheme.typography.bodySmall)
-            state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            Text(stringResource(R.string.organize_folder_note), style = MaterialTheme.typography.bodySmall)
+            state.error?.let { Text(organizeErrorText(it), color = MaterialTheme.colorScheme.error) }
         } },
         confirmButton = { TextButton(enabled = !state.busy && (title == record.title || (title.isNotBlank() && title.length <= 80)) && folder.length <= 40,
-            onClick = { model.update(record.id, title = title.takeIf { it != record.title }, folder = folder, onSaved = onClose) }) { Text(if (state.busy) "正在保存…" else "保存修改") } },
-        dismissButton = { TextButton(enabled = !state.busy, onClick = onClose) { Text("取消") } })
+            onClick = { model.update(record.id, title = title.takeIf { it != record.title }, folder = folder, onSaved = onClose) }) { Text(stringResource(if (state.busy) R.string.library_saving else R.string.organize_save)) } },
+        dismissButton = { TextButton(enabled = !state.busy, onClick = onClose) { Text(stringResource(R.string.action_cancel)) } })
 }

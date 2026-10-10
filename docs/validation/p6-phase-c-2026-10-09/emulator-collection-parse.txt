@@ -1,0 +1,4 @@
+page=http://127.0.0.1:36527/collection
+videos=2
+  id=collection-1 title=合集 (1) variants=[one.mp4]
+  id=collection-2 title=合集 (2) variants=[two.mp4]

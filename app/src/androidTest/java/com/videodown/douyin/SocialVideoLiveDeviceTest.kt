@@ -37,7 +37,7 @@ class SocialVideoLiveDeviceTest {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
             withTimeout(180_000) {
-                report("${platform.label}: parsing")
+                report("${context.getString(com.videodown.douyin.presentation.videoPlatformLabelRes(platform))}: parsing")
                 val result = ServiceLocator.videoRepository.parseUrl(url)
                 assertTrue("Parse failed: $result", result is AppResult.Success)
                 val video = (result as AppResult.Success).value
@@ -45,7 +45,7 @@ class SocialVideoLiveDeviceTest {
                 assertTrue(video.author.nickname.isNotBlank())
                 val variant = video.sortedVariants.last()
                 assertEquals(platform.referer, variant.referer)
-                report("${platform.label}: ${video.title.take(45)}, variants=${video.sortedVariants.map { it.label }}, downloading ${variant.label}")
+                report("${context.getString(com.videodown.douyin.presentation.videoPlatformLabelRes(platform))}: ${video.title.take(45)}, downloading ${variant.label}")
                 val history = DownloadHistoryRepositoryImpl(DownloadHistoryStore(File(directory, "history.json")))
                 val engine = DownloadEngine(history, ResumableDownloader(ServiceLocator.douyinApiClient.okHttpClient),
                     DownloadPaths(directory), scope, DouyinApiClient.REFERER, DouyinApiClient.USER_AGENT)
@@ -63,7 +63,7 @@ class SocialVideoLiveDeviceTest {
                     val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 0
                     val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 0
                     assertTrue("MP4 needs a real video track", duration > 0 && width > 0 && height > 0)
-                    report("${platform.label}: COMPLETE bytes=${file.length()}, video=${width}x$height, durationMs=$duration")
+                    report("${context.getString(com.videodown.douyin.presentation.videoPlatformLabelRes(platform))}: COMPLETE bytes=${file.length()}, video=${width}x$height, durationMs=$duration")
                 } finally { retriever.release() }
             }
         } finally {

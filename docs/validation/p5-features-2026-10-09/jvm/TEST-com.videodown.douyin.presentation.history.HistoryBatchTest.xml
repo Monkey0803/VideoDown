@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.presentation.history.HistoryBatchTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.901Z" hostname="Alias-mini.local" time="0.006">
+  <properties/>
+  <testcase name="selected controls use current live status and do not touch unselected items" classname="com.videodown.douyin.presentation.history.HistoryBatchTest" time="0.003"/>
+  <testcase name="gallery failure does not stop remaining items and reports skipped stale selection" classname="com.videodown.douyin.presentation.history.HistoryBatchTest" time="0.001"/>
+  <testcase name="bulk resume skips typed and legacy unsupported failures while resuming network failure" classname="com.videodown.douyin.presentation.history.HistoryBatchTest" time="0.0"/>
+  <testcase name="live progress status wins over persisted status during bulk control" classname="com.videodown.douyin.presentation.history.HistoryBatchTest" time="0.001"/>
+  <testcase name="batch deletion keeps records outside captured selection" classname="com.videodown.douyin.presentation.history.HistoryBatchTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

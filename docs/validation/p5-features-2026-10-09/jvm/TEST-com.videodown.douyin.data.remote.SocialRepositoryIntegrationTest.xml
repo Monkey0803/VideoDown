@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.SocialRepositoryIntegrationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.801Z" hostname="Alias-mini.local" time="0.023">
+  <properties/>
+  <testcase name="visitor cookies obey parent domains paths and secure boundaries" classname="com.videodown.douyin.data.remote.SocialRepositoryIntegrationTest" time="0.0"/>
+  <testcase name="kuaishou follows a real HTTP redirect and parses the share page" classname="com.videodown.douyin.data.remote.SocialRepositoryIntegrationTest" time="0.007"/>
+  <testcase name="old history still decodes as douyin while platform metadata survives persistence" classname="com.videodown.douyin.data.remote.SocialRepositoryIntegrationTest" time="0.0"/>
+  <testcase name="router preserves douyin parsing and raw numeric video ids" classname="com.videodown.douyin.data.remote.SocialRepositoryIntegrationTest" time="0.003"/>
+  <testcase name="weibo initializes anonymous visitor cookies then parses the same post" classname="com.videodown.douyin.data.remote.SocialRepositoryIntegrationTest" time="0.007"/>
+  <testcase name="weibo router exposes GIFs as separate downloadable videos" classname="com.videodown.douyin.data.remote.SocialRepositoryIntegrationTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

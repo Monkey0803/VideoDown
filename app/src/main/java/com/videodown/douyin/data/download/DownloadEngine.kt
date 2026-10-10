@@ -8,6 +8,7 @@ import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.DownloadProgress
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
+import com.videodown.douyin.domain.model.SubtitleSelection
 import com.videodown.douyin.domain.model.VideoVariant
 import com.videodown.douyin.domain.model.VideoPlatform
 import com.videodown.douyin.domain.repository.DownloadHistoryRepository
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.Flow
 import com.videodown.douyin.domain.model.DownloadFailureKind
 import com.videodown.douyin.domain.model.DownloadPauseCause
 import com.videodown.douyin.domain.model.StorageBudget
+import com.videodown.douyin.domain.model.speedLimitBytesPerSecond
 import com.videodown.douyin.domain.model.StorageBudgetEntry
 import com.videodown.douyin.core.downloadFailureKind
 import kotlinx.coroutines.withContext
@@ -78,10 +80,21 @@ class DownloadEngine(
     private val autoResumeIntervalMs: Long = DEFAULT_AUTO_RESUME_INTERVAL_MS,
     /** Failed automatic resumes allowed before a task is left for the user. */
     private val autoResumeAttemptsLimit: Int = MAX_AUTO_RESUME_ATTEMPTS,
+    /** Global rate cap changes, in KB/s; `0` means unlimited. */
+    private val globalSpeedLimitChanges: Flow<Int>? = null,
+    /** Current global rate cap in KB/s, read once before the change flow starts. */
+    private val globalSpeedLimitKbps: () -> Int = { 0 },
 ) : Downloader {
 
     private val scheduler = DownloadQueueScheduler(maxConcurrent)
     override val queue = scheduler.state
+    /**
+     * Shared by every direct transfer, so the global cap limits their total rather than each task.
+     * Engine downloads (yt-dlp / FFmpeg) are separate processes and are not paced here.
+     */
+    private val globalLimiter = BandwidthLimiter()
+    /** One limiter per task, created on demand and dropped when its transfer ends. */
+    private val taskLimiters = java.util.concurrent.ConcurrentHashMap<String, BandwidthLimiter>()
     private val storageReservations = StorageReservations(availableBytes)
     private val autoResumeMutex = Mutex()
     private val autoResumeBudget = AutoResumeBudget(autoResumeAttemptsLimit)
@@ -95,7 +108,8 @@ class DownloadEngine(
      */
     fun storageBudget(): StorageBudget {
         val entries = storageReservations.snapshot().map { entry ->
-            StorageBudgetEntry(entry.label.ifBlank { "下载任务" }, entry.remainingBytes)
+            // A blank label is data; the storage dialog substitutes its own wording.
+            StorageBudgetEntry(entry.label, entry.remainingBytes)
         }
         var total = 0L
         entries.forEach { total = saturatingStorageAdd(total, it.remainingBytes) }
@@ -104,7 +118,45 @@ class DownloadEngine(
 
     init {
         concurrencyChanges?.let { changes -> scope.launch { changes.collect { scheduler.setLimit(it) } } }
+        globalLimiter.setRate(speedLimitBytesPerSecond(globalSpeedLimitKbps()))
+        globalSpeedLimitChanges?.let { changes ->
+            scope.launch { changes.collect { globalLimiter.setRate(speedLimitBytesPerSecond(it)) } }
+        }
         startAutoResumeWatchers()
+    }
+
+    /**
+     * Paces one chunk of [record] against both caps.
+     *
+     * The global bucket is consumed first so a global limit stays a genuine total, then the task's
+     * own bucket; an unset cap is unlimited and never suspends.
+     */
+    private suspend fun throttle(record: DownloadRecord, bytes: Int) {
+        globalLimiter.acquire(bytes)
+        // Looked up by id rather than read off the captured record, so changing a cap mid-transfer
+        // takes effect on the very next chunk; no entry means the task follows the global cap.
+        taskLimiters[record.id]?.acquire(bytes)
+    }
+
+    /** Seeds the per-task limiter from the persisted cap; called once per transfer. */
+    private fun seedTaskLimiter(record: DownloadRecord) {
+        if (record.speedLimitKbps <= 0) {
+            taskLimiters.remove(record.id)
+            return
+        }
+        taskLimiters.computeIfAbsent(record.id) { BandwidthLimiter() }
+            .setRate(speedLimitBytesPerSecond(record.speedLimitKbps))
+    }
+
+    override suspend fun setSpeedLimit(id: String, kbps: Int) = maintenanceMutex.withLock {
+        val safe = kbps.coerceAtLeast(0)
+        history.getById(id)?.let { history.upsert(it.copy(speedLimitKbps = safe, updatedAt = System.currentTimeMillis())) }
+        if (safe > 0) {
+            taskLimiters.computeIfAbsent(id) { BandwidthLimiter() }.setRate(speedLimitBytesPerSecond(safe))
+        } else {
+            taskLimiters.remove(id)
+        }
+        Unit
     }
     override suspend fun setConcurrency(count: Int) { scheduler.setLimit(count) }
     override suspend fun moveInQueue(id: String, offset: Int) = maintenanceMutex.withLock {
@@ -128,7 +180,7 @@ class DownloadEngine(
             .sortedWith(compareByDescending<DownloadRecord> { it.status == DownloadStatus.COMPLETED }
                 .thenByDescending { it.updatedAt }).firstOrNull()
 
-    override suspend fun start(video: DouyinVideo, variant: VideoVariant): String = maintenanceMutex.withLock {
+    override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String = maintenanceMutex.withLock {
         val id = UUID.randomUUID().toString()
         val fileId = if (video.platform == VideoPlatform.DOUYIN) video.awemeId
             else "${video.platform.name.lowercase()}_${video.awemeId}"
@@ -158,6 +210,9 @@ class DownloadEngine(
             platform = video.platform,
             sourcePageUrl = video.videoWebUrl,
             downloadReferer = variant.referer ?: video.platform.referer,
+            // Never for an audio-only target: there is nothing to embed an audio file into.
+            subtitleLanguages = if (variant.media?.audioOnly == true) emptyList() else subtitles.languages,
+            subtitleAutomatic = subtitles.automatic,
         )
 
         history.upsert(record)
@@ -171,7 +226,8 @@ class DownloadEngine(
     override suspend fun pause(id: String) = maintenanceMutex.withLock {
         val job = activeJobs[id]
         if (job != null) {
-            job.cancel(CancellationException("用户暂停"))
+            // l10n-ignore: a cancellation reason for the coroutine, never shown as copy
+            job.cancel(CancellationException("用户暂停"))  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
             job.join()
         }
         scheduler.finish(id)
@@ -197,7 +253,8 @@ class DownloadEngine(
 
     override suspend fun restart(id: String) = maintenanceMutex.withLock {
         val job = activeJobs.remove(id)
-        job?.cancel(CancellationException("重新开始"))
+        // l10n-ignore: a cancellation reason for the coroutine, never shown as copy
+        job?.cancel(CancellationException("重新开始"))  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
         job?.join()
         scheduler.finish(id)
 
@@ -230,7 +287,8 @@ class DownloadEngine(
 
     override suspend fun cancel(id: String, removeRecord: Boolean) = maintenanceMutex.withLock {
         val job = activeJobs.remove(id)
-        job?.cancel(CancellationException("用户取消"))
+        // l10n-ignore: a cancellation reason for the coroutine, never shown as copy
+        job?.cancel(CancellationException("用户取消"))  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
         job?.join()
         scheduler.finish(id)
 
@@ -320,7 +378,8 @@ class DownloadEngine(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.w(TAG, "自动继续下载失败", e)
+            // l10n-ignore: a developer log line, never shown to the user
+            Log.w(TAG, "自动继续下载失败", e)  // l10n-ignore: 开发者日志行，从不展示给用户
         }
     }
 
@@ -366,10 +425,17 @@ class DownloadEngine(
                 }
                 throw e
             } catch (e: Exception) {
-                if (e is DownloadServiceException) Log.w(TAG, "后台下载服务启动失败", e)
+                if (e is DownloadServiceException) // l10n-ignore: a developer log line, never shown to the user
+                Log.w(TAG, "后台下载服务启动失败", e)  // l10n-ignore: 开发者日志行，从不展示给用户
                 val latest = history.getById(record.id) ?: record
                 history.upsert(latest.copy(status = DownloadStatus.FAILED,
-                    errorMessage = when (e) { is VideoEngineException -> e.message; is InsufficientStorageException -> e.error.message; is DownloadServiceException -> e.message; else -> "下载或合并失败，请检查存储空间后重试" },
+                    errorMessage = when (e) {
+                        // Stored as a key: the record outlives the language it was written in.
+                        is VideoEngineException -> com.videodown.douyin.core.engineErrorKey(e.kind)
+                        is InsufficientStorageException -> e.error.reasonKey ?: e.error.message
+                        is DownloadServiceException -> e.message
+                        else -> null
+                    },
                     failureKind = when (e) { is VideoEngineException -> e.failureKind; is InsufficientStorageException -> DownloadFailureKind.STORAGE_FULL; is DownloadServiceException -> DownloadFailureKind.BACKGROUND_SERVICE; else -> DownloadFailureKind.UNKNOWN },
                     pauseCause = null,
                     updatedAt = System.currentTimeMillis()))
@@ -377,6 +443,7 @@ class DownloadEngine(
             } finally {
                 storage?.close()
                 withContext(NonCancellable) { scheduler.finish(record.id) }
+                taskLimiters.remove(record.id)
             }
         }
         if (activeJobs.putIfAbsent(record.id, job) != null) {
@@ -411,7 +478,12 @@ class DownloadEngine(
     }
 
     private suspend fun runTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
-        if (initial.media?.usesEngine == true) {
+        seedTaskLimiter(initial)
+        // Subtitles are an extractor feature: a direct HTTP transfer would finish successfully and
+        // silently produce a file without them. An engine-parsed direct variant always carries the
+        // page it came from, so it can be handed to the engine instead.
+        val subtitlesNeedEngine = initial.subtitleLanguages.isNotEmpty() && !initial.media?.pageUrl.isNullOrBlank()
+        if (initial.media?.usesEngine == true || subtitlesNeedEngine) {
             runEngineTransfer(initial, storage)
             return
         }
@@ -460,6 +532,7 @@ class DownloadEngine(
                         checkStorage = { total, writingThrough ->
                             storage.updatePeak(requiredStorageBytes(maxOf(total, writingThrough)))
                         },
+                        throttle = { bytes -> throttle(record, bytes) },
                         onProgress = { downloaded, total, speed, rangeSupported, etag ->
                             updateProgress(record.id) {
                                 DownloadProgress(
@@ -502,7 +575,7 @@ class DownloadEngine(
                     history.upsert(completed)
                     // Only a newly completed transfer emits; restoring history never re-notifies.
                     runCatching { onCompleted(completed) }
-                        .onFailure { Log.w(TAG, "无法发送下载完成通知", it) }
+                        .onFailure { Log.w(TAG, "无法发送下载完成通知", it) }  // l10n-ignore: a developer log line, never shown to the user
                     _progress.update { it - record.id }
                     return
                 }
@@ -534,7 +607,10 @@ class DownloadEngine(
                             updatedAt = System.currentTimeMillis(),
                         ),
                     )
-                    if (!refreshed && (outcome.error.message.contains("HTTP 403") || outcome.error.message.contains("HTTP 401") || outcome.error.message.contains("HTTP 410"))) {
+                    // Judged by status, not by the text of the message: an expired or forbidden
+                    // address is worth re-resolving, and a rewritten message must not change that.
+                    val httpStatus = (outcome.error as? com.videodown.douyin.core.AppError.Http)?.code
+                    if (!refreshed && httpStatus in setOf(401, 403, 410)) {
                         refreshed = true
                         val fresh = refreshSource?.invoke(record)
                         if (fresh != null && fresh.media?.usesEngine != true) {
@@ -550,9 +626,11 @@ class DownloadEngine(
                         }
                     }
                     attempt++
-                    if (attempt <= MAX_RETRIES && outcome.error !is com.videodown.douyin.core.AppError.Storage && !outcome.error.message.contains("HTTP 4")) {
+                    val retryableStatus = httpStatus == null || httpStatus !in 400..499
+                    if (attempt <= MAX_RETRIES && outcome.error !is com.videodown.douyin.core.AppError.Storage && retryableStatus) {
                         val backoff = RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
-                        Log.w(TAG, "下载失败，${backoff}ms 后第 $attempt 次重试: ${outcome.error.message}")
+                        // l10n-ignore: a developer log line, never shown to the user
+                        Log.w(TAG, "下载失败，${backoff}ms 后第 $attempt 次重试: ${outcome.error.message}")  // l10n-ignore: 开发者日志行，从不展示给用户
                         delay(backoff)
                         record = history.getById(record.id) ?: record
                         continue
@@ -578,7 +656,7 @@ class DownloadEngine(
     }
 
     private suspend fun runEngineTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
-        val executor = requireNotNull(engineDownloader) { "未安装通用下载引擎" }
+        val executor = requireNotNull(engineDownloader) { "未安装通用下载引擎" } // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
         var record = initial.copy(status = DownloadStatus.RUNNING, errorMessage = null, failureKind = null,
             pauseCause = null, phase = TransferPhase.DOWNLOADING)
         history.upsert(record)

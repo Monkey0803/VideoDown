@@ -36,7 +36,7 @@ class ResultSelectionDeviceTest {
         val downloader = object : Downloader by ServiceLocator.downloader {
             override val progress = MutableStateFlow<Map<String, DownloadProgress>>(emptyMap())
             override suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant): DownloadRecord? = null
-            override suspend fun start(video: DouyinVideo, variant: VideoVariant): String {
+            override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String {
                 saved += video.awemeId to variant.label
                 return "result-task-${saved.size}"
             }

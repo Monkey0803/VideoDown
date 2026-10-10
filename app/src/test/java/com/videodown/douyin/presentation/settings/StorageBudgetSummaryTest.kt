@@ -7,29 +7,26 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class StorageBudgetSummaryTest {
+    // The sentences are composed by the screen from resources; these assert the numbers they use.
     @Test fun `empty budget reads as no running reservation`() {
         val usage = StorageUsage(availableBytes = 5000)
-        assertTrue(storageBudgetHeadline(usage.budget).contains("无"))
+        assertTrue(usage.budget.isEmpty)
         assertEquals(0L, storageBudgetShortfall(usage))
         assertEquals(0f, storageBudgetFraction(usage), 0f)
-        assertTrue(storageBudgetReason(usage).contains("没有运行中的下载任务"))
     }
     @Test fun `fitting budget reports amount tasks and positive headroom`() {
         val usage = StorageUsage(availableBytes = 1000, budget = StorageBudget(400, listOf(StorageBudgetEntry("a", 400))))
-        assertEquals("运行任务尚需 400 B · 1 个任务", storageBudgetHeadline(usage.budget))
+        assertEquals(400L, usage.budget.reservedBytes)
+        assertEquals(1, usage.budget.taskCount)
         assertEquals(0L, storageBudgetShortfall(usage))
         assertEquals(600L, usage.budgetHeadroomBytes)
-        assertTrue(storageBudgetReason(usage).contains("预算在可用空间内"))
         assertEquals(400f / 1400f, storageBudgetFraction(usage), 0.0001f)
-        assertEquals("预算占用 28.6%", storageBudgetPercent(usage))
     }
     @Test fun `shortfall names the missing bytes as the reason`() {
         val usage = StorageUsage(availableBytes = 1000, budget = StorageBudget(1500, listOf(StorageBudgetEntry("a", 1500))))
+        // 500 is the number the screen substitutes into "not enough space: %1$s short".
         assertEquals(500L, storageBudgetShortfall(usage))
         assertEquals(0L, usage.budgetHeadroomBytes)
-        val reason = storageBudgetReason(usage)
-        assertTrue(reason.contains("空间不足"))
-        assertTrue(reason.contains("仍缺 500 B"))
     }
     @Test fun `saturated totals and zero free space cannot break the bar`() {
         val usage = StorageUsage(availableBytes = Long.MAX_VALUE,

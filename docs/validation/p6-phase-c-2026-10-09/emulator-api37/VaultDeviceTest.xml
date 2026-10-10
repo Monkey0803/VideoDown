@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T03:06:26" hostname="localhost">
+  <testsuite name="com.videodown.douyin.VaultDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="4.761" timestamp="2026-10-10T03:06:26" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="anUnavailableGateSaysSoInsteadOfOpening" classname="com.videodown.douyin.VaultDeviceTest" time="1.663" />
+    <testcase name="theTaskListAndTheCompletionNotificationNeverNameAPrivateRecord" classname="com.videodown.douyin.VaultDeviceTest" time="1.682" />
+    <testcase name="theVaultKeepsPrivateItemsOutUntilTheGateIsPassed" classname="com.videodown.douyin.VaultDeviceTest" time="1.416" />
+  </testsuite>
+</testsuites>

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModelStore
 import com.videodown.douyin.domain.repository.FileExportRepository
 import com.videodown.douyin.domain.repository.FileExportFailureKind
 import com.videodown.douyin.domain.repository.fileExportFailureKind
+import com.videodown.douyin.presentation.library.ExportCleanup
 import com.videodown.douyin.presentation.library.FileExportViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.*
@@ -65,8 +66,12 @@ class FileExportTest {
         assertEquals("revoked-tree", vm.state.value.invalidTreeUri)
         assertEquals(setOf("bad"), vm.state.value.failedIds)
         assertEquals(mapOf(FileExportFailureKind.ACCESS_LOST to 1), vm.state.value.failureCounts)
-        assertTrue(vm.state.value.message!!.contains("重新选择文件夹"))
-        assertTrue(vm.state.value.message!!.contains("已导出 1 项"))
+        // The result reports numbers and reason kinds; the screen composes the sentence.
+        val revoked = vm.state.value.result!!
+        assertEquals(1, revoked.succeeded)
+        assertEquals(1, revoked.failed)
+        assertEquals(setOf(FileExportFailureKind.ACCESS_LOST), revoked.reasons)
+        assertFalse(revoked.cancelled)
     }
     @Test fun `storage full has actionable feedback and allows retry to the same target`() = runTest {
         var full = true
@@ -78,13 +83,14 @@ class FileExportTest {
         val vm = FileExportViewModel(repo); store.put("exports", vm)
         vm.export(listOf("saved"), "tree"); advanceUntilIdle()
         assertNull(vm.state.value.invalidTreeUri)
-        assertTrue(vm.state.value.message!!.contains("空间不足"))
-        assertTrue(vm.state.value.message!!.contains("释放空间"))
+        assertEquals(setOf(FileExportFailureKind.SPACE_FULL), vm.state.value.result!!.reasons)
+        assertEquals(1, vm.state.value.result!!.failed)
         assertEquals(mapOf(FileExportFailureKind.SPACE_FULL to 1), vm.state.value.failureCounts)
         full = false
         vm.export(vm.state.value.failedIds.toList(), "tree"); advanceUntilIdle()
         assertTrue(vm.state.value.failedIds.isEmpty()); assertTrue(vm.state.value.failureCounts.isEmpty())
-        assertTrue(vm.state.value.message!!.contains("已导出 1 项"))
+        assertEquals(1, vm.state.value.result!!.succeeded)
+        assertEquals(0, vm.state.value.result!!.failed)
     }
     @Test fun `failure classification handles provider wrappers without mislabelling other IO errors`() {
         assertEquals(FileExportFailureKind.SPACE_FULL, fileExportFailureKind(java.io.IOException("EDQUOT (Disk quota exceeded)")))
@@ -99,6 +105,7 @@ class FileExportTest {
         val vm = FileExportViewModel(repo); store.put("exports", vm)
         vm.export(listOf("good"), "tree"); advanceUntilIdle()
         assertTrue(vm.state.value.finished); assertFalse(vm.state.value.busy)
-        assertTrue(vm.state.value.message!!.contains("无法检查中断副本"))
+        // The cleanup check failed, which the screen words as "could not check"; it is not silence.
+        assertEquals(ExportCleanup.Unknown, vm.state.value.result!!.cleanup)
     }
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.core.WatchBadgeTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:47.103Z" hostname="Alias-mini.local" time="0.009">
+  <properties/>
+  <testcase name="a stale position for a replaced file has no badge" classname="com.videodown.douyin.core.WatchBadgeTest" time="0.005"/>
+  <testcase name="a matching position yields a badge" classname="com.videodown.douyin.core.WatchBadgeTest" time="0.001"/>
+  <testcase name="a finished file has no badge" classname="com.videodown.douyin.core.WatchBadgeTest" time="0.001"/>
+  <testcase name="a record without a file path has no badge" classname="com.videodown.douyin.core.WatchBadgeTest" time="0.0"/>
+  <testcase name="a record without a stored position has no badge" classname="com.videodown.douyin.core.WatchBadgeTest" time="0.001"/>
+  <testcase name="a record whose file is gone has no badge" classname="com.videodown.douyin.core.WatchBadgeTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

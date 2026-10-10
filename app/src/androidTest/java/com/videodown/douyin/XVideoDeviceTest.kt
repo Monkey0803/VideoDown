@@ -64,7 +64,7 @@ class XVideoDeviceTest {
         // Record the chosen media without transferring a fixture URL.
         val chosen = CopyOnWriteArrayList<Pair<DouyinVideo, VideoVariant>>()
         val recorder = object : Downloader by engine {
-            override suspend fun start(video: DouyinVideo, variant: VideoVariant): String {
+            override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String {
                 chosen.add(video to variant); return "fixture-task"
             }
         }
@@ -188,8 +188,8 @@ class XVideoDeviceTest {
     private fun parseThroughUi() {
         compose.onNode(hasSetTextAction()).performScrollTo().performTextReplacement(URL)
         compose.onNodeWithText("立即解析").performClick()
-        compose.waitUntil(65_000) { vm.state.value.video != null || (!vm.state.value.isParsing && vm.state.value.errorMessage != null) }
-        assertNotNull(vm.state.value.errorMessage, vm.state.value.video)
+        compose.waitUntil(65_000) { vm.state.value.video != null || (!vm.state.value.isParsing && vm.state.value.error != null) }
+        assertNotNull(vm.state.value.error?.toString(), vm.state.value.video)
     }
     private fun liveOnly() = assumeTrue("Pass -e live_x true to enable X network checks",
         InstrumentationRegistry.getArguments().getString("live_x") == "true")

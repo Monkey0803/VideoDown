@@ -50,6 +50,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.videodown.douyin.R
+import com.videodown.douyin.presentation.preferredQualityLabelRes
+import com.videodown.douyin.presentation.settingsChangeText
+import com.videodown.douyin.presentation.speedLimitText
+import com.videodown.douyin.presentation.themeModeLabelRes
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,12 +65,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.videodown.douyin.core.PreferredQuality
+import com.videodown.douyin.domain.model.speedLimitOptions
 import com.videodown.douyin.core.ThemeMode
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
 
 @Composable
 fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {},
+    onImportLinks: (String) -> Unit = {},
     storageViewModel: StorageViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     updateViewModel: UpdateViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     preferences: com.videodown.douyin.core.AppPreferences = ServiceLocator.preferences) {
@@ -98,6 +106,10 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     }
     val dynamicColor by preferences.dynamicColorChanges.collectAsStateWithLifecycle()
     val clipboardDetect by preferences.clipboardDetectChanges.collectAsStateWithLifecycle()
+    val autoSaveToGallery by preferences.autoSaveToGalleryChanges.collectAsStateWithLifecycle()
+    val globalSpeedLimit by preferences.globalSpeedLimitChanges.collectAsStateWithLifecycle()
+    val playlistParsing by preferences.playlistParsingChanges.collectAsStateWithLifecycle()
+    var showSpeedLimit by rememberSaveable { mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         notificationsAvailable = DownloadCompletionNotifier.areNotificationsEnabled(context)
         if (enableAfterSettings) {
@@ -113,7 +125,52 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     val engineVersion by ServiceLocator.videoEngine.version.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { ServiceLocator.videoEngine.inspectVersion() }
     val sessionScope = rememberCoroutineScope()
-    var sessionMessage by remember { mutableStateOf("仅保存在本机") }
+    var sessionMessage by remember { mutableStateOf<String?>(null) }
+    var backupMessage by remember { mutableStateOf<String?>(null) }
+    val exportLinksFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+        if (uri != null) sessionScope.launch {
+            val records = ServiceLocator.historyRepository.snapshot()
+            val text = com.videodown.douyin.data.backup.LinkList.format(records)
+            val count = text.trim().lines().size - 1
+            backupMessage = if (com.videodown.douyin.data.backup.BackupDocuments.write(context, uri, text)) {
+                if (count > 0) context.getString(R.string.settings_links_exported, count)
+                else context.getString(R.string.settings_links_exported_empty)
+            } else context.getString(R.string.settings_write_failed)
+        }
+    }
+    val importLinksFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) sessionScope.launch {
+            val links = com.videodown.douyin.data.backup.LinkList.parse(
+                com.videodown.douyin.data.backup.BackupDocuments.read(context, uri),
+            )
+            if (links.isEmpty()) backupMessage = context.getString(R.string.settings_import_empty)
+            else onImportLinks(links.joinToString("\n"))
+        }
+    }
+    val exportSettingsFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) sessionScope.launch {
+            val text = com.videodown.douyin.data.backup.SettingsBackupCodec.encode(preferences.snapshot())
+            backupMessage = if (com.videodown.douyin.data.backup.BackupDocuments.write(context, uri, text)) context.getString(R.string.settings_backup_written)
+                else context.getString(R.string.settings_write_failed)
+        }
+    }
+    val importSettingsFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) sessionScope.launch {
+            val snapshot = com.videodown.douyin.data.backup.SettingsBackupCodec.decode(
+                com.videodown.douyin.data.backup.BackupDocuments.read(context, uri),
+            )
+            if (snapshot == null) backupMessage = context.getString(R.string.settings_backup_invalid)
+            else {
+                val applied = preferences.apply(snapshot)
+                backupMessage = if (applied.isEmpty()) context.getString(R.string.settings_backup_same)
+                    else context.getString(R.string.settings_restored,
+                        // Each entry is a key; the list is worded from the values that were applied.
+                        applied.joinToString(context.getString(R.string.list_separator)) {
+                            settingsChangeText(context, it, preferences)
+                        })
+            }
+        }
+    }
     var quality by rememberSaveable { mutableStateOf(preferences.preferredQuality) }
     var showQuality by rememberSaveable { mutableStateOf(false) }
     var showStorage by remember { mutableStateOf(false) }
@@ -124,25 +181,25 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     LaunchedEffect(openStorage) { if (openStorage) { showStorage = true; onStorageOpened() } }
     if (showConcurrency) {
         var chosen by remember(maxConcurrent) { mutableStateOf(maxConcurrent) }
-        AlertDialog(onDismissRequest = { showConcurrency = false }, title = { Text("同时下载数量") },
+        AlertDialog(onDismissRequest = { showConcurrency = false }, title = { Text(stringResource(R.string.settings_concurrency_title)) },
             text = { Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
-                Text("正在运行的任务会继续；调低数量后，新任务等待空闲名额。下载、合并、校验和重试都占用名额。")
+                Text(stringResource(R.string.settings_concurrency_body))
                 (1..5).forEach { count -> Row(Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     .selectable(selected = chosen == count, role = Role.RadioButton, onClick = { chosen = count }), verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = chosen == count, onClick = null); Text("$count 个任务")
+                    RadioButton(selected = chosen == count, onClick = null); Text(stringResource(R.string.settings_concurrency_count, count))
                 } }
             } },
-            confirmButton = { TextButton(onClick = { preferences.maxConcurrentDownloads = chosen; showConcurrency = false }) { Text("确定") } },
-            dismissButton = { TextButton(onClick = { showConcurrency = false }) { Text("取消") } })
+            confirmButton = { TextButton(onClick = { preferences.maxConcurrentDownloads = chosen; showConcurrency = false }) { Text(stringResource(R.string.action_ok)) } },
+            dismissButton = { TextButton(onClick = { showConcurrency = false }) { Text(stringResource(R.string.action_cancel)) } })
     }
     if (showThemeMode) {
         var selectedMode by rememberSaveable(themeMode) { mutableStateOf(themeMode) }
         AlertDialog(
             onDismissRequest = { showThemeMode = false },
-            title = { Text("外观模式") },
+            title = { Text(stringResource(R.string.settings_theme_title)) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    Text("选择应用的显示模式", style = MaterialTheme.typography.bodyMedium,
+                    Text(stringResource(R.string.settings_theme_body), style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 12.dp))
                     Column(Modifier.selectableGroup()) {
                         ThemeMode.entries.forEach { mode ->
@@ -156,7 +213,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
                                 RadioButton(selected = selectedMode == mode, onClick = null)
-                                Text(mode.label, style = MaterialTheme.typography.bodyLarge,
+                                Text(stringResource(themeModeLabelRes(mode)), style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
@@ -166,47 +223,47 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             confirmButton = { TextButton(onClick = {
                 preferences.themeMode = selectedMode
                 showThemeMode = false
-            }) { Text("确定") } },
-            dismissButton = { TextButton(onClick = { showThemeMode = false }) { Text("取消") } },
+            }) { Text(stringResource(R.string.action_ok)) } },
+            dismissButton = { TextButton(onClick = { showThemeMode = false }) { Text(stringResource(R.string.action_cancel)) } },
         )
     }
 
     if (showNotificationSettings) {
         AlertDialog(
             onDismissRequest = { showNotificationSettings = false },
-            title = { Text("开启下载完成通知") },
-            text = { Text("系统尚未允许发送下载完成通知，请在系统设置中开启应用通知和「下载完成」提醒。") },
+            title = { Text(stringResource(R.string.settings_notify_title)) },
+            text = { Text(stringResource(R.string.settings_notify_body)) },
             confirmButton = { TextButton(onClick = {
                 showNotificationSettings = false
                 enableAfterSettings = true
                 context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
-            }) { Text("前往设置") } },
-            dismissButton = { TextButton(onClick = { showNotificationSettings = false }) { Text("取消") } },
+            }) { Text(stringResource(R.string.action_open_settings)) } },
+            dismissButton = { TextButton(onClick = { showNotificationSettings = false }) { Text(stringResource(R.string.action_cancel)) } },
         )
     }
     if (showIndividualNotificationSettings) {
         AlertDialog(
             onDismissRequest = { showIndividualNotificationSettings = false },
-            title = { Text("开启每条任务独立通知") },
-            text = { Text("系统尚未允许发送通知，请在系统设置中开启应用通知和「下载任务」提醒。") },
+            title = { Text(stringResource(R.string.settings_individual_title)) },
+            text = { Text(stringResource(R.string.settings_individual_body)) },
             confirmButton = { TextButton(onClick = {
                 showIndividualNotificationSettings = false
                 enableIndividualAfterSettings = true
                 context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
-            }) { Text("前往设置") } },
-            dismissButton = { TextButton(onClick = { showIndividualNotificationSettings = false }) { Text("取消") } },
+            }) { Text(stringResource(R.string.action_open_settings)) } },
+            dismissButton = { TextButton(onClick = { showIndividualNotificationSettings = false }) { Text(stringResource(R.string.action_cancel)) } },
         )
     }
     if (showQuality) {
         var selectedQuality by rememberSaveable(quality) { mutableStateOf(quality) }
         AlertDialog(
             onDismissRequest = { showQuality = false },
-            title = { Text("默认画质") },
+            title = { Text(stringResource(R.string.settings_quality_title)) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    Text("解析新视频时优先使用此画质", style = MaterialTheme.typography.bodyMedium,
+                    Text(stringResource(R.string.settings_quality_body), style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 12.dp))
                     Column(Modifier.selectableGroup()) {
                         PreferredQuality.entries.forEach { option ->
@@ -223,12 +280,12 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                             ) {
                                 RadioButton(selected = selectedQuality == option, onClick = null)
                                 Column(Modifier.weight(1f)) {
-                                    Text(option.label, style = MaterialTheme.typography.bodyLarge,
+                                    Text(stringResource(preferredQualityLabelRes(option)), style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onSurface)
                                     Text(when (option) {
-                                        PreferredQuality.HIGHEST -> "优先选择可用的最高分辨率"
-                                        PreferredQuality.STANDARD -> "平衡清晰度与文件大小"
-                                        PreferredQuality.SAVER -> "优先选择较低分辨率，节省空间"
+                                        PreferredQuality.HIGHEST -> stringResource(R.string.settings_quality_highest)
+                                        PreferredQuality.STANDARD -> stringResource(R.string.settings_quality_standard)
+                                        PreferredQuality.SAVER -> stringResource(R.string.settings_quality_saver)
                                     }, style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.padding(top = 4.dp))
@@ -242,63 +299,100 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 preferences.preferredQuality = selectedQuality
                 quality = selectedQuality
                 showQuality = false
-            }) { Text("确定") } },
-            dismissButton = { TextButton(onClick = { showQuality = false }) { Text("取消") } },
+            }) { Text(stringResource(R.string.action_ok)) } },
+            dismissButton = { TextButton(onClick = { showQuality = false }) { Text(stringResource(R.string.action_cancel)) } },
+        )
+    }
+    if (showSpeedLimit) {
+        var selectedLimit by rememberSaveable(globalSpeedLimit) { mutableStateOf(globalSpeedLimit) }
+        AlertDialog(
+            onDismissRequest = { showSpeedLimit = false },
+            title = { Text(stringResource(R.string.settings_speed_title)) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text(stringResource(R.string.settings_speed_body),
+                        style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 12.dp))
+                    Column(Modifier.selectableGroup()) {
+                        speedLimitOptions.forEach { option ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .selectable(selected = selectedLimit == option, role = Role.RadioButton,
+                                        onClick = { selectedLimit = option })
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                RadioButton(selected = selectedLimit == option, onClick = null)
+                                Text(speedLimitText(option), style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = {
+                preferences.globalSpeedLimitKbps = selectedLimit
+                showSpeedLimit = false
+            }) { Text(stringResource(R.string.action_ok)) } },
+            dismissButton = { TextButton(onClick = { showSpeedLimit = false }) { Text(stringResource(R.string.action_cancel)) } },
         )
     }
     if (showStorage) StorageDialog(storageViewModel) { showStorage = false }
     if (showUpdate) UpdateDialog(updateViewModel) { showUpdate = false }
     if (showAbout) {
-        AlertDialog(onDismissRequest = { showAbout = false }, title = { Text("关于拾影") },
-            text = { Text("拾影 v$installedVersion 支持主流平台与普通网页视频、网页辅助、分片下载和音视频合并。\n\n$engineVersion\n\n采用 yt-dlp、youtubedl-android（GPL-3.0）与 FFmpeg；不支持 DRM 视频和直播。") },
-            confirmButton = { TextButton(onClick = { showAbout = false }) { Text("知道了") } })
+        AlertDialog(onDismissRequest = { showAbout = false }, title = { Text(stringResource(R.string.settings_about_title)) },
+            text = { Text(stringResource(R.string.settings_about_body, installedVersion, engineVersion)) },
+            confirmButton = { TextButton(onClick = { showAbout = false }) { Text(stringResource(R.string.action_got_it)) } })
     }
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState())
         .padding(horizontal = 22.dp)) {
-        TabPageHeader("我的设置", "管理外观、下载偏好与本地存储")
-        SectionLabel("外观")
+        TabPageHeader(stringResource(R.string.settings_header_title), stringResource(R.string.settings_header_subtitle))
+        SectionLabel(stringResource(R.string.settings_section_appearance))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "外观模式", value = themeMode.label, onClick = { showThemeMode = true })
+                title = stringResource(R.string.settings_theme_title), value = stringResource(themeModeLabelRes(themeMode)), onClick = { showThemeMode = true })
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 ToggleRow(
                     icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
-                    title = "动态取色（Material You）",
-                    subtitle = if (dynamicColor) "跟随系统壁纸配色" else "使用拾影暖橙品牌配色",
+                    title = stringResource(R.string.settings_dynamic_color),
+                    subtitle = stringResource(if (dynamicColor) R.string.settings_dynamic_on else R.string.settings_dynamic_off),
                     checked = dynamicColor,
                     onCheckedChange = { preferences.dynamicColor = it },
                 )
             }
         }
-        SectionLabel("下载偏好")
+        SectionLabel(stringResource(R.string.settings_section_download))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Queue, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "同时下载数量", value = "$maxConcurrent 个任务", onClick = { showConcurrency = true })
+                title = stringResource(R.string.settings_concurrency_title), value = stringResource(R.string.settings_concurrency_count, maxConcurrent),
+                onClick = { showConcurrency = true })
             SettingsRow(icon = { AppIcon(AppIcons.Quality, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "默认画质", value = quality.label, onClick = { showQuality = true })
+                title = stringResource(R.string.settings_quality_title), value = stringResource(preferredQualityLabelRes(quality)), onClick = { showQuality = true })
+            SettingsRow(icon = { AppIcon(AppIcons.Speed, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_speed_title), value = speedLimitText(globalSpeedLimit), onClick = { showSpeedLimit = true })
             ToggleRow(
                 icon = { AppIcon(AppIcons.Wifi, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "仅在 Wi-Fi 下下载",
-                subtitle = if (wifiOnly) "离开 Wi-Fi 自动暂停，连接后可继续" else "允许使用移动网络下载",
+                title = stringResource(R.string.settings_wifi),
+                subtitle = stringResource(if (wifiOnly) R.string.settings_wifi_on else R.string.settings_wifi_off),
                 checked = wifiOnly,
                 onCheckedChange = { preferences.wifiOnly = it },
             )
             ToggleRow(
                 icon = { AppIcon(AppIcons.ResumeDownload, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "自动继续下载",
-                subtitle = if (autoResume) "网络恢复或空间充足后自动继续，手动暂停不受影响"
-                    else "中断的任务需手动点击继续",
+                title = stringResource(R.string.settings_auto_resume),
+                subtitle = stringResource(if (autoResume) R.string.settings_auto_resume_on else R.string.settings_auto_resume_off),
                 checked = autoResume,
                 onCheckedChange = { preferences.autoResume = it },
             )
             ToggleRow(
                 icon = { AppIcon(AppIcons.Notification, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "完成时通知",
+                title = stringResource(R.string.settings_notify_row),
                 subtitle = when {
-                    !notificationsAvailable -> "系统通知未开启，打开开关以授权"
-                    notifyOnCompletion -> "视频下载完成后提醒你"
-                    else -> "下载完成时不提醒"
+                    !notificationsAvailable -> stringResource(R.string.settings_notify_unavailable)
+                    notifyOnCompletion -> stringResource(R.string.settings_notify_on)
+                    else -> stringResource(R.string.settings_notify_off)
                 },
                 checked = notifyOnCompletion && notificationsAvailable,
                 onCheckedChange = { enabled ->
@@ -321,11 +415,11 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             )
             ToggleRow(
                 icon = { AppIcon(AppIcons.Notification, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "每条任务独立通知",
+                title = stringResource(R.string.settings_individual_row),
                 subtitle = when {
-                    !notificationsAvailable -> "系统通知未开启，打开开关以授权"
-                    individualNotifications -> "每个下载任务单独显示，可逐条暂停或继续"
-                    else -> "所有任务汇总在一条通知里"
+                    !notificationsAvailable -> stringResource(R.string.settings_notify_unavailable)
+                    individualNotifications -> stringResource(R.string.settings_individual_on)
+                    else -> stringResource(R.string.settings_individual_off)
                 },
                 checked = individualNotifications && notificationsAvailable,
                 onCheckedChange = { enabled ->
@@ -343,38 +437,76 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 },
             )
             ToggleRow(
+                icon = { AppIcon(AppIcons.SaveAlbum, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_gallery_row),
+                subtitle = stringResource(if (autoSaveToGallery) R.string.settings_gallery_on else R.string.settings_gallery_off),
+                checked = autoSaveToGallery,
+                onCheckedChange = { preferences.autoSaveToGallery = it },
+            )
+            ToggleRow(
+                icon = { AppIcon(AppIcons.BatchImport, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_playlist_row),
+                subtitle = if (playlistParsing)
+                    stringResource(R.string.settings_playlist_on, com.videodown.douyin.data.generic.EngineRequest.PLAYLIST_LIMIT)
+                else stringResource(R.string.settings_playlist_off),
+                checked = playlistParsing,
+                onCheckedChange = { preferences.playlistParsing = it },
+            )
+            ToggleRow(
                 icon = { AppIcon(AppIcons.Link, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "识别剪贴板链接",
-                subtitle = if (clipboardDetect) "复制受支持平台的链接后回到拾影会提示解析" else "不读取剪贴板，只用粘贴按钮",
+                title = stringResource(R.string.settings_clipboard_row),
+                subtitle = stringResource(if (clipboardDetect) R.string.settings_clipboard_on else R.string.settings_clipboard_off),
                 checked = clipboardDetect,
                 onCheckedChange = { preferences.clipboardDetect = it },
             )
         }
-        Text("解析新视频时使用此画质；仍可在结果页逐条选择。", color = MaterialTheme.colorScheme.onSurfaceVariant,
+        Text(stringResource(R.string.settings_quality_note), color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 3.dp, top = 8.dp))
-        SectionLabel("网页与解析引擎")
+        SectionLabel(stringResource(R.string.settings_section_engine))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Settings, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "解析引擎", value = "随应用更新", onClick = { showAbout = true })
+                title = stringResource(R.string.settings_engine_row), value = stringResource(R.string.settings_engine_value),
+                onClick = { showAbout = true })
             Text(engineVersion, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium)
             SettingsRow(icon = { AppIcon(AppIcons.ClearSession, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "清除网页登录态", value = sessionMessage, onClick = {
+                title = stringResource(R.string.settings_clear_session), value = sessionMessage ?: stringResource(R.string.settings_session_local),
+                onClick = {
                     sessionScope.launch {
                         ServiceLocator.historyRepository.snapshot().filter { it.media?.useBrowserSession == true &&
                             it.status in setOf(com.videodown.douyin.domain.model.DownloadStatus.RUNNING, com.videodown.douyin.domain.model.DownloadStatus.PENDING)
                         }.forEach { ServiceLocator.downloader.pause(it.id) }
-                        ServiceLocator.browserSessions.clear(); sessionMessage = "已清除，相关任务已暂停"
+                        ServiceLocator.browserSessions.clear(); sessionMessage = context.getString(R.string.settings_session_cleared)
                     }
                 })
         }
-        SectionLabel("存储与关于")
+        SectionLabel(stringResource(R.string.settings_section_backup))
+        SettingsCard {
+            SettingsRow(icon = { AppIcon(AppIcons.ExportFolder, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_export_links), value = stringResource(R.string.settings_file_text),
+                onClick = { exportLinksFile.launch(com.videodown.douyin.data.backup.BackupDocuments.LINK_FILE_NAME) })
+            SettingsRow(icon = { AppIcon(AppIcons.BatchImport, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_import_links), value = stringResource(R.string.settings_import_value),
+                onClick = { importLinksFile.launch(com.videodown.douyin.data.backup.BackupDocuments.READABLE_TYPES) })
+            SettingsRow(icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_backup_settings), value = stringResource(R.string.settings_file_json),
+                onClick = { exportSettingsFile.launch(com.videodown.douyin.data.backup.BackupDocuments.SETTINGS_FILE_NAME) })
+            SettingsRow(icon = { AppIcon(AppIcons.Settings, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_restore_settings), value = stringResource(R.string.settings_restore_value),
+                onClick = { importSettingsFile.launch(com.videodown.douyin.data.backup.BackupDocuments.READABLE_TYPES) })
+        }
+        backupMessage?.let {
+            Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(start = 3.dp, top = 8.dp))
+        }
+        SectionLabel(stringResource(R.string.settings_section_storage))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "存储空间", value = "占用与残留清理", onClick = { showStorage = true })
+                title = stringResource(R.string.settings_storage_row), value = stringResource(R.string.settings_storage_value),
+                onClick = { showStorage = true })
             SettingsRow(icon = { AppIcon(AppIcons.Download, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "检查更新", value = "v$installedVersion", onClick = { showUpdate = true })
+                title = stringResource(R.string.settings_update_row), value = "v$installedVersion", onClick = { showUpdate = true })
             SettingsRow(icon = { AppIcon(AppIcons.Info, null, tint = MaterialTheme.colorScheme.primary) },
-                title = "关于拾影", value = "›", onClick = { showAbout = true })
+                title = stringResource(R.string.settings_about_row), value = "›", onClick = { showAbout = true })
         }
         Spacer(Modifier.height(28.dp))
     }

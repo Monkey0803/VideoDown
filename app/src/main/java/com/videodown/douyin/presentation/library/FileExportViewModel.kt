@@ -13,6 +13,27 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/** How the check for interrupted copies ended; the screen words each case. */
+sealed interface ExportCleanup {
+    data object None : ExportCleanup
+    data class Pending(val count: Int) : ExportCleanup
+    data object Unknown : ExportCleanup
+}
+
+/**
+ * What an export run did.
+ *
+ * Reported as numbers and reasons rather than as a sentence: the wording belongs to the screen, and
+ * a new failure kind must not be able to slip past the wording unnoticed.
+ */
+data class FileExportResult(
+    val succeeded: Int,
+    val failed: Int,
+    val reasons: Set<FileExportFailureKind>,
+    val cleanup: ExportCleanup,
+    val cancelled: Boolean,
+)
+
 data class FileExportState(
     val busy: Boolean = false,
     val done: Int = 0,
@@ -20,7 +41,9 @@ data class FileExportState(
     val failedIds: Set<String> = emptySet(),
     val failureCounts: Map<FileExportFailureKind, Int> = emptyMap(),
     val invalidTreeUri: String? = null,
+    /** Set only when the folder itself could not be used before any export started. */
     val message: String? = null,
+    val result: FileExportResult? = null,
     val finished: Boolean = false,
 )
 class FileExportViewModel(private val repository: FileExportRepository = ServiceLocator.fileExportRepository) : ViewModel() {
@@ -55,21 +78,27 @@ class FileExportViewModel(private val repository: FileExportRepository = Service
                 val unresolved = try { repository.pendingCleanupCount() }
                 catch (error: CancellationException) { throw error }
                 catch (_: Exception) { -1 }
-                val recoveryMessage = when {
-                    unresolved > 0 -> "；另有 $unresolved 个中断副本暂时无法清理，请重新授权原文件夹后重试"
-                    unresolved < 0 -> "；无法检查中断副本，请重新授权原文件夹后重试清理"
-                    else -> ""
-                }
-                val reasons = buildList {
-                    if (FileExportFailureKind.ACCESS_LOST in failures) add("文件夹不可写或授权已失效，请重新选择文件夹")
-                    if (FileExportFailureKind.SPACE_FULL in failures) add("目标空间不足，请释放空间或选择其他文件夹后重试")
-                    if (FileExportFailureKind.OTHER in failures) add("请检查本地文件和目标文件夹后重试")
-                }.joinToString("；")
-                mutable.update { it.copy(finished = true, message = "已导出 $success 项" +
-                    (if (failed.isNotEmpty()) "，${failed.size} 项失败；$reasons；本地原文件未修改" else "，原文件已保留") + recoveryMessage) }
+                // Nothing here is a sentence: the screen words the numbers and the reason kinds.
+                mutable.update { it.copy(finished = true, result = FileExportResult(
+                    succeeded = success,
+                    failed = failed.size,
+                    reasons = failures.keys.toSet(),
+                    cleanup = when {
+                        unresolved > 0 -> ExportCleanup.Pending(unresolved)
+                        unresolved < 0 -> ExportCleanup.Unknown
+                        else -> ExportCleanup.None
+                    },
+                    cancelled = false,
+                )) }
             } catch (error: CancellationException) {
                 mutable.update { it.copy(finished = true, failedIds = selected.drop(it.done).toSet() + failed,
-                    message = "已停止，已导出 $success 项；未完成项可重试") }
+                    result = FileExportResult(
+                        succeeded = success,
+                        failed = failed.size,
+                        reasons = failures.keys.toSet(),
+                        cleanup = ExportCleanup.None,
+                        cancelled = true,
+                    )) }
                 throw error
             } finally { mutable.update { it.copy(busy = false) } }
         }

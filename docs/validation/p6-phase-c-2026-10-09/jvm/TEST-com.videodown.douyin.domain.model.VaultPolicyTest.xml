@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.VaultPolicyTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.462Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="a private record may not be deep-linked from a notification" classname="com.videodown.douyin.domain.model.VaultPolicyTest" time="0.0"/>
+  <testcase name="a private title is only readable while the vault is unlocked" classname="com.videodown.douyin.domain.model.VaultPolicyTest" time="0.0"/>
+  <testcase name="an exported link list skips private records" classname="com.videodown.douyin.domain.model.VaultPolicyTest" time="0.0"/>
+  <testcase name="a private record belongs to the vault and a normal one does not" classname="com.videodown.douyin.domain.model.VaultPolicyTest" time="0.0"/>
+  <testcase name="the notification never names a private record, even while unlocked" classname="com.videodown.douyin.domain.model.VaultPolicyTest" time="0.0"/>
+  <testcase name="a locked vault shows no private item at all" classname="com.videodown.douyin.domain.model.VaultPolicyTest" time="0.0"/>
+  <testcase name="a private record is never copied into the shared gallery automatically" classname="com.videodown.douyin.domain.model.VaultPolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

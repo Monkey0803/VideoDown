@@ -16,6 +16,7 @@ import com.videodown.douyin.R
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.domain.model.PlaybackCheckpoint
 import com.videodown.douyin.domain.model.PlaybackOptions
+import com.videodown.douyin.domain.model.SleepTimer
 import com.videodown.douyin.presentation.MainActivity
 import java.io.File
 
@@ -25,7 +26,23 @@ class AudioPlaybackService : MediaSessionService() {
     private lateinit var player: ExoPlayer
     private val handler = Handler(Looper.getMainLooper())
     private val ticker = object : Runnable {
-        override fun run() { save(); handler.postDelayed(this, 2000) }
+        override fun run() { save(); enforceSleepTimer(); handler.postDelayed(this, 2000) }
+    }
+
+    /**
+     * Stops playback once the sleep timer's deadline has passed.
+     *
+     * Pausing rather than stopping keeps the media notification and the saved position usable, and
+     * the deadline is cleared so it can never fire twice. The deadline lives in preferences, so the
+     * timer keeps running while the player UI is closed.
+     */
+    private fun enforceSleepTimer() {
+        if (!::player.isInitialized) return
+        val repository = ServiceLocator.playbackRepository
+        val deadline = repository.sleepTimerDeadline()
+        if (!SleepTimer.expired(deadline, System.currentTimeMillis())) return
+        repository.setSleepTimerDeadline(SleepTimer.OFF)
+        player.pause()
     }
     private fun launchIntent(id: String) = PendingIntent.getActivity(this, 8701,
         Intent(this, MainActivity::class.java).setAction(ACTION_OPEN_PLAYER).putExtra(EXTRA_RECORD_ID, id),

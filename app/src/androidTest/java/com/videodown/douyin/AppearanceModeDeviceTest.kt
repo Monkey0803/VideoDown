@@ -79,7 +79,8 @@ class AppearanceModeDeviceTest {
     }
 
     private fun option(mode: ThemeMode) = compose.onNode(
-        hasText(mode.label) and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton),
+        hasText(instrumentation.targetContext.getString(com.videodown.douyin.presentation.themeModeLabelRes(mode))) and
+            SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton),
     )
 
     private fun selectMode(mode: ThemeMode) {

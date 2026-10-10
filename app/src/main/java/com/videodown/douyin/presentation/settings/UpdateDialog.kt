@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
+import com.videodown.douyin.R
+import com.videodown.douyin.core.updateReasonRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -22,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -52,33 +55,34 @@ internal fun UpdateDialog(model: UpdateViewModel, onClose: () -> Unit) {
 
     AlertDialog(
         onDismissRequest = onClose,
-        title = { Text("检查更新") },
+        title = { Text(stringResource(R.string.update_title)) },
         text = {
             Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
-                Text("当前版本：${model.currentLabel}", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.update_current_version, appVersionText(model.currentVersion.versionName, model.currentVersion.versionCode)), style = MaterialTheme.typography.bodyMedium)
                 when (val current = state) {
                     UpdateUiState.Idle, UpdateUiState.Checking ->
-                        Text("正在检查更新…", modifier = Modifier.padding(top = 12.dp))
+                        Text(stringResource(R.string.update_checking), modifier = Modifier.padding(top = 12.dp))
                     is UpdateUiState.UpToDate ->
-                        Text("已是最新版本。", modifier = Modifier.padding(top = 12.dp))
+                        Text(stringResource(R.string.update_up_to_date), modifier = Modifier.padding(top = 12.dp))
                     is UpdateUiState.Available -> {
-                        Text("发现新版本：${current.latestLabel}", modifier = Modifier.padding(top = 12.dp),
+                        Text(stringResource(R.string.update_available, versionText(current.latest.versionName, current.latest.versionCode)), modifier = Modifier.padding(top = 12.dp),
                             style = MaterialTheme.typography.bodyLarge)
                         current.notes?.let { Text(it, modifier = Modifier.padding(top = 8.dp)) }
                         when {
                             current.downloadUrl == null && current.releasePageUrl == null ->
-                                Text("该版本未提供下载地址或发布页，请通过官方渠道获取。",
+                                Text(stringResource(R.string.update_no_link),
                                     modifier = Modifier.padding(top = 8.dp))
                             current.downloadUrl == null ->
-                                Text("未提供安装包直链，可打开发布页查看下载方式。",
+                                Text(stringResource(R.string.update_no_direct_link),
                                     modifier = Modifier.padding(top = 8.dp))
                         }
                     }
                     is UpdateUiState.Message ->
-                        Text(current.text, modifier = Modifier.padding(top = 12.dp))
+                        Text(updateMessageText(current), modifier = Modifier.padding(top = 12.dp))
                 }
                 Text(
-                    "更新源：${manifestUrl.ifBlank { "未配置" }}",
+                    stringResource(R.string.update_source,
+                        manifestUrl.ifBlank { stringResource(R.string.update_source_unset) }),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 16.dp),
@@ -89,18 +93,18 @@ internal fun UpdateDialog(model: UpdateViewModel, onClose: () -> Unit) {
             val available = state as? UpdateUiState.Available
             val target = available?.downloadUrl ?: available?.releasePageUrl
             if (available == null) {
-                TextButton(onClick = onClose) { Text("完成") }
+                TextButton(onClick = onClose) { Text(stringResource(R.string.action_done)) }
             } else {
                 TextButton(
                     enabled = target != null,
                     onClick = { if (target != null && openUrl(context, target)) onClose() },
-                ) { Text(if (available.downloadUrl != null) "下载新版" else "查看发布页") }
+                ) { Text(stringResource(if (available.downloadUrl != null) R.string.update_download else R.string.update_view_release)) }
             }
         },
         dismissButton = {
             Column {
-                TextButton(onClick = { editingSource = true }) { Text("更新源") }
-                if (state !is UpdateUiState.Checking) TextButton(onClick = model::check) { Text("重新检查") }
+                TextButton(onClick = { editingSource = true }) { Text(stringResource(R.string.update_source_action)) }
+                if (state !is UpdateUiState.Checking) TextButton(onClick = model::check) { Text(stringResource(R.string.update_recheck)) }
             }
         },
     )
@@ -111,22 +115,22 @@ private fun UpdateSourceDialog(initial: String, onDismiss: () -> Unit, onSave: (
     var value by rememberSaveable(initial) { mutableStateOf(initial) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("更新源地址") },
+        title = { Text(stringResource(R.string.update_source_dialog_title)) },
         text = {
             Column {
-                Text("填写返回版本清单 JSON 的 http(s) 地址；留空则使用应用内置地址。",
+                Text(stringResource(R.string.update_source_hint),
                     style = MaterialTheme.typography.bodySmall)
                 OutlinedTextField(
                     value = value,
                     onValueChange = { value = it },
                     singleLine = true,
-                    label = { Text("版本清单地址") },
+                    label = { Text(stringResource(R.string.update_source_label)) },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                 )
             }
         },
-        confirmButton = { TextButton(onClick = { onSave(value) }) { Text("保存并检查") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+        confirmButton = { TextButton(onClick = { onSave(value) }) { Text(stringResource(R.string.update_source_save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
@@ -134,3 +138,36 @@ private fun UpdateSourceDialog(initial: String, onDismiss: () -> Unit, onSave: (
 private fun openUrl(context: Context, url: String): Boolean = runCatching {
     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 }.isSuccess
+
+/**
+ * The published version as the manifest states it: its name when it has one, otherwise its code.
+ *
+ * Deliberately not the same as [appVersionText]: the manifest names a release, while the installed
+ * build is identified by name *and* code.
+ */
+@Composable
+private fun versionText(name: String?, code: Int?): String {
+    val trimmed = name?.trim().orEmpty()
+    return when {
+        trimmed.isNotEmpty() -> trimmed
+        code != null -> stringResource(R.string.version_label_code, code)
+        else -> stringResource(R.string.version_label_unknown)
+    }
+}
+
+/** The installed build, e.g. `1.0.1（内部版本 2）`, or just the build when the name is missing. */
+@Composable
+private fun appVersionText(name: String, code: Int): String =
+    if (name.isBlank()) stringResource(R.string.version_label_code, code)
+    else stringResource(R.string.version_label_both, name, code)
+
+/** The wording for a failed check; the state only carries a key. */
+@Composable
+private fun updateMessageText(message: UpdateUiState.Message): String {
+    val res = updateReasonRes(message.reasonKey)
+    return if (message.httpStatus != null && res == R.string.update_reason_http) {
+        stringResource(res, message.httpStatus)
+    } else {
+        stringResource(res)
+    }
+}

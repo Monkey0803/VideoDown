@@ -87,6 +87,14 @@ data class DownloadRecord(
     val queueOrder: Long = 0,
     val favorite: Boolean = false,
     val folder: String = "",
+    /** Per-task rate cap in KB/s; `0` follows the global setting. Defaults keep old history. */
+    val speedLimitKbps: Int = 0,
+    /** Languages to fetch and embed while downloading; empty means the file keeps no subtitles. */
+    val subtitleLanguages: List<String> = emptyList(),
+    /** Whether those languages are machine captions rather than real subtitle tracks. */
+    val subtitleAutomatic: Boolean = false,
+    /** Kept out of the normal library, the task titles and every automatic export. */
+    val isPrivate: Boolean = false,
 ) {
     val isAudio: Boolean get() = media?.audioOnly == true
 
@@ -100,8 +108,12 @@ data class DownloadRecord(
     val isResumable: Boolean
         get() = status == DownloadStatus.PAUSED || status == DownloadStatus.FAILED
 
-    val displayAuthor: String
-        get() = authorNickname.ifBlank { "未知作者" }
+    /**
+     * The stored author name, blank when the source gave none.
+     *
+     * The screen substitutes its own wording for a blank name, so this file stays copy-free.
+     */
+    val displayAuthor: String get() = authorNickname
 }
 
 /**

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.download.ExpiredSourceTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:01.211Z" hostname="Alias-mini.local" time="0.044">
+  <properties/>
+  <testcase name="changed media restarts instead of appending stale partial bytes" classname="com.videodown.douyin.data.download.ExpiredSourceTest" time="0.017"/>
+  <testcase name="expired URL resumes only matching media with a validator" classname="com.videodown.douyin.data.download.ExpiredSourceTest" time="0.015"/>
+  <testcase name="matching media without a validator restarts safely" classname="com.videodown.douyin.data.download.ExpiredSourceTest" time="0.012"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

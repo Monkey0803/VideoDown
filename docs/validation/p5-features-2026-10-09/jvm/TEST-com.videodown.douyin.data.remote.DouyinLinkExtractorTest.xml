@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.783Z" hostname="Alias-mini.local" time="0.001">
+  <properties/>
+  <testcase name="extracts a bare numeric aweme id" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="extracts aweme id from an iesdouyin share url" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="prefers the douyin link when other urls are present" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="extracts short link that is glued to trailing punctuation" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="does not mistake a short numeric id for an aweme id" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="extracts aweme id from a long video url" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="extracts aweme id from a modal_id query parameter" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="returns null for unrelated text" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="extracts a sec_uid from a profile url" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.0"/>
+  <testcase name="extracts short link from a full share caption" classname="com.videodown.douyin.data.remote.DouyinLinkExtractorTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

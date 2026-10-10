@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.localization.LocalizationGuardTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.463Z" hostname="Alias-mini.local" time="0.061">
+  <properties/>
+  <testcase name="the budget only ratchets down" classname="com.videodown.douyin.localization.LocalizationGuardTest" time="0.0"/>
+  <testcase name="no chinese copy is added while the migration is in flight" classname="com.videodown.douyin.localization.LocalizationGuardTest" time="0.057"/>
+  <testcase name="both languages carry exactly the same keys" classname="com.videodown.douyin.localization.LocalizationGuardTest" time="0.003"/>
+  <testcase name="the supported languages are declared for per-app language settings" classname="com.videodown.douyin.localization.LocalizationGuardTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

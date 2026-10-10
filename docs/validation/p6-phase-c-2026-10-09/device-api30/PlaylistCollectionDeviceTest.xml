@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T02:42:14" hostname="localhost">
+  <testsuite name="com.videodown.douyin.PlaylistCollectionDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="28.097" timestamp="2026-10-10T02:42:14" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="everyEntryOfACollectionCanBeDownloaded" classname="com.videodown.douyin.PlaylistCollectionDeviceTest" time="11.470" />
+    <testcase name="aCollectionPageBecomesSeveralSelectableVideos" classname="com.videodown.douyin.PlaylistCollectionDeviceTest" time="16.627" />
+  </testsuite>
+</testsuites>

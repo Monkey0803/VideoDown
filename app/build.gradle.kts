@@ -64,8 +64,8 @@ android {
         applicationId = "com.videodown.douyin"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 4
+        versionName = "1.0.3"
 
         buildConfigField(
             "String",
@@ -73,7 +73,8 @@ android {
             "\"${defaultUpdateManifestUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"",
         )
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Pins the app locale so the copied device suite is independent of the host language.
+        testInstrumentationRunner = "com.videodown.douyin.LocaleTestRunner"
         vectorDrawables { useSupportLibrary = true }
 
         /**

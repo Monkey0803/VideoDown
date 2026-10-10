@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.generic.GenericMetadataParserTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-09T11:27:52.696Z" hostname="Alias-mini.local" time="0.009">
+  <properties/>
+  <testcase name="historical downloads default to direct transfer without authentication" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.0"/>
+  <testcase name="missing container keeps opaque direct video support" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.006"/>
+  <testcase name="resume identity changes when media or audio selection changes" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.0"/>
+  <testcase name="multiple embedded videos remain independent choices" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.001"/>
+  <testcase name="video only DASH is paired with audio and format identity is retained" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.0"/>
+  <testcase name="unsupported declared containers never masquerade as MP4" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.0"/>
+  <testcase name="DRM formats and non web URLs never become candidates" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.0"/>
+  <testcase name="generic URLs accepted without weakening credentials rejection" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.002"/>
+  <testcase name="live and DRM results are rejected" classname="com.videodown.douyin.data.generic.GenericMetadataParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

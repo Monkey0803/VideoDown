@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.domain.model.AutoResumePolicyTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-10T05:49:02.455Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="active and finished tasks are not candidates" classname="com.videodown.douyin.domain.model.AutoResumePolicyTest" time="0.0"/>
+  <testcase name="history written before pause causes existed stays manual" classname="com.videodown.douyin.domain.model.AutoResumePolicyTest" time="0.0"/>
+  <testcase name="a deliberate pause is never eligible" classname="com.videodown.douyin.domain.model.AutoResumePolicyTest" time="0.0"/>
+  <testcase name="network and process interruptions are eligible" classname="com.videodown.douyin.domain.model.AutoResumePolicyTest" time="0.0"/>
+  <testcase name="only self-clearing failures are eligible" classname="com.videodown.douyin.domain.model.AutoResumePolicyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,12 +1,12 @@
 package com.videodown.douyin.presentation
 
+import com.videodown.douyin.R
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
 import android.content.Context
-import android.content.res.Configuration
-import java.util.Locale
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Build
 import android.app.PictureInPictureParams
@@ -43,6 +43,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -78,6 +80,8 @@ class MainActivity : ComponentActivity() {
     private var openLibrary by mutableStateOf(false)
     private var openTasks by mutableStateOf(false)
     private var openBatchImport by mutableStateOf(false)
+    /** Links imported from a backup file, handed to the batch-import dialog. */
+    private var batchImportSeed by mutableStateOf<String?>(null)
     private var openPlayerId by mutableStateOf<String?>(null)
     /** 「粘贴解析」 arrived before the window had input focus, so the clipboard cannot be read yet. */
     private var pendingQuickParse = false
@@ -106,7 +110,8 @@ class MainActivity : ComponentActivity() {
         val params = PictureInPictureParams.Builder().setAspectRatio(Rational((pipRatio * 1000).toInt(), 1000))
             .setActions(if (pipPlayer == null) emptyList() else listOf(RemoteAction(
                 AndroidIcon.createWithResource(this, if (playing) com.videodown.douyin.R.drawable.ic_shiying_pause else com.videodown.douyin.R.drawable.ic_shiying_play),
-                if (playing) "暂停" else "播放", if (playing) "暂停播放" else "继续播放", action)))
+                getString(if (playing) R.string.action_pause else R.string.action_play),
+                getString(if (playing) R.string.pip_pause_playback else R.string.pip_resume_playback), action)))
         if (Build.VERSION.SDK_INT >= 31) params.setAutoEnterEnabled(playing)
         runCatching { setPictureInPictureParams(params.build()) }
     }
@@ -135,16 +140,6 @@ class MainActivity : ComponentActivity() {
     }
     companion object { private const val PIP_ACTION = "com.videodown.douyin.PIP_PLAY_PAUSE" }
 
-    // All app-owned copy is Simplified Chinese. Keep framework and player resources
-    // in the same language, including after rotation or a system language change.
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase)
-        applyOverrideConfiguration(Configuration().apply {
-            setLocale(Locale.SIMPLIFIED_CHINESE)
-            setLayoutDirection(Locale.SIMPLIFIED_CHINESE)
-        })
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -172,6 +167,8 @@ class MainActivity : ComponentActivity() {
                     openLibrary = openLibrary, onLibraryOpened = { openLibrary = false },
                     openTasks = openTasks, onTasksOpened = { openTasks = false },
                     openBatchImport = openBatchImport, onBatchImportOpened = { openBatchImport = false },
+                    batchImportSeed = batchImportSeed, onBatchImportSeedConsumed = { batchImportSeed = null },
+                    onImportLinks = { text -> batchImportSeed = text; openBatchImport = true },
                     openPlayerId = openPlayerId, onPlayerOpened = {
                         openPlayerId = null
                         // Consume this notification destination so recreation restores the current tab.
@@ -252,7 +249,10 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     homeViewModel: HomeViewModel = viewModel(),
     openPlayerId: String? = null, onPlayerOpened: () -> Unit = {},
     openTasks: Boolean = false, onTasksOpened: () -> Unit = {},
-    openBatchImport: Boolean = false, onBatchImportOpened: () -> Unit = {}) {
+    openBatchImport: Boolean = false, onBatchImportOpened: () -> Unit = {},
+    batchImportSeed: String? = null, onBatchImportSeedConsumed: () -> Unit = {},
+    /** Links read from a backup file; the app switches to the parse page and opens 批量导入. */
+    onImportLinks: (String) -> Unit = {}) {
     val navController = rememberNavController()
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -261,8 +261,12 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     val route = entry?.destination?.route
     var requestedStorage by remember { mutableStateOf(false) }
     val historyState by historyViewModel.state.collectAsStateWithLifecycle()
+    // Reactive so returning from the player immediately refreshes 「继续观看」 in both lists.
+    val watchProgress by ServiceLocator.playbackRepository.watchProgress().collectAsStateWithLifecycle()
     val tabs = listOf(Routes.HOME, Routes.TASKS, Routes.LIBRARY, Routes.SETTINGS)
-    val labels = listOf("解析", "任务", "已存", "我的")
+    // Read through resources so the tab bar follows the app language.
+    val labels = listOf(R.string.tab_parse, R.string.tab_tasks, R.string.tab_library, R.string.tab_profile).map { stringResource(it) }
+    val tabTags = listOf("tab-parse", "tab-tasks", "tab-library", "tab-settings")
     val icons = listOf(AppIcons.Parse, AppIcons.Tasks, AppIcons.Library, AppIcons.Profile)
     val selectedIcons = listOf(AppIcons.ParseSelected, AppIcons.TasksSelected, AppIcons.LibrarySelected, AppIcons.ProfileSelected)
 
@@ -310,11 +314,15 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (route in tabs && !keyboardVisible) {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    // Tags make the tab bar addressable by tests without depending on the copy,
+                    // which now follows the app language.
+                    modifier = Modifier.testTag("tab-bar")) {
                     tabs.forEachIndexed { index, destination ->
                         NavigationBarItem(
                             selected = route == destination,
                             onClick = { navigateTab(destination) },
+                            modifier = Modifier.testTag(tabTags[index]),
                             icon = { AppIcon(if (route == destination) selectedIcons[index] else icons[index], contentDescription = null) },
                             label = { Text(labels[index]) },
                             colors = NavigationBarItemDefaults.colors(
@@ -347,12 +355,16 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                     onOpenHistory = { navigateTab(Routes.TASKS) },
                     onOpenLibrary = { navigateTab(Routes.LIBRARY) },
                     onPlayDownloaded = { navController.navigate(Routes.player(it)) },
-                    recentRecords = historyState.records,
+                    // 首页「最近保存」没有门禁，所以私密条目不进入这里。
+                    recentRecords = historyState.records.filterNot { it.isPrivate },
                     viewModel = homeViewModel,
                     onOpenStorage = { requestedStorage = true; navigateTab(Routes.SETTINGS) },
                     onOpenSettings = { navigateTab(Routes.SETTINGS) },
                     openBatchImport = openBatchImport,
                     onBatchImportOpened = onBatchImportOpened,
+                    watchProgress = watchProgress,
+                    batchImportSeed = batchImportSeed,
+                    onBatchImportSeedConsumed = onBatchImportSeedConsumed,
                 )
             }
             composable(Routes.TASKS) {
@@ -375,9 +387,16 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                 LibraryScreen(
                     historyViewModel = historyViewModel,
                     onPlay = { navController.navigate(Routes.player(it)) },
+                    watchProgress = watchProgress,
                 )
             }
-            composable(Routes.SETTINGS) { SettingsScreen(openStorage = requestedStorage, onStorageOpened = { requestedStorage = false }) }
+            composable(Routes.SETTINGS) {
+                SettingsScreen(
+                    openStorage = requestedStorage,
+                    onStorageOpened = { requestedStorage = false },
+                    onImportLinks = { text -> onImportLinks(text); navigateTab(Routes.HOME) },
+                )
+            }
             composable(
                 route = Routes.PLAYER,
                 arguments = listOf(navArgument("recordId") { type = NavType.StringType }),

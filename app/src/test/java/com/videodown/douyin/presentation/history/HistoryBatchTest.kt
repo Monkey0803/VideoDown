@@ -32,7 +32,7 @@ class HistoryBatchTest {
     private val exported = mutableListOf<String>()
     private val downloader = object : Downloader {
         override val progress = MutableStateFlow<Map<String, DownloadProgress>>(emptyMap())
-        override suspend fun start(video: DouyinVideo, variant: VideoVariant) = error("Unexpected")
+        override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection) = error("Unexpected")
         override suspend fun pause(id: String) { paused += id }
         override suspend fun resume(id: String) { resumed += id }
         override suspend fun cancel(id: String, removeRecord: Boolean) { deleted += id; history.delete(id) }
@@ -46,7 +46,7 @@ class HistoryBatchTest {
         Dispatchers.setMain(dispatcher)
         vm = HistoryViewModel(history, downloader) { record ->
             exported += record.id
-            if (record.id == "bad") Result.failure(IllegalArgumentException("本地视频文件不存在")) else Result.success(Unit)
+            if (record.id == "bad") Result.failure(com.videodown.douyin.data.gallery.GalleryExportException(com.videodown.douyin.data.gallery.GalleryExportFailure.FILE_MISSING)) else Result.success(Unit)
         }
         store.put("history", vm)
     }
@@ -89,9 +89,13 @@ class HistoryBatchTest {
         add("bad", DownloadStatus.COMPLETED); add("ok", DownloadStatus.COMPLETED); add("paused", DownloadStatus.PAUSED); runCurrent()
         vm.exportSelected(linkedSetOf("bad", "missing", "paused", "ok")); advanceUntilIdle()
         assertEquals(listOf("bad", "ok"), exported)
-        assertEquals("保存到相册：成功 1 项，跳过 2 项，失败 1 项（本地视频文件不存在）", vm.state.value.message)
-        assertEquals(listOf(BatchFailure("bad", "bad", "本地视频文件不存在")), vm.state.value.batchResult?.failures)
-        assertEquals(1, vm.state.value.batchResult?.succeeded)
+        // The ViewModel reports numbers, not sentences: the screen composes the message.
+        assertEquals(null, vm.state.value.message)
+        val result = vm.state.value.batchResult!!
+        assertEquals(BatchOperation.SAVE_TO_GALLERY, result.operation)
+        assertEquals(1, result.succeeded)
+        assertEquals(2, result.skipped)
+        assertEquals(listOf(BatchFailure("bad", "bad", com.videodown.douyin.data.gallery.GalleryExportFailure.FILE_MISSING.storageKey)), result.failures)
         assertEquals(4, vm.state.value.batchDone)
         assertFalse(vm.state.value.batchBusy)
     }

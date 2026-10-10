@@ -108,7 +108,10 @@ class XRepositoryIntegrationTest {
             "/graphql" to StubResponse(body = """{"data":{"tweetResult":{"result":{"__typename":"TweetUnavailable","reason":"Protected"}}}}"""))).use { server ->
             val result = XVideoRepository(client(server)).parse(url)
             assertTrue(result is AppResult.Failure)
-            assertTrue((result as AppResult.Failure).error.message.contains("登录"))
+            assertEquals(
+                XParseFailure.LOGIN_REQUIRED.storageKey,
+                ((result as AppResult.Failure).error as com.videodown.douyin.core.AppError.Parse).reasonKey,
+            )
             assertFalse(server.paths.any { it.startsWith("/embed") })
         }
     }
@@ -116,7 +119,11 @@ class XRepositoryIntegrationTest {
     @Test fun `both paths failing returns actionable error`() = runBlocking {
         StubHttpServer(mapOf("/guest" to StubResponse(429), "/embed" to StubResponse(429))).use { server ->
             val result = XVideoRepository(client(server)).parse(url) as AppResult.Failure
-            assertTrue(result.error.message.contains("频繁"))
+            // The failure is typed; the wording is asserted through the resource mapping.
+            assertEquals(
+                XParseFailure.RATE_LIMITED.storageKey,
+                (result.error as com.videodown.douyin.core.AppError.Parse).reasonKey,
+            )
         }
     }
 

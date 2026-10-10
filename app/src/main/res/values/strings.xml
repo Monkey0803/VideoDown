@@ -8,4 +8,700 @@
 
     <string name="download_channel_name">下载任务</string>
     <string name="download_channel_desc">显示正在进行的视频下载进度</string>
+
+    <!-- Update dialog -->
+    <string name="action_cancel">取消</string>
+    <string name="action_done">完成</string>
+    <string name="update_title">检查更新</string>
+    <string name="update_current_version">当前版本：%1$s</string>
+    <string name="update_checking">正在检查更新…</string>
+    <string name="update_up_to_date">已是最新版本。</string>
+    <string name="update_available">发现新版本：%1$s</string>
+    <string name="update_no_link">该版本未提供下载地址或发布页，请通过官方渠道获取。</string>
+    <string name="update_no_direct_link">未提供安装包直链，可打开发布页查看下载方式。</string>
+    <string name="update_source">更新源：%1$s</string>
+    <string name="update_source_unset">未配置</string>
+    <string name="update_download">下载新版</string>
+    <string name="update_view_release">查看发布页</string>
+    <string name="update_source_action">更新源</string>
+    <string name="update_recheck">重新检查</string>
+    <string name="update_source_dialog_title">更新源地址</string>
+    <string name="update_source_hint">填写返回版本清单 JSON 的 http(s) 地址；留空则使用应用内置地址。</string>
+    <string name="update_source_label">版本清单地址</string>
+    <string name="update_source_save">保存并检查</string>
+
+    <!-- Storage dialog and file export dialog -->
+    <string name="action_refresh">刷新</string>
+    <string name="action_close">关闭</string>
+    <string name="storage_cleanup_title">清理残留文件和无效记录？</string>
+    <string name="storage_cleanup_body">将清理 %1$d 项残留临时文件（%2$s）和 %3$d 条文件已丢失的完成记录。\n\n保留有效视频、相册副本以及暂停/进行中任务的断点。确认后会再次检查，发生变化的项目将跳过。</string>
+    <string name="storage_cleanup_confirm">确认清理</string>
+    <string name="storage_title">存储管理</string>
+    <string name="storage_available">可用空间：%1$s</string>
+    <string name="storage_videos">视频文件：%1$s</string>
+    <string name="storage_temporary">临时文件：%1$s</string>
+    <string name="storage_reclaimable">可清理残留：%1$s · %2$d 项</string>
+    <string name="storage_missing">文件已丢失的记录：%1$d 条</string>
+    <string name="storage_hint">临时文件包含下载断点和合并片段，仍被任务引用的文件会保留。要释放已存视频空间，请在「已存」中选择删除。</string>
+    <string name="storage_working">正在处理存储空间…</string>
+    <string name="storage_cleanup_action">清理残留与无效记录</string>
+    <string name="storage_budget_entry">· %1$s 尚需 %2$s</string>
+    <string name="storage_budget_more">· 另有 %1$d 个运行任务</string>
+    <string name="storage_budget_note">预算含每个任务 32 MiB 工作余量；已写入部分由可用空间反映，不重复计算。</string>
+    <string name="export_title">导出到文件夹</string>
+    <string name="export_body">复制所选 %1$d 项，保留本地原文件。同名文件会添加序号，不覆盖已有文件。</string>
+    <string name="export_progress">正在导出 %1$d/%2$d…</string>
+    <string name="export_pick_folder">选择文件夹</string>
+    <string name="export_pick_other_folder">选择其他文件夹</string>
+    <string name="export_retry_last">重试失败项到上次文件夹</string>
+    <string name="export_to_last">导出到上次文件夹</string>
+    <string name="export_stop">停止导出</string>
+    <string name="export_permission_failed">无法保存文件夹权限，请重新选择可写的文件夹</string>
+
+    <!-- Library item actions -->
+    <string name="action_delete">删除</string>
+    <string name="vault_add">移入保险箱</string>
+    <string name="vault_remove">移出保险箱</string>
+    <string name="library_saved_to_music">已保存到音乐</string>
+    <string name="library_saved_to_gallery">已保存到相册</string>
+    <string name="library_save_failed">保存失败：%1$s</string>
+    <string name="library_need_storage_permission">需要存储权限才能保存到相册</string>
+    <string name="library_video_missing">视频已不存在</string>
+    <string name="library_actions_audio">音频操作</string>
+    <string name="library_actions_video">视频操作</string>
+    <string name="library_unfavorite">取消收藏</string>
+    <string name="library_favorite">收藏视频</string>
+    <string name="library_organize">重命名与分类</string>
+    <string name="library_export_folder">导出到文件夹</string>
+    <string name="library_extract_audio">提取音频</string>
+    <string name="library_play_audio">播放音频</string>
+    <string name="library_play_video">播放视频</string>
+    <string name="library_file_missing">本地视频文件不存在</string>
+    <string name="library_share_audio">分享音频</string>
+    <string name="library_share_video">分享视频</string>
+    <string name="library_share_failed">分享失败，请检查视频文件及可用应用</string>
+    <string name="library_saving">正在保存…</string>
+    <string name="library_delete">删除视频</string>
+    <string name="library_delete_title">删除视频？</string>
+    <string name="library_delete_body">将删除“%1$s”的下载记录和本地文件，无法恢复。已保存到系统相册的副本不受影响。</string>
+    <string name="library_saving_to_gallery">正在保存到相册…</string>
+
+    <!-- Settings screen -->
+    <string name="action_ok">确定</string>
+    <string name="action_got_it">知道了</string>
+    <string name="action_open_settings">前往设置</string>
+    <string name="list_separator">、</string>
+    <string name="settings_header_title">我的设置</string>
+    <string name="settings_header_subtitle">管理外观、下载偏好与本地存储</string>
+    <string name="settings_section_appearance">外观</string>
+    <string name="settings_section_download">下载偏好</string>
+    <string name="settings_section_engine">网页与解析引擎</string>
+    <string name="settings_section_backup">备份与迁移</string>
+    <string name="settings_section_storage">存储与关于</string>
+    <string name="settings_session_local">仅保存在本机</string>
+    <string name="settings_links_exported">已导出 %1$d 条链接</string>
+    <string name="settings_links_exported_empty">历史里还没有可导出的链接，已写入空清单</string>
+    <string name="settings_write_failed">导出失败，请换一个位置重试</string>
+    <string name="settings_import_empty">文件里没有可导入的链接</string>
+    <string name="settings_backup_written">已导出设置备份</string>
+    <string name="settings_backup_invalid">这不是拾影的设置备份</string>
+    <string name="settings_backup_same">备份里的设置与当前一致</string>
+    <string name="settings_restored">已恢复：%1$s</string>
+    <string name="settings_session_cleared">已清除，相关任务已暂停</string>
+    <string name="settings_concurrency_title">同时下载数量</string>
+    <string name="settings_concurrency_body">正在运行的任务会继续；调低数量后，新任务等待空闲名额。下载、合并、校验和重试都占用名额。</string>
+    <string name="settings_concurrency_count">%1$d 个任务</string>
+    <string name="settings_theme_title">外观模式</string>
+    <string name="settings_theme_body">选择应用的显示模式</string>
+    <string name="settings_notify_title">开启下载完成通知</string>
+    <string name="settings_notify_body">系统尚未允许发送下载完成通知，请在系统设置中开启应用通知和「下载完成」提醒。</string>
+    <string name="settings_individual_title">开启每条任务独立通知</string>
+    <string name="settings_individual_body">系统尚未允许发送通知，请在系统设置中开启应用通知和「下载任务」提醒。</string>
+    <string name="settings_quality_title">默认画质</string>
+    <string name="settings_quality_body">解析新视频时优先使用此画质</string>
+    <string name="settings_quality_highest">优先选择可用的最高分辨率</string>
+    <string name="settings_quality_standard">平衡清晰度与文件大小</string>
+    <string name="settings_quality_saver">优先选择较低分辨率，节省空间</string>
+    <string name="settings_speed_title">下载限速</string>
+    <string name="settings_speed_body">限制所有直链下载的总速度；分片引擎下载由外部程序完成，不受此限制。</string>
+    <string name="settings_about_title">关于拾影</string>
+    <string name="settings_about_body">拾影 v%1$s 支持主流平台与普通网页视频、网页辅助、分片下载和音视频合并。\n\n%2$s\n\n采用 yt-dlp、youtubedl-android（GPL-3.0）与 FFmpeg；不支持 DRM 视频和直播。</string>
+    <string name="settings_dynamic_color">动态取色（Material You）</string>
+    <string name="settings_dynamic_on">跟随系统壁纸配色</string>
+    <string name="settings_dynamic_off">使用拾影暖橙品牌配色</string>
+    <string name="settings_wifi">仅在 Wi-Fi 下下载</string>
+    <string name="settings_wifi_on">离开 Wi-Fi 自动暂停，连接后可继续</string>
+    <string name="settings_wifi_off">允许使用移动网络下载</string>
+    <string name="settings_auto_resume">自动继续下载</string>
+    <string name="settings_auto_resume_on">网络恢复或空间充足后自动继续，手动暂停不受影响</string>
+    <string name="settings_auto_resume_off">中断的任务需手动点击继续</string>
+    <string name="settings_notify_row">完成时通知</string>
+    <string name="settings_notify_unavailable">系统通知未开启，打开开关以授权</string>
+    <string name="settings_notify_on">视频下载完成后提醒你</string>
+    <string name="settings_notify_off">下载完成时不提醒</string>
+    <string name="settings_individual_row">每条任务独立通知</string>
+    <string name="settings_individual_on">每个下载任务单独显示，可逐条暂停或继续</string>
+    <string name="settings_individual_off">所有任务汇总在一条通知里</string>
+    <string name="settings_gallery_row">下载后自动存入相册</string>
+    <string name="settings_gallery_on">视频存入 Movies/拾影，音频存入 Music/拾影</string>
+    <string name="settings_gallery_off">只保存在应用专属目录，需要时再手动保存</string>
+    <string name="settings_playlist_row">解析合集</string>
+    <string name="settings_playlist_on">粘贴合集或频道链接时解析整页视频，最多 %1$d 个</string>
+    <string name="settings_playlist_off">只解析链接指向的单个视频</string>
+    <string name="settings_clipboard_row">识别剪贴板链接</string>
+    <string name="settings_clipboard_on">复制受支持平台的链接后回到拾影会提示解析</string>
+    <string name="settings_clipboard_off">不读取剪贴板，只用粘贴按钮</string>
+    <string name="settings_quality_note">解析新视频时使用此画质；仍可在结果页逐条选择。</string>
+    <string name="settings_engine_row">解析引擎</string>
+    <string name="settings_engine_value">随应用更新</string>
+    <string name="settings_clear_session">清除网页登录态</string>
+    <string name="settings_export_links">导出链接清单</string>
+    <string name="settings_file_text">文本文件</string>
+    <string name="settings_import_links">导入链接</string>
+    <string name="settings_import_value">去批量导入</string>
+    <string name="settings_backup_settings">备份设置</string>
+    <string name="settings_file_json">JSON 文件</string>
+    <string name="settings_restore_settings">恢复设置</string>
+    <string name="settings_restore_value">从备份文件读取</string>
+    <string name="settings_storage_row">存储空间</string>
+    <string name="settings_storage_value">占用与残留清理</string>
+    <string name="settings_update_row">检查更新</string>
+    <string name="settings_about_row">关于拾影</string>
+
+    <!-- Home screen -->
+    <string name="action_paste">粘贴</string>
+    <string name="action_select_all">全选</string>
+    <string name="action_deselect_all">取消全选</string>
+    <string name="action_back">返回</string>
+    <string name="action_ignore">忽略</string>
+    <string name="action_parse">解析</string>
+    <string name="home_header_subtitle">粘贴分享链接，保存喜欢的视频。</string>
+    <string name="home_duplicate_single">已有相同视频和画质</string>
+    <string name="home_duplicate_many">发现 %1$d 个重复任务</string>
+    <string name="home_duplicate_body_single">此视频已有下载记录，可以直接查看，或重新保存一份。</string>
+    <string name="home_duplicate_body_many">所选视频中有相同画质的下载记录，跳过重复项将继续下载其余视频。</string>
+    <string name="home_existing_saved">已保存</string>
+    <string name="home_existing_downloading">下载中</string>
+    <string name="home_existing_resumable">可继续</string>
+    <string name="home_view_saved">查看已保存视频</string>
+    <string name="home_view_tasks">查看下载任务</string>
+    <string name="home_skip_duplicates">跳过重复项</string>
+    <string name="home_download_anyway">仍然下载</string>
+    <string name="home_parse_video">解析视频</string>
+    <string name="home_paste_link">粘贴链接</string>
+    <string name="home_input_placeholder">在这里粘贴视频分享链接或分享文案…</string>
+    <string name="home_parsing">解析中…</string>
+    <string name="home_parse_now">立即解析</string>
+    <string name="home_open_web">打开网页查找视频</string>
+    <string name="home_retry_parse">重新尝试解析</string>
+    <string name="home_batch_import">批量导入多个链接</string>
+    <string name="home_supported_sources">支持主流平台与普通网页视频</string>
+    <string name="home_recent">最近保存</string>
+    <string name="home_view_all_arrow">查看全部 →</string>
+    <string name="home_view_all">查看全部</string>
+    <string name="home_no_recent">保存的视频会显示在这里</string>
+    <string name="home_open_author_failed">未能打开%1$s账号</string>
+    <string name="home_open_video_failed">未能打开%1$s视频</string>
+    <string name="home_select_videos">选择视频（%1$d）</string>
+    <string name="home_selected_hint">已选 %1$d 个 · 点击封面预览，勾选后批量保存</string>
+    <string name="home_video_index">视频 %1$d</string>
+    <string name="home_preview_label">预览%1$s</string>
+    <string name="home_check_label">勾选%1$s</string>
+    <string name="home_no_variant">无可用画质</string>
+    <string name="home_done_selecting">完成选择</string>
+    <string name="home_result_title">解析结果</string>
+    <string name="home_position_hint">当前 %1$d/%2$d · 已选 %3$d 个</string>
+    <string name="home_video_cover">视频封面</string>
+    <string name="home_parsed_platform">已解析 · %1$s</string>
+    <string name="home_preview_on_platform">在%1$s预览</string>
+    <string name="home_collapse_title">收起标题</string>
+    <string name="home_expand_title">展开标题</string>
+    <string name="home_author_avatar">作者头像</string>
+    <string name="home_unknown_author">未知作者</string>
+    <string name="home_view_author">查看作者</string>
+    <string name="home_choose_quality">选择画质</string>
+    <string name="home_size_note">文件大小以视频源为准</string>
+    <string name="home_quality_label">画质 %1$s</string>
+    <string name="home_size_loading">获取大小中…</string>
+    <string name="home_size_unknown">大小未知</string>
+    <string name="home_audio_only">单独保存音轨</string>
+    <string name="home_audio_only_hint">只下载所选音轨，保存为 M4A；所示码率来自源音轨，转换后文件大小可能变化。</string>
+    <string name="home_no_audio_track">此源未提供独立音轨，保存视频后可在影像库中提取音频。</string>
+    <string name="home_subtitles">字幕</string>
+    <string name="home_subtitles_selected">已选择 %1$s</string>
+    <string name="home_subtitles_offer">同时保存字幕（%1$s）</string>
+    <string name="home_subtitles_hint">下载时把字幕内嵌进视频文件，离线播放也能打开字幕开关。</string>
+    <string name="home_result_note">下载后可在「已存」中播放、分享。实际可选画质取决于视频源。</string>
+    <string name="home_submitting">正在加入队列…</string>
+    <string name="home_save_selected">保存所选 %1$d 个视频</string>
+    <string name="home_save_audio">保存音频到本地</string>
+    <string name="home_save_current">保存当前视频</string>
+    <string name="home_save_local">保存到本地</string>
+    <string name="home_clipboard_detected">检测到视频链接</string>
+    <string name="home_clipboard_detected_platform">检测到 %1$s 链接</string>
+    <string name="home_clipboard_hint">复制后回到拾影即可解析，可在「我的」关闭此提示。</string>
+
+    <!-- Shared headers -->
+    <string name="history_header_title">下载任务</string>
+
+    <!-- Batch failures -->
+    <string name="batch_failures_title">%1$s失败明细</string>
+    <string name="batch_failure_line">%1$s：%2$s</string>
+    <string name="batch_untitled">未命名视频</string>
+    <string name="batch_failure_generic">操作失败，请重试</string>
+    <string name="batch_operation_delete">删除</string>
+    <string name="library_save_to_gallery_music">保存到相册/音乐</string>
+    <string name="library_save_to_music">保存到音乐</string>
+    <string name="library_save_to_gallery">保存到相册</string>
+
+    <!-- History screen -->
+    <string name="action_clear">清除</string>
+    <string name="action_play">播放</string>
+    <string name="action_pause">暂停</string>
+    <string name="action_resume">继续</string>
+    <string name="action_share">分享</string>
+    <string name="action_retry_download">重新下载</string>
+    <string name="action_confirm_delete">确认删除</string>
+    <string name="action_exit_multi_select">取消多选</string>
+    <string name="history_delete_selected_title">删除所选任务？</string>
+    <string name="history_delete_selected_body">将删除所选 %1$d 项记录和本地文件，无法恢复。相册副本不受影响。</string>
+    <string name="history_speed_limit_title">单任务限速</string>
+    <string name="history_speed_limit_body">「%1$s」的下载速度上限；跟随全局时使用「我的 → 下载限速」的值。</string>
+    <string name="history_speed_follow_global">跟随全局</string>
+    <string name="history_delete_title">删除下载任务？</string>
+    <string name="history_delete_body">将删除“%1$s”的记录和已下载文件。</string>
+    <string name="history_stat_running">进行中</string>
+    <string name="history_stat_done">已完成</string>
+    <string name="history_stat_resumable">可续传</string>
+    <string name="history_search_hint">搜索标题或作者</string>
+    <string name="history_queue_line">同时下载 %1$d 个 · %2$d 个排队</string>
+    <string name="history_queue_note">正在运行的任务继续完成，新任务等待名额</string>
+    <string name="history_pause_all">全部暂停</string>
+    <string name="history_resume_all">全部继续</string>
+    <string name="history_sort">排序</string>
+    <string name="history_multi_select">多选任务</string>
+    <string name="history_pause_selected">暂停所选</string>
+    <string name="history_resume_selected">继续所选</string>
+    <string name="history_delete_selected">删除所选</string>
+    <string name="history_working">正在处理 %1$d/%2$d…</string>
+    <string name="history_empty">这里还没有任务</string>
+    <string name="history_empty_filtered">没有符合条件的任务</string>
+    <string name="history_phase_extracting">正在提取音频</string>
+    <string name="history_phase_merging">正在合并音视频</string>
+    <string name="history_phase_verifying">正在校验文件</string>
+    <string name="history_range_supported">支持断点续传</string>
+    <string name="history_queued_position">排队第 %1$d 个 · 等待空闲下载名额</string>
+    <string name="history_move_up">前移</string>
+    <string name="history_move_down">后移</string>
+    <string name="history_move_top">优先下载</string>
+    <string name="history_no_source">原始网址未保留，请在解析页重新粘贴视频链接。</string>
+    <string name="history_limit_label">限速 %1$s</string>
+    <string name="history_set_limit">设置限速</string>
+    <string name="history_status_pending">等待中</string>
+    <string name="history_status_running">下载中</string>
+    <string name="history_status_paused">已暂停</string>
+    <string name="history_status_completed">已完成</string>
+    <string name="history_status_failed">下载失败</string>
+    <string name="history_filter_all">全部</string>
+    <string name="history_filter_running">进行中</string>
+    <string name="history_filter_completed">已完成</string>
+    <string name="history_batch_summary">%1$s：成功 %2$d 项</string>
+    <string name="history_batch_skipped">，跳过 %1$d 项</string>
+    <string name="history_batch_failed">，失败 %1$d 项（%2$s）</string>
+    <string name="history_notice_paused">已暂停，可稍后继续</string>
+    <string name="history_notice_deleted">已删除记录和文件</string>
+    <string name="history_notice_cleared">已清空下载历史</string>
+
+    <!-- Library screen -->
+    <string name="library_title">已存视频</string>
+    <string name="library_subtitle">%1$d 个视频 · 可离线播放</string>
+    <string name="library_switch_layout">切换为%1$s</string>
+    <string name="library_pick_platform">选择平台</string>
+    <string name="library_all_platforms">全部平台</string>
+    <string name="library_pick_folder">选择分类</string>
+    <string name="library_uncategorized">未分类</string>
+    <string name="library_all_folders">全部分类</string>
+    <string name="library_pick_sort">选择排序</string>
+    <string name="library_favorites_only">仅收藏</string>
+    <string name="vault_open">保险箱</string>
+    <string name="vault_locked">保险箱锁</string>
+    <string name="vault_lock_action">锁定</string>
+    <string name="action_multi_select">多选</string>
+    <string name="library_empty">还没有已保存的视频</string>
+    <string name="library_empty_filtered">没有符合条件的视频</string>
+    <string name="library_click_select">选择视频</string>
+    <string name="library_click_play">播放视频</string>
+    <string name="library_long_click">视频操作</string>
+    <string name="library_audio_m4a">音频 · M4A</string>
+    <string name="library_export_interrupted">上次导出已中断，请检查目标文件夹后重新选择文件</string>
+    <string name="library_extract_queued">音频提取已加入任务队列</string>
+    <string name="library_delete_selected_title">删除所选视频？</string>
+    <string name="library_delete_selected_body">将删除所选 %1$d 项记录和本地文件，无法恢复。已保存到系统相册的副本不受影响。</string>
+    <string name="vault_removed">已移出保险箱</string>
+    <string name="vault_added">已移入保险箱</string>
+    <string name="vault_unavailable">无法打开保险箱验证</string>
+    <string name="vault_no_keyguard">请先在系统中设置锁屏密码或指纹</string>
+    <string name="vault_denied">未能解锁保险箱</string>
+
+    <!-- Player screen -->
+    <string name="player_speed_title">播放速度</string>
+    <string name="player_speed_value">%1$s×</string>
+    <string name="player_speed_current"> · 当前</string>
+    <string name="player_sleep_title">定时关闭</string>
+    <string name="player_sleep_active">当前%1$s，到时间后自动暂停。</string>
+    <string name="player_sleep_hint">到时间后暂停播放；计时在后台继续，关闭本页也不会中断。</string>
+    <string name="player_sleep_minutes">%1$d 分钟后暂停</string>
+    <string name="player_sleep_off">关闭定时</string>
+    <string name="player_transfer_audio_done">已转存到音乐</string>
+    <string name="player_transfer_video_done">已转存到相册</string>
+    <string name="player_transfer_failed">转存失败：%1$s</string>
+    <string name="player_transfer_permission">需要存储权限才能转存到相册</string>
+    <string name="player_brightness">亮度 %1$d%%</string>
+    <string name="player_volume">音量 %1$d%%</string>
+    <string name="player_playing_title">播放视频</string>
+    <string name="player_boost">%1$d× 快进中</string>
+    <string name="player_audio_service_failed">音频播放服务连接失败，请返回后重试</string>
+    <string name="player_file_missing">文件不存在或尚未下载完成</string>
+    <string name="player_downloaded_at">下载于 %1$s</string>
+    <string name="player_range_supported"> · 支持断点续传</string>
+    <string name="player_speed_description">倍速 %1$s×</string>
+    <string name="player_loop_off">关闭循环播放</string>
+    <string name="player_loop_on">开启循环播放</string>
+    <string name="player_loop_enabled">循环：开启</string>
+    <string name="player_loop_disabled">循环：关闭</string>
+    <string name="player_on">开启</string>
+    <string name="player_off">关闭</string>
+    <string name="player_subtitles_off">关闭字幕</string>
+    <string name="player_subtitles_on">开启字幕</string>
+    <string name="player_subtitles_enabled">字幕：开启</string>
+    <string name="player_subtitles_disabled">字幕：关闭</string>
+    <string name="player_subtitles">字幕</string>
+    <string name="player_subtitles_short">字幕 关</string>
+    <string name="player_transferring">转存中…</string>
+    <string name="player_transfer_audio">转存到音乐</string>
+    <string name="player_transfer_video">转存到相册</string>
+    <string name="player_share">分享</string>
+    <string name="player_share_failed">分享失败</string>
+    <string name="player_pip">画中画</string>
+    <string name="player_pip_failed">系统暂时无法开启画中画，请检查应用的画中画权限</string>
+    <string name="player_external">外部播放器</string>
+    <string name="player_external_failed">没有可用的外部播放器</string>
+    <string name="player_view_original">在%1$s中查看原视频</string>
+    <string name="player_open_failed">未能打开%1$s</string>
+
+    <!-- Batch import and browser assist -->
+    <string name="import_title">批量链接导入</string>
+    <string name="import_hint">一次最多 %1$d 个网址；相同网址自动合并，每个视频可独立选择画质。</string>
+    <string name="import_input_label">粘贴多条分享文案或网址</string>
+    <string name="import_parse">开始批量解析</string>
+    <string name="import_stop">停止解析</string>
+    <string name="import_retry">重试未完成链接</string>
+    <string name="import_progress">解析完成 %1$d/%2$d · 已选择 %3$d 项</string>
+    <string name="import_select_all">全选视频</string>
+    <string name="import_row_pending">等待解析</string>
+    <string name="import_row_parsing">正在解析…</string>
+    <string name="import_row_ready">找到 %1$d 个视频</string>
+    <string name="import_row_failed">解析失败</string>
+    <string name="import_download_selected">下载所选</string>
+    <string name="import_duplicate_title">发现 %1$d 个重复任务</string>
+    <string name="import_duplicate_body">可跳过已有任务，或明确再次下载。</string>
+    <string name="import_download_all">仍然全部下载</string>
+    <string name="browser_reading">正在读取视频和画质…</string>
+    <string name="browser_scanned">已检查页面资源。若没有结果，请先点击播放；blob 地址需要底层媒体资源，DRM 视频不支持下载。</string>
+    <string name="browser_close_page">关闭网页</string>
+    <string name="browser_find_videos">查找视频</string>
+    <string name="browser_page">网页</string>
+    <string name="browser_http_error">网站拒绝访问（HTTP %1$d），请完成登录或验证；该网站也可能禁止内置浏览器登录。</string>
+    <string name="browser_load_failed">网页加载失败，请检查网络或尝试在原浏览器中打开。</string>
+    <string name="browser_cancelled">已取消解析</string>
+    <string name="browser_cancel_parse">取消解析</string>
+    <string name="browser_reparse_with_session">使用网页登录态重新解析</string>
+    <string name="browser_candidate">%1$s · %2$s · 选择画质</string>
+    <string name="browser_initial_hint">可在网页中登录并播放视频，然后点击顶部的搜索图标查找视频。部分网站可能限制内置网页登录。</string>
+
+    <!-- Failure guidance -->
+    <string name="failure_network_title">网络连接失败</string>
+    <string name="failure_network_body">检查网络连接后重试，已保存的断点会保留。</string>
+    <string name="failure_login_title">需要登录或验证</string>
+    <string name="failure_login_body">打开原网页完成登录或验证，再用网页登录态解析并选择视频。</string>
+    <string name="failure_access_title">网址过期或访问受限</string>
+    <string name="failure_access_body">先重新解析原网址获取新地址；若网站要求登录，可使用网页辅助。</string>
+    <string name="failure_expired_title">下载网址已失效</string>
+    <string name="failure_expired_body">重新解析原网址获取可用地址，再选择所需视频和画质。</string>
+    <string name="failure_storage_full_title">存储空间不足</string>
+    <string name="failure_storage_full_body">清理残留临时文件或删除不需要的视频后继续。合并音视频需要额外空间。</string>
+    <string name="failure_storage_access_title">无法写入视频文件</string>
+    <string name="failure_storage_access_body">检查存储空间和应用存储是否可用，再重试。</string>
+    <string name="failure_format_title">视频或画质发生变化</string>
+    <string name="failure_format_body">原有断点可能不适用于新视频，请重新解析并选择画质。</string>
+    <string name="failure_no_audio_title">原视频没有音轨</string>
+    <string name="failure_no_audio_body">该视频不包含可提取的音频，请选择另一个有声音的视频。原视频已保留。</string>
+    <string name="failure_unsupported_title">当前内容暂不支持</string>
+    <string name="failure_unsupported_body">DRM 和直播无法保存。普通网页可尝试登录或播放后查找视频。</string>
+    <string name="failure_rate_title">网站暂时限制请求</string>
+    <string name="failure_rate_body">请稍后再试，也可降低同时下载数量，避免频繁请求。</string>
+    <string name="failure_wifi_title">等待 Wi-Fi</string>
+    <string name="failure_wifi_body">已启用仅 Wi-Fi 下载。连接 Wi-Fi 后可继续，或调整下载设置。</string>
+    <string name="failure_background_title">后台下载已停止</string>
+    <string name="failure_background_body">返回应用后重试，已保存的断点会保留。若反复停止，请检查系统对应用后台运行的限制。</string>
+    <string name="failure_runtime_title">解析引擎暂不可用</string>
+    <string name="failure_runtime_body">检查可用空间；若安装包不完整，请重新安装完整版本。</string>
+    <string name="failure_unknown_title">下载未完成</string>
+    <string name="failure_unknown_body">可以保留断点重试；若仍失败，请重新解析原网址。</string>
+    <string name="recovery_retry">重试下载</string>
+    <string name="recovery_reparse">重新解析原网址</string>
+    <string name="recovery_browser">打开网页登录/验证</string>
+    <string name="recovery_storage">管理存储空间</string>
+    <string name="recovery_settings">检查下载设置</string>
+    <string name="recovery_none">暂无可用操作</string>
+
+    <!-- Shortcuts, selection and dialogs -->
+    <string name="shortcut_quick_parse">粘贴解析</string>
+    <string name="shortcut_quick_parse_desc">解析剪贴板中的视频链接</string>
+    <string name="shortcut_batch_import">批量导入</string>
+    <string name="shortcut_batch_import_desc">一次导入多个链接</string>
+    <string name="shortcut_open_tasks_desc">查看下载进度</string>
+    <string name="selection_count">已选 %1$d 项</string>
+    <string name="selection_select_all_results">全选当前结果</string>
+    <string name="selection_failures">查看失败 %1$d 项</string>
+    <string name="audio_extract_title">提取音频</string>
+    <string name="audio_extract_body">从“%1$s”在本机提取音频，保留原视频，保存为 M4A。AAC 音轨优先无损复制，其他编码转换为 AAC。任务加入现有队列，可离线提取。</string>
+    <string name="audio_extract_again">仍然提取一份</string>
+    <string name="audio_extract_start">开始提取</string>
+    <string name="organize_file_name">文件名称</string>
+    <string name="organize_file_name_note">保留原扩展名；更名后的文件会用于播放、分享和导出。</string>
+    <string name="organize_folder">分类名称（留空表示未分类）</string>
+    <string name="organize_folder_note">分类用于影像库筛选，不移动到外部目录。</string>
+    <string name="organize_save">保存修改</string>
+
+    <!-- Enum labels -->
+    <string name="theme_mode_system">跟随系统</string>
+    <string name="theme_mode_light">浅色</string>
+    <string name="theme_mode_dark">深色</string>
+    <string name="layout_waterfall">瀑布流布局</string>
+    <string name="layout_list">列表布局</string>
+    <string name="quality_highest">最高画质</string>
+    <string name="quality_standard">标准画质</string>
+    <string name="quality_saver">节省空间</string>
+    <string name="sort_newest">最新保存</string>
+    <string name="sort_oldest">最早保存</string>
+    <string name="sort_largest">文件最大</string>
+    <string name="task_sort_status">按状态</string>
+    <string name="task_sort_recent">最新任务</string>
+    <string name="task_sort_oldest">最早任务</string>
+    <string name="task_sort_largest">文件最大</string>
+    <string name="speed_unlimited">不限速</string>
+    <string name="settings_change_theme">外观模式 %1$s</string>
+    <string name="settings_change_quality">默认画质 %1$s</string>
+    <string name="settings_change_speed">下载限速 %1$s</string>
+
+    <!-- Errors -->
+    <string name="error_http_status">服务器返回 HTTP %1$d，可能需要登录或验证，请稍后重试。</string>
+    <string name="home_error_empty_input">请先粘贴视频网址或分享文案</string>
+    <string name="home_error_no_variant">未能解析出可下载的视频地址</string>
+    <string name="home_error_queue_failed">无法加入下载队列，请重试</string>
+
+    <!-- Engine failures -->
+    <string name="engine_no_audio">原视频不包含可提取的音轨</string>
+    <string name="engine_drm">此视频受 DRM 保护，无法下载</string>
+    <string name="engine_live">暂不支持直播或尚未开始的视频</string>
+    <string name="engine_changed">视频或所选画质已变化，请重新解析并选择</string>
+    <string name="engine_access">网址过期或访问受限，请重新解析或打开网页登录</string>
+    <string name="engine_expired">下载网址已失效，请重新解析原网址</string>
+    <string name="engine_rate">网站暂时限制请求，请稍后重试或降低同时下载数量</string>
+    <string name="engine_auth">网站要求登录或验证，请打开网页完成后重试</string>
+    <string name="engine_space">存储空间不足，请清理空间后继续</string>
+    <string name="engine_storage_access">无法写入视频文件，请检查应用存储是否可用</string>
+    <string name="engine_network">网络连接失败，请检查网络后重试</string>
+    <string name="engine_timeout">解析超时，可打开网页查找视频</string>
+    <string name="engine_runtime">解析引擎无法启动，请检查存储空间或重新安装完整安装包</string>
+    <string name="engine_unsupported">未找到可下载的视频，可打开网页登录或播放后查找</string>
+    <string name="engine_init_failed">引擎初始化失败 · 请检查存储空间或重新安装完整安装包</string>
+    <string name="download_or_merge_failed">下载或合并失败，请检查存储空间后重试</string>
+    <string name="engine_reinstall">引擎初始化失败 · 请重新安装完整安装包</string>
+
+    <!-- Background service -->
+    <string name="service_foreground_failed">后台下载服务无法启动，请返回应用后重试</string>
+    <string name="service_background_stopped">后台下载服务已停止，请返回应用后重试</string>
+    <string name="service_notification_failed">后台下载通知更新失败，请返回应用后重试</string>
+    <string name="service_time_limit">系统后台下载时限已到，请返回应用后继续</string>
+    <string name="service_interrupted">后台下载服务已中断，请返回应用后重试</string>
+    <string name="service_downloading_one">正在下载视频</string>
+    <string name="service_downloading_many">正在下载 %1$d 个视频</string>
+
+    <!-- Gallery export -->
+    <string name="gallery_not_completed">视频尚未下载完成</string>
+    <string name="gallery_file_missing">本地视频文件不存在</string>
+    <string name="gallery_unsupported">此容器暂不支持保存到相册，请使用分享文件</string>
+    <string name="gallery_create_failed">无法创建相册视频</string>
+    <string name="gallery_write_failed">无法写入相册视频</string>
+    <string name="gallery_finish_failed">无法完成相册保存</string>
+    <string name="gallery_permission">没有相册访问权限，请检查系统权限设置</string>
+    <string name="gallery_generic">请检查存储空间和相册权限后重试</string>
+
+    <!-- X parse failures -->
+    <string name="x_not_found">指定的视频不存在或没有可下载的 MP4 地址</string>
+    <string name="x_unsupported_format">X 视频仅提供暂不支持的格式，未找到可下载的 MP4</string>
+    <string name="x_no_video">这条 X 推文未返回可下载的视频，可能仅含图片或外部链接</string>
+    <string name="x_login_required">这条 X 推文需要登录或访问授权，暂不支持匿名下载</string>
+    <string name="x_unavailable">这条 X 推文已不可用</string>
+    <string name="x_restricted">这条 X 推文已不可用或限制访问</string>
+    <string name="x_invalid">X 暂未返回有效的推文数据，请稍后重试</string>
+    <string name="x_rate_limited">X 请求过于频繁，请稍后重试</string>
+    <string name="x_network">无法访问 X，请检查网络后重试</string>
+
+    <!-- Export summary -->
+    <string name="export_done">已导出 %1$d 项</string>
+    <string name="export_failed_clause">%1$d 项失败</string>
+    <string name="export_originals_untouched">本地原文件未修改</string>
+    <string name="export_originals_kept">原文件已保留</string>
+    <string name="export_reason_access_lost">文件夹不可写或授权已失效，请重新选择文件夹</string>
+    <string name="export_reason_space_full">目标空间不足，请释放空间或选择其他文件夹后重试</string>
+    <string name="export_reason_other">请检查本地文件和目标文件夹后重试</string>
+    <string name="export_cleanup_pending">另有 %1$d 个中断副本暂时无法清理，请重新授权原文件夹后重试</string>
+    <string name="export_cleanup_unknown">无法检查中断副本，请重新授权原文件夹后重试清理</string>
+    <string name="export_cancelled">已停止，已导出 %1$d 项；未完成项可重试</string>
+    <string name="export_clause_separator">；</string>
+    <string name="export_comma_separator">，</string>
+
+    <!-- Platforms -->
+    <string name="platform_douyin">抖音</string>
+    <string name="platform_weibo">微博</string>
+    <string name="platform_kuaishou">快手</string>
+    <string name="platform_x">X</string>
+    <string name="platform_generic">网页</string>
+    <string name="platform_network_failed">%1$s访问失败，请检查网络后重试</string>
+    <string name="platform_no_data">%1$s暂未返回可用的视频数据，请稍后重试</string>
+    <string name="platform_no_mp4">%1$s未返回可下载的 MP4 视频。作品可能是图文、已失效，或需要登录/验证后才能访问。</string>
+    <string name="platform_http_error">%1$s返回 HTTP %2$d，可能需要登录或验证，请在原平台确认作品可访问后重试。</string>
+
+    <!-- Input validation -->
+    <string name="input_needs_link">请粘贴 HTTP/HTTPS 视频网址、分享文案或抖音作品 ID</string>
+    <string name="input_weibo_link">请复制微博正文的视频分享链接（weibo.com/用户ID/微博ID）</string>
+    <string name="input_generic_only">请使用通用解析引擎打开此网址</string>
+
+    <!-- Time and progress -->
+    <string name="remaining_hours_minutes">约剩 %1$d 小时 %2$d 分</string>
+    <string name="remaining_minutes_seconds">约剩 %1$d 分 %2$d 秒</string>
+    <string name="remaining_seconds">约剩 %1$d 秒</string>
+    <string name="relative_just_now">刚刚</string>
+    <string name="relative_minutes">%1$d 分钟前</string>
+    <string name="relative_hours">%1$d 小时前</string>
+    <string name="relative_days">%1$d 天前</string>
+    <string name="watch_badge_percent">已看 %1$d%%</string>
+
+    <!-- Subtitles -->
+    <string name="subtitle_automatic_prefix">自动字幕 · %1$s</string>
+    <string name="subtitle_language_traditional_chinese">繁體中文</string>
+    <string name="subtitle_language_chinese">中文</string>
+    <string name="subtitle_language_english">英文</string>
+    <string name="subtitle_language_japanese">日文</string>
+    <string name="subtitle_language_korean">韩文</string>
+
+    <!-- Navigation and picture-in-picture -->
+    <string name="tab_parse">解析</string>
+    <string name="tab_tasks">任务</string>
+    <string name="tab_library">已存</string>
+    <string name="tab_profile">我的</string>
+    <string name="pip_pause_playback">暂停播放</string>
+    <string name="pip_resume_playback">继续播放</string>
+
+    <!-- Completion notification -->
+    <string name="notification_download_complete">下载完成</string>
+    <string name="notification_kind_audio">音频</string>
+    <string name="notification_kind_video">视频</string>
+    <string name="notification_landing_open">点击查看</string>
+    <string name="notification_landing_music">已存入音乐库 · 点击查看</string>
+    <string name="notification_landing_gallery">已存入相册 · 点击查看</string>
+    <string name="notification_landing_failed">未存入相册：%1$s · 点击查看</string>
+    <string name="notification_vault_no_gallery">保险箱内容不自动存入相册</string>
+
+    <!-- Batch import -->
+    <string name="import_no_links">未找到 HTTP/HTTPS 视频网址</string>
+    <string name="import_too_many">一次最多导入 50 个网址，请分批粘贴</string>
+    <string name="import_records_unavailable">无法检查下载记录，请稍后重试</string>
+    <string name="import_queued">已加入 %1$d 项，跳过 %2$d 项，失败 %3$d 项</string>
+    <string name="import_keep_selected">；失败项保持勾选：%1$s</string>
+    <string name="import_and_more">等</string>
+    <string name="import_no_quality">未找到可下载的画质</string>
+    <string name="import_parse_failed">解析未完成，请重试</string>
+
+    <!-- Douyin parsing -->
+    <string name="input_douyin_link">请输入抖音分享链接或分享文案</string>
+    <string name="input_douyin_unrecognised">未能识别抖音视频链接。请粘贴包含 v.douyin.com 或 douyin.com/video/… 的分享内容。</string>
+    <string name="douyin_id_unresolved">已识别视频 ID %1$s，但未能获取到视频信息。该接口可能已失效或需要 Cookie。</string>
+    <string name="douyin_no_video">该作品没有可下载的视频流（可能是图文作品或已被删除）。</string>
+
+    <!-- Vault, sharing and generic errors -->
+    <string name="vault_unlock_title">解锁保险箱</string>
+    <string name="vault_unlock_subtitle">验证身份后才能查看其中的内容</string>
+    <string name="share_audio">分享音频</string>
+    <string name="share_video">分享视频</string>
+    <string name="error_network_failed">网络连接失败，请检查网络后重试</string>
+    <string name="error_unknown">操作失败，请稍后重试</string>
+    <string name="input_x_link">请粘贴 X / Twitter 推文的视频链接</string>
+    <string name="x_timeout">X 解析超时，请检查网络后重试</string>
+
+    <!-- Update check -->
+    <string name="version_label_both">%1$s（内部版本 %2$d）</string>
+    <string name="version_label_code">内部版本 %1$d</string>
+    <string name="version_label_unknown">未知版本</string>
+    <string name="update_reason_bad_url">更新源地址需以 http:// 或 https:// 开头</string>
+    <string name="update_reason_http">更新服务返回错误（HTTP %1$d），请稍后重试</string>
+    <string name="update_reason_bad_format">更新信息格式不正确，请检查更新源内容</string>
+    <string name="update_reason_network">无法连接更新服务，请检查网络后重试</string>
+    <string name="update_reason_no_version">更新信息缺少版本号，请检查更新源内容</string>
+    <string name="update_reason_not_configured">尚未配置更新源地址，请先设置版本清单地址</string>
+    <string name="update_reason_failed">更新检查失败，请稍后重试</string>
+
+    <!-- Parse page outcomes -->
+    <string name="home_info_already_queued">所选视频已有记录，无需重复下载</string>
+    <string name="home_info_queued">已加入 %1$d 个下载任务</string>
+    <string name="home_info_queued_partial">已加入 %1$d 个下载任务，其余未加入，请重试</string>
+
+    <!-- Storage budget -->
+    <string name="storage_budget_none">运行任务空间预算：无</string>
+    <string name="storage_budget_headline">运行任务尚需 %1$s · %2$d 个任务</string>
+    <string name="storage_budget_idle">当前没有运行中的下载任务占用空间预算。</string>
+    <string name="storage_budget_fits">预算在可用空间内；写入前仍会逐次检查实际剩余空间。</string>
+    <string name="storage_budget_short">空间不足：仍缺 %1$s，请清理残留或删除已存视频后继续。</string>
+    <string name="storage_budget_percent">预算占用 %1$s%%</string>
+
+    <!-- Download failures -->
+    <string name="download_resume_mismatch">服务器返回的续传位置不一致，请重新下载</string>
+    <string name="download_empty_body">服务器返回了空响应，请稍后重试</string>
+    <string name="download_out_of_space">存储空间不足，请清理空间后继续</string>
+    <string name="download_storage_write">无法写入视频文件，请检查存储空间</string>
+    <string name="download_network_failed">网络连接失败，请检查连接后重试</string>
+
+    <!-- Storage actions -->
+    <string name="storage_inspect_failed">无法读取存储空间，请稍后刷新</string>
+    <string name="storage_cleaned">已清理 %1$d 项残留文件和 %2$d 条无效记录，释放 %3$s</string>
+    <string name="storage_cleaned_detail">；跳过 %1$d 项，失败 %2$d 项</string>
+    <string name="storage_clean_incomplete">清理未完成，已保留未清理项目，请刷新后重试</string>
+
+    <!-- Vault and notifications -->
+    <string name="vault_locked_title">保险箱内容</string>
+    <string name="notification_channel_description">视频下载完成后的提醒</string>
+
+    <!-- Player gestures and sleep timer -->
+    <string name="player_seek_seconds">%1$s 秒</string>
+    <string name="sleep_remaining_minutes">约剩 %1$d 分</string>
+    <string name="sleep_remaining_seconds">约剩 %1$d 秒</string>
+    <string name="download_wifi_paused">已暂停：仅在 Wi-Fi 下下载，请连接 Wi-Fi 后点击继续</string>
+    <string name="input_generic_link">请输入 HTTP 或 HTTPS 视频网址</string>
+    <string name="generic_no_video">网页未返回可下载的视频，可打开网页登录或播放后查找</string>
+    <string name="weibo_no_mp4">微博未返回可下载的 MP4 视频。作品可能是静态图文、已失效，或需要登录/验证后才能访问。</string>
+
+    <!-- Library dialogs -->
+    <string name="organize_failed">整理失败，请检查名称、文件和可用空间后重试</string>
+    <string name="organize_incomplete">整理未完成，请稍后重试</string>
+    <string name="audio_extract_duplicate">此视频已有音频任务或副本，可在任务或影像库中查看</string>
+    <string name="audio_extract_queue_failed">无法加入提取队列，请检查原视频后重试</string>
+
+    <!-- Author and engine status -->
+    <string name="unknown_author">未知作者</string>
+    <string name="engine_not_initialised">尚未初始化 · 引擎组件 %1$s</string>
+    <string name="engine_version">yt-dlp %1$s · 组件 %2$s · QuickJS / FFmpeg</string>
+    <string name="storage_budget_task">下载任务</string>
 </resources>

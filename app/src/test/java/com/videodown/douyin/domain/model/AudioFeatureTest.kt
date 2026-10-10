@@ -45,8 +45,7 @@ class AudioFeatureTest {
     @Test fun `no audio failure has explicit guidance and no futile retry`() {
         val failure = VideoEngineException("NO_AUDIO")
         assertEquals(DownloadFailureKind.NO_AUDIO, failure.failureKind)
-        assertEquals("原视频没有音轨", failureGuidance(failure.failureKind).title)
-        assertEquals(RecoveryAction.NONE, failureGuidance(failure.failureKind).action)
+        assertEquals(RecoveryAction.NONE, failureActions(failure.failureKind).primary)
         assertFalse(DownloadRecord("id", "media", "test", failureKind = failure.failureKind).canRetryDownload)
     }
     @Test fun `legacy history remains video and audio settings round trip`() {

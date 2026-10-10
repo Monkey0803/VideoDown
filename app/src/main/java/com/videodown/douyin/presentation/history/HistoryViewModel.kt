@@ -11,7 +11,6 @@ import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.repository.DownloadHistoryRepository
 import com.videodown.douyin.domain.repository.Downloader
 import com.videodown.douyin.presentation.library.LibraryQuery
-import com.videodown.douyin.core.galleryErrorMessage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,14 +19,32 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class HistoryFilter(val label: String) {
-    ALL("全部"),
-    RUNNING("进行中"),
-    COMPLETED("已完成"),
+enum class HistoryFilter { ALL, RUNNING, COMPLETED }
+
+/** The batch a user ran; the screen turns this into copy. */
+enum class BatchOperation {
+    DELETE, PAUSE, RESUME, SAVE_TO_GALLERY, SAVE_TO_MUSIC, SAVE_TO_GALLERY_AND_MUSIC;
+
+    /**
+     * Whether a finished batch should leave only its failures selected.
+     *
+     * Pausing and resuming change nothing about what exists, so the selection is left alone; every
+     * other batch either removed items or wrote copies, and retrying just the failures is one tap.
+     */
+    val keepsFailuresSelected: Boolean get() = this != PAUSE && this != RESUME
 }
 
-data class BatchFailure(val id: String, val title: String, val reason: String)
-data class BatchResult(val operation: String, val succeeded: Int, val skipped: Int, val failures: List<BatchFailure>)
+/** A one-off notice raised by the ViewModel; the screen renders it. */
+enum class HistoryNotice { PAUSED, DELETED, CLEARED }
+
+/**
+ * One item a batch operation could not handle.
+ *
+ * [galleryFailureKey] is a key (see `core/ErrorResources.kt`), not a sentence: the batch result
+ * outlives the screen that showed it, and the wording belongs to the screen.
+ */
+data class BatchFailure(val id: String, val title: String?, val galleryFailureKey: String? = null)
+data class BatchResult(val operation: BatchOperation, val succeeded: Int, val skipped: Int, val failures: List<BatchFailure>)
 
 data class HistoryUiState(
     val records: List<DownloadRecord> = emptyList(),
@@ -36,6 +53,8 @@ data class HistoryUiState(
     val filter: HistoryFilter = HistoryFilter.ALL,
     val taskQuery: TaskQuery = TaskQuery(),
     val message: String? = null,
+    /** Set by the ViewModel itself; the screen owns the wording. */
+    val notice: HistoryNotice? = null,
     val libraryQuery: LibraryQuery = LibraryQuery(),
     val batchBusy: Boolean = false,
     val batchDone: Int = 0,
@@ -106,18 +125,18 @@ class HistoryViewModel(
 
     fun setLibraryQuery(query: LibraryQuery) { _state.update { it.copy(libraryQuery = query) } }
 
-    fun deleteSelected(ids: Set<String>) = runBatch(ids, "删除") { record -> downloader.cancel(record.id, removeRecord = true) }
-    fun pauseSelected(ids: Set<String>) = runBatch(ids, "暂停", { it == DownloadStatus.RUNNING || it == DownloadStatus.PENDING }) {
+    fun deleteSelected(ids: Set<String>) = runBatch(ids, BatchOperation.DELETE) { record -> downloader.cancel(record.id, removeRecord = true) }
+    fun pauseSelected(ids: Set<String>) = runBatch(ids, BatchOperation.PAUSE, { it == DownloadStatus.RUNNING || it == DownloadStatus.PENDING }) {
         downloader.pause(it.id)
     }
-    fun resumeSelected(ids: Set<String>) = runBatch(ids, "继续", { it == DownloadStatus.PAUSED || it == DownloadStatus.FAILED }, { it.canRetryDownload }) {
+    fun resumeSelected(ids: Set<String>) = runBatch(ids, BatchOperation.RESUME, { it == DownloadStatus.PAUSED || it == DownloadStatus.FAILED }, { it.canRetryDownload }) {
         downloader.resume(it.id)
     }
-    fun exportSelected(ids: Set<String>, operation: String = "保存到相册") = runBatch(ids, operation, { it == DownloadStatus.COMPLETED }) {
+    fun exportSelected(ids: Set<String>, operation: BatchOperation = BatchOperation.SAVE_TO_GALLERY) = runBatch(ids, operation, { it == DownloadStatus.COMPLETED }) {
         exportRecord(it).getOrThrow()
     }
 
-    private fun runBatch(ids: Set<String>, label: String, eligible: (DownloadStatus) -> Boolean = { true },
+    private fun runBatch(ids: Set<String>, operation: BatchOperation, eligible: (DownloadStatus) -> Boolean = { true },
         eligibleRecord: (DownloadRecord) -> Boolean = { true }, action: suspend (DownloadRecord) -> Unit) {
         if (_state.value.batchBusy || ids.isEmpty()) return
         val targets = ids.toSet()
@@ -128,21 +147,20 @@ class HistoryViewModel(
             val failures = mutableListOf<BatchFailure>()
             try {
                 targets.forEach { id ->
-                    var title = _state.value.records.firstOrNull { it.id == id }?.title ?: "视频"
+                    var title = _state.value.records.firstOrNull { it.id == id }?.title
                     try {
                         val record = history.getById(id)
                         if (record != null) title = record.title
                         if (record == null || !eligible(_state.value.statusFor(record)) || !eligibleRecord(record)) skipped++
                         else { action(record); succeeded++ }
                     } catch (error: CancellationException) { throw error
-                    } catch (error: Exception) { failures += BatchFailure(id, title, if (label in setOf("保存到相册", "保存到音乐", "保存到相册/音乐")) error.galleryErrorMessage() else "操作失败，请重试") }
+                    } catch (error: Exception) {
+                        // Only the gallery path has a specific reason; everything else is generic.
+                        failures += BatchFailure(id, title, com.videodown.douyin.core.galleryFailureKindOf(error).storageKey)
+                    }
                     _state.update { it.copy(batchDone = it.batchDone + 1) }
                 }
-                _state.update { it.copy(batchResult = BatchResult(label, succeeded, skipped, failures.toList()), message = buildString {
-                    append("$label：成功 $succeeded 项")
-                    if (skipped > 0) append("，跳过 $skipped 项")
-                    if (failures.isNotEmpty()) append("，失败 ${failures.size} 项（${failures.map { it.reason }.distinct().take(2).joinToString("；")}）")
-                }) }
+                _state.update { it.copy(batchResult = BatchResult(operation, succeeded, skipped, failures.toList())) }
             } finally { _state.update { it.copy(batchBusy = false) } }
         }
     }
@@ -161,6 +179,8 @@ class HistoryViewModel(
         _state.update { it.copy(message = null) }
     }
 
+    fun onNoticeConsumed() { _state.update { it.copy(notice = null) } }
+
     fun resume(id: String) {
         if (_state.value.batchBusy) return
         viewModelScope.launch {
@@ -172,8 +192,14 @@ class HistoryViewModel(
         if (_state.value.batchBusy) return
         viewModelScope.launch {
             downloader.pause(id)
-            _state.update { it.copy(message = "已暂停，可稍后继续") }
+            _state.update { it.copy(notice = HistoryNotice.PAUSED) }
         }
+    }
+
+    /** Per-task rate cap in KB/s; `0` follows the global setting. */
+    fun setSpeedLimit(id: String, kbps: Int) {
+        if (_state.value.batchBusy) return
+        viewModelScope.launch { downloader.setSpeedLimit(id, kbps) }
     }
 
     fun restart(id: String) {
@@ -185,7 +211,7 @@ class HistoryViewModel(
         if (_state.value.batchBusy) return
         viewModelScope.launch {
             downloader.cancel(id, removeRecord = true)
-            _state.update { it.copy(message = "已删除记录和文件") }
+            _state.update { it.copy(notice = HistoryNotice.DELETED) }
         }
     }
 
@@ -206,7 +232,7 @@ class HistoryViewModel(
             // Cancellation also removes engine fragment directories, which are not MP4 .part files.
             history.snapshot().forEach { downloader.cancel(it.id, removeRecord = true) }
             history.clear(deleteFiles = true)
-            _state.update { it.copy(message = "已清空下载历史") }
+            _state.update { it.copy(notice = HistoryNotice.CLEARED) }
         }
     }
 }

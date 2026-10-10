@@ -130,6 +130,11 @@ def public_info(info):
         result["formats"] = [public_info(f) for f in info["formats"]]
     if info.get("entries") is not None:
         result["entries"] = [public_info(e) for e in info["entries"] if e]
+    # Only the language names travel: the app picks languages, it never fetches a subtitle URL itself.
+    if info.get("subtitles"):
+        result["subtitles"] = sorted(info["subtitles"].keys())
+    if info.get("automatic_captions"):
+        result["automatic_captions"] = sorted(info["automatic_captions"].keys())
     return result
 
 
@@ -189,8 +194,11 @@ try:
     else:
         options = {
             "quiet": True, "no_warnings": True, "logger": QuietLogger(),
-            "noplaylist": not is_x_post(request["url"]),
-            "playlistend": 20, "socket_timeout": 20, "retries": 2, "fragment_retries": 2,
+            # An X post is always expanded to its media; anything else only when the app asked for
+            # a collection, so a single-video link never silently becomes a 20-item download.
+            "noplaylist": not (request.get("playlist") or is_x_post(request["url"])),
+            "playlistend": request.get("playlist_limit", 20),
+            "socket_timeout": 20, "retries": 2, "fragment_retries": 2,
             "extractor_retries": 1, "cachedir": False, "skip_unavailable_fragments": False,
             "ffmpeg_location": request["ffmpeg"],
             "js_runtimes": {"quickjs": {"path": request["quickjs"]}},
@@ -204,6 +212,23 @@ try:
                             "progress_hooks": [progress], "postprocessor_hooks": [postprocess]})
         if request.get("audio_only"):
             options["postprocessors"] = [{"key": "FFmpegExtractAudio", "preferredcodec": "m4a", "preferredquality": "0"}]
+        # Subtitles are only fetched for a real video download: there is nothing to embed in an
+        # extracted audio track, and the app never asks for them there.
+        if request.get("subtitles") and not request.get("audio_only"):
+            options["writesubtitles"] = True
+            if request.get("subtitle_langs"):
+                options["subtitleslangs"] = list(request["subtitle_langs"])
+            if request.get("auto_captions"):
+                options["writeautomaticsub"] = True
+            # `embedsubtitles` is a command-line-only flag: the CLI turns it into this
+            # postprocessor, while YoutubeDL itself ignores the key. Adding the postprocessor is
+            # therefore the only thing that actually embeds anything.
+            # already_have_subtitle=False deletes the subtitle file once it is inside the video,
+            # because a task publishes exactly one file.
+            options.setdefault("postprocessors", []).append({
+                "key": "FFmpegEmbedSubtitle",
+                "already_have_subtitle": False,
+            })
         with yt_dlp.YoutubeDL(options) as engine:
             engine.add_info_extractor(CommentAwareGenericIE())
             info = engine.extract_info(request["url"], download=False)

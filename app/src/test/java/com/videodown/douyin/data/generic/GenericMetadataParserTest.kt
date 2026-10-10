@@ -80,4 +80,27 @@ class GenericMetadataParserTest {
         assertFalse(original.sameMedia(original.copy(mediaId = "b")))
         assertFalse(original.sameMedia(original.copy(audioFormatId = "opus")))
     }
+
+    @Test fun `subtitle languages are surfaced and machine captions kept apart`() {
+        val video = parse("""{"id":"subs","url":"https://cdn.org/a.mp4","ext":"mp4",
+            "subtitles":{"zh-Hans":[{"url":"https://cdn.org/a.zh.vtt"}],"en":[{"url":"https://cdn.org/a.en.vtt"}]},
+            "automatic_captions":{"ja":[{"url":"https://cdn.org/a.ja.vtt"}]}}""").selectedVideo
+        assertEquals(listOf("zh-Hans", "en"), video.subtitleLanguages)
+        assertEquals(listOf("ja"), video.autoCaptionLanguages)
+    }
+
+    @Test fun `a source without subtitles reports none`() {
+        val video = parse("""{"id":"plain","url":"https://cdn.org/a.mp4","ext":"mp4"}""").selectedVideo
+        assertTrue(video.subtitleLanguages.isEmpty())
+        assertTrue(video.autoCaptionLanguages.isEmpty())
+        assertFalse(SubtitleSelection.NONE.available)
+    }
+
+    @Test fun `each entry of a collection carries its own subtitle languages`() {
+        val videos = parse("""{"entries":[
+            {"id":"one","url":"https://cdn.org/one.mp4","ext":"mp4","subtitles":{"en":[{"url":"https://cdn.org/one.en.vtt"}]}},
+            {"id":"two","url":"https://cdn.org/two.mp4","ext":"mp4"}]}""").videos
+        assertEquals(listOf("en"), videos.first { it.awemeId == "one" }.subtitleLanguages)
+        assertTrue(videos.first { it.awemeId == "two" }.subtitleLanguages.isEmpty())
+    }
 }

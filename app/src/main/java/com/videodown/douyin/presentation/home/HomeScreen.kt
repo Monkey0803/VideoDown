@@ -48,7 +48,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.RecoveryAction
-import com.videodown.douyin.domain.model.failureGuidance
+import com.videodown.douyin.domain.model.failureActions
+import com.videodown.douyin.presentation.appErrorText
+import com.videodown.douyin.presentation.failureDescription
+import com.videodown.douyin.presentation.failureTitle
+import com.videodown.douyin.presentation.recoveryActionLabel
 import com.videodown.douyin.domain.model.selectionKey
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
@@ -56,6 +60,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -84,6 +89,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.videodown.douyin.R
+import com.videodown.douyin.presentation.storedErrorMessage
+import com.videodown.douyin.presentation.subtitleSelectionText
+import com.videodown.douyin.presentation.videoPlatformLabelRes
+import com.videodown.douyin.presentation.watchBadgeText
+import com.videodown.douyin.presentation.platformName
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -103,12 +115,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.core.watchBadge
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.formatDuration
 import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.domain.model.SubtitleLanguageSelection
+import com.videodown.douyin.domain.model.SubtitleSelection
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.VideoVariant
+import com.videodown.douyin.domain.model.WatchProgress
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -127,6 +143,10 @@ fun HomeScreen(
     openBatchImport: Boolean = false,
     onBatchImportOpened: () -> Unit = {},
     batchImportModel: BatchImportViewModel = viewModel(),
+    // Appended so the existing positional call sites in device tests keep compiling.
+    watchProgress: Map<String, WatchProgress> = emptyMap(),
+    batchImportSeed: String? = null,
+    onBatchImportSeedConsumed: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -141,6 +161,13 @@ fun HomeScreen(
     if (showBatchImport) BatchImportDialog(batchImportModel, { showBatchImport = false }, onOpenHistory)
     LaunchedEffect(openBatchImport) {
         if (openBatchImport) { showBatchImport = true; onBatchImportOpened() }
+    }
+    // Links imported from a backup file land in the same dialog as pasted text.
+    LaunchedEffect(batchImportSeed) {
+        val seed = batchImportSeed?.takeIf(String::isNotBlank) ?: return@LaunchedEffect
+        batchImportModel.input(seed)
+        showBatchImport = true
+        onBatchImportSeedConsumed()
     }
     LaunchedEffect(state.browserRequestUrl) {
         if (state.browserRequestUrl != null) { showBrowser = true; viewModel.onBrowserRequestConsumed() }
@@ -161,22 +188,22 @@ fun HomeScreen(
         val single = pending.requests.size == 1
         val existing = pending.records.values.first()
         AlertDialog(onDismissRequest = viewModel::dismissDuplicates,
-            title = { Text(if (single) "已有相同视频和画质" else "发现 ${pending.records.size} 个重复任务") },
+            title = { Text(stringResource(if (single) R.string.home_duplicate_single else R.string.home_duplicate_many, pending.records.size)) },
             text = { Column(Modifier.heightIn(max = 280.dp).verticalScroll(rememberScrollState())) {
-                Text(if (single) "此视频已有下载记录，可以直接查看，或重新保存一份。" else "所选视频中有相同画质的下载记录，跳过重复项将继续下载其余视频。")
+                Text(stringResource(if (single) R.string.home_duplicate_body_single else R.string.home_duplicate_body_many))
                 pending.records.values.forEach { record -> Text("${record.title} · ${record.resolutionLabel} · " + when (record.status) {
-                    DownloadStatus.COMPLETED -> "已保存"
-                    DownloadStatus.PENDING, DownloadStatus.RUNNING -> "下载中"
-                    else -> "可继续"
+                    DownloadStatus.COMPLETED -> stringResource(R.string.home_existing_saved)
+                    DownloadStatus.PENDING, DownloadStatus.RUNNING -> stringResource(R.string.home_existing_downloading)
+                    else -> stringResource(R.string.home_existing_resumable)
                 }, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall) }
             } },
             confirmButton = { TextButton(onClick = {
                 if (single) { viewModel.dismissDuplicates(); if (existing.status == DownloadStatus.COMPLETED && existing.filePath?.let { File(it).isFile } == true) onPlayDownloaded(existing.id) else onOpenHistory() }
                 else viewModel.confirmDuplicates(downloadAgain = false)
-            }) { Text(if (single) if (existing.status == DownloadStatus.COMPLETED) "查看已保存视频" else "查看下载任务" else "跳过重复项") } },
+            }) { Text(if (single) stringResource(if (existing.status == DownloadStatus.COMPLETED) R.string.home_view_saved else R.string.home_view_tasks) else stringResource(R.string.home_skip_duplicates)) } },
             dismissButton = { Row {
-                TextButton(onClick = { viewModel.confirmDuplicates(downloadAgain = true) }) { Text("仍然下载") }
-                TextButton(onClick = viewModel::dismissDuplicates) { Text("取消") }
+                TextButton(onClick = { viewModel.confirmDuplicates(downloadAgain = true) }) { Text(stringResource(R.string.home_download_anyway)) }
+                TextButton(onClick = viewModel::dismissDuplicates) { Text(stringResource(R.string.action_cancel)) }
             } })
     }
     val imeVisible = WindowInsets.isImeVisible
@@ -228,11 +255,13 @@ fun HomeScreen(
             onSharedTextConsumed()
         }
     }
-    LaunchedEffect(state.errorMessage, state.infoMessage, state.errorKind) {
-        (state.errorMessage ?: state.infoMessage)?.let {
+    val errorText = state.error?.let { homeErrorText(it) }
+    val infoText = state.info?.let { homeInfoText(it) }
+    LaunchedEffect(errorText, infoText, state.errorKind) {
+        (errorText ?: infoText)?.let {
             // Persistent inline recovery already explains this parsing failure.
             // A duplicate snackbar can cover its action buttons at the bottom.
-            if (state.errorMessage == null || state.errorKind == null || state.video != null) snackbar.showSnackbar(it)
+            if (errorText == null || state.errorKind == null || state.video != null) snackbar.showSnackbar(it)
             viewModel.onErrorConsumed()
         }
     }
@@ -249,7 +278,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
                     .padding(horizontal = 22.dp),
             ) {
-                TabPageHeader("拾影", "粘贴分享链接，保存喜欢的视频。")
+                TabPageHeader(stringResource(R.string.app_name), stringResource(R.string.home_header_subtitle))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.large,
@@ -258,13 +287,13 @@ fun HomeScreen(
                 ) {
                     Column(Modifier.padding(17.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("解析视频", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.home_parse_video), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                             Spacer(Modifier.weight(1f))
-                            Text("粘贴链接", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
+                            Text(stringResource(R.string.home_paste_link), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
                         }
                         state.clipboardOffer?.let { copied ->
                             ClipboardOfferBanner(
-                                platformLabel = VideoLinkExtractor.extract(copied)?.platform?.label,
+                                platformLabel = VideoLinkExtractor.extract(copied)?.platform?.let { platformName(context, it) },
                                 onParse = { dismissKeyboard(); viewModel.acceptClipboardOffer() },
                                 onDismiss = { dismissKeyboard(); viewModel.dismissClipboardOffer() },
                             )
@@ -276,7 +305,7 @@ fun HomeScreen(
                                 TextField(
                                     value = state.input,
                                     onValueChange = viewModel::onInputChange,
-                                    placeholder = { Text("在这里粘贴视频分享链接或分享文案…",
+                                    placeholder = { Text(stringResource(R.string.home_input_placeholder),
                                         style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                                     maxLines = 4,
                                     modifier = Modifier.weight(1f).onFocusChanged { inputFocused = it.isFocused },
@@ -299,10 +328,10 @@ fun HomeScreen(
                                             viewModel.onInputChange(it)
                                             dismissKeyboard()
                                         }
-                                }) { Text("粘贴", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelMedium) }
+                                }) { Text(stringResource(R.string.action_paste), color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelMedium) }
                             }
                             PrimaryButton(
-                                text = if (state.isParsing) "解析中…" else "立即解析",
+                                text = stringResource(if (state.isParsing) R.string.home_parsing else R.string.home_parse_now),
                                 onClick = { dismissKeyboard(); viewModel.parse() },
                                 enabled = state.canParse,
                                 modifier = Modifier.padding(top = 12.dp),
@@ -310,13 +339,13 @@ fun HomeScreen(
                             )
                         }
                         TextButton(contentPadding = PaddingValues(vertical = 8.dp), enabled = browserUrl != null && !state.isParsing, onClick = { dismissKeyboard(); showBrowser = true }) {
-                            Text("打开网页查找视频")
+                            Text(stringResource(R.string.home_open_web))
                         }
                         state.errorKind?.let { kind ->
-                            val advice = failureGuidance(kind)
-                            Text(advice.title, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleSmall)
-                            Text(advice.description, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
-                            listOfNotNull(advice.action.takeUnless { it == RecoveryAction.NONE }, advice.secondaryAction).forEach { action ->
+                            val advice = failureActions(kind)
+                            Text(failureTitle(kind), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleSmall)
+                            Text(failureDescription(kind), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
+                            listOfNotNull(advice.primary.takeUnless { it == RecoveryAction.NONE }, advice.secondary).forEach { action ->
                                 TextButton(contentPadding = PaddingValues(vertical = 8.dp), enabled = !state.isParsing && (action != RecoveryAction.BROWSER || browserUrl != null), onClick = {
                                     dismissKeyboard()
                                     when (action) {
@@ -325,15 +354,15 @@ fun HomeScreen(
                                         RecoveryAction.SETTINGS -> onOpenSettings()
                                         else -> viewModel.parse()
                                     }
-                                }) { Text(if (action == RecoveryAction.RETRY) "重新尝试解析" else action.label) }
+                                }) { Text(if (action == RecoveryAction.RETRY) stringResource(R.string.home_retry_parse) else recoveryActionLabel(action)) }
                             }
                         }
                         TextButton(contentPadding = PaddingValues(vertical = 8.dp), onClick = { dismissKeyboard(); showBatchImport = true }) {
                             AppIcon(AppIcons.BatchImport, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("批量导入多个链接")
+                            Text(stringResource(R.string.home_batch_import))
                         }
-                        Text("支持主流平台与普通网页视频", color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        Text(stringResource(R.string.home_supported_sources), color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 3.dp))
                     }
                 }
@@ -341,10 +370,10 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth().padding(top = 27.dp, bottom = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("最近保存", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.home_recent), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.weight(1f))
                     TextButton(onClick = { dismissKeyboard(); onOpenLibrary() }) {
-                        Text("查看全部 →", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.home_view_all_arrow), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
                     }
                 }
                 val completed = recentRecords.filter {
@@ -352,11 +381,12 @@ fun HomeScreen(
                         it.filePath?.let { path -> File(path).isFile } == true
                 }.take(2)
                 if (completed.isEmpty()) {
-                    Text("保存的视频会显示在这里", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
+                    Text(stringResource(R.string.home_no_recent), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(bottom = 25.dp))
                 } else {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 25.dp)) {
                         completed.forEach { record ->
+                            val watch = watchBadge(record, watchProgress)
                             Box(
                                 modifier = Modifier.weight(1f).height(150.dp).clip(MaterialTheme.shapes.large)
                                     .clickable { dismissKeyboard(); onPlayDownloaded(record.id) },
@@ -366,7 +396,20 @@ fun HomeScreen(
                                 Column(Modifier.align(Alignment.BottomStart).padding(12.dp)) {
                                     Text(record.title, color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall,
                                         maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                    Text(record.resolutionLabel, color = Color.White.copy(alpha = .8f), style = MaterialTheme.typography.labelSmall)
+                                    Text(
+                                        listOfNotNull(record.resolutionLabel.takeIf(String::isNotBlank), watch?.let { watchBadgeText(it.fraction) })
+                                            .joinToString(" · "),
+                                        color = Color.White.copy(alpha = .8f), style = MaterialTheme.typography.labelSmall,
+                                    )
+                                }
+                                if (watch != null) {
+                                    LinearProgressIndicator(
+                                        progress = { watch.fraction },
+                                        color = MaterialTheme.colorScheme.primary,
+                                        trackColor = Color.Black.copy(alpha = .35f),
+                                        modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(4.dp)
+                                            .testTag("watch-progress-${record.id}"),
+                                    )
                                 }
                             }
                         }
@@ -384,15 +427,16 @@ fun HomeScreen(
                 onToggleMedia = viewModel::toggleMedia,
                 onSelectAllMedia = viewModel::selectAllMedia,
                 onDownloadSelected = viewModel::downloadSelected,
+                onToggleSubtitles = viewModel::toggleSaveSubtitles,
                 onPlayDownloaded = onPlayDownloaded,
                 onOpenAuthor = { video ->
                     if (!DouyinIntents.openAuthorProfile(context, video.author)) {
-                        scope.launch { snackbar.showSnackbar("未能打开${video.platform.label}账号") }
+                        scope.launch { snackbar.showSnackbar(context.getString(R.string.home_open_author_failed, platformName(context, video.platform))) }
                     }
                 },
                 onPreview = { video ->
                     if (!DouyinIntents.openVideo(context, video)) {
-                        scope.launch { snackbar.showSnackbar("未能打开${video.platform.label}视频") }
+                        scope.launch { snackbar.showSnackbar(context.getString(R.string.home_open_video_failed, platformName(context, video.platform))) }
                     }
                 },
                 modifier = Modifier.padding(padding),
@@ -413,6 +457,7 @@ private fun ResultScreen(
     onToggleMedia: (String) -> Unit,
     onSelectAllMedia: () -> Unit,
     onDownloadSelected: () -> Unit,
+    onToggleSubtitles: (Boolean) -> Unit,
     onPlayDownloaded: (String) -> Unit,
     onOpenAuthor: (DouyinVideo) -> Unit,
     onPreview: (DouyinVideo) -> Unit,
@@ -435,21 +480,23 @@ private fun ResultScreen(
     ) {
         Column(Modifier.fillMaxWidth().heightIn(max = (screenHeight * .8f).dp).padding(horizontal = 16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("选择视频（${state.videos.size}）", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.home_select_videos, state.videos.size), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 TextButton(onClick = onSelectAllMedia, enabled = selectableKeys.isNotEmpty() && !state.isSubmitting && state.duplicates == null) {
-                    Text(if (allSelected) "取消全选" else "全选")
+                    Text(stringResource(if (allSelected) R.string.action_deselect_all else R.string.action_select_all))
                 }
             }
-            Text("已选 ${state.selectedMedia.size} 个 · 点击封面预览，勾选后批量保存", style = MaterialTheme.typography.bodySmall,
+            Text(stringResource(R.string.home_selected_hint, state.selectedMedia.size), style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 12.dp))
             LazyVerticalGrid(columns = GridCells.Adaptive(100.dp), modifier = Modifier.weight(1f, fill = false).testTag("video-selection-grid"),
                 horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(bottom = 8.dp)) {
                 itemsIndexed(state.videos, key = { _, item -> item.selectionKey() }) { index, item ->
                     val current = item.selectionKey() == video.selectionKey()
-                    val label = item.mediaLabel ?: "视频 ${index + 1}"
+                    val label = item.mediaLabel ?: stringResource(R.string.home_video_index, index + 1)
+                    val previewLabel = stringResource(R.string.home_preview_label, label)
+                    val checkLabel = stringResource(R.string.home_check_label, label)
                     Card(onClick = { onSelectVideo(index); showingVideos = false }, enabled = !state.isSubmitting && state.duplicates == null,
-                        modifier = Modifier.fillMaxWidth().semantics { contentDescription = "预览$label"; selected = current },
+                        modifier = Modifier.fillMaxWidth().semantics { contentDescription = previewLabel; selected = current },
                         border = BorderStroke(if (current) 2.dp else 1.dp, if (current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)) {
                         Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
                             AsyncImage(item.coverUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
@@ -457,17 +504,17 @@ private fun ResultScreen(
                                 enabled = !state.isSubmitting && state.duplicates == null && state.variantChoices[item.selectionKey()] != null,
                                 onCheckedChange = { onToggleMedia(item.selectionKey()) },
                                 modifier = Modifier.align(Alignment.TopEnd).background(MaterialTheme.colorScheme.surface.copy(alpha = .9f), CircleShape)
-                                    .semantics { contentDescription = "勾选$label" })
+                                    .semantics { contentDescription = checkLabel })
                         }
                         Column(Modifier.padding(8.dp)) {
                             Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
-                            Text(state.variantChoices[item.selectionKey()]?.label ?: "无可用画质", maxLines = 1,
+                            Text(state.variantChoices[item.selectionKey()]?.label ?: stringResource(R.string.home_no_variant), maxLines = 1,
                                 overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
             }
-            TextButton(onClick = { showingVideos = false }, modifier = Modifier.align(Alignment.End)) { Text("完成选择") }
+            TextButton(onClick = { showingVideos = false }, modifier = Modifier.align(Alignment.End)) { Text(stringResource(R.string.home_done_selecting)) }
         }
     }
     Column(modifier.fillMaxSize()) {
@@ -476,21 +523,21 @@ private fun ResultScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack, modifier = Modifier.clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerLow)) {
-                AppIcon(AppIcons.Back, "返回", tint = MaterialTheme.colorScheme.onSurface)
+                AppIcon(AppIcons.Back, stringResource(R.string.action_back), tint = MaterialTheme.colorScheme.onSurface)
             }
             Spacer(Modifier.width(12.dp))
-            Text("解析结果", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.home_result_title), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.weight(1f))
             IconButton(onClick = onOpenHistory, modifier = Modifier.clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerLow)) {
-                AppIcon(AppIcons.Download, "下载任务", tint = MaterialTheme.colorScheme.onSurface)
+                AppIcon(AppIcons.Download, stringResource(R.string.history_header_title), tint = MaterialTheme.colorScheme.onSurface)
             }
         }
         if (state.videos.size > 1) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 22.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("当前 ${state.videos.indexOfFirst { it.selectionKey() == video.selectionKey() } + 1}/${state.videos.size} · 已选 ${state.selectedMedia.size} 个",
+                Text(stringResource(R.string.home_position_hint, state.videos.indexOfFirst { it.selectionKey() == video.selectionKey() } + 1, state.videos.size, state.selectedMedia.size),
                     style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
                 TextButton(onClick = { showingVideos = true }, enabled = !state.isSubmitting && state.duplicates == null) {
-                    Text("查看全部")
+                    Text(stringResource(R.string.home_view_all))
                     Spacer(Modifier.width(4.dp))
                     AppIcon(AppIcons.ChevronDown, null, modifier = Modifier.size(18.dp))
                 }
@@ -499,17 +546,17 @@ private fun ResultScreen(
         Column(Modifier.weight(1f).verticalScroll(resultScroll)) {
             Box(Modifier.fillMaxWidth().padding(horizontal = 22.dp).height((screenHeight * .28f).coerceIn(140f, 260f).dp).clip(MaterialTheme.shapes.extraLarge)
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
-                AsyncImage(video.coverUrl, "视频封面", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                AsyncImage(video.coverUrl, stringResource(R.string.home_video_cover), Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 Box(Modifier.align(Alignment.TopStart).padding(16.dp).clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = .95f)).padding(horizontal = 10.dp, vertical = 6.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         AppIcon(AppIcons.Success, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurface)
-                        Text("已解析 · ${video.platform.label}", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.home_parsed_platform, stringResource(videoPlatformLabelRes(video.platform))), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
                     }
                 }
                 IconButton(onClick = { onPreview(video) }, modifier = Modifier.align(Alignment.Center)
                     .size(56.dp).clip(CircleShape).background(Color.White.copy(alpha = .28f))) {
-                    AppIcon(AppIcons.Play, "在${video.platform.label}预览", tint = Color.White, modifier = Modifier.size(35.dp))
+                    AppIcon(AppIcons.Play, stringResource(R.string.home_preview_on_platform, stringResource(videoPlatformLabelRes(video.platform))), tint = Color.White, modifier = Modifier.size(35.dp))
                 }
                 Text(formatDuration(video.durationMs), color = Color.White, style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp).clip(MaterialTheme.shapes.small)
@@ -520,16 +567,16 @@ private fun ResultScreen(
                     fontWeight = FontWeight.Bold, maxLines = if (expandedTitle) Int.MAX_VALUE else 2, overflow = TextOverflow.Ellipsis,
                     onTextLayout = { if (!expandedTitle) titleOverflows = it.hasVisualOverflow })
                 if (titleOverflows || expandedTitle) TextButton(onClick = { expandedTitle = !expandedTitle }) {
-                    Text(if (expandedTitle) "收起标题" else "展开标题")
+                    Text(stringResource(if (expandedTitle) R.string.home_collapse_title else R.string.home_expand_title))
                 }
                 Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    AsyncImage(video.author.avatarUrl, "作者头像", Modifier.size(26.dp).clip(CircleShape),
+                    AsyncImage(video.author.avatarUrl, stringResource(R.string.home_author_avatar), Modifier.size(26.dp).clip(CircleShape),
                         contentScale = ContentScale.Crop)
                     Spacer(Modifier.width(8.dp))
-                    Text("@ ${video.author.nickname.ifBlank { "未知作者" }}", style = MaterialTheme.typography.bodySmall,
+                    Text("@ ${video.author.nickname.ifBlank { stringResource(R.string.home_unknown_author) }}", style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                     TextButton(onClick = { onOpenAuthor(video) }, enabled = video.author.profileUrl != null) {
-                        Text("查看作者", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.home_view_author), style = MaterialTheme.typography.labelMedium)
                         Spacer(Modifier.width(4.dp))
                         AppIcon(AppIcons.ExternalLink, null, modifier = Modifier.size(16.dp))
                     }
@@ -537,9 +584,9 @@ private fun ResultScreen(
                 Spacer(Modifier.height(18.dp))
                 Box(Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
                 Row(Modifier.fillMaxWidth().padding(top = 22.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("选择画质", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.home_choose_quality), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.weight(1f))
-                    Text("文件大小以视频源为准", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.home_size_note), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 val variants = video.sortedVariants
                 variants.chunked(3).forEach { row ->
@@ -548,9 +595,10 @@ private fun ResultScreen(
                             val selected = state.selectedVariant?.let {
                                 it.label == variant.label && it.url == variant.url
                             } == true
+                            val qualityLabel = stringResource(R.string.home_quality_label, variant.label)
                             Card(
                                 onClick = { onSelectVariant(variant) }, enabled = !state.isSubmitting,
-                                modifier = Modifier.weight(1f).semantics { contentDescription = "画质 ${variant.label}" },
+                                modifier = Modifier.weight(1f).semantics { contentDescription = qualityLabel },
                                 shape = MaterialTheme.shapes.medium,
                                 colors = CardDefaults.cardColors(containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow),
                                 border = BorderStroke(if (selected) 1.5.dp else 1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
@@ -562,7 +610,7 @@ private fun ResultScreen(
                                         style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold,
                                         color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                                     Text(variant.sizeBytes?.takeIf { it > 0L }?.let(::formatBytes)
-                                        ?: if (state.isLoadingSizes) "获取大小中…" else "大小未知",
+                                        ?: stringResource(if (state.isLoadingSizes) R.string.home_size_loading else R.string.home_size_unknown),
                                         maxLines = 1, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
@@ -571,27 +619,49 @@ private fun ResultScreen(
                     }
                 }
                 if (video.audioVariants.isNotEmpty()) {
-                    Text("单独保存音轨", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 18.dp))
+                    Text(stringResource(R.string.home_audio_only), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 18.dp))
                     video.audioVariants.forEach { variant ->
                         FilterChip(selected = state.selectedVariant == variant, enabled = !state.isSubmitting && state.duplicates == null,
                             onClick = { onSelectVariant(variant) }, label = { Text(variant.label) })
                     }
-                    Text("只下载所选音轨，保存为 M4A；所示码率来自源音轨，转换后文件大小可能变化。", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.home_audio_only_hint), style = MaterialTheme.typography.labelMedium)
                 } else {
-                    Text("此源未提供独立音轨，保存视频后可在影像库中提取音频。", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
+                    Text(stringResource(R.string.home_no_audio_track), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
                 }
-                Text("下载后可在「已存」中播放、分享。实际可选画质取决于视频源。",
+                // Only offered when the source really has a subtitle track and the target is a video:
+                // there is nothing to embed into an extracted audio file.
+                val subtitleTarget = state.video ?: state.videos.firstOrNull { it.selectionKey() in state.selectedMedia }
+                val subtitleChoice = subtitleTarget?.let {
+                    SubtitleLanguageSelection.preferred(it.subtitleLanguages, it.autoCaptionLanguages)
+                } ?: SubtitleSelection.NONE
+                if (subtitleChoice.available && state.selectedVariant?.media?.audioOnly != true) {
+                    Text(stringResource(R.string.home_subtitles), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 18.dp))
+                    FilterChip(selected = state.saveSubtitles,
+                        enabled = !state.isSubmitting && state.duplicates == null,
+                        onClick = { onToggleSubtitles(!state.saveSubtitles) },
+                        label = { Text(stringResource(if (state.saveSubtitles) R.string.home_subtitles_selected else R.string.home_subtitles_offer, subtitleSelectionText(subtitleChoice))) },
+                        modifier = Modifier.testTag("save-subtitles"))
+                    Text(stringResource(R.string.home_subtitles_hint),
+                        style = MaterialTheme.typography.labelMedium)
+                }
+                Text(stringResource(R.string.home_result_note),
                     color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(top = 18.dp))
             }
         }
         PrimaryButton(
             text = when {
-                state.isSubmitting -> "正在加入队列…"
-                batchSelected -> "保存所选 ${state.selectedMedia.size} 个视频"
-                state.isDownloadFinished -> "查看已保存视频"
-                state.activeDownloadId != null -> "查看下载任务"
-                else -> if (state.selectedVariant?.media?.audioOnly == true) "保存音频到本地" else if (state.videos.size > 1) "保存当前视频" else "保存到本地"
+                state.isSubmitting -> stringResource(R.string.home_submitting)
+                batchSelected -> stringResource(R.string.home_save_selected, state.selectedMedia.size)
+                state.isDownloadFinished -> stringResource(R.string.home_view_saved)
+                state.activeDownloadId != null -> stringResource(R.string.home_view_tasks)
+                else -> stringResource(
+                    when {
+                        state.selectedVariant?.media?.audioOnly == true -> R.string.home_save_audio
+                        state.videos.size > 1 -> R.string.home_save_current
+                        else -> R.string.home_save_local
+                    },
+                )
             },
             onClick = {
                 val id = state.activeRecord?.id
@@ -648,18 +718,38 @@ private fun ClipboardOfferBanner(platformLabel: String?, onParse: () -> Unit, on
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AppIcon(AppIcons.Link, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                 Text(
-                    text = if (platformLabel.isNullOrBlank()) "检测到视频链接" else "检测到 $platformLabel 链接",
+                    text = if (platformLabel.isNullOrBlank()) stringResource(R.string.home_clipboard_detected)
+                        else stringResource(R.string.home_clipboard_detected_platform, platformLabel),
                     style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
             Row(Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("复制后回到拾影即可解析，可在「我的」关闭此提示。",
+                Text(stringResource(R.string.home_clipboard_hint),
                     color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.weight(1f))
-                TextButton(onClick = onDismiss, modifier = Modifier.testTag("clipboard-offer-dismiss")) { Text("忽略") }
-                TextButton(onClick = onParse, modifier = Modifier.testTag("clipboard-offer-parse")) { Text("解析") }
+                TextButton(onClick = onDismiss, modifier = Modifier.testTag("clipboard-offer-dismiss")) { Text(stringResource(R.string.action_ignore)) }
+                TextButton(onClick = onParse, modifier = Modifier.testTag("clipboard-offer-parse")) { Text(stringResource(R.string.action_parse)) }
             }
         }
     }
+}
+
+/** The wording for a neutral outcome. */
+@Composable
+private fun homeInfoText(info: HomeInfo): String = when (info) {
+    HomeInfo.AlreadyQueued -> stringResource(R.string.home_info_already_queued)
+    // Resolved through the same mapper as the task list, so a stored key is never shown raw.
+    is HomeInfo.StoredFailure -> storedErrorMessage(info.stored).orEmpty()
+    is HomeInfo.Queued -> stringResource(R.string.home_info_queued, info.count)
+    is HomeInfo.QueuedPartial -> stringResource(R.string.home_info_queued_partial, info.count)
+}
+
+/** The wording for a parse failure. */
+@Composable
+private fun homeErrorText(error: HomeError): String = when (error) {
+    is HomeError.FromApp -> appErrorText(error.error)
+    HomeError.EmptyInput -> stringResource(R.string.home_error_empty_input)
+    HomeError.NoVariant -> stringResource(R.string.home_error_no_variant)
+    HomeError.QueueFailed -> stringResource(R.string.home_error_queue_failed)
 }

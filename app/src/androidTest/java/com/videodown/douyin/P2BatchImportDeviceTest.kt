@@ -33,7 +33,7 @@ class P2BatchImportDeviceTest {
         override val progress = MutableStateFlow<Map<String, DownloadProgress>>(emptyMap())
         override suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant) =
             if (duplicate) DownloadRecord("existing", video.awemeId, video.title) else null
-        override suspend fun start(video: DouyinVideo, variant: VideoVariant): String {
+        override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String {
             if (failing) error("queue failed")
             starts += video.awemeId to variant.label; return video.awemeId
         }
@@ -121,7 +121,11 @@ class P2BatchImportDeviceTest {
         failing = true
         parse((1..50).joinToString(" ") { "https://example.test/long-title-$it" })
         compose.onNodeWithText("下载所选").performClick()
-        compose.waitUntil(5000) { !model.state.value.submitting && model.state.value.message?.contains("失败 50 项") == true }
+        // The state reports counts; the dialog words them.
+        compose.waitUntil(5000) {
+            val notice = model.state.value.notice
+            !model.state.value.submitting && notice is com.videodown.douyin.presentation.home.ImportNotice.Queued && notice.failedTitles.size == 50
+        }
         compose.onNodeWithText("关闭", substring = false).assertIsDisplayed()
         compose.onNodeWithText("下载所选").assertIsDisplayed().assertIsEnabled()
         assertEquals(50, model.state.value.selectedCount); assertTrue(starts.isEmpty())

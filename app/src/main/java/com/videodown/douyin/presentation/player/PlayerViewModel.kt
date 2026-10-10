@@ -6,8 +6,12 @@ import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.PlaybackCheckpoint
 import com.videodown.douyin.domain.model.PlaybackOptions
+import com.videodown.douyin.domain.model.SleepRemaining
+import com.videodown.douyin.domain.model.SleepTimer
 import com.videodown.douyin.domain.repository.PlaybackRepository
 import com.videodown.douyin.domain.repository.DownloadHistoryRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +24,9 @@ data class PlayerUiState(
     val loading: Boolean = true,
     val resumePositionMs: Long = 0,
     val options: PlaybackOptions = PlaybackOptions(),
+    /** Remaining-time label while the audio sleep timer runs; `null` when no timer is set. */
+    /** What is left of the sleep timer; the screen words it. */
+    val sleepTimerRemaining: SleepRemaining? = null,
 )
 
 class PlayerViewModel(
@@ -31,6 +38,41 @@ class PlayerViewModel(
     val state: StateFlow<PlayerUiState> = _state.asStateFlow()
 
     private var loadedId: String? = null
+    private var sleepJob: Job? = null
+
+    /** Starts or clears the audio sleep timer; the media service is what actually stops playback. */
+    fun setSleepTimer(minutes: Int) {
+        if (_state.value.record?.isAudio != true) return
+        playback.setSleepTimerDeadline(SleepTimer.deadlineIn(minutes, System.currentTimeMillis()))
+        refreshSleepTimer()
+    }
+
+    /**
+     * Mirrors the persisted deadline into the button label, once a second while a timer runs.
+     *
+     * The service owns enforcement, so this also covers the case where the service already paused
+     * playback and cleared the deadline.
+     */
+    private fun refreshSleepTimer() {
+        sleepJob?.cancel()
+        val deadline = playback.sleepTimerDeadline()
+        if (deadline <= SleepTimer.OFF) {
+            _state.value = _state.value.copy(sleepTimerRemaining = null)
+            return
+        }
+        sleepJob = viewModelScope.launch {
+            while (true) {
+                val now = System.currentTimeMillis()
+                if (SleepTimer.expired(deadline, now)) {
+                    playback.setSleepTimerDeadline(SleepTimer.OFF)
+                    _state.value = _state.value.copy(sleepTimerRemaining = null)
+                    break
+                }
+                _state.value = _state.value.copy(sleepTimerRemaining = SleepTimer.remainingRounded(deadline, now))
+                delay(1000)
+            }
+        }
+    }
 
     fun options(options: PlaybackOptions) {
         val record = _state.value.record ?: return
@@ -62,6 +104,7 @@ class PlayerViewModel(
                 resumePositionMs = record?.filePath?.let { path -> File(path).let { file -> playback.checkpoint(record.id, file.length(), file.lastModified()).resumePosition() } } ?: 0,
                 options = playback.options(record?.isAudio == true),
             )
+            if (record?.isAudio == true) refreshSleepTimer()
         }
     }
 }

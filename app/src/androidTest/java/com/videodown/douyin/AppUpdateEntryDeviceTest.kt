@@ -79,7 +79,12 @@ class AppUpdateEntryDeviceTest {
                 "notes":"测试更新说明"}""",
         )
         compose.onNodeWithText("检查更新").performScrollTo().assertIsDisplayed().performClick()
-        compose.onNodeWithText("当前版本：${ServiceLocator.appVersion.label}").assertIsDisplayed()
+        // The label is built by the screen from resources now.
+        val version = ServiceLocator.appVersion
+        compose.onNodeWithText(
+            context.getString(com.videodown.douyin.R.string.update_current_version,
+                context.getString(com.videodown.douyin.R.string.version_label_both, version.versionName, version.versionCode)),
+        ).assertIsDisplayed()
         compose.onNodeWithText("发现新版本：9.9.9").assertIsDisplayed()
         compose.onNodeWithText("测试更新说明").assertIsDisplayed()
         compose.onNodeWithText("下载新版").assertIsDisplayed()

@@ -36,7 +36,7 @@ class BatchImportTest {
     private val downloader = object : Downloader {
         override val progress = MutableStateFlow<Map<String, DownloadProgress>>(emptyMap())
         override suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant) = if (duplicate && video.awemeId == "ok") DownloadRecord("old", "ok", "old") else null
-        override suspend fun start(video: DouyinVideo, variant: VideoVariant): String {
+        override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String {
             if (failQueue && video.awemeId == "second") error("failed")
             starts += video.awemeId to variant.label; return video.awemeId
         }
@@ -102,6 +102,7 @@ class BatchImportTest {
     @Test fun `over limit never silently truncates or starts requests`() = runTest(dispatcher) {
         vm.input((1..51).joinToString(" ") { "https://example.test/$it" }); vm.prepareAndParse(); advanceUntilIdle()
         assertTrue(calls.isEmpty()); assertTrue(vm.state.value.rows.isEmpty())
-        assertTrue(vm.state.value.message!!.contains("50"))
+        // The state reports which notice applies; the dialog words it.
+        assertEquals(ImportNotice.TooManyLinks, vm.state.value.notice)
     }
 }

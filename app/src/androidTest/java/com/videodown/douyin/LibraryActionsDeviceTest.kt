@@ -22,6 +22,7 @@ import com.videodown.douyin.domain.model.DownloadProgress
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.DouyinVideo
+import com.videodown.douyin.domain.model.SubtitleSelection
 import com.videodown.douyin.domain.model.VideoVariant
 import com.videodown.douyin.domain.repository.Downloader
 import com.videodown.douyin.presentation.history.HistoryViewModel
@@ -70,7 +71,7 @@ class LibraryActionsDeviceTest {
                 history.delete(id)
             }
             override fun observeRecord(id: String) = history.observeRecord(id)
-            override suspend fun start(video: DouyinVideo, variant: VideoVariant): String = error("Unexpected start")
+            override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String = error("Unexpected start")
             override suspend fun pause(id: String): Unit = error("Unexpected pause")
             override suspend fun resume(id: String): Unit = error("Unexpected resume")
             override suspend fun resumeAll(): Unit = error("Unexpected resumeAll")
