@@ -3,7 +3,11 @@
 # 发一次版本：构建两个 ABI 的 APK、按当前版本号生成更新清单 version.json，并建 GitHub Release。
 #
 # 用法：
-#   scripts/publish-release.sh v1.1.0 [--notes-file docs/validation/release-1.1.0-2026-10-10/release-notes.md] [--dry-run]
+#   scripts/publish-release.sh v1.1.0 [--notes-file 发行说明.md] [--manifest-notes-file 清单说明.md] [--dry-run]
+#
+#   --notes-file            Releases 页面上的完整发行说明（缺省用 gh 自动生成）。
+#   --manifest-notes-file   应用内「检查更新」弹窗显示的说明；只取该文件第一段，其余忽略。
+#                           清单里的 notes 字段只有一个，所以这里放主语言（中文）的一句话。
 #
 # 前置：
 #   - `gh auth status` 已登录，且有该仓库的写权限；
@@ -24,10 +28,12 @@ fi
 
 TAG="$1"; shift
 NOTES=""
+MANIFEST_NOTES=""
 DRY_RUN=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --notes-file) NOTES="${2:?--notes-file 需要一个文件}"; shift 2 ;;
+    --manifest-notes-file) MANIFEST_NOTES="${2:?--manifest-notes-file 需要一个文件}"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     *) echo "未知参数: $1" >&2; exit 2 ;;
   esac
@@ -68,12 +74,16 @@ cp app/build/outputs/apk/release/videodown-arm64-v8a-release.apk "$OUT/"
 ./gradlew assembleRelease -Pabi=universal -PupdateManifestUrl="$MANIFEST_URL"
 cp app/build/outputs/apk/release/videodown-universal-release.apk "$OUT/"
 
-python3 - "$OUT/version.json" "$GRADLE_VERSION_CODE" "$GRADLE_VERSION_NAME" "$ASSET_BASE" "$SLUG" "$NOTES" <<'PY'
+python3 - "$OUT/version.json" "$GRADLE_VERSION_CODE" "$GRADLE_VERSION_NAME" "$ASSET_BASE" "$SLUG" "$MANIFEST_NOTES" <<'PY'
 import json, sys
 out, code, name, asset_base, slug, notes_path = sys.argv[1:7]
+# 清单里的说明只在应用内弹窗显示，取发行说明的第一段；Releases 页面用完整的 --notes-file。
 notes = ""
 if notes_path:
-    notes = open(notes_path, encoding="utf-8").read().strip()
+    text = open(notes_path, encoding="utf-8").read().strip()
+    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip() and not p.lstrip().startswith("#")]
+    if paragraphs:
+        notes = paragraphs[0].replace("\n", " ")
 manifest = {
     "versionCode": int(code),
     "versionName": name,
