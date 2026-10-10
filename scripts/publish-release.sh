@@ -43,7 +43,7 @@ GRADLE_VERSION_CODE="$(grep -oE 'versionCode = [0-9]+' app/build.gradle.kts | he
 GRADLE_VERSION_NAME="$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')"
 
 if [[ "v$GRADLE_VERSION_NAME" != "$TAG" ]]; then
-  echo "tag（$TAG）与 app/build.gradle.kts 的 versionName（$GRADLE_VERSION_NAME）对不上，先改版本号再发。" >&2
+  echo "tag（${TAG}）与 app/build.gradle.kts 的 versionName（${GRADLE_VERSION_NAME}）对不上，先改版本号再发。" >&2
   exit 1
 fi
 
@@ -53,7 +53,7 @@ MANIFEST_URL="$ASSET_BASE/version.json"
 OUT=".tooling/release-$TAG"
 
 echo "仓库：$SLUG"
-echo "版本：$GRADLE_VERSION_NAME（versionCode $GRADLE_VERSION_CODE）"
+echo "版本：${GRADLE_VERSION_NAME}（versionCode ${GRADLE_VERSION_CODE}）"
 echo "清单：$MANIFEST_URL"
 echo "产物：$OUT/"
 
@@ -65,7 +65,11 @@ fi
 mkdir -p "$OUT"
 
 # 先跑测试：版本号要在测试之后才可信。
-./gradlew testDebugUnitTest --rerun-tasks
+if ! ./gradlew testDebugUnitTest --rerun-tasks; then
+  echo "测试未通过，发版中止。若失败只有 AutoResumeDownloadTest / P1DownloadIntegrationTest 的超时" >&2
+  echo "（本地 HTTP 服务 + 定时等待，偶发记录见 docs/validation/p6-phase-c-2026-10-09.md），重跑本脚本即可。" >&2
+  exit 1
+fi
 
 # 两种 ABI 分开构建：同一条命令里跑 assembleDebug/assembleRelease 会撞 AGP 的打包任务，
 # 而且后一次构建会清掉前一次的产物，所以每构建一种就立刻复制走。
@@ -109,7 +113,7 @@ gh release create "$TAG" \
   "$OUT/videodown-arm64-v8a-release.apk" \
   "$OUT/videodown-universal-release.apk" \
   "$OUT/version.json" \
-  --title "拾影 $GRADLE_VERSION_NAME（Keepsake）" \
+  --title "拾影 ${GRADLE_VERSION_NAME}（Keepsake）" \
   "${NOTES_ARGS[@]}"
 
 echo
