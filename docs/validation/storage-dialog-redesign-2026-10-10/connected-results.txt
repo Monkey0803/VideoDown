@@ -1,0 +1,45 @@
+== com.videodown.douyin.SpaceBudgetDeviceTest (exit=0)
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T06:49:10" hostname="localhost">
+  <testsuite name="com.videodown.douyin.SpaceBudgetDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="5.656" timestamp="2026-10-10T06:49:10" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="emptyLedgerExplainsThereIsNoRunningBudget" classname="com.videodown.douyin.SpaceBudgetDeviceTest" time="2.143" />
+    <testcase name="overviewLeadsWithFreeSpaceAndNamesTheAppFootprint" classname="com.videodown.douyin.SpaceBudgetDeviceTest" time="1.791" />
+    <testcase name="overCommittedBudgetShowsTheShortfallAndAsksToFreeSpace" classname="com.videodown.douyin.SpaceBudgetDeviceTest" time="1.722" />
+  </testsuite>
+</testsuites>
+
+== com.videodown.douyin.P1FeaturesDeviceTest#cleanupRequiresConfirmationAndPreservesVideosPausedAndActiveArtifacts (exit=0)
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T06:49:16" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P1FeaturesDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="2.063" timestamp="2026-10-10T06:49:16" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="cleanupRequiresConfirmationAndPreservesVideosPausedAndActiveArtifacts" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="2.063" />
+  </testsuite>
+</testsuites>
+
+== com.videodown.douyin.P1FeaturesDeviceTest#storageDialogVisualizesTheRunningSpaceBudget (exit=0)
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T06:49:23" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P1FeaturesDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="3.137" timestamp="2026-10-10T06:49:23" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="storageDialogVisualizesTheRunningSpaceBudget" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="3.137" />
+  </testsuite>
+</testsuites>
+
+== com.videodown.douyin.P1RecoveryNavigationDeviceTest#storageRecoveryOpensActualSettingsStorageDialog (exit=0)
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T06:49:29" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P1RecoveryNavigationDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="1.973" timestamp="2026-10-10T06:49:29" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="storageRecoveryOpensActualSettingsStorageDialog" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="1.973" />
+  </testsuite>
+</testsuites>

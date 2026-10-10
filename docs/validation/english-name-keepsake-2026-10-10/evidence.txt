@@ -1,0 +1,23 @@
+$ aapt2 dump badging app/build/outputs/apk/debug/videodown-arm64-v8a-debug.apk | grep -E "application-label('|-en)"
+application-label:'拾影'
+application-label-en:'Keepsake'
+application-label-en-AU:'Keepsake'
+application-label-en-CA:'Keepsake'
+application-label-en-GB:'Keepsake'
+application-label-en-IN:'Keepsake'
+application-label-en-XC:'Keepsake'
+
+$ grep -n 'Keepsake' app/src/main/res/values-en/strings.xml
+3:    <string name="app_name">Keepsake</string>
+109:    <string name="settings_backup_invalid">This is not a Keepsake settings backup</string>
+120:    <string name="settings_language_body">Follows the system language by default; on Android 13 and newer you can pick one just for Keepsake.</string>
+136:    <string name="settings_about_title">About Keepsake</string>
+137:    <string name="settings_about_body">Keepsake v%1$s handles mainstream platforms, ordinary web videos, browser assistance, segmented downloads and audio/video merging.\n\n%2$s\n\nBuilt on yt-dlp, youtubedl-android (GPL-3.0) and FFmpeg; DRM-protected videos and live streams are not supported.</string>
+140:    <string name="settings_dynamic_off">Uses the Keepsake warm-orange palette</string>
+178:    <string name="settings_about_row">About Keepsake</string>
+
+$ grep -rn 'Shiying' app/src/main/res/values-en/strings.xml  # 应为空
+(无)
+
+$ grep -rn 'shiying' app/src/main/res/values-en/strings.xml  # 仅剩数据标识时为空
+(无)

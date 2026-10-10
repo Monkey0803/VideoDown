@@ -1,11 +1,16 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.core.TestText
+
 import com.videodown.douyin.domain.model.VideoPlatform
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
 import org.junit.Test
 
 class XVideoParserTest {
+    @org.junit.Before
+    fun installTextResolver() = TestText.install()
+
     private val parser = XVideoJsonParser()
     private val link = XVideoLink(XFixtures.ID)
 
@@ -71,7 +76,8 @@ class XVideoParserTest {
         })
         val result = parser.graphql(XFixtures.graphql(tweet), link) as XParseResult.Success
         assertEquals(4, result.value.videos.size)
-        assertTrue(result.value.videos.last().mediaLabel!!.startsWith("引用"))
+        // Names the quoted-video resource; the wording lives in values-en.
+        assertTrue(result.value.videos.last().mediaLabel!!.startsWith("media_label_quoted_video("))
         assertTrue(parser.graphql(XFixtures.graphql(tweet), link.copy(mediaIndex = 2)) is XParseResult.Failure)
     }
 

@@ -34,6 +34,22 @@ internal fun storageBudgetReason(usage: StorageUsage): String {
     else stringResource(R.string.storage_budget_short, formatBytes(shortfall))
 }
 
+/**
+ * Total bytes the app itself keeps on disk (videos + temporary files), saturating so an extreme
+ * pair cannot wrap into a small number and misdraw the composition bar.
+ */
+internal fun storageFootprintBytes(videoBytes: Long, temporaryBytes: Long): Long {
+    val video = videoBytes.coerceAtLeast(0)
+    val temporary = temporaryBytes.coerceAtLeast(0)
+    return if (video > Long.MAX_VALUE - temporary) Long.MAX_VALUE else video + temporary
+}
+
+/** One category's share of [total] for the composition bar; zero when nothing is stored. */
+internal fun storageShareFraction(part: Long, total: Long): Float {
+    if (total <= 0L || part <= 0L) return 0f
+    return (part.toDouble() / total.toDouble()).coerceIn(0.0, 1.0).toFloat()
+}
+
 /** Fraction of (running reservation + free space) already claimed by running tasks, for the bar. */
 internal fun storageBudgetFraction(usage: StorageUsage): Float {
     val reserved = usage.budget.reservedBytes.coerceAtLeast(0)

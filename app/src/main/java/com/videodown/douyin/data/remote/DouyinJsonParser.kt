@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.DouyinAuthor
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.VideoVariant
@@ -121,7 +123,7 @@ class DouyinJsonParser {
 
         return DouyinVideo(
             awemeId = aweme.string("aweme_id").orEmpty(),
-            title = aweme.string("desc").orEmpty().ifBlank { "抖音视频" },  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+            title = aweme.string("desc").orEmpty().ifBlank { AppText.get(R.string.fallback_title_douyin_video) },
             coverUrl = video?.obj("cover")?.firstUrl()
                 ?: video?.obj("origin_cover")?.firstUrl()
                 ?: video?.obj("dynamic_cover")?.firstUrl(),
@@ -208,7 +210,7 @@ class DouyinJsonParser {
                 val height = addr.int("height")
                 candidates += VideoVariant(
                     url = url,
-                    label = "${resolutionLabel(addr.int("width"), height, baseRatio)} 带水印",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                    label = AppText.get(R.string.douyin_label_watermarked, resolutionLabel(addr.int("width"), height, baseRatio)),
                     width = addr.int("width"),
                     height = height,
                     sizeBytes = addr.long("data_size"),
@@ -267,7 +269,7 @@ class DouyinJsonParser {
     private fun resolutionLabel(width: Int?, height: Int?, fallbackRatio: String?): String = when {
         shortSide(width, height) != null -> "${shortSide(width, height)}P"
         !fallbackRatio.isNullOrBlank() -> fallbackRatio.uppercase()
-        else -> "原画"  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+        else -> AppText.get(R.string.quality_original)
     }
 
     /** Higher is better; the short side dominates and bitrate breaks ties. */

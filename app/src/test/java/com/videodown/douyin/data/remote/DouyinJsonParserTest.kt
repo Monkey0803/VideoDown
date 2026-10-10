@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.core.TestText
+
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -11,6 +13,9 @@ import org.junit.Test
  * `_ROUTER_DATA` response: `loaderData["video_(id)/page"].videoInfoRes.item_list[0]`.
  */
 class DouyinJsonParserTest {
+    @org.junit.Before
+    fun installTextResolver() = com.videodown.douyin.core.TestText.install()
+
 
     private val parser = DouyinJsonParser()
 
@@ -38,7 +43,7 @@ class DouyinJsonParserTest {
         assertTrue("expected 1080P in $labels", labels.contains("1080P"))
         assertTrue("expected 720P in $labels", labels.contains("720P"))
         assertTrue("expected an H.264 option in $labels", labels.any { it.contains("H.264") })
-        assertTrue("expected a watermarked option in $labels", labels.any { it.contains("带水印") })
+        assertTrue("expected a watermarked option in $labels", labels.any { it.startsWith("douyin_label_watermarked(") })
     }
 
     @Test

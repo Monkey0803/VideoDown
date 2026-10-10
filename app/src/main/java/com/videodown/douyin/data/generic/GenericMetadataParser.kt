@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.generic
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.*
 import kotlinx.serialization.json.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -57,9 +59,9 @@ class GenericMetadataParser {
                 if (declaredExt != null && declaredExt !in setOf("mp4", "webm", "mkv", "mov", "m4v", "ts")) return@format null
                 val ext = declaredExt ?: "mp4"
                 VideoVariant(url, buildString {
-                    append(if (rank > 0) "${rank}P" else "原画")  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                    append(if (rank > 0) "${rank}P" else AppText.get(R.string.quality_original))
                     append(" · ${ext.uppercase()}")
-                    if (f.text("acodec") == "none" && !separate) append(" · 无音轨")  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                    if (f.text("acodec") == "none" && !separate) append(AppText.get(R.string.media_label_no_audio))
                     if (formatId.isNotEmpty()) append(" · $formatId")
                 }, width, height, f.number("tbr")?.times(1000)?.toInt(),
                     if (separate) null else (f.number("filesize") ?: f.number("filesize_approx"))?.toLong(),
@@ -86,13 +88,13 @@ class GenericMetadataParser {
                             formatId = formatId, extension = "m4a", userAgent = userAgent ?: headers?.text("User-Agent"),
                             useBrowserSession = browserSession, extractor = item.text("extractor_key").orEmpty(), audioOnly = true))
                 }.distinctBy { it.media?.formatId }
-            if (variants.isEmpty()) null else DouyinVideo(id, item.text("title") ?: "网页视频",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+            if (variants.isEmpty()) null else DouyinVideo(id, item.text("title") ?: AppText.get(R.string.fallback_title_web_video),
                 webUrl(item.text("thumbnail")), ((item.number("duration") ?: 0.0) * 1000).toLong(),
                 DouyinAuthor(nickname = item.text("uploader").orEmpty(), platform = VideoPlatform.GENERIC),
                 variants, page, VideoPlatform.GENERIC, audioVariants = audioVariants,
                 subtitleLanguages = languages(item["subtitles"]), autoCaptionLanguages = languages(item["automatic_captions"]))
         }.distinctBy { it.awemeId to it.shareUrl }
-        require(videos.isNotEmpty()) { "页面没有可下载的点播视频，可能包含 DRM、直播或需要登录验证" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        require(videos.isNotEmpty()) { AppText.get(R.string.generic_parse_no_video) }
         return ParsedVideos(videos)
     }
 }

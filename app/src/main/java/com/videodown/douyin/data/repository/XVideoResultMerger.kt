@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.repository
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.ParsedVideos
 import com.videodown.douyin.domain.model.VideoPlatform
@@ -24,7 +26,7 @@ internal object XVideoResultMerger {
             } else if (matches.isEmpty()) {
                 videos.add(video.copy(awemeId = "${post.postId}_${video.awemeId}",
                     platform = VideoPlatform.X, shareUrl = url,
-                    mediaLabel = "视频 ${videos.size + 1}"))  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                    mediaLabel = AppText.get(R.string.media_label_video, videos.size + 1)))
             }
             // A duplicate/ambiguous media ID is not a safe basis for another candidate.
         }

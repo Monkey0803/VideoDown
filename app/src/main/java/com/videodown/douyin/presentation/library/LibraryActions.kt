@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation.library
 
+import com.videodown.douyin.presentation.components.AppConfirmDialog
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -178,21 +178,18 @@ internal fun LibraryActions(
     }
 
     if (pendingDelete != null) {
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { pendingDeleteId = null },
-            title = { Text(stringResource(R.string.library_delete_title)) },
-            text = {
-                Text(stringResource(R.string.library_delete_body, pendingDelete.title))
+            icon = AppIcons.Delete,
+            title = stringResource(R.string.library_delete_title),
+            body = stringResource(R.string.library_delete_body, pendingDelete.title),
+            confirmText = stringResource(R.string.action_delete),
+            onConfirm = {
+                pendingDeleteId = null
+                onDelete(pendingDelete.id)
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    pendingDeleteId = null
-                    onDelete(pendingDelete.id)
-                }) { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingDeleteId = null }) { Text(stringResource(R.string.action_cancel)) }
-            },
+            dismissText = stringResource(R.string.action_cancel),
+            destructive = true,
         )
     }
 

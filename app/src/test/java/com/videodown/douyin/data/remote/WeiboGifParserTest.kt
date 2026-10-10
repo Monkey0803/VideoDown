@@ -1,10 +1,15 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.core.TestText
+
 import com.videodown.douyin.domain.model.VideoPlatform
 import org.junit.Assert.*
 import org.junit.Test
 
 class WeiboGifParserTest {
+    @org.junit.Before
+    fun installTextResolver() = com.videodown.douyin.core.TestText.install()
+
     @Test fun `GIF MP4 preserves dimensions author cover and signed query`() {
         val video = WeiboJsonParser().parse(GIF_POST, "RkkIUuy8h")!!
         assertEquals("RkkIUuy8h_gif-one", video.awemeId)
@@ -26,7 +31,8 @@ class WeiboGifParserTest {
     @Test fun `multiple GIFs retain picture order and independent media identities`() {
         val result = WeiboJsonParser().parseVideos(MULTI_GIF_POST, "RkkIUuy8h")!!
         assertEquals(listOf("RkkIUuy8h_second", "RkkIUuy8h_first"), result.videos.map { it.awemeId })
-        assertEquals(listOf("动图 1", "动图 2"), result.videos.map { it.mediaLabel })
+        // The label names the resource and carries its argument; the wording lives in values-en.
+        assertEquals(listOf("media_label_animated(1)", "media_label_animated(2)"), result.videos.map { it.mediaLabel })
         assertEquals(listOf("360P", "720P"), result.videos.map { it.variants.single().label })
         assertEquals("https://video.example/second.mp4", result.selectedVideo.defaultVariant!!.url)
         assertEquals(result.selectedVideo, WeiboJsonParser().parse(MULTI_GIF_POST, "RkkIUuy8h"))
@@ -66,7 +72,7 @@ class WeiboGifParserTest {
         assertEquals("https://video.example/a.mp4", variant.url)
         assertNull(variant.width)
         assertNull(variant.height)
-        assertEquals("原画", variant.label)
+        assertEquals("quality_original", variant.label)
     }
 
     @Test fun `picture order excludes unreferenced media and duplicate picture IDs`() {

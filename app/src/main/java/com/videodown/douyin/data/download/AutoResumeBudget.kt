@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.download
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.canAutoResume
@@ -15,7 +17,7 @@ import com.videodown.douyin.domain.model.canAutoResume
  * condition to clear cannot exhaust the budget.
  */
 internal class AutoResumeBudget(private val limit: Int) {
-    init { require(limit > 0) { "自动继续次数上限必须为正数" } }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+    init { require(limit > 0) { AppText.get(R.string.diag_resume_limit_positive) } }
 
     private val attempts = mutableMapOf<String, Int>()
 

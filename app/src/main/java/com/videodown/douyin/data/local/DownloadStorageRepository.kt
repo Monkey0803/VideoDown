@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.local
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.*
 import com.videodown.douyin.domain.repository.DownloadHistoryRepository
 import com.videodown.douyin.domain.repository.StorageRepository
@@ -26,7 +28,7 @@ class DownloadStorageRepository(
     }
     private suspend fun inspectLocked(): StorageUsage {
         val root = directory()
-        if (Files.isSymbolicLink(root.toPath())) error("下载目录不可用")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        if (Files.isSymbolicLink(root.toPath())) error(AppText.get(R.string.diag_download_dir_unusable))
         val records = history.snapshot()
         val active = activeIds()
         val protected = protectedPaths(records, root)

@@ -1,12 +1,15 @@
 package com.videodown.douyin.presentation.history
 
 import com.videodown.douyin.presentation.components.TabPageHeader
+import com.videodown.douyin.presentation.components.AppConfirmDialog
+import com.videodown.douyin.presentation.components.AppDialog
+import com.videodown.douyin.presentation.components.AppDialogButtonRow
+import com.videodown.douyin.presentation.components.AppDialogRadioRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Checkbox
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -29,13 +32,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -113,10 +110,16 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     }
     BackHandler(selecting && !state.batchBusy) { selecting = false; selectedIds = emptySet() }
     pendingBatchDelete?.let { ids ->
-        AlertDialog(onDismissRequest = { pendingBatchDelete = null }, title = { Text(stringResource(R.string.history_delete_selected_title)) },
-            text = { Text(stringResource(R.string.history_delete_selected_body, ids.size)) },
-            confirmButton = { TextButton(onClick = { viewModel.deleteSelected(ids); pendingBatchDelete = null }) { Text(stringResource(R.string.action_confirm_delete)) } },
-            dismissButton = { TextButton(onClick = { pendingBatchDelete = null }) { Text(stringResource(R.string.action_cancel)) } })
+        AppConfirmDialog(
+            onDismissRequest = { pendingBatchDelete = null },
+            icon = AppIcons.Delete,
+            title = stringResource(R.string.history_delete_selected_title),
+            body = stringResource(R.string.history_delete_selected_body, ids.size),
+            confirmText = stringResource(R.string.action_confirm_delete),
+            onConfirm = { viewModel.deleteSelected(ids); pendingBatchDelete = null },
+            dismissText = stringResource(R.string.action_cancel),
+            destructive = true,
+        )
     }
     var pendingDelete by remember { mutableStateOf<DownloadRecord?>(null) }
     var pendingSpeedLimit by remember { mutableStateOf<DownloadRecord?>(null) }
@@ -128,37 +131,44 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
         state.notice?.let { snackbar.showSnackbar(context.getString(noticeLabel(it))); viewModel.onNoticeConsumed() }
     }
     pendingSpeedLimit?.let { record ->
-        AlertDialog(
+        AppDialog(
             onDismissRequest = { pendingSpeedLimit = null },
-            title = { Text(stringResource(R.string.history_speed_limit_title)) },
-            text = { Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
+            icon = AppIcons.Speed,
+            title = stringResource(R.string.history_speed_limit_title),
+            content = {
                 Text(stringResource(R.string.history_speed_limit_body, VaultPolicy.title(record, unlocked = false) ?: stringResource(R.string.vault_locked_title)),
-                    style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
-                (listOf(0) + com.videodown.douyin.domain.model.speedLimitOptions.filter { it > 0 })
-                    .forEach { kbps ->
-                        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                            .clip(MaterialTheme.shapes.medium)
-                            .selectable(selected = record.speedLimitKbps == kbps, role = Role.RadioButton,
-                                onClick = { viewModel.setSpeedLimit(record.id, kbps); pendingSpeedLimit = null })
-                            .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            RadioButton(selected = record.speedLimitKbps == kbps, onClick = null)
-                            Text(if (kbps == 0) stringResource(R.string.history_speed_follow_global) else speedLimitText(kbps),
-                                style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(Modifier.selectableGroup()) {
+                    (listOf(0) + com.videodown.douyin.domain.model.speedLimitOptions.filter { it > 0 })
+                        .forEach { kbps ->
+                            AppDialogRadioRow(
+                                selected = record.speedLimitKbps == kbps,
+                                onSelect = { viewModel.setSpeedLimit(record.id, kbps); pendingSpeedLimit = null },
+                            ) {
+                                Text(if (kbps == 0) stringResource(R.string.history_speed_follow_global) else speedLimitText(kbps),
+                                    style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                            }
                         }
-                    }
-            } },
-            confirmButton = { TextButton(onClick = { pendingSpeedLimit = null }) { Text(stringResource(R.string.action_cancel)) } },
+                }
+            },
+            actions = {
+                AppDialogButtonRow {
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick = { pendingSpeedLimit = null }) { Text(stringResource(R.string.action_cancel)) }
+                }
+            },
         )
     }
     pendingDelete?.let { record ->
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text(stringResource(R.string.history_delete_title)) },
-            text = { Text(stringResource(R.string.history_delete_body, VaultPolicy.title(record, unlocked = false) ?: stringResource(R.string.vault_locked_title))) },
-            confirmButton = { TextButton(onClick = { viewModel.delete(record.id); pendingDelete = null }) { Text(stringResource(R.string.action_delete)) } },
-            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(stringResource(R.string.action_cancel)) } },
+            icon = AppIcons.Delete,
+            title = stringResource(R.string.history_delete_title),
+            body = stringResource(R.string.history_delete_body, VaultPolicy.title(record, unlocked = false) ?: stringResource(R.string.vault_locked_title)),
+            confirmText = stringResource(R.string.action_delete),
+            onConfirm = { viewModel.delete(record.id); pendingDelete = null },
+            dismissText = stringResource(R.string.action_cancel),
+            destructive = true,
         )
     }
 
@@ -174,6 +184,8 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
             }
             OutlinedTextField(value = state.taskQuery.text,
                 onValueChange = { queryChanged(state.taskQuery.copy(text = it)) },
+                // 圆角与「解析」页的链接输入框（shapes.large）一致，而不是 M3 默认的 extraSmall。
+                shape = MaterialTheme.shapes.large,
                 label = { Text(stringResource(R.string.history_search_hint)) }, singleLine = true, enabled = !state.batchBusy,
                 leadingIcon = { AppIcon(AppIcons.Search, null) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),

@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.repository
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import android.util.Log
 import com.videodown.douyin.core.AppError
 import com.videodown.douyin.core.AppResult
@@ -53,14 +55,14 @@ class DouyinRepositoryImpl(
 
             // Strategy 1: anonymous share page (SSR payload).
             runCatching { api.fetchSharePageHtml(awemeId) }
-                    .onFailure { Log.w(TAG, "分享页获取失败: ${it.message}") }  // l10n-ignore: a developer log line, never shown to the user
+                    .onFailure { Log.w(TAG, AppText.get(R.string.log_share_page_failed, it.message.orEmpty())) }
                 .getOrNull()
                 ?.let { html -> consider(parser.parseSharePage(html)) }
 
             if (best?.variants.isNullOrEmpty()) {
                 // Strategy 2: signed web detail endpoint.
                 runCatching { api.fetchWebDetailJson(awemeId) }
-                    .onFailure { Log.w(TAG, "web detail 获取失败: ${it.message}") }  // l10n-ignore: a developer log line, never shown to the user
+                    .onFailure { Log.w(TAG, AppText.get(R.string.log_web_detail_failed, it.message.orEmpty())) }
                     .getOrNull()
                     ?.let { body -> consider(parser.parseJson(body)) }
             }
@@ -68,7 +70,7 @@ class DouyinRepositoryImpl(
             if (best?.variants.isNullOrEmpty()) {
                 // Strategy 3: legacy v2 endpoint.
                 runCatching { api.fetchLegacyItemInfoJson(awemeId) }
-                    .onFailure { Log.w(TAG, "legacy iteminfo 获取失败: ${it.message}") }  // l10n-ignore: a developer log line, never shown to the user
+                    .onFailure { Log.w(TAG, AppText.get(R.string.log_legacy_iteminfo_failed, it.message.orEmpty())) }
                     .getOrNull()
                     ?.let { body -> consider(parser.parseJson(body)) }
             }
@@ -96,7 +98,7 @@ class DouyinRepositoryImpl(
         if (!DouyinLinkExtractor.isShortLink(shareUrl)) return null
 
         val expanded = runCatching { api.expandShortLink(shareUrl) }
-                    .onFailure { Log.w(TAG, "短链展开失败: ${it.message}") }  // l10n-ignore: a developer log line, never shown to the user
+                    .onFailure { Log.w(TAG, AppText.get(R.string.log_short_link_failed, it.message.orEmpty())) }
             .getOrDefault(shareUrl)
 
         return DouyinLinkExtractor.extractAwemeId(expanded)

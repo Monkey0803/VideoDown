@@ -1,5 +1,8 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
+
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
@@ -61,7 +64,7 @@ class XVideoHttpClient(
         repeat(5) {
             if (current.username.isNotEmpty() || current.password.isNotEmpty() ||
                 VideoLinkExtractor.platformForHost(current.host) != com.videodown.douyin.domain.model.VideoPlatform.X) {
-                throw IOException("短链未指向 X 推文")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+                throw IOException(AppText.get(R.string.x_client_short_link_not_a_post))
             }
             if (XVideoLink.parse(current.toString()) != null) return current.toString()
             val next = withContext(Dispatchers.IO) {
@@ -70,13 +73,13 @@ class XVideoHttpClient(
                     try { awaitCancellation() } finally { call.cancel() }
                 }
                 try { call.execute().use { r ->
-                    if (r.code !in listOf(301, 302, 303, 307, 308)) throw IOException("X 短链未返回推文地址")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
-                    current.resolve(r.header("Location").orEmpty()) ?: throw IOException("X 短链地址无效")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+                    if (r.code !in listOf(301, 302, 303, 307, 308)) throw IOException(AppText.get(R.string.x_client_short_link_no_location))
+                    current.resolve(r.header("Location").orEmpty()) ?: throw IOException(AppText.get(R.string.x_client_short_link_invalid))
                 } } finally { cancel.cancel() }
             }
             current = next
         }
-        throw IOException("X 短链跳转次数过多")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+        throw IOException(AppText.get(R.string.x_client_short_link_loop))
     }
 
     private suspend fun guest(): String = guestMutex.withLock {
@@ -87,7 +90,7 @@ class XVideoHttpClient(
         if (response.status !in 200..299) throw XHttpException(response.status)
         val token = runCatching { (Json.parseToJsonElement(response.body) as? JsonObject)?.text("guest_token") }
             .getOrNull()?.takeIf { it.matches(Regex("[0-9]{1,100}")) }
-            ?: throw IOException("X 匿名会话初始化失败")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+            ?: throw IOException(AppText.get(R.string.x_client_guest_session_failed))
         guestToken = token
         guestCreatedAt = now
         token
@@ -102,9 +105,9 @@ class XVideoHttpClient(
             try { awaitCancellation() } finally { call.cancel() }
         }
         try { call.execute().use { response ->
-            val source = response.body?.source() ?: throw IOException("X 返回空响应")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+            val source = response.body?.source() ?: throw IOException(AppText.get(R.string.x_client_empty_response))
             source.request(MAX_BYTES + 1)
-            if (source.buffer.size > MAX_BYTES) throw IOException("X 返回的数据过大")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+            if (source.buffer.size > MAX_BYTES) throw IOException(AppText.get(R.string.x_client_response_too_large))
             SocialPage(source.readUtf8(), response.request.url.toString(), response.code)
         } } finally { cancel.cancel() }
     }
@@ -131,4 +134,4 @@ class XVideoHttpClient(
     }
 }
 
-internal class XHttpException(val status: Int) : IOException("X 返回 HTTP $status")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+internal class XHttpException(val status: Int) : IOException(AppText.get(R.string.x_client_http_status, status))

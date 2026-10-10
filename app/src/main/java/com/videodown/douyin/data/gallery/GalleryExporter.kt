@@ -27,7 +27,8 @@ class GalleryExporter(private val context: Context) {
                 put(MediaStore.Video.Media.DISPLAY_NAME, source.name)
                 put(MediaStore.Video.Media.MIME_TYPE, com.videodown.douyin.domain.model.videoMimeType(source.extension))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.Video.Media.RELATIVE_PATH, if (record.isAudio) "Music/拾影" else "Movies/拾影")  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+
+                    put(MediaStore.Video.Media.RELATIVE_PATH, if (record.isAudio) "Music/拾影" else "Movies/拾影")  // l10n-ignore: MediaStore 目录名是路径而非文案，随语言改变会把同一份文件写到不同目录
                     put(MediaStore.Video.Media.IS_PENDING, 1)
                 }
             }

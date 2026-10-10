@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T06:38:04" hostname="localhost">
+  <testsuite name="com.videodown.douyin.AppUpdateEntryDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="6.703" timestamp="2026-10-10T06:38:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="reportsUpToDateForTheInstalledVersion" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="2.239" />
+    <testcase name="entryShowsInstalledVersionAndReportsANewerBuild" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.592" />
+    <testcase name="actionsShareOneRowWhenWidthAllows" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.101" />
+    <testcase name="updateSourceCanBeConfiguredFromTheDialog" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.771" />
+  </testsuite>
+</testsuites>

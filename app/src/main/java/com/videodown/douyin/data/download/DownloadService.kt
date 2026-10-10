@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.download
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
@@ -11,7 +13,6 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
-import com.videodown.douyin.R
 import com.videodown.douyin.VideoDownApp
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.formatBytes
@@ -60,8 +61,8 @@ class DownloadService : Service() {
             startForegroundCompat(buildNotification(ServiceLocator.downloader.progress.value))
             foregroundReady = true
         } catch (error: Exception) {
-            // l10n-ignore: a developer log line, never shown to the user
-        android.util.Log.w("DownloadService", "无法进入前台下载服务", error)  // l10n-ignore: 开发者日志行，从不展示给用户
+
+        android.util.Log.w("DownloadService", AppText.get(R.string.log_foreground_service_failed), error)
             foregroundError = DownloadServiceException(com.videodown.douyin.core.ServiceFailure.FOREGROUND_START, error)
             requests.failPending(foregroundError!!)
             failTransfers(foregroundError!!.message.orEmpty())

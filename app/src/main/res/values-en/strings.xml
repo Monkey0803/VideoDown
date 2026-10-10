@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Shiying</string>
+    <string name="app_name">Keepsake</string>
 
     <string name="tab_home">Parse</string>
     <string name="tab_history">Tasks</string>
@@ -37,9 +37,11 @@
     <string name="storage_cleanup_body">This removes %1$d leftover temporary files (%2$s) and %3$d completed records whose files are gone.\n\nValid videos, gallery copies and the resume points of paused or running tasks are kept. It re-checks before deleting and skips anything that changed.</string>
     <string name="storage_cleanup_confirm">Clean up</string>
     <string name="storage_title">Storage</string>
-    <string name="storage_available">Available: %1$s</string>
-    <string name="storage_videos">Video files: %1$s</string>
-    <string name="storage_temporary">Temporary files: %1$s</string>
+    <string name="storage_subtitle">Usage overview and cleanup</string>
+    <string name="storage_available_label">Available space</string>
+    <string name="storage_videos_label">Video files</string>
+    <string name="storage_temporary_label">Temporary files</string>
+    <string name="storage_cleanup_section">Cleanup</string>
     <string name="storage_reclaimable">Reclaimable: %1$s · %2$d items</string>
     <string name="storage_missing">Records with missing files: %1$d</string>
     <string name="storage_hint">Temporary files hold download resume points and merge fragments; files still referenced by a task are kept. To free space used by saved videos, delete them in Saved.</string>
@@ -104,7 +106,7 @@
     <string name="settings_write_failed">Export failed; try another location</string>
     <string name="settings_import_empty">The file contains no links to import</string>
     <string name="settings_backup_written">Settings backup written</string>
-    <string name="settings_backup_invalid">This is not a Shiying settings backup</string>
+    <string name="settings_backup_invalid">This is not a Keepsake settings backup</string>
     <string name="settings_backup_same">The backup matches the current settings</string>
     <string name="settings_restored">Restored: %1$s</string>
     <string name="settings_session_cleared">Cleared; related tasks were paused</string>
@@ -113,6 +115,13 @@
     <string name="settings_concurrency_count">%1$d tasks</string>
     <string name="settings_theme_title">Appearance mode</string>
     <string name="settings_theme_body">Choose how the app looks</string>
+    <!-- Language names stay in their own script on purpose: see appLanguageLabelRes. -->
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_body">Follows the system language by default; on Android 13 and newer you can pick one just for Keepsake.</string>
+    <string name="settings_language_system">Follow system</string>
+    <string name="settings_language_chinese">简体中文</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_unsupported">This Android version has no per-app language, so the app can only follow the system language. Change the system language in system settings.</string>
     <string name="settings_notify_title">Turn on completion notifications</string>
     <string name="settings_notify_body">Android has not allowed completion notifications yet. Enable app notifications and the “Downloads” alert in system settings.</string>
     <string name="settings_individual_title">Turn on per-task notifications</string>
@@ -124,11 +133,11 @@
     <string name="settings_quality_saver">Prefer a lower resolution to save space</string>
     <string name="settings_speed_title">Download speed limit</string>
     <string name="settings_speed_body">Limits the total speed of direct downloads; segmented engine downloads run as an external program and are not affected.</string>
-    <string name="settings_about_title">About Shiying</string>
-    <string name="settings_about_body">Shiying v%1$s handles mainstream platforms, ordinary web videos, browser assistance, segmented downloads and audio/video merging.\n\n%2$s\n\nBuilt on yt-dlp, youtubedl-android (GPL-3.0) and FFmpeg; DRM-protected videos and live streams are not supported.</string>
+    <string name="settings_about_title">About Keepsake</string>
+    <string name="settings_about_body">Keepsake v%1$s handles mainstream platforms, ordinary web videos, browser assistance, segmented downloads and audio/video merging.\n\n%2$s\n\nBuilt on yt-dlp, youtubedl-android (GPL-3.0) and FFmpeg; DRM-protected videos and live streams are not supported.</string>
     <string name="settings_dynamic_color">Dynamic color (Material You)</string>
     <string name="settings_dynamic_on">Follows the system wallpaper palette</string>
-    <string name="settings_dynamic_off">Uses the Shiying warm-orange palette</string>
+    <string name="settings_dynamic_off">Uses the Keepsake warm-orange palette</string>
     <string name="settings_wifi">Wi-Fi only</string>
     <string name="settings_wifi_on">Pauses away from Wi-Fi and resumes when back</string>
     <string name="settings_wifi_off">Mobile data is allowed</string>
@@ -166,7 +175,7 @@
     <string name="settings_storage_row">Storage</string>
     <string name="settings_storage_value">Usage and cleanup</string>
     <string name="settings_update_row">Check for updates</string>
-    <string name="settings_about_row">About Shiying</string>
+    <string name="settings_about_row">About Keepsake</string>
 
     <!-- Home screen -->
     <string name="action_paste">Paste</string>
@@ -704,4 +713,110 @@
     <string name="engine_not_initialised">Not initialised yet · engine component %1$s</string>
     <string name="engine_version">yt-dlp %1$s · component %2$s · QuickJS / FFmpeg</string>
     <string name="storage_budget_task">Download task</string>
+
+    <!-- X HTTP client diagnostics -->
+    <string name="x_client_short_link_not_a_post">The short link does not point at an X post</string>
+    <string name="x_client_short_link_no_location">The X short link returned no post address</string>
+    <string name="x_client_short_link_invalid">The X short link address is invalid</string>
+    <string name="x_client_short_link_loop">The X short link redirected too many times</string>
+    <string name="x_client_guest_session_failed">Could not start an anonymous X session</string>
+    <string name="x_client_empty_response">X returned an empty response</string>
+    <string name="x_client_response_too_large">The response from X was too large</string>
+    <string name="x_client_http_status">X returned HTTP %1$d</string>
+
+    <!-- Diagnostics, logs and invariants -->
+    <string name="export_read_last_target">Could not read the previous export destination</string>
+    <string name="export_pick_folder_again">Choose the export folder again</string>
+    <string name="export_record_missing">The record no longer exists</string>
+    <string name="export_not_completed">The file has not finished saving</string>
+    <string name="export_local_file_missing">The local file does not exist</string>
+    <string name="export_local_file_unusable">The local file cannot be used</string>
+    <string name="export_read_target_failed">Could not read the destination folder; choose it again</string>
+    <string name="export_target_unavailable">The destination folder is no longer available; choose it again</string>
+    <string name="export_create_failed">Could not create the exported file</string>
+    <string name="export_journal_save_failed">Could not save the export journal</string>
+    <string name="export_write_failed">Could not write the exported file</string>
+    <string name="export_journal_finish_failed">Could not finish the export journal</string>
+    <string name="weibo_client_session_failed">Could not start an anonymous Weibo session; try again later</string>
+    <string name="weibo_client_http_status">Anonymous Weibo access returned HTTP %1$d</string>
+    <string name="social_client_empty_response">The platform returned an empty response</string>
+    <string name="social_client_page_too_large">The page is too large to parse for now</string>
+    <string name="download_cancel_user_paused">paused by the user</string>
+    <string name="download_cancel_restart">restarted</string>
+    <string name="download_cancel_user_cancelled">cancelled by the user</string>
+    <string name="log_auto_resume_failed">Automatic resume failed</string>
+    <string name="log_service_start_failed">The background download service failed to start</string>
+    <string name="log_completion_notify_failed">Could not post the completion notification</string>
+    <string name="log_retry_scheduled">Download failed; retry %2$d in %1$dms: %3$s</string>
+    <string name="diag_engine_downloader_absent">The generic download engine is not installed</string>
+    <string name="log_history_read_failed">Could not read the download history; starting from an empty one</string>
+    <string name="diag_history_replace_failed">Could not replace the download history</string>
+    <string name="log_history_write_failed">Could not write the download history</string>
+    <string name="download_cancel_cancelled">download cancelled</string>
+    <string name="queue_task_removed">the task left the queue</string>
+    <string name="douyin_client_http_status">The share page returned HTTP %1$d</string>
+
+    <!-- Internal invariants -->
+    <string name="meta_record_missing">The record no longer exists</string>
+    <string name="meta_only_saved_files">Only saved files can be organised</string>
+    <string name="meta_name_invalid">The name cannot be empty or contain path separators or control characters</string>
+    <string name="meta_category_invalid">The category name cannot be used</string>
+    <string name="meta_local_file_missing">The local file does not exist</string>
+    <string name="meta_local_file_unusable">The local file cannot be used</string>
+    <string name="meta_target_name_unusable">The target file name cannot be used</string>
+    <string name="meta_target_exists">A file with that name already exists</string>
+    <string name="meta_journal_save_failed">Could not save the rename journal</string>
+    <string name="meta_rename_failed">Could not rename the file</string>
+    <string name="meta_journal_finish_failed">Could not finish the rename journal</string>
+    <string name="meta_rename_record_invalid">The rename record is invalid</string>
+    <string name="meta_rename_path_invalid">The rename paths are invalid</string>
+    <string name="meta_file_in_use">The file is still used by a task</string>
+    <string name="meta_record_path_changed">The record path has changed</string>
+    <string name="meta_rename_restore_failed">Could not restore the rename</string>
+    <string name="meta_rename_state_needs_check">The renamed file state needs checking</string>
+    <string name="meta_journal_clear_failed">Could not clear the rename journal</string>
+    <string name="engine_original_missing">The original video no longer exists</string>
+    <string name="engine_original_unusable">The original video cannot be used</string>
+    <string name="engine_original_file_unusable">The original video file cannot be used</string>
+    <string name="engine_audio_extract_incomplete">The audio extraction did not finish</string>
+    <string name="engine_download_unconfirmed">The download engine did not confirm completion</string>
+    <string name="engine_no_complete_video">No complete video file was produced; parse again</string>
+    <string name="engine_no_video_track">The download contains no usable video track</string>
+    <string name="engine_incomplete_video_data">The download lacks complete video data</string>
+    <string name="engine_no_valid_audio">No valid audio file was produced</string>
+    <string name="engine_still_has_video">The result still contains a video track</string>
+    <string name="engine_audio_no_data">The audio has no usable data</string>
+    <string name="engine_install_16k_failed">Could not install the 16 KB compatibility dependency</string>
+    <string name="engine_install_core_failed">Could not install the parse engine</string>
+    <string name="audio_extract_only_saved">Audio can only be extracted from a saved video</string>
+    <string name="diag_download_dir_unusable">The download directory is unavailable</string>
+    <string name="diag_resume_limit_positive">The automatic resume limit must be positive</string>
+    <string name="generic_parse_no_video">The page has no downloadable on-demand video; it may be DRM-protected, live, or need a sign-in</string>
+
+    <!-- Internal invariants -->
+
+    <!-- Fallback titles and labels -->
+    <string name="quality_original">Original quality</string>
+    <string name="fallback_title_weibo_video">Weibo video</string>
+    <string name="fallback_title_weibo_gif">Weibo animation</string>
+    <string name="media_label_animated">Animation %1$d</string>
+    <string name="fallback_title_douyin_video">Douyin video</string>
+    <string name="douyin_label_watermarked">%1$s with watermark</string>
+    <string name="fallback_author_x_user">X user</string>
+    <string name="fallback_title_x_video">X video</string>
+    <string name="media_label_video">Video %1$d</string>
+    <string name="media_label_quoted_video">Quoted video %1$d</string>
+    <string name="fallback_title_kuaishou_video">Kuaishou video</string>
+    <string name="media_label_no_audio"> · no audio track</string>
+    <string name="fallback_title_web_video">Web video</string>
+    <string name="media_label_local_audio_m4a">Local audio · M4A</string>
+    <string name="log_share_page_failed">Could not fetch the share page: %1$s</string>
+    <string name="log_web_detail_failed">Could not fetch the web detail: %1$s</string>
+    <string name="log_legacy_iteminfo_failed">Could not fetch the legacy iteminfo: %1$s</string>
+    <string name="log_short_link_failed">Could not expand the short link: %1$s</string>
+    <string name="log_foreground_service_failed">Could not enter the foreground download service</string>
+
+    <!-- Backup files -->
+    <string name="backup_links_file_name">keepsake-links.txt</string>
+    <string name="backup_settings_file_name">keepsake-settings-backup.json</string>
 </resources>

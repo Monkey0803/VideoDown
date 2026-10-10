@@ -3,15 +3,10 @@ package com.videodown.douyin.presentation.settings
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.layout.Column
-import com.videodown.douyin.R
-import com.videodown.douyin.core.updateReasonRes
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -25,8 +20,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.videodown.douyin.R
+import com.videodown.douyin.core.updateReasonRes
+import com.videodown.douyin.presentation.components.AppDialog
+import com.videodown.douyin.presentation.components.AppDialogButtonRow
+import com.videodown.douyin.presentation.components.AppIcons
 
 /**
  * Manual update entry: shows the installed version, checks the configured manifest and opens the
@@ -53,58 +52,58 @@ internal fun UpdateDialog(model: UpdateViewModel, onClose: () -> Unit) {
         )
     }
 
-    AlertDialog(
+    AppDialog(
         onDismissRequest = onClose,
-        title = { Text(stringResource(R.string.update_title)) },
-        text = {
-            Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
-                Text(stringResource(R.string.update_current_version, appVersionText(model.currentVersion.versionName, model.currentVersion.versionCode)), style = MaterialTheme.typography.bodyMedium)
-                when (val current = state) {
-                    UpdateUiState.Idle, UpdateUiState.Checking ->
-                        Text(stringResource(R.string.update_checking), modifier = Modifier.padding(top = 12.dp))
-                    is UpdateUiState.UpToDate ->
-                        Text(stringResource(R.string.update_up_to_date), modifier = Modifier.padding(top = 12.dp))
-                    is UpdateUiState.Available -> {
-                        Text(stringResource(R.string.update_available, versionText(current.latest.versionName, current.latest.versionCode)), modifier = Modifier.padding(top = 12.dp),
-                            style = MaterialTheme.typography.bodyLarge)
-                        current.notes?.let { Text(it, modifier = Modifier.padding(top = 8.dp)) }
-                        when {
-                            current.downloadUrl == null && current.releasePageUrl == null ->
-                                Text(stringResource(R.string.update_no_link),
-                                    modifier = Modifier.padding(top = 8.dp))
-                            current.downloadUrl == null ->
-                                Text(stringResource(R.string.update_no_direct_link),
-                                    modifier = Modifier.padding(top = 8.dp))
-                        }
+        icon = AppIcons.Download,
+        title = stringResource(R.string.update_title),
+        content = {
+            Text(stringResource(R.string.update_current_version, appVersionText(model.currentVersion.versionName, model.currentVersion.versionCode)), style = MaterialTheme.typography.bodyMedium)
+            when (val current = state) {
+                UpdateUiState.Idle, UpdateUiState.Checking ->
+                    Text(stringResource(R.string.update_checking))
+                is UpdateUiState.UpToDate ->
+                    Text(stringResource(R.string.update_up_to_date))
+                is UpdateUiState.Available -> {
+                    Text(stringResource(R.string.update_available, versionText(current.latest.versionName, current.latest.versionCode)),
+                        style = MaterialTheme.typography.bodyLarge)
+                    current.notes?.let { Text(it) }
+                    when {
+                        current.downloadUrl == null && current.releasePageUrl == null ->
+                            Text(stringResource(R.string.update_no_link))
+                        current.downloadUrl == null ->
+                            Text(stringResource(R.string.update_no_direct_link))
                     }
-                    is UpdateUiState.Message ->
-                        Text(updateMessageText(current), modifier = Modifier.padding(top = 12.dp))
                 }
-                Text(
-                    stringResource(R.string.update_source,
-                        manifestUrl.ifBlank { stringResource(R.string.update_source_unset) }),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 16.dp),
-                )
+                is UpdateUiState.Message ->
+                    Text(updateMessageText(current))
             }
+            Text(
+                stringResource(R.string.update_source,
+                    manifestUrl.ifBlank { stringResource(R.string.update_source_unset) }),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         },
-        confirmButton = {
+        actions = {
             val available = state as? UpdateUiState.Available
             val target = available?.downloadUrl ?: available?.releasePageUrl
-            if (available == null) {
-                TextButton(onClick = onClose) { Text(stringResource(R.string.action_done)) }
-            } else {
-                TextButton(
+            // 推进型操作通栏在上：M3 的动作行放不下三个次要操作时会把确认按钮挤到下一行。
+            if (available != null) {
+                FilledTonalButton(
                     enabled = target != null,
                     onClick = { if (target != null && openUrl(context, target)) onClose() },
+                    modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(if (available.downloadUrl != null) R.string.update_download else R.string.update_view_release)) }
             }
-        },
-        dismissButton = {
-            Column {
+            AppDialogButtonRow {
                 TextButton(onClick = { editingSource = true }) { Text(stringResource(R.string.update_source_action)) }
                 if (state !is UpdateUiState.Checking) TextButton(onClick = model::check) { Text(stringResource(R.string.update_recheck)) }
+                Spacer(Modifier.weight(1f))
+                if (available == null) {
+                    Button(onClick = onClose) { Text(stringResource(R.string.action_done)) }
+                } else {
+                    TextButton(onClick = onClose) { Text(stringResource(R.string.action_done)) }
+                }
             }
         },
     )
@@ -113,24 +112,28 @@ internal fun UpdateDialog(model: UpdateViewModel, onClose: () -> Unit) {
 @Composable
 private fun UpdateSourceDialog(initial: String, onDismiss: () -> Unit, onSave: (String) -> Unit) {
     var value by rememberSaveable(initial) { mutableStateOf(initial) }
-    AlertDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.update_source_dialog_title)) },
-        text = {
-            Column {
-                Text(stringResource(R.string.update_source_hint),
-                    style = MaterialTheme.typography.bodySmall)
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { value = it },
-                    singleLine = true,
-                    label = { Text(stringResource(R.string.update_source_label)) },
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                )
+        icon = AppIcons.Link,
+        title = stringResource(R.string.update_source_dialog_title),
+        content = {
+            Text(stringResource(R.string.update_source_hint), style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            OutlinedTextField(
+                value = value,
+                onValueChange = { value = it },
+                singleLine = true,
+                label = { Text(stringResource(R.string.update_source_label)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        actions = {
+            AppDialogButtonRow {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+                Spacer(Modifier.weight(1f))
+                Button(onClick = { onSave(value) }) { Text(stringResource(R.string.update_source_save)) }
             }
         },
-        confirmButton = { TextButton(onClick = { onSave(value) }) { Text(stringResource(R.string.update_source_save)) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 

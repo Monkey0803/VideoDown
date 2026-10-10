@@ -1,6 +1,10 @@
 package com.videodown.douyin.presentation.settings
 
 import com.videodown.douyin.presentation.components.TabPageHeader
+import com.videodown.douyin.presentation.components.AppConfirmDialog
+import com.videodown.douyin.presentation.components.AppDialog
+import com.videodown.douyin.presentation.components.AppDialogButtonRow
+import com.videodown.douyin.presentation.components.AppDialogRadioRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -15,7 +19,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,17 +28,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
-import androidx.compose.material3.RadioButton
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,7 +49,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
@@ -56,6 +56,7 @@ import com.videodown.douyin.presentation.preferredQualityLabelRes
 import com.videodown.douyin.presentation.settingsChangeText
 import com.videodown.douyin.presentation.speedLimitText
 import com.videodown.douyin.presentation.themeModeLabelRes
+import com.videodown.douyin.presentation.appLanguageLabelRes
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -65,6 +66,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.videodown.douyin.core.PreferredQuality
+import com.videodown.douyin.core.AppLanguage
+import com.videodown.douyin.core.appLanguageSwitchSupported
+import com.videodown.douyin.core.applyAppLanguage
+import com.videodown.douyin.core.currentAppLanguage
 import com.videodown.douyin.domain.model.speedLimitOptions
 import com.videodown.douyin.core.ThemeMode
 import com.videodown.douyin.core.ServiceLocator
@@ -83,6 +88,9 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     var showConcurrency by rememberSaveable { mutableStateOf(false) }
     val themeMode by preferences.themeModeChanges.collectAsStateWithLifecycle()
     var showThemeMode by rememberSaveable { mutableStateOf(false) }
+    // 语言状态由系统保管（Android 13+ 的按应用语言），回到页面时重新读一次即可。
+    var appLanguage by remember { mutableStateOf(currentAppLanguage(context)) }
+    var showLanguage by rememberSaveable { mutableStateOf(false) }
     var notifyOnCompletion by rememberSaveable { mutableStateOf(preferences.notifyOnCompletion) }
     var notificationsAvailable by remember { mutableStateOf(DownloadCompletionNotifier.areNotificationsEnabled(context)) }
     var showNotificationSettings by rememberSaveable { mutableStateOf(false) }
@@ -112,6 +120,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     var showSpeedLimit by rememberSaveable { mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         notificationsAvailable = DownloadCompletionNotifier.areNotificationsEnabled(context)
+        appLanguage = currentAppLanguage(context)
         if (enableAfterSettings) {
             if (notificationsAvailable) preferences.notifyOnCompletion = true
             enableAfterSettings = false
@@ -181,169 +190,222 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     LaunchedEffect(openStorage) { if (openStorage) { showStorage = true; onStorageOpened() } }
     if (showConcurrency) {
         var chosen by remember(maxConcurrent) { mutableStateOf(maxConcurrent) }
-        AlertDialog(onDismissRequest = { showConcurrency = false }, title = { Text(stringResource(R.string.settings_concurrency_title)) },
-            text = { Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
-                Text(stringResource(R.string.settings_concurrency_body))
-                (1..5).forEach { count -> Row(Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                    .selectable(selected = chosen == count, role = Role.RadioButton, onClick = { chosen = count }), verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = chosen == count, onClick = null); Text(stringResource(R.string.settings_concurrency_count, count))
-                } }
-            } },
-            confirmButton = { TextButton(onClick = { preferences.maxConcurrentDownloads = chosen; showConcurrency = false }) { Text(stringResource(R.string.action_ok)) } },
-            dismissButton = { TextButton(onClick = { showConcurrency = false }) { Text(stringResource(R.string.action_cancel)) } })
-    }
-    if (showThemeMode) {
-        var selectedMode by rememberSaveable(themeMode) { mutableStateOf(themeMode) }
-        AlertDialog(
-            onDismissRequest = { showThemeMode = false },
-            title = { Text(stringResource(R.string.settings_theme_title)) },
-            text = {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    Text(stringResource(R.string.settings_theme_body), style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = 12.dp))
-                    Column(Modifier.selectableGroup()) {
-                        ThemeMode.entries.forEach { mode ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .selectable(selected = selectedMode == mode, role = Role.RadioButton,
-                                        onClick = { selectedMode = mode })
-                                    .padding(vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                RadioButton(selected = selectedMode == mode, onClick = null)
-                                Text(stringResource(themeModeLabelRes(mode)), style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface)
-                            }
+        AppDialog(
+            onDismissRequest = { showConcurrency = false },
+            icon = AppIcons.Queue,
+            title = stringResource(R.string.settings_concurrency_title),
+            content = {
+                Text(stringResource(R.string.settings_concurrency_body), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(Modifier.selectableGroup()) {
+                    (1..5).forEach { count ->
+                        AppDialogRadioRow(selected = chosen == count, onSelect = { chosen = count }, minHeight = 48.dp) {
+                            Text(stringResource(R.string.settings_concurrency_count, count),
+                                style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = {
-                preferences.themeMode = selectedMode
-                showThemeMode = false
-            }) { Text(stringResource(R.string.action_ok)) } },
-            dismissButton = { TextButton(onClick = { showThemeMode = false }) { Text(stringResource(R.string.action_cancel)) } },
+            actions = {
+                AppDialogButtonRow {
+                    TextButton(onClick = { showConcurrency = false }) { Text(stringResource(R.string.action_cancel)) }
+                    Spacer(Modifier.weight(1f))
+                    Button(onClick = { preferences.maxConcurrentDownloads = chosen; showConcurrency = false }) { Text(stringResource(R.string.action_ok)) }
+                }
+            },
+        )
+    }
+    if (showThemeMode) {
+        var selectedMode by rememberSaveable(themeMode) { mutableStateOf(themeMode) }
+        AppDialog(
+            onDismissRequest = { showThemeMode = false },
+            icon = AppIcons.Appearance,
+            title = stringResource(R.string.settings_theme_title),
+            content = {
+                Text(stringResource(R.string.settings_theme_body), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(Modifier.selectableGroup()) {
+                    ThemeMode.entries.forEach { mode ->
+                        AppDialogRadioRow(selected = selectedMode == mode, onSelect = { selectedMode = mode }) {
+                            Text(stringResource(themeModeLabelRes(mode)), style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            },
+            actions = {
+                AppDialogButtonRow {
+                    TextButton(onClick = { showThemeMode = false }) { Text(stringResource(R.string.action_cancel)) }
+                    Spacer(Modifier.weight(1f))
+                    Button(onClick = {
+                        preferences.themeMode = selectedMode
+                        showThemeMode = false
+                    }) { Text(stringResource(R.string.action_ok)) }
+                }
+            },
         )
     }
 
+    if (showLanguage) {
+        if (appLanguageSwitchSupported()) {
+            var selectedLanguage by rememberSaveable(appLanguage) { mutableStateOf(appLanguage) }
+            AppDialog(
+                onDismissRequest = { showLanguage = false },
+                icon = AppIcons.Appearance,
+                title = stringResource(R.string.settings_language_title),
+                content = {
+                    Text(stringResource(R.string.settings_language_body), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column(Modifier.selectableGroup()) {
+                        AppLanguage.entries.forEach { language ->
+                            AppDialogRadioRow(selected = selectedLanguage == language, onSelect = { selectedLanguage = language }) {
+                                Text(stringResource(appLanguageLabelRes(language)), style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                },
+                actions = {
+                    AppDialogButtonRow {
+                        TextButton(onClick = { showLanguage = false }) { Text(stringResource(R.string.action_cancel)) }
+                        Spacer(Modifier.weight(1f))
+                        Button(onClick = {
+                            // 系统会因按应用语言变化重建 Activity，界面语言随之切换。
+                            appLanguage = selectedLanguage
+                            applyAppLanguage(context, selectedLanguage)
+                            showLanguage = false
+                        }) { Text(stringResource(R.string.action_ok)) }
+                    }
+                },
+            )
+        } else {
+            // Android 12 及以下没有按应用语言，只解释并给出系统设置的入口。
+            AppConfirmDialog(
+                onDismissRequest = { showLanguage = false },
+                icon = AppIcons.Appearance,
+                title = stringResource(R.string.settings_language_title),
+                body = stringResource(R.string.settings_language_unsupported),
+                confirmText = stringResource(R.string.action_open_settings),
+                onConfirm = {
+                    showLanguage = false
+                    runCatching { context.startActivity(Intent(Settings.ACTION_LOCALE_SETTINGS)) }
+                },
+                dismissText = stringResource(R.string.action_cancel),
+            )
+        }
+    }
+
     if (showNotificationSettings) {
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { showNotificationSettings = false },
-            title = { Text(stringResource(R.string.settings_notify_title)) },
-            text = { Text(stringResource(R.string.settings_notify_body)) },
-            confirmButton = { TextButton(onClick = {
+            icon = AppIcons.Notification,
+            title = stringResource(R.string.settings_notify_title),
+            body = stringResource(R.string.settings_notify_body),
+            confirmText = stringResource(R.string.action_open_settings),
+            onConfirm = {
                 showNotificationSettings = false
                 enableAfterSettings = true
                 context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
-            }) { Text(stringResource(R.string.action_open_settings)) } },
-            dismissButton = { TextButton(onClick = { showNotificationSettings = false }) { Text(stringResource(R.string.action_cancel)) } },
+            },
+            dismissText = stringResource(R.string.action_cancel),
         )
     }
     if (showIndividualNotificationSettings) {
-        AlertDialog(
+        AppConfirmDialog(
             onDismissRequest = { showIndividualNotificationSettings = false },
-            title = { Text(stringResource(R.string.settings_individual_title)) },
-            text = { Text(stringResource(R.string.settings_individual_body)) },
-            confirmButton = { TextButton(onClick = {
+            icon = AppIcons.Notification,
+            title = stringResource(R.string.settings_individual_title),
+            body = stringResource(R.string.settings_individual_body),
+            confirmText = stringResource(R.string.action_open_settings),
+            onConfirm = {
                 showIndividualNotificationSettings = false
                 enableIndividualAfterSettings = true
                 context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
-            }) { Text(stringResource(R.string.action_open_settings)) } },
-            dismissButton = { TextButton(onClick = { showIndividualNotificationSettings = false }) { Text(stringResource(R.string.action_cancel)) } },
+            },
+            dismissText = stringResource(R.string.action_cancel),
         )
     }
     if (showQuality) {
         var selectedQuality by rememberSaveable(quality) { mutableStateOf(quality) }
-        AlertDialog(
+        AppDialog(
             onDismissRequest = { showQuality = false },
-            title = { Text(stringResource(R.string.settings_quality_title)) },
-            text = {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    Text(stringResource(R.string.settings_quality_body), style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = 12.dp))
-                    Column(Modifier.selectableGroup()) {
-                        PreferredQuality.entries.forEach { option ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp)
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .selectable(
-                                        selected = selectedQuality == option,
-                                        role = Role.RadioButton,
-                                        onClick = { selectedQuality = option },
-                                    ).padding(vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                RadioButton(selected = selectedQuality == option, onClick = null)
-                                Column(Modifier.weight(1f)) {
-                                    Text(stringResource(preferredQualityLabelRes(option)), style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurface)
-                                    Text(when (option) {
-                                        PreferredQuality.HIGHEST -> stringResource(R.string.settings_quality_highest)
-                                        PreferredQuality.STANDARD -> stringResource(R.string.settings_quality_standard)
-                                        PreferredQuality.SAVER -> stringResource(R.string.settings_quality_saver)
-                                    }, style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(top = 4.dp))
-                                }
-                            }
+            icon = AppIcons.Quality,
+            title = stringResource(R.string.settings_quality_title),
+            content = {
+                Text(stringResource(R.string.settings_quality_body), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(Modifier.selectableGroup()) {
+                    PreferredQuality.entries.forEach { option ->
+                        AppDialogRadioRow(selected = selectedQuality == option, onSelect = { selectedQuality = option }, minHeight = 64.dp) {
+                            Text(stringResource(preferredQualityLabelRes(option)), style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface)
+                            Text(when (option) {
+                                PreferredQuality.HIGHEST -> stringResource(R.string.settings_quality_highest)
+                                PreferredQuality.STANDARD -> stringResource(R.string.settings_quality_standard)
+                                PreferredQuality.SAVER -> stringResource(R.string.settings_quality_saver)
+                            }, style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp))
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = {
-                preferences.preferredQuality = selectedQuality
-                quality = selectedQuality
-                showQuality = false
-            }) { Text(stringResource(R.string.action_ok)) } },
-            dismissButton = { TextButton(onClick = { showQuality = false }) { Text(stringResource(R.string.action_cancel)) } },
+            actions = {
+                AppDialogButtonRow {
+                    TextButton(onClick = { showQuality = false }) { Text(stringResource(R.string.action_cancel)) }
+                    Spacer(Modifier.weight(1f))
+                    Button(onClick = {
+                        preferences.preferredQuality = selectedQuality
+                        quality = selectedQuality
+                        showQuality = false
+                    }) { Text(stringResource(R.string.action_ok)) }
+                }
+            },
         )
     }
     if (showSpeedLimit) {
         var selectedLimit by rememberSaveable(globalSpeedLimit) { mutableStateOf(globalSpeedLimit) }
-        AlertDialog(
+        AppDialog(
             onDismissRequest = { showSpeedLimit = false },
-            title = { Text(stringResource(R.string.settings_speed_title)) },
-            text = {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    Text(stringResource(R.string.settings_speed_body),
-                        style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 12.dp))
-                    Column(Modifier.selectableGroup()) {
-                        speedLimitOptions.forEach { option ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .selectable(selected = selectedLimit == option, role = Role.RadioButton,
-                                        onClick = { selectedLimit = option })
-                                    .padding(vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                RadioButton(selected = selectedLimit == option, onClick = null)
-                                Text(speedLimitText(option), style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface)
-                            }
+            icon = AppIcons.Speed,
+            title = stringResource(R.string.settings_speed_title),
+            content = {
+                Text(stringResource(R.string.settings_speed_body),
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(Modifier.selectableGroup()) {
+                    speedLimitOptions.forEach { option ->
+                        AppDialogRadioRow(selected = selectedLimit == option, onSelect = { selectedLimit = option }) {
+                            Text(speedLimitText(option), style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = {
-                preferences.globalSpeedLimitKbps = selectedLimit
-                showSpeedLimit = false
-            }) { Text(stringResource(R.string.action_ok)) } },
-            dismissButton = { TextButton(onClick = { showSpeedLimit = false }) { Text(stringResource(R.string.action_cancel)) } },
+            actions = {
+                AppDialogButtonRow {
+                    TextButton(onClick = { showSpeedLimit = false }) { Text(stringResource(R.string.action_cancel)) }
+                    Spacer(Modifier.weight(1f))
+                    Button(onClick = {
+                        preferences.globalSpeedLimitKbps = selectedLimit
+                        showSpeedLimit = false
+                    }) { Text(stringResource(R.string.action_ok)) }
+                }
+            },
         )
     }
     if (showStorage) StorageDialog(storageViewModel) { showStorage = false }
     if (showUpdate) UpdateDialog(updateViewModel) { showUpdate = false }
     if (showAbout) {
-        AlertDialog(onDismissRequest = { showAbout = false }, title = { Text(stringResource(R.string.settings_about_title)) },
-            text = { Text(stringResource(R.string.settings_about_body, installedVersion, engineVersion)) },
-            confirmButton = { TextButton(onClick = { showAbout = false }) { Text(stringResource(R.string.action_got_it)) } })
+        AppConfirmDialog(
+            onDismissRequest = { showAbout = false },
+            icon = AppIcons.Info,
+            title = stringResource(R.string.settings_about_title),
+            body = stringResource(R.string.settings_about_body, installedVersion, engineVersion),
+            confirmText = stringResource(R.string.action_got_it),
+            onConfirm = { showAbout = false },
+        )
     }
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState())
@@ -353,6 +415,9 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_theme_title), value = stringResource(themeModeLabelRes(themeMode)), onClick = { showThemeMode = true })
+            SettingsRow(icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_language_title), value = stringResource(appLanguageLabelRes(appLanguage)),
+                onClick = { showLanguage = true })
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 ToggleRow(
                     icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
@@ -483,13 +548,13 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.ExportFolder, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_export_links), value = stringResource(R.string.settings_file_text),
-                onClick = { exportLinksFile.launch(com.videodown.douyin.data.backup.BackupDocuments.LINK_FILE_NAME) })
+                onClick = { exportLinksFile.launch(context.getString(R.string.backup_links_file_name)) })
             SettingsRow(icon = { AppIcon(AppIcons.BatchImport, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_import_links), value = stringResource(R.string.settings_import_value),
                 onClick = { importLinksFile.launch(com.videodown.douyin.data.backup.BackupDocuments.READABLE_TYPES) })
             SettingsRow(icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_backup_settings), value = stringResource(R.string.settings_file_json),
-                onClick = { exportSettingsFile.launch(com.videodown.douyin.data.backup.BackupDocuments.SETTINGS_FILE_NAME) })
+                onClick = { exportSettingsFile.launch(context.getString(R.string.backup_settings_file_name)) })
             SettingsRow(icon = { AppIcon(AppIcons.Settings, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_restore_settings), value = stringResource(R.string.settings_restore_value),
                 onClick = { importSettingsFile.launch(com.videodown.douyin.data.backup.BackupDocuments.READABLE_TYPES) })

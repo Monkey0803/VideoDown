@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
@@ -71,7 +73,7 @@ class SocialVideoHttpClient(
         val jsonText = generated.body.substringAfter('(', "").substringBeforeLast(')', "")
         val data = runCatching { Json.parseToJsonElement(jsonText).jsonObject["data"] as? JsonObject }.getOrNull()
         val tid = (data?.get("tid") as? JsonPrimitive)?.contentOrNull
-            ?: throw IOException("微博匿名访问初始化失败，请稍后重试")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+            ?: throw IOException(AppText.get(R.string.weibo_client_session_failed))
         val isNew = (data["new_tid"] as? JsonPrimitive)?.content in listOf("true", "1")
         val confidence = (data["confidence"] as? JsonPrimitive)?.contentOrNull?.toIntOrNull() ?: 100
         val url = "$passportBase/visitor/visitor".toHttpUrl().newBuilder()
@@ -82,7 +84,7 @@ class SocialVideoHttpClient(
             .addQueryParameter("from", "weibo").build()
         val result = execute(Request.Builder().url(url).header("Referer", "$weiboBase/")
             .header("User-Agent", DouyinApiClient.DESKTOP_USER_AGENT).build())
-        if (result.status !in 200..299) throw IOException("微博匿名访问返回 HTTP ${result.status}")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+        if (result.status !in 200..299) throw IOException(AppText.get(R.string.weibo_client_http_status, result.status))
     }
 
     private suspend fun execute(request: Request): SocialPage = withContext(Dispatchers.IO) {
@@ -92,9 +94,9 @@ class SocialVideoHttpClient(
         }
         try {
             call.execute().use { response ->
-                val source = response.body?.source() ?: throw IOException("平台返回空响应")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+                val source = response.body?.source() ?: throw IOException(AppText.get(R.string.social_client_empty_response))
                 source.request(MAX_PAGE_BYTES + 1)
-                if (source.buffer.size > MAX_PAGE_BYTES) throw IOException("平台页面过大，暂时无法解析")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+                if (source.buffer.size > MAX_PAGE_BYTES) throw IOException(AppText.get(R.string.social_client_page_too_large))
                 SocialPage(source.readUtf8(), response.request.url.toString(), response.code)
             }
         } finally { cancelSocket.cancel() }

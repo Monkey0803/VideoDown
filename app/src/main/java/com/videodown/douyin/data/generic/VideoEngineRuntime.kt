@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.generic
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.DownloadFailureKind
 import android.content.Context
 import android.system.Os
@@ -58,7 +60,7 @@ class VideoEngineRuntime(private val context: Context) {
                 val destination = File(libraryDirectory, name)
                 val temporary = File(libraryDirectory, "$name.new")
                 context.assets.open("$patch/$name").use { input -> temporary.outputStream().use { input.copyTo(it) } }
-                check(temporary.renameTo(destination)) { "无法安装 16 KB 兼容依赖" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                check(temporary.renameTo(destination)) { AppText.get(R.string.engine_install_16k_failed) }
             }
         }
         val bundledVersion = context.assets.open("engine/VERSION.txt").bufferedReader().use { it.readText() }
@@ -67,7 +69,7 @@ class VideoEngineRuntime(private val context: Context) {
             val core = File(base, "yt-dlp/yt-dlp")
             val staging = File(core.parentFile, "yt-dlp.new")
             context.assets.open("engine/yt-dlp").use { input -> staging.outputStream().use { input.copyTo(it) } }
-            check(staging.renameTo(core)) { "无法安装解析引擎" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+            check(staging.renameTo(core)) { AppText.get(R.string.engine_install_core_failed) }
             marker.writeText(bundledVersion)
         }
         context.assets.open("video_engine.py").use { input -> bridge.outputStream().use { input.copyTo(it) } }

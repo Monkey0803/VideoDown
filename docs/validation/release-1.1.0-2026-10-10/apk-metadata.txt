@@ -1,0 +1,33 @@
+$ shasum -a 256 .tooling/release-1.1.0/*.apk
+77864ce47b912bbd363d8a3bca53ffe30d385ac64dcfb30f183d29cfd9ab1534  .tooling/release-1.1.0/videodown-arm64-v8a-release.apk
+d760cd9092b8784d01848ca99894e468e194a8b0c7b403a3e428b77448c666bb  .tooling/release-1.1.0/videodown-universal-release.apk
+
+$ ls -l .tooling/release-1.1.0/*.apk
+-rw-r--r--@ 1 dev  staff   78833795 Oct 10 17:45 .tooling/release-1.1.0/videodown-arm64-v8a-release.apk
+-rw-r--r--@ 1 dev  staff  224216520 Oct 10 17:45 .tooling/release-1.1.0/videodown-universal-release.apk
+
+$ aapt2 dump badging videodown-arm64-v8a-release.apk
+package: name='com.videodown.douyin' versionCode='5' versionName='1.1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+targetSdkVersion:'36'
+application-label:'拾影'
+application-label-en:'Keepsake'
+native-code: 'arm64-v8a'
+$ apksigner verify --print-certs videodown-arm64-v8a-release.apk
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+V2 Signer: certificate DN: CN=VideoDown Release, O=VideoDown, C=CN
+V2 Signer: certificate SHA-256 digest: 925e4c248ba7f70e9eb5e3b8587ee7bde384476799cbd097dd65746a6d29c50d
+
+$ aapt2 dump badging videodown-universal-release.apk
+package: name='com.videodown.douyin' versionCode='5' versionName='1.1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+targetSdkVersion:'36'
+application-label:'拾影'
+application-label-en:'Keepsake'
+native-code: 'arm64-v8a' 'armeabi-v7a' 'x86' 'x86_64'
+$ apksigner verify --print-certs videodown-universal-release.apk
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+V2 Signer: certificate DN: CN=VideoDown Release, O=VideoDown, C=CN
+V2 Signer: certificate SHA-256 digest: 925e4c248ba7f70e9eb5e3b8587ee7bde384476799cbd097dd65746a6d29c50d

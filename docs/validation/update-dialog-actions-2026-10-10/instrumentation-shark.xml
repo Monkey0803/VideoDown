@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T06:38:51" hostname="localhost">
+  <testsuite name="com.videodown.douyin.AppUpdateEntryDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="5.607" timestamp="2026-10-10T06:38:51" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="reportsUpToDateForTheInstalledVersion" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.736" />
+    <testcase name="entryShowsInstalledVersionAndReportsANewerBuild" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.206" />
+    <testcase name="actionsShareOneRowWhenWidthAllows" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.017" />
+    <testcase name="updateSourceCanBeConfiguredFromTheDialog" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.648" />
+  </testsuite>
+</testsuites>

@@ -58,6 +58,22 @@ class SpaceBudgetDeviceTest {
         capture("budget-empty-dialog")
     }
 
+    /**
+     * 新版存储弹窗的层级：可用空间是主数值，应用占用按视频/临时两类成条，可清理内容独立成区，
+     * 清理动作始终可发现（无可清理项时禁用）。
+     */
+    @Test fun overviewLeadsWithFreeSpaceAndNamesTheAppFootprint() {
+        show(StorageUsage(videoBytes = 3_000_000, temporaryBytes = 1_000_000, availableBytes = 4_000_000))
+        compose.waitUntil(5000) { compose.onAllNodes(hasText("可用空间")).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("可用空间").assertIsDisplayed()
+        compose.onNodeWithText("视频文件").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("临时文件").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("可清理内容").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("清理残留与无效记录").assertIsDisplayed()
+        compose.onNodeWithText("刷新").assertIsDisplayed()
+        capture("overview")
+    }
+
     private fun show(usage: StorageUsage) {
         compose.runOnUiThread {
             val model = StorageViewModel(FakeStorage(usage)); models.put("storage", model)
@@ -69,7 +85,8 @@ class SpaceBudgetDeviceTest {
         compose.waitForIdle()
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         instrumentation.uiAutomation.waitForIdle(500, 5_000)
-        val directory = File(instrumentation.targetContext.getExternalFilesDir(null), "space-budget").apply { mkdirs() }
+        // 写入被测应用的内部目录：Android 15 起 adb shell 已读不到应用外部目录，只有 run-as 能取出截图。
+        val directory = File(instrumentation.targetContext.filesDir, "space-budget").apply { mkdirs() }
         val bitmap = instrumentation.uiAutomation.takeScreenshot()
         File(directory, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         bitmap.recycle()

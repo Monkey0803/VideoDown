@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.generic
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.core.*
 import com.videodown.douyin.domain.model.*
 import com.videodown.douyin.domain.repository.VideoRepository
@@ -97,8 +99,8 @@ class GenericVideoRepository(
                 val id = MessageDigest.getInstance("SHA-256").digest(url.toByteArray()).joinToString("") { "%02x".format(it) }.take(24)
                 val size = response.header("Content-Range")?.substringAfterLast('/')?.toLongOrNull()
                     ?: if (response.code == 200) response.header("Content-Length")?.toLongOrNull() else null
-                DouyinVideo(id, response.request.url.pathSegments.lastOrNull()?.takeIf { it.isNotBlank() } ?: "网页视频",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
-                    variants = listOf(VideoVariant(response.request.url.toString(), "原画", sizeBytes = size,  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                DouyinVideo(id, response.request.url.pathSegments.lastOrNull()?.takeIf { it.isNotBlank() } ?: AppText.get(R.string.fallback_title_web_video),
+                    variants = listOf(VideoVariant(response.request.url.toString(), AppText.get(R.string.quality_original), sizeBytes = size,
                         referer = referer ?: url, media = MediaDownload(pageUrl = url, mediaId = id, extension = ext,
                             userAgent = userAgent, useBrowserSession = browser, extractor = "direct"))),
                     shareUrl = referer ?: url, platform = VideoPlatform.GENERIC)

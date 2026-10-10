@@ -1,5 +1,7 @@
 package com.videodown.douyin.presentation.player
 
+import com.videodown.douyin.presentation.components.AppDialog
+import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.library.authorText
 import com.videodown.douyin.presentation.components.AppIcons
@@ -37,7 +39,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -270,8 +271,18 @@ fun PlayerScreen(
             if (state.fileExists) viewModel.saveProgress(player.currentMediaItem?.mediaId, player.currentPosition, player.duration, player.playbackState == Player.STATE_ENDED)
         }
     }
-    if (choosingSpeed && !inPip) AlertDialog(onDismissRequest = { choosingSpeed = false }, title = { Text(stringResource(R.string.player_speed_title)) },
-        text = { Column(Modifier.heightIn(max = 280.dp).verticalScroll(rememberScrollState())) { playbackSpeeds.chunked(2).forEach { speeds ->
+    if (choosingSpeed && !inPip) AppDialog(
+        onDismissRequest = { choosingSpeed = false },
+        icon = AppIcons.Speed,
+        title = stringResource(R.string.player_speed_title),
+        actions = {
+            AppDialogButtonRow {
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { choosingSpeed = false }) { Text(stringResource(R.string.action_close)) }
+            }
+        },
+    ) {
+        playbackSpeeds.chunked(2).forEach { speeds ->
             Row(Modifier.fillMaxWidth()) {
                 speeds.forEach { speed ->
                     TextButton(modifier = Modifier.weight(1f), onClick = {
@@ -282,24 +293,33 @@ fun PlayerScreen(
                     }
                 }
             }
-        } } }, confirmButton = { TextButton(onClick = { choosingSpeed = false }) { Text(stringResource(R.string.action_close)) } })
+        }
+    }
 
-    if (choosingSleep && !inPip) AlertDialog(onDismissRequest = { choosingSleep = false }, title = { Text(stringResource(R.string.player_sleep_title)) },
-        text = { Column(Modifier.verticalScroll(rememberScrollState())) {
-            Text(
-                state.sleepTimerRemaining?.let { stringResource(R.string.player_sleep_active, sleepRemainingText(it)) }
-                    ?: stringResource(R.string.player_sleep_hint),
-                style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp),
-            )
-            SleepTimer.minutes.forEach { minutes ->
-                TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
-                    viewModel.setSleepTimer(minutes); choosingSleep = false
-                }) { Text(stringResource(R.string.player_sleep_minutes, minutes)) }
+    if (choosingSleep && !inPip) AppDialog(
+        onDismissRequest = { choosingSleep = false },
+        icon = AppIcons.Notification,
+        title = stringResource(R.string.player_sleep_title),
+        actions = {
+            AppDialogButtonRow {
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { choosingSleep = false }) { Text(stringResource(R.string.action_cancel)) }
             }
-            TextButton(modifier = Modifier.fillMaxWidth(), enabled = state.sleepTimerRemaining != null,
-                onClick = { viewModel.setSleepTimer(0); choosingSleep = false }) { Text(stringResource(R.string.player_sleep_off)) }
-        } },
-        confirmButton = { TextButton(onClick = { choosingSleep = false }) { Text(stringResource(R.string.action_cancel)) } })
+        },
+    ) {
+        Text(
+            state.sleepTimerRemaining?.let { stringResource(R.string.player_sleep_active, sleepRemainingText(it)) }
+                ?: stringResource(R.string.player_sleep_hint),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        SleepTimer.minutes.forEach { minutes ->
+            TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                viewModel.setSleepTimer(minutes); choosingSleep = false
+            }) { Text(stringResource(R.string.player_sleep_minutes, minutes)) }
+        }
+        TextButton(modifier = Modifier.fillMaxWidth(), enabled = state.sleepTimerRemaining != null,
+            onClick = { viewModel.setSleepTimer(0); choosingSleep = false }) { Text(stringResource(R.string.player_sleep_off)) }
+    }
 
     DisposableEffect(activity) {
         val previousOrientation = activity?.requestedOrientation

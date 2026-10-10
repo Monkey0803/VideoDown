@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="1" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T08:31:22" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2LibraryOrganizationDeviceTest" tests="3" failures="1" errors="0" skipped="0" time="6.844" timestamp="2026-10-10T08:31:22" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="actualRenameAndCategorySurviveRotationAndFilterSavedFile" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="3.982">
+      <failure>java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '保存修改' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.videodown.douyin.P2LibraryOrganizationDeviceTest$actualRenameAndCategorySurviveRotationAndFilterSavedFile$1.invokeSuspend(P2LibraryOrganizationDeviceTest.kt:84)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.videodown.douyin.P2LibraryOrganizationDeviceTest.actualRenameAndCategorySurviveRotationAndFilterSavedFile(P2LibraryOrganizationDeviceTest.kt:76)
+</failure>
+    </testcase>
+    <testcase name="favoriteControlFiltersAndPersistsAfterHistoryReload" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="1.687" />
+    <testcase name="realPersistenceFailureShowsErrorAndRetryPreservesOriginalThenSucceeds" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="1.175" />
+  </testsuite>
+</testsuites>

@@ -12,6 +12,8 @@ class VideoDownApp : Application() {
     override fun onCreate() {
         super.onCreate()
         ServiceLocator.init(this)
+        // One resolver for the context-free classes that still need to produce a message.
+        com.videodown.douyin.core.AppText.install(this)
         ServiceLocator.bootstrap()
         createNotificationChannels()
         DownloadCompletionNotifier.createChannel(this)

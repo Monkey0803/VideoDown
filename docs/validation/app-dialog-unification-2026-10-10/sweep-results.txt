@@ -1,0 +1,123 @@
+# AppDialog 迁移后的设备用例扫描结果（2026-10-10）
+
+设备：Pixel_10_Pro(AVD)，Android API 37，arm64-v8a（emulator-5554）；系统语言 en-US，应用语言 zh-CN。
+逐类执行：每类前 `am force-stop com.videodown.douyin.debug{,.test}`，命令
+`./gradlew :app:connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true -Pandroid.testInstrumentationRunnerArguments.class=<类名>`。
+
+说明：全量一次跑在第 19 个类（LocalizationDeviceTest）卡住（logcat 持续增长 28 分钟无进展），
+因此改为逐类运行；`AssumptionViolatedException` 属于需要 opt-in 参数/人工解锁的用例，不是断言失败。
+
+## 定向运行（弹窗直接相关）
+
+- AppUpdateEntryDeviceTest：4/4 通过：入口、可用版本、更新源配置、动作行同行断言
+- AppearanceModeDeviceTest：1/1 通过：外观模式切换、持久化、跟随系统
+- P1FeaturesDeviceTest#concurrencySettingPersistsAndUpdatesTheActualEngine：1/1 通过：并发数量弹窗写入引擎
+- SpaceBudgetDeviceTest：3/3 通过：概览层级、缺口、空预算
+- LibraryActionsDeviceTest：4/4 通过：删除确认等
+- SleepTimerDeviceTest：2/2 通过：定时停止弹窗
+- P2AudioUiDeviceTest：4/4 通过：提取音频弹窗
+- P2LibraryOrganizationDeviceTest：3/3 通过：整理弹窗
+- P2BatchImportDeviceTest：4/4 通过：导入重复确认（含 extraActions）
+- BatchFeaturesDeviceTest：7/7 通过：重复确认、批次失败明细
+- P2PhysicalExportDeviceTest：1/1 通过：真实 SAF 导出
+- P2ExportFailureDeviceTest：2/2 通过（修复根名/英文标签后）：ENOSPC 恢复、撤销授权后重选文件夹
+- LocalizationDeviceTest：2/2 通过：弹窗文案跟随应用语言
+- P1RecoveryNavigationDeviceTest#storageRecoveryOpensActualSettingsStorageDialog：1/1 通过：恢复入口打开存储弹窗
+- P3PictureInPictureDeviceTest：3 通过 + 1 失败：`pipScreenOffThenReturnKeepsActivityAndPlayer`（docs/TODO.md 已记录的模拟器既有失败）
+
+## 逐类扫描（后半，26 类）
+
+- Material3NavigationDeviceTest：通过 3，失败 0（gradle exit=0）
+- P1FeaturesDeviceTest：通过 6，失败 0（gradle exit=0）
+- P1RecoveryNavigationDeviceTest：通过 4，失败 0（gradle exit=0）
+- P2AudioDeviceTest：通过 6，失败 0（gradle exit=0）
+- P2ExportPickerDeviceTest：通过 1，失败 0（gradle exit=0）
+- P2FileExportDeviceTest：通过 6，失败 0（gradle exit=0）
+- P2PhysicalBackgroundAudioDeviceTest：通过 0，失败 1（gradle exit=1）
+    - actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback
+- P2ReleaseUiBridgeDeviceTest：通过 0，失败 3（gradle exit=1）
+    - independentlyReadActuallyExportedReleaseMedia
+    - preciselyEnterPublicSourceInVisibleReleaseUi
+    - actualReleaseUiClickAndCapture
+- P3BackgroundAudioDeviceTest：通过 4，失败 0（gradle exit=0）
+- P3PlaybackDeviceTest：通过 7，失败 0（gradle exit=0）
+- P3ProcessPersistenceDeviceTest：通过 1，失败 0（gradle exit=0）
+- PhysicalNetworkRecoveryDeviceTest：通过 0，失败 2（gradle exit=0）
+    - wifiLossRetainsCheckpointAndQueueThenResumesExactlyOnce
+    - forceStopRestoresProductionTasksAndSavedQueue
+- PlayerGestureDeviceTest：通过 1，失败 0（gradle exit=0）
+- PlayerLandscapeDeviceTest：通过 3，失败 1（gradle exit=1）
+    - nativeFullscreenControlAndSystemBackKeepPlaybackRunning
+- PlaylistCollectionDeviceTest：通过 2，失败 0（gradle exit=0）
+- PublicSiteAcceptanceDeviceTest：通过 0，失败 6（gradle exit=0）
+    - douyin
+    - x
+    - weibo
+    - ordinaryWebPage
+    - readableNegativeTimestampSampleIsNotAnEmptyVideo
+    - kuaishou
+- QualityCardsDeviceTest：通过 1，失败 0（gradle exit=0）
+- ResultSelectionDeviceTest：通过 4，失败 0（gradle exit=0）
+- SpeedLimitDeviceTest：通过 3，失败 0（gradle exit=0）
+- SubtitleDownloadDeviceTest：通过 2，失败 0（gradle exit=0）
+- SubtitleSidecarDeviceTest：通过 2，失败 0（gradle exit=0）
+- TaskNotificationDeviceTest：通过 0，失败 1（gradle exit=1）
+    - independentCardsPauseOnlyTheirOwnTaskAndFollowThePreference
+- TaskSearchDeviceTest：通过 1，失败 0（gradle exit=0）
+- UnavailableLinkRecoveryDeviceTest：通过 0，失败 1（gradle exit=0）
+    - publicUnavailableLinkOffersOriginalPageReparse
+- VaultDeviceTest：通过 2，失败 1（gradle exit=0）
+    - theTaskListAndTheCompletionNotificationNeverNameAPrivateRecord
+- WatchProgressDeviceTest：通过 1，失败 0（gradle exit=0）
+
+小计：通过 60，失败 16
+
+## 逐类扫描（前半，14 类）
+
+- AutoGalleryDeviceTest：通过 1，失败 0（gradle exit=0）
+- BackgroundDownloadDeviceTest：通过 3，失败 1（gradle exit=0）
+    - secureScreenOffTransferCompletesAfterNormalManualUnlock
+- BackupDeviceTest：通过 3，失败 0（gradle exit=0）
+- BrowserAssistDeviceTest：通过 1，失败 0（gradle exit=0）
+- ClipboardDetectDeviceTest：通过 4，失败 0（gradle exit=0）
+- ConcurrentStorageDeviceTest：通过 0，失败 1（gradle exit=1）
+    - engineMonitorStopsForStorageFailureAndReleasedLeaseAllowsResume
+- DownloadSettingsDeviceTest：通过 6，失败 0（gradle exit=0）
+- DynamicColorDeviceTest：通过 0，失败 1（gradle exit=1）
+    - dynamicColorIsOfferedOnlyWhereSupportedAndRepaintsTheTheme
+- ExpiredPublicMediaRecoveryDeviceTest：通过 0，失败 1（gradle exit=0）
+    - realRemovedMdnSourceRecoversThroughOriginalPageAndAnonymousDiscovery
+- GenericVideoDeviceTest：通过 6，失败 2（gradle exit=0）
+    - processExitResumeCheckpoint
+    - optionalPublicPageParse
+- HomeKeyboardDeviceTest：通过 5，失败 0（gradle exit=0）
+- HomeResultBackDeviceTest：通过 3，失败 0（gradle exit=0）
+- IconIntegrationDeviceTest：通过 4，失败 0（gradle exit=0）
+- LauncherShortcutsDeviceTest：通过 4，失败 0（gradle exit=0）
+
+小计：通过 40，失败 6
+
+## 扫描后复跑与判定
+
+- `ConcurrentStorageDeviceTest`：首轮 `NoSuchElementException`，复跑 1/1 通过 → 偶发。
+- `PlayerLandscapeDeviceTest#nativeFullscreenControlAndSystemBackKeepPlaybackRunning`：
+  首轮 Espresso 报「Animations or transitions are enabled on the target device」；把三项动画缩放设为 0 后复跑 4/4 通过 → 设备设置要求，非代码问题。
+- `TaskNotificationDeviceTest#independentCardsPauseOnlyTheirOwnTaskAndFollowThePreference`：
+  首轮「System notifications must be genuinely enabled」；`pm grant … POST_NOTIFICATIONS` 后复跑 1/1 通过 → 设备权限状态。
+- `DynamicColorDeviceTest`：首轮失败是因为我先把模拟器切到了深色模式（该类按浅色品牌色 0xA64021 采样像素）；
+  `cmd uimode night no` 后复跑 1/1 通过 → 运行环境要求，非代码问题。
+
+## 需要 opt-in 参数 / 非本变体而跳过（不是断言失败）
+
+- `P2PhysicalBackgroundAudioDeviceTest`、`BackgroundDownloadDeviceTest#secureScreenOff…`：需要 `manual_unlock` opt-in 与人工解锁。
+- `PhysicalNetworkRecoveryDeviceTest`（2）、`GenericVideoDeviceTest#processExitResumeCheckpoint`：需要网络/两段式 opt-in 参数。
+- `PublicSiteAcceptanceDeviceTest`（6）、`UnavailableLinkRecoveryDeviceTest`、`ExpiredPublicMediaRecoveryDeviceTest`、
+  `GenericVideoDeviceTest#optionalPublicPageParse`、`VaultDeviceTest#theTaskListAndTheCompletionNotification…`（通知关闭）：未提供授权样本/通知关闭。
+- `P2ReleaseUiBridgeDeviceTest`（3）：驱动的是**非 debuggable 的 release 包**（断言前台包名 `com.videodown.douyin`），
+  debug 变体下必然失败，需装 release APK 后单独跑。
+
+## 本轮未覆盖
+
+- 全量一次跑完的稳定性（本轮被 LocalizationDeviceTest 卡住打断，未定位卡住原因）。
+- 真机（SHARK PRS-A0 / API 30）未复跑本轮改动。
+- `live_*` 联网验收组按默认跳过（成本控制）。

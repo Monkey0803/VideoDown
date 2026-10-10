@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.generic
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import com.videodown.douyin.data.download.DownloadNetworkPolicy
@@ -30,11 +32,11 @@ class EngineMediaDownloader(
             var copyAudio = false
             try {
                 val (stream, size) = maintenanceMutex.withLock {
-                    val original = requireNotNull(history).getById(media.localRecordId) ?: error("原视频已不存在")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-                    require(original.status == DownloadStatus.COMPLETED && !original.isAudio) { "原视频不可用" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-                    val file = original.filePath?.let(::File) ?: error("原视频已不存在")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                    val original = requireNotNull(history).getById(media.localRecordId) ?: error(AppText.get(R.string.engine_original_missing))
+                    require(original.status == DownloadStatus.COMPLETED && !original.isAudio) { AppText.get(R.string.engine_original_unusable) }
+                    val file = original.filePath?.let(::File) ?: error(AppText.get(R.string.engine_original_missing))
                     require(file.isFile && !Files.isSymbolicLink(file.toPath()) && !Files.isSymbolicLink(paths.downloadDir.toPath()) &&
-                        file.canonicalFile.parentFile == paths.downloadDir.canonicalFile) { "原视频文件不可用" } // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                        file.canonicalFile.parentFile == paths.downloadDir.canonicalFile) { AppText.get(R.string.engine_original_file_unusable) }
                     file.inputStream() to file.length()
                 }
                 // An opened file descriptor remains valid if the source is renamed or unlinked.
@@ -60,7 +62,7 @@ class EngineMediaDownloader(
                     put("mode", "extract_audio"); put("input", stagedSource.absolutePath); put("copy_audio", copyAudio)
                     put("output", File(directory, "media.m4a").absolutePath)
                 }) { if (it.text("event") == "complete") completed = true }
-                check(completed) { "音频提取未完成" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                check(completed) { AppText.get(R.string.engine_audio_extract_incomplete) }
                 val output = File(directory, "media.m4a")
                 progress(output.length(), output.length(), 0, TransferPhase.VERIFYING)
                 validateAudio(output)
@@ -107,10 +109,10 @@ class EngineMediaDownloader(
                 }
             }
             currentCoroutineContext().ensureActive()
-            check(completed) { "下载引擎未确认完成" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+            check(completed) { AppText.get(R.string.engine_download_unconfirmed) }
             progress(downloaded, total, 0, TransferPhase.VERIFYING)
             val file = (if (media.audioOnly) File(directory, "media.m4a").takeIf { it.isFile && it.length() > 0 } else directory.listFiles()?.singleOrNull { it.name.matches(Regex("media\\.(mp4|webm|mkv|mov|m4v|ts)")) && it.length() > 0 })
-                ?: error("未生成完整视频文件，请重新解析")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                ?: error(AppText.get(R.string.engine_no_complete_video))
             if (media.audioOnly) validateAudio(file) else validateVideo(file)
             currentCoroutineContext().ensureActive()
             // Publication and history commit are one non-cancellable step in DownloadEngine.
@@ -125,18 +127,18 @@ internal fun validateVideo(file: File) {
         extractor.setDataSource(file.absolutePath)
         val videoTrack = (0 until extractor.trackCount).firstOrNull {
             extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("video/") == true
-        } ?: error("下载结果不包含有效的视频轨道")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        } ?: error(AppText.get(R.string.engine_no_video_track))
         extractor.selectTrack(videoTrack)
         if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_ENCRYPTED != 0) throw VideoEngineException("DRM")
         // A valid first sample can have a negative presentation timestamp (edit-list preroll).
-        require(extractor.sampleTrackIndex == videoTrack) { "下载结果没有完整的视频数据" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        require(extractor.sampleTrackIndex == videoTrack) { AppText.get(R.string.engine_incomplete_video_data) }
         // Reject malformed/empty tracks and encrypted samples before native file-level metadata.
         if (extractor.drmInitData != null || !extractor.psshInfo.isNullOrEmpty()) throw VideoEngineException("DRM")
     } finally { extractor.release() }
 }
 
 internal fun validateAudio(file: File) {
-    require(file.isFile && file.length() > 0) { "未生成有效音频文件" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+    require(file.isFile && file.length() > 0) { AppText.get(R.string.engine_no_valid_audio) }
     file.inputStream().use { validateAudioTrack(it.fd, requireAudioOnly = true) }
 }
 
@@ -146,12 +148,12 @@ internal fun validateAudioTrack(descriptor: FileDescriptor, requireAudioOnly: Bo
         extractor.setDataSource(descriptor)
         if (extractor.drmInitData != null || !extractor.psshInfo.isNullOrEmpty()) throw VideoEngineException("DRM")
         val formats = (0 until extractor.trackCount).map { extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME).orEmpty() }
-        if (requireAudioOnly) require(formats.none { it.startsWith("video/") }) { "结果仍包含视频轨道" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        if (requireAudioOnly) require(formats.none { it.startsWith("video/") }) { AppText.get(R.string.engine_still_has_video) }
         val track = formats.indexOfFirst { it.startsWith("audio/") }
         if (track < 0) throw VideoEngineException("NO_AUDIO")
         extractor.selectTrack(track)
         if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_ENCRYPTED != 0) throw VideoEngineException("DRM")
-        require(extractor.readSampleData(java.nio.ByteBuffer.allocate(1024 * 1024), 0) > 0) { "音频没有有效数据" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        require(extractor.readSampleData(java.nio.ByteBuffer.allocate(1024 * 1024), 0) > 0) { AppText.get(R.string.engine_audio_no_data) }
         return formats[track]
     } finally { extractor.release() }
 }

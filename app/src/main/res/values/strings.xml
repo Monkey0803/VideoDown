@@ -37,9 +37,11 @@
     <string name="storage_cleanup_body">将清理 %1$d 项残留临时文件（%2$s）和 %3$d 条文件已丢失的完成记录。\n\n保留有效视频、相册副本以及暂停/进行中任务的断点。确认后会再次检查，发生变化的项目将跳过。</string>
     <string name="storage_cleanup_confirm">确认清理</string>
     <string name="storage_title">存储管理</string>
-    <string name="storage_available">可用空间：%1$s</string>
-    <string name="storage_videos">视频文件：%1$s</string>
-    <string name="storage_temporary">临时文件：%1$s</string>
+    <string name="storage_subtitle">占用概览与残留清理</string>
+    <string name="storage_available_label">可用空间</string>
+    <string name="storage_videos_label">视频文件</string>
+    <string name="storage_temporary_label">临时文件</string>
+    <string name="storage_cleanup_section">可清理内容</string>
     <string name="storage_reclaimable">可清理残留：%1$s · %2$d 项</string>
     <string name="storage_missing">文件已丢失的记录：%1$d 条</string>
     <string name="storage_hint">临时文件包含下载断点和合并片段，仍被任务引用的文件会保留。要释放已存视频空间，请在「已存」中选择删除。</string>
@@ -113,6 +115,12 @@
     <string name="settings_concurrency_count">%1$d 个任务</string>
     <string name="settings_theme_title">外观模式</string>
     <string name="settings_theme_body">选择应用的显示模式</string>
+    <string name="settings_language_title">语言</string>
+    <string name="settings_language_body">默认跟随系统语言；Android 13 及以上可以为「拾影」单独选择一种。</string>
+    <string name="settings_language_system">跟随系统</string>
+    <string name="settings_language_chinese">简体中文</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_unsupported">当前 Android 版本没有「按应用语言」能力，应用只能跟随系统语言；请在系统设置里修改系统语言。</string>
     <string name="settings_notify_title">开启下载完成通知</string>
     <string name="settings_notify_body">系统尚未允许发送下载完成通知，请在系统设置中开启应用通知和「下载完成」提醒。</string>
     <string name="settings_individual_title">开启每条任务独立通知</string>
@@ -704,4 +712,110 @@
     <string name="engine_not_initialised">尚未初始化 · 引擎组件 %1$s</string>
     <string name="engine_version">yt-dlp %1$s · 组件 %2$s · QuickJS / FFmpeg</string>
     <string name="storage_budget_task">下载任务</string>
+
+    <!-- X HTTP client diagnostics -->
+    <string name="x_client_short_link_not_a_post">短链未指向 X 推文</string>
+    <string name="x_client_short_link_no_location">X 短链未返回推文地址</string>
+    <string name="x_client_short_link_invalid">X 短链地址无效</string>
+    <string name="x_client_short_link_loop">X 短链跳转次数过多</string>
+    <string name="x_client_guest_session_failed">X 匿名会话初始化失败</string>
+    <string name="x_client_empty_response">X 返回空响应</string>
+    <string name="x_client_response_too_large">X 返回的数据过大</string>
+    <string name="x_client_http_status">X 返回 HTTP %1$d</string>
+
+    <!-- Diagnostics, logs and invariants -->
+    <string name="export_read_last_target">无法读取上次导出目标</string>
+    <string name="export_pick_folder_again">请重新选择导出文件夹</string>
+    <string name="export_record_missing">记录已不存在</string>
+    <string name="export_not_completed">文件尚未保存完成</string>
+    <string name="export_local_file_missing">本地文件不存在</string>
+    <string name="export_local_file_unusable">本地文件不可用</string>
+    <string name="export_read_target_failed">无法读取目标文件夹，请重新选择</string>
+    <string name="export_target_unavailable">目标文件夹已不可用，请重新选择</string>
+    <string name="export_create_failed">无法创建导出文件</string>
+    <string name="export_journal_save_failed">无法保存导出事务</string>
+    <string name="export_write_failed">无法写入导出文件</string>
+    <string name="export_journal_finish_failed">无法完成导出事务</string>
+    <string name="weibo_client_session_failed">微博匿名访问初始化失败，请稍后重试</string>
+    <string name="weibo_client_http_status">微博匿名访问返回 HTTP %1$d</string>
+    <string name="social_client_empty_response">平台返回空响应</string>
+    <string name="social_client_page_too_large">平台页面过大，暂时无法解析</string>
+    <string name="download_cancel_user_paused">用户暂停</string>
+    <string name="download_cancel_restart">重新开始</string>
+    <string name="download_cancel_user_cancelled">用户取消</string>
+    <string name="log_auto_resume_failed">自动继续下载失败</string>
+    <string name="log_service_start_failed">后台下载服务启动失败</string>
+    <string name="log_completion_notify_failed">无法发送下载完成通知</string>
+    <string name="log_retry_scheduled">下载失败，%1$dms 后第 %2$d 次重试: %3$s</string>
+    <string name="diag_engine_downloader_absent">未安装通用下载引擎</string>
+    <string name="log_history_read_failed">无法读取下载历史，将从空历史开始</string>
+    <string name="diag_history_replace_failed">无法替换下载历史</string>
+    <string name="log_history_write_failed">无法写入下载历史</string>
+    <string name="download_cancel_cancelled">下载已取消</string>
+    <string name="queue_task_removed">任务已移出队列</string>
+    <string name="douyin_client_http_status">分享页返回 HTTP %1$d</string>
+
+    <!-- Internal invariants -->
+    <string name="meta_record_missing">记录已不存在</string>
+    <string name="meta_only_saved_files">只可整理已保存文件</string>
+    <string name="meta_name_invalid">名称不能为空，且不能包含路径分隔符或控制字符</string>
+    <string name="meta_category_invalid">分类名称不可用</string>
+    <string name="meta_local_file_missing">本地文件不存在</string>
+    <string name="meta_local_file_unusable">本地文件不可用</string>
+    <string name="meta_target_name_unusable">文件名称不可用</string>
+    <string name="meta_target_exists">同名文件已存在</string>
+    <string name="meta_journal_save_failed">无法保存重命名事务</string>
+    <string name="meta_rename_failed">无法重命名文件</string>
+    <string name="meta_journal_finish_failed">无法完成重命名事务</string>
+    <string name="meta_rename_record_invalid">重命名记录无效</string>
+    <string name="meta_rename_path_invalid">重命名路径无效</string>
+    <string name="meta_file_in_use">文件仍被任务使用</string>
+    <string name="meta_record_path_changed">记录路径已经改变</string>
+    <string name="meta_rename_restore_failed">无法恢复重命名</string>
+    <string name="meta_rename_state_needs_check">重命名文件状态需要检查</string>
+    <string name="meta_journal_clear_failed">无法清除重命名事务</string>
+    <string name="engine_original_missing">原视频已不存在</string>
+    <string name="engine_original_unusable">原视频不可用</string>
+    <string name="engine_original_file_unusable">原视频文件不可用</string>
+    <string name="engine_audio_extract_incomplete">音频提取未完成</string>
+    <string name="engine_download_unconfirmed">下载引擎未确认完成</string>
+    <string name="engine_no_complete_video">未生成完整视频文件，请重新解析</string>
+    <string name="engine_no_video_track">下载结果不包含有效的视频轨道</string>
+    <string name="engine_incomplete_video_data">下载结果没有完整的视频数据</string>
+    <string name="engine_no_valid_audio">未生成有效音频文件</string>
+    <string name="engine_still_has_video">结果仍包含视频轨道</string>
+    <string name="engine_audio_no_data">音频没有有效数据</string>
+    <string name="engine_install_16k_failed">无法安装 16 KB 兼容依赖</string>
+    <string name="engine_install_core_failed">无法安装解析引擎</string>
+    <string name="audio_extract_only_saved">只可从已存视频提取音频</string>
+    <string name="diag_download_dir_unusable">下载目录不可用</string>
+    <string name="diag_resume_limit_positive">自动继续次数上限必须为正数</string>
+    <string name="generic_parse_no_video">页面没有可下载的点播视频，可能包含 DRM、直播或需要登录验证</string>
+
+    <!-- Internal invariants -->
+
+    <!-- Fallback titles and labels -->
+    <string name="quality_original">原画</string>
+    <string name="fallback_title_weibo_video">微博视频</string>
+    <string name="fallback_title_weibo_gif">微博动图</string>
+    <string name="media_label_animated">动图 %1$d</string>
+    <string name="fallback_title_douyin_video">抖音视频</string>
+    <string name="douyin_label_watermarked">%1$s 带水印</string>
+    <string name="fallback_author_x_user">X 用户</string>
+    <string name="fallback_title_x_video">X 视频</string>
+    <string name="media_label_video">视频 %1$d</string>
+    <string name="media_label_quoted_video">引用 · 视频 %1$d</string>
+    <string name="fallback_title_kuaishou_video">快手视频</string>
+    <string name="media_label_no_audio"> · 无音轨</string>
+    <string name="fallback_title_web_video">网页视频</string>
+    <string name="media_label_local_audio_m4a">本地提取音频 · M4A</string>
+    <string name="log_share_page_failed">分享页获取失败: %1$s</string>
+    <string name="log_web_detail_failed">web detail 获取失败: %1$s</string>
+    <string name="log_legacy_iteminfo_failed">legacy iteminfo 获取失败: %1$s</string>
+    <string name="log_short_link_failed">短链展开失败: %1$s</string>
+    <string name="log_foreground_service_failed">无法进入前台下载服务</string>
+
+    <!-- Backup files -->
+    <string name="backup_links_file_name">拾影链接清单.txt</string>
+    <string name="backup_settings_file_name">拾影设置备份.json</string>
 </resources>

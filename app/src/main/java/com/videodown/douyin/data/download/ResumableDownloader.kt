@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.download
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import android.util.Log
 import com.videodown.douyin.core.AppError
 import com.videodown.douyin.domain.model.DownloadFailureKind
@@ -307,8 +309,8 @@ class ResumableDownloader(
                 throw WifiRequiredException()
             }
             if (job.isCancelled) {
-                // l10n-ignore: cancellation is reported by the coroutine machinery, never as user copy
-            throw CancellationException("下载已取消").also { it.initCause(e) }  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+
+            throw CancellationException(AppText.get(R.string.download_cancel_cancelled)).also { it.initCause(e) }
             }
             val outOfSpace = generateSequence<Throwable>(e) { it.cause }.take(8).any {
                 it.message.orEmpty().let { message -> message.contains("ENOSPC", true) || message.contains("no space left", true) }

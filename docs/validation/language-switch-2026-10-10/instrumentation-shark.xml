@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="1" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T08:51:56" hostname="localhost">
+  <testsuite name="com.videodown.douyin.LanguageSwitchDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="2.769" timestamp="2026-10-10T08:51:56" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="theLanguageRowOffersWhatThisAndroidVersionSupports" classname="com.videodown.douyin.LanguageSwitchDeviceTest" time="2.769" />
+  </testsuite>
+</testsuites>

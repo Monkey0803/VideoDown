@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import kotlinx.serialization.json.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
@@ -13,7 +15,7 @@ internal fun mediaUrl(raw: String?): String? = raw?.replace("&amp;", "&")
 internal fun mp4Url(raw: String?): String? = mediaUrl(raw)?.takeIf { url ->
     url.toHttpUrlOrNull()?.encodedPath?.lowercase()?.endsWith(".mp4") == true
 }
-internal fun qualityLabel(width: Int?, height: Int?, fallback: String = "原画"): String =  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+internal fun qualityLabel(width: Int?, height: Int?, fallback: String = AppText.get(R.string.quality_original)): String =
     listOfNotNull(width, height).filter { it > 0 }.minOrNull()?.let { "${it}P" } ?: fallback
 
 /** Extract JSON data, never execute scripts received from a website. */

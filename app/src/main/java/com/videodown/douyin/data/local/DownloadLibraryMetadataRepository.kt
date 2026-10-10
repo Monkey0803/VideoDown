@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.local
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.data.download.DownloadPaths
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
@@ -31,14 +33,14 @@ class DownloadLibraryMetadataRepository(
         try {
             maintenanceMutex.withLock {
                 recoverLocked()
-                val record = history.getById(id) ?: error("记录已不存在")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-                require(record.status == DownloadStatus.COMPLETED && id !in activeIds()) { "只可整理已保存文件" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                val record = history.getById(id) ?: error(AppText.get(R.string.meta_record_missing))
+                require(record.status == DownloadStatus.COMPLETED && id !in activeIds()) { AppText.get(R.string.meta_only_saved_files) }
                 val name = title?.trim()
-                require(name == null || validName(name, 80)) { "名称不能为空，且不能包含路径分隔符或控制字符" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                require(name == null || validName(name, 80)) { AppText.get(R.string.meta_name_invalid) }
                 val category = folder?.trim()
-                require(category == null || category.isEmpty() || validName(category, 40)) { "分类名称不可用" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-                val original = record.filePath?.let(::File) ?: error("本地文件不存在")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-                require(safe(original) && original.isFile) { "本地文件不可用" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                require(category == null || category.isEmpty() || validName(category, 40)) { AppText.get(R.string.meta_category_invalid) }
+                val original = record.filePath?.let(::File) ?: error(AppText.get(R.string.meta_local_file_missing))
+                require(safe(original) && original.isFile) { AppText.get(R.string.meta_local_file_unusable) }
                 var changed = record.copy(
                     title = name ?: record.title,
                     favorite = favorite ?: record.favorite,
@@ -50,19 +52,19 @@ class DownloadLibraryMetadataRepository(
                     val fileName = paths.buildFileName(name, record.resolutionLabel,
                         "${record.platform.name.lowercase()}_${record.awemeId}_${record.id.take(8)}").substringBeforeLast('.') + "." + original.extension
                     val target = File(paths.downloadDir, fileName)
-                    require(safe(target)) { "文件名称不可用" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                    require(safe(target)) { AppText.get(R.string.meta_target_name_unusable) }
                     if (target != original) {
-                        require(!target.exists()) { "同名文件已存在" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                        require(!target.exists()) { AppText.get(R.string.meta_target_exists) }
                         changed = changed.copy(fileName = fileName, filePath = target.absolutePath, partialPath = target.path + ".part")
                         val operation = Rename(record, changed)
                         withContext(NonCancellable) {
                             privateDirectory.mkdirs()
                             val temporary = File(privateDirectory, "rename.json.new")
                             temporary.writeText(json.encodeToString(Rename.serializer(), operation))
-                            check(temporary.renameTo(journal)) { "无法保存重命名事务" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                            check(temporary.renameTo(journal)) { AppText.get(R.string.meta_journal_save_failed) }
                             if (!original.renameTo(target)) {
                                 journal.delete()
-                                error("无法重命名文件")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                                error(AppText.get(R.string.meta_rename_failed))
                             }
                             try { history.upsertDurably(changed) }
                             catch (error: Exception) {
@@ -71,7 +73,7 @@ class DownloadLibraryMetadataRepository(
                                 if (history.getById(record.id)?.filePath == original.absolutePath && target.renameTo(original)) journal.delete()
                                 throw error
                             }
-                            check(journal.delete()) { "无法完成重命名事务" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+                            check(journal.delete()) { AppText.get(R.string.meta_journal_finish_failed) }
                         }
                         return@withLock
                     }
@@ -86,22 +88,22 @@ class DownloadLibraryMetadataRepository(
     private suspend fun recoverLocked() {
         if (!journal.exists()) return
         val operation = json.decodeFromString(Rename.serializer(), journal.readText())
-        val before = operation.before.filePath?.let(::File) ?: error("重命名记录无效")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-        val after = operation.after.filePath?.let(::File) ?: error("重命名记录无效")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-        require(safe(before) && safe(after) && operation.before.id == operation.after.id) { "重命名路径无效" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        val before = operation.before.filePath?.let(::File) ?: error(AppText.get(R.string.meta_rename_record_invalid))
+        val after = operation.after.filePath?.let(::File) ?: error(AppText.get(R.string.meta_rename_record_invalid))
+        require(safe(before) && safe(after) && operation.before.id == operation.after.id) { AppText.get(R.string.meta_rename_path_invalid) }
         val current = history.getById(operation.before.id)
         if (current == null) {
             // A deleted record must never be recreated. Preserve any leftover video for manual recovery.
             check(journal.delete()); return
         }
-        require(current.status == DownloadStatus.COMPLETED && current.id !in activeIds()) { "文件仍被任务使用" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-        require(current.filePath != null && setOf(before.path, after.path).contains(current.filePath)) { "记录路径已经改变" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        require(current.status == DownloadStatus.COMPLETED && current.id !in activeIds()) { AppText.get(R.string.meta_file_in_use) }
+        require(current.filePath != null && setOf(before.path, after.path).contains(current.filePath)) { AppText.get(R.string.meta_record_path_changed) }
         if (after.isFile && !before.exists()) history.upsertDurably(operation.after)
         else if (before.isFile && !after.exists()) {
-            check(before.renameTo(after)) { "无法恢复重命名" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+            check(before.renameTo(after)) { AppText.get(R.string.meta_rename_restore_failed) }
             history.upsertDurably(operation.after)
-        } else error("重命名文件状态需要检查")  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
-        check(journal.delete()) { "无法清除重命名事务" }  // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        } else error(AppText.get(R.string.meta_rename_state_needs_check))
+        check(journal.delete()) { AppText.get(R.string.meta_journal_clear_failed) }
     }
     private fun safe(file: File): Boolean = !Files.isSymbolicLink(paths.downloadDir.toPath()) &&
         !Files.isSymbolicLink(file.toPath()) && file.canonicalFile.parentFile == paths.downloadDir.canonicalFile

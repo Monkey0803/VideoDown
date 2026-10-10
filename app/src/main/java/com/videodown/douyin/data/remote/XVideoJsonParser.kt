@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.*
 import kotlinx.serialization.json.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -51,7 +53,7 @@ internal class XVideoJsonParser {
             val username = (user?.text("screen_name") ?: userNode?.obj("core")?.text("screen_name"))
                 ?.takeIf { it.matches(Regex("[A-Za-z0-9_]{1,50}")) }
             val author = DouyinAuthor(uid = userNode?.text("rest_id") ?: user?.text("id_str"), secUid = username,
-                nickname = user?.text("name") ?: userNode?.obj("core")?.text("name") ?: username ?: "X 用户",  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                nickname = user?.text("name") ?: userNode?.obj("core")?.text("name") ?: username ?: AppText.get(R.string.fallback_author_x_user),
                 avatarUrl = mediaUrl(user?.text("profile_image_url_https") ?: userNode?.obj("avatar")?.text("image_url")),
                 platform = VideoPlatform.X)
             media(source).forEachIndexed mediaLoop@{ index, element ->
@@ -77,13 +79,13 @@ internal class XVideoJsonParser {
                 val key = "${id}_$mediaId"
                 if (sourceIndex == 0 && link.mediaIndex == index + 1) selectedId = key
                 val fullText = source.obj("note_tweet")?.obj("note_tweet_results")?.obj("result")?.text("text")
-                    ?: legacy.text("full_text") ?: legacy.text("text") ?: "X 视频"  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                    ?: legacy.text("full_text") ?: legacy.text("text") ?: AppText.get(R.string.fallback_title_x_video)
                 videos.add(DouyinVideo(key, fullText.replace(Regex("https://t\\.co/\\w+"), "")
-                    .replace("&amp;", "&").trim().take(200).ifBlank { "X 视频" },  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                    .replace("&amp;", "&").trim().take(200).ifBlank { AppText.get(R.string.fallback_title_x_video) },
                     coverUrl = mediaUrl(item.text("media_url_https") ?: item.text("media_url")),
                     durationMs = info.number("duration_millis") ?: 0L, author = author, variants = variants,
                     shareUrl = "https://x.com/${username ?: "i"}/status/$id/video/${index + 1}", platform = VideoPlatform.X,
-                    mediaLabel = "${if (sourceIndex == 1) "引用 · " else ""}视频 ${index + 1}"))  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+                    mediaLabel = if (sourceIndex == 1) AppText.get(R.string.media_label_quoted_video, index + 1) else AppText.get(R.string.media_label_video, index + 1)))
             }
         }
         if (link.mediaIndex != null && selectedId == null) {

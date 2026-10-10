@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -76,7 +78,7 @@ class DouyinApiClient(
             .build()
 
         return okHttpClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("分享页返回 HTTP ${response.code}")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+            if (!response.isSuccessful) throw IOException(AppText.get(R.string.douyin_client_http_status, response.code))
             response.body?.string().orEmpty()
         }
     }

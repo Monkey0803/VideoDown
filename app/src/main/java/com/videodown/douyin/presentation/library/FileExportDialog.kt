@@ -4,9 +4,12 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -15,11 +18,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.presentation.components.AppDialog
+import com.videodown.douyin.presentation.components.AppDialogButtonRow
+import com.videodown.douyin.presentation.components.AppIcons
 
 @Composable
 internal fun FileExportDialog(ids: List<String>, model: FileExportViewModel, onClose: () -> Unit) {
@@ -44,22 +51,38 @@ internal fun FileExportDialog(ids: List<String>, model: FileExportViewModel, onC
             } catch (_: Exception) { model.message(context.getString(R.string.export_permission_failed)) }
         }
     }
-    AlertDialog(onDismissRequest = { if (!state.busy) onClose() },
-        title = { Text(stringResource(R.string.export_title)) },
-        text = { Column {
-            Text(stringResource(R.string.export_body, ids.size))
+    AppDialog(
+        onDismissRequest = { if (!state.busy) onClose() },
+        icon = AppIcons.ExportFolder,
+        title = stringResource(R.string.export_title),
+        content = {
+            Text(stringResource(R.string.export_body, ids.size),
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (state.busy) {
                 LinearProgressIndicator()
-                Text(stringResource(R.string.export_progress, state.done, state.total))
+                Text(stringResource(R.string.export_progress, state.done, state.total),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            state.result?.let { Text(exportResultText(it)) }
-            state.message?.let { Text(it) }
+            state.result?.let { Text(exportResultText(it), style = MaterialTheme.typography.bodyMedium) }
+            state.message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             if (!state.busy && remaining.isNotEmpty()) TextButton(onClick = { picker.launch(rememberedTree?.let(Uri::parse)) }) {
                 Text(stringResource(if (rememberedTree == null) R.string.export_pick_folder else R.string.export_pick_other_folder))
             }
-        } },
-        confirmButton = {
-            if (!state.busy && rememberedTree != null && rememberedTree != state.invalidTreeUri && remaining.isNotEmpty()) TextButton(onClick = { model.export(remaining, checkNotNull(rememberedTree)) }) { Text(stringResource(if (state.finished) R.string.export_retry_last else R.string.export_to_last)) }
         },
-        dismissButton = { TextButton(onClick = { if (state.busy) model.cancel() else onClose() }) { Text(stringResource(if (state.busy) R.string.export_stop else R.string.action_close)) } })
+        actions = {
+            val canExport = !state.busy && rememberedTree != null && rememberedTree != state.invalidTreeUri && remaining.isNotEmpty()
+            if (canExport) {
+                FilledTonalButton(
+                    onClick = { model.export(remaining, checkNotNull(rememberedTree)) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text(stringResource(if (state.finished) R.string.export_retry_last else R.string.export_to_last)) }
+            }
+            AppDialogButtonRow {
+                Spacer(Modifier.weight(1f))
+                Button(onClick = { if (state.busy) model.cancel() else onClose() }) {
+                    Text(stringResource(if (state.busy) R.string.export_stop else R.string.action_close))
+                }
+            }
+        },
+    )
 }

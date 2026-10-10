@@ -96,7 +96,6 @@ internal fun errorTextRes(error: AppError): Int? = when (error) {
     is AppError.Network -> reasonKeyRes(error.reasonKey)
     is AppError.Unknown -> reasonKeyRes(error.reasonKey)
     is AppError.Storage -> reasonKeyRes(error.reasonKey)
-    else -> null
 }
 
 /** The resource for a gallery failure; also used to word a batch result's stored key. */

@@ -12,7 +12,8 @@ import com.videodown.douyin.domain.model.VaultPolicy
  * reading, so the header does not become a bogus link.
  */
 object LinkList {
-    const val HEADER = "# 拾影链接清单 v1"  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
+
+    const val HEADER = "# 拾影链接清单 v1"  // l10n-ignore: 清单格式的标识行会被再次解析，本地化会让另一种语言导出的清单无法导入
 
     /** The link a record came from, or `null` when it predates source-page tracking. */
     fun sourceUrl(record: DownloadRecord): String? = sequenceOf(

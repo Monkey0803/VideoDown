@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -27,6 +28,7 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -99,6 +101,21 @@ class AppUpdateEntryDeviceTest {
         compose.onNodeWithText("保存并检查").performClick()
         compose.onNodeWithText("发现新版本：9.9.9").assertIsDisplayed()
         assertEquals("https://updates.example.com/version.json", preferences.updateManifestUrl)
+    }
+
+    /**
+     * 动作行里的三个按钮同处一行：两个次要操作若被 Column 包住，会被固定成上下两行，确认按钮反倒在
+     * 右侧独占一行。只比较相对坐标，不写死像素；宽度真的不够时动作行仍会换行。
+     */
+    @Test fun actionsShareOneRowWhenWidthAllows() {
+        showSettings("""{"versionCode":99,"versionName":"9.9.9"}""")
+        compose.onNodeWithText("检查更新").performScrollTo().performClick()
+        compose.onNodeWithText("尚未配置更新源地址，请先设置版本清单地址").assertIsDisplayed()
+        val bounds = listOf("更新源", "重新检查", "完成").map { compose.onNodeWithText(it).getUnclippedBoundsInRoot() }
+        val tops = bounds.map { it.top.value }
+        assertTrue("三个操作按钮应同处一行，实际顶部坐标：$tops", tops.max() - tops.min() < 1f)
+        val lefts = bounds.map { it.left.value }
+        assertEquals("同一行的按钮应从左到右排列", lefts.sorted(), lefts)
     }
 
     @Test fun reportsUpToDateForTheInstalledVersion() {

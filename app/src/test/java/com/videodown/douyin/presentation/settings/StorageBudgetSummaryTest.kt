@@ -39,4 +39,19 @@ class StorageBudgetSummaryTest {
         assertEquals(10L, negative.budget.shortfallBytes(negative.availableBytes))
         assertEquals(0L, negative.budgetHeadroomBytes)
     }
+    @Test fun `app footprint sums both categories and saturates instead of wrapping`() {
+        assertEquals(300L, storageFootprintBytes(100, 200))
+        assertEquals(200L, storageFootprintBytes(-100, 200))
+        assertEquals(0L, storageFootprintBytes(0, 0))
+        assertEquals(Long.MAX_VALUE, storageFootprintBytes(Long.MAX_VALUE, 1))
+        assertEquals(Long.MAX_VALUE, storageFootprintBytes(Long.MAX_VALUE, Long.MAX_VALUE))
+    }
+    @Test fun `composition shares stay inside the bar and ignore absent categories`() {
+        val footprint = storageFootprintBytes(300, 100)
+        assertEquals(0.75f, storageShareFraction(300, footprint), 0.0001f)
+        assertEquals(0.25f, storageShareFraction(100, footprint), 0.0001f)
+        assertEquals(0f, storageShareFraction(0, footprint), 0f)
+        assertEquals(0f, storageShareFraction(300, 0), 0f)
+        assertEquals(1f, storageShareFraction(500, 300), 0.0001f)
+    }
 }

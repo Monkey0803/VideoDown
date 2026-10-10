@@ -19,6 +19,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.videodown.douyin.R
 import com.videodown.douyin.presentation.failureDescription
+import com.videodown.douyin.presentation.components.AppConfirmDialog
+import com.videodown.douyin.presentation.components.AppIcons
 import kotlinx.coroutines.launch
 
 @Composable
@@ -86,11 +88,16 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
             }
         }
     }
-    if (state.duplicateCount > 0) AlertDialog(onDismissRequest = model::dismissDuplicates,
-        title = { Text(stringResource(R.string.import_duplicate_title, state.duplicateCount)) },
-            text = { Text(stringResource(R.string.import_duplicate_body)) },
-        confirmButton = { TextButton(onClick = { model.submit(false) }) { Text(stringResource(R.string.home_skip_duplicates)) } },
-        dismissButton = { Row { TextButton(onClick = { model.submit(true) }) { Text(stringResource(R.string.import_download_all)) }; TextButton(onClick = model::dismissDuplicates) { Text(stringResource(R.string.action_cancel)) } } })
+    if (state.duplicateCount > 0) AppConfirmDialog(
+        onDismissRequest = model::dismissDuplicates,
+        icon = AppIcons.BatchImport,
+        title = stringResource(R.string.import_duplicate_title, state.duplicateCount),
+        body = stringResource(R.string.import_duplicate_body),
+        confirmText = stringResource(R.string.home_skip_duplicates),
+        onConfirm = { model.submit(false) },
+        dismissText = stringResource(R.string.action_cancel),
+        extraActions = { TextButton(onClick = { model.submit(true) }) { Text(stringResource(R.string.import_download_all)) } },
+    )
 }
 
 /** The wording for an import notice. */

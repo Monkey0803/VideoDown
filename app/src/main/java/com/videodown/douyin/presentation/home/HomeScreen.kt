@@ -1,6 +1,8 @@
 package com.videodown.douyin.presentation.home
 
 import com.videodown.douyin.presentation.components.TabPageHeader
+import com.videodown.douyin.presentation.components.AppDialog
+import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -44,7 +46,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.RecoveryAction
@@ -55,6 +56,7 @@ import com.videodown.douyin.presentation.failureTitle
 import com.videodown.douyin.presentation.recoveryActionLabel
 import com.videodown.douyin.domain.model.selectionKey
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -187,24 +189,41 @@ fun HomeScreen(
     state.duplicates?.let { pending ->
         val single = pending.requests.size == 1
         val existing = pending.records.values.first()
-        AlertDialog(onDismissRequest = viewModel::dismissDuplicates,
-            title = { Text(stringResource(if (single) R.string.home_duplicate_single else R.string.home_duplicate_many, pending.records.size)) },
-            text = { Column(Modifier.heightIn(max = 280.dp).verticalScroll(rememberScrollState())) {
-                Text(stringResource(if (single) R.string.home_duplicate_body_single else R.string.home_duplicate_body_many))
-                pending.records.values.forEach { record -> Text("${record.title} · ${record.resolutionLabel} · " + when (record.status) {
+        AppDialog(
+            onDismissRequest = viewModel::dismissDuplicates,
+            icon = AppIcons.Warning,
+            title = stringResource(if (single) R.string.home_duplicate_single else R.string.home_duplicate_many, pending.records.size),
+            actions = {
+                FilledTonalButton(
+                    onClick = {
+                        if (single) {
+                            viewModel.dismissDuplicates()
+                            if (existing.status == DownloadStatus.COMPLETED && existing.filePath?.let { File(it).isFile } == true) onPlayDownloaded(existing.id) else onOpenHistory()
+                        } else {
+                            viewModel.confirmDuplicates(downloadAgain = false)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(if (single) stringResource(if (existing.status == DownloadStatus.COMPLETED) R.string.home_view_saved else R.string.home_view_tasks) else stringResource(R.string.home_skip_duplicates))
+                }
+                AppDialogButtonRow {
+                    TextButton(onClick = { viewModel.confirmDuplicates(downloadAgain = true) }) { Text(stringResource(R.string.home_download_anyway)) }
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick = viewModel::dismissDuplicates) { Text(stringResource(R.string.action_cancel)) }
+                }
+            },
+        ) {
+            Text(stringResource(if (single) R.string.home_duplicate_body_single else R.string.home_duplicate_body_many),
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            pending.records.values.forEach { record ->
+                Text("${record.title} · ${record.resolutionLabel} · " + when (record.status) {
                     DownloadStatus.COMPLETED -> stringResource(R.string.home_existing_saved)
                     DownloadStatus.PENDING, DownloadStatus.RUNNING -> stringResource(R.string.home_existing_downloading)
                     else -> stringResource(R.string.home_existing_resumable)
-                }, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall) }
-            } },
-            confirmButton = { TextButton(onClick = {
-                if (single) { viewModel.dismissDuplicates(); if (existing.status == DownloadStatus.COMPLETED && existing.filePath?.let { File(it).isFile } == true) onPlayDownloaded(existing.id) else onOpenHistory() }
-                else viewModel.confirmDuplicates(downloadAgain = false)
-            }) { Text(if (single) stringResource(if (existing.status == DownloadStatus.COMPLETED) R.string.home_view_saved else R.string.home_view_tasks) else stringResource(R.string.home_skip_duplicates)) } },
-            dismissButton = { Row {
-                TextButton(onClick = { viewModel.confirmDuplicates(downloadAgain = true) }) { Text(stringResource(R.string.home_download_anyway)) }
-                TextButton(onClick = viewModel::dismissDuplicates) { Text(stringResource(R.string.action_cancel)) }
-            } })
+                }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
     }
     val imeVisible = WindowInsets.isImeVisible
     val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)

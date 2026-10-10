@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.download
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import android.util.Log
 import com.videodown.douyin.data.generic.EngineMediaDownloader
 import com.videodown.douyin.data.generic.VideoEngineException
@@ -226,8 +228,8 @@ class DownloadEngine(
     override suspend fun pause(id: String) = maintenanceMutex.withLock {
         val job = activeJobs[id]
         if (job != null) {
-            // l10n-ignore: a cancellation reason for the coroutine, never shown as copy
-            job.cancel(CancellationException("用户暂停"))  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+
+            job.cancel(CancellationException(AppText.get(R.string.download_cancel_user_paused)))
             job.join()
         }
         scheduler.finish(id)
@@ -253,8 +255,8 @@ class DownloadEngine(
 
     override suspend fun restart(id: String) = maintenanceMutex.withLock {
         val job = activeJobs.remove(id)
-        // l10n-ignore: a cancellation reason for the coroutine, never shown as copy
-        job?.cancel(CancellationException("重新开始"))  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+
+        job?.cancel(CancellationException(AppText.get(R.string.download_cancel_restart)))
         job?.join()
         scheduler.finish(id)
 
@@ -287,8 +289,8 @@ class DownloadEngine(
 
     override suspend fun cancel(id: String, removeRecord: Boolean) = maintenanceMutex.withLock {
         val job = activeJobs.remove(id)
-        // l10n-ignore: a cancellation reason for the coroutine, never shown as copy
-        job?.cancel(CancellationException("用户取消"))  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+
+        job?.cancel(CancellationException(AppText.get(R.string.download_cancel_user_cancelled)))
         job?.join()
         scheduler.finish(id)
 
@@ -378,8 +380,8 @@ class DownloadEngine(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            // l10n-ignore: a developer log line, never shown to the user
-            Log.w(TAG, "自动继续下载失败", e)  // l10n-ignore: 开发者日志行，从不展示给用户
+
+            Log.w(TAG, AppText.get(R.string.log_auto_resume_failed), e)
         }
     }
 
@@ -425,8 +427,8 @@ class DownloadEngine(
                 }
                 throw e
             } catch (e: Exception) {
-                if (e is DownloadServiceException) // l10n-ignore: a developer log line, never shown to the user
-                Log.w(TAG, "后台下载服务启动失败", e)  // l10n-ignore: 开发者日志行，从不展示给用户
+                if (e is DownloadServiceException)
+                Log.w(TAG, AppText.get(R.string.log_service_start_failed), e)
                 val latest = history.getById(record.id) ?: record
                 history.upsert(latest.copy(status = DownloadStatus.FAILED,
                     errorMessage = when (e) {
@@ -575,7 +577,7 @@ class DownloadEngine(
                     history.upsert(completed)
                     // Only a newly completed transfer emits; restoring history never re-notifies.
                     runCatching { onCompleted(completed) }
-                        .onFailure { Log.w(TAG, "无法发送下载完成通知", it) }  // l10n-ignore: a developer log line, never shown to the user
+                        .onFailure { Log.w(TAG, AppText.get(R.string.log_completion_notify_failed), it) }
                     _progress.update { it - record.id }
                     return
                 }
@@ -629,8 +631,8 @@ class DownloadEngine(
                     val retryableStatus = httpStatus == null || httpStatus !in 400..499
                     if (attempt <= MAX_RETRIES && outcome.error !is com.videodown.douyin.core.AppError.Storage && retryableStatus) {
                         val backoff = RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
-                        // l10n-ignore: a developer log line, never shown to the user
-                        Log.w(TAG, "下载失败，${backoff}ms 后第 $attempt 次重试: ${outcome.error.message}")  // l10n-ignore: 开发者日志行，从不展示给用户
+
+                        Log.w(TAG, AppText.get(R.string.log_retry_scheduled, backoff, attempt, outcome.error.message))
                         delay(backoff)
                         record = history.getById(record.id) ?: record
                         continue
@@ -656,7 +658,7 @@ class DownloadEngine(
     }
 
     private suspend fun runEngineTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
-        val executor = requireNotNull(engineDownloader) { "未安装通用下载引擎" } // l10n-ignore: 内部不变量：断言失败只会以统一的「操作失败」呈现给用户，不是界面文案
+        val executor = requireNotNull(engineDownloader) { AppText.get(R.string.diag_engine_downloader_absent) }
         var record = initial.copy(status = DownloadStatus.RUNNING, errorMessage = null, failureKind = null,
             pauseCause = null, phase = TransferPhase.DOWNLOADING)
         history.upsert(record)

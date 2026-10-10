@@ -1,4 +1,4 @@
-# 拾影 — 视频下载器
+# 拾影（Keepsake）— 视频下载器
 
 使用 Kotlin + Jetpack Compose 实现的 Android 应用，支持解析抖音、微博、快手、X（Twitter）分享链接及通用 HTTP/HTTPS 视频网址，选择分辨率下载视频、
 记录下载历史、打开原视频与作者主页并播放已下载的视频。界面使用 Compose Material 3，在「我的 → 外观模式」中可选择跟随系统、浅色或深色，确认后立即生效并在重启后保留；Android 12 及以上还可在「我的 → 动态取色（Material You）」改用系统壁纸配色。默认采用奶白、暖橙与深褐品牌主题，深色模式使用暖褐背景与杏橙强调色。颜色、文字样式与圆角统一由 `MaterialTheme` 管理。
@@ -99,7 +99,9 @@
 
 ## 语言与文案（C1，进行中）
 
-- 应用**跟随系统语言**（Android 13 及以上还能在系统设置里单独为「拾影」选语言）：`values/` 是简体中文，`values-en/` 是英文，`res/xml/locales_config.xml` 声明支持的语言，清单里用 `android:localeConfig` 暴露给系统。
+- 应用**跟随系统语言**：`values/` 是简体中文，`values-en/` 是英文，`res/xml/locales_config.xml` 声明支持的语言，清单里用 `android:localeConfig` 暴露给系统。
+- **英文名是 Keepsake**（中文名仍是「拾影」）：`values-en/` 的 `app_name` 即桌面与解析页标题；英文文案里的品牌名、备份导出文件名（`keepsake-links.txt` / `keepsake-settings-backup.json`）也一并用它。`shiying_preferences`（偏好文件名）、`shiying://`（通知深链 scheme）、`Movies/拾影`（MediaStore 目录）与 `ic_shiying_*`（图标资源）是**数据与资源标识**，不随品牌名改动。
+- 「我的 → 外观 → 语言」可在应用内切换：Android 13 及以上写进系统的「按应用语言」（`LocaleManager`），应用自己不存语言偏好，所以这一行与系统设置里的「应用语言」永远是同一个值，切换后系统重建 Activity、界面语言当场跟着变；Android 12 及以下没有这个能力，弹窗只解释并给出前往系统设置的入口。
 - 此前 `MainActivity` 会强制覆盖成简体中文，现已移除。
 - **文案一律进 `res/values/strings.xml`，代码里不留中文字面量。** 格式串用 `%1$s` 占位；注意 `ifBlank { }` 这类非 `@Composable` 的 lambda 里不能直接调用 `stringResource`，要先取值再传入。
 - `LocalizationGuardTest` 守着这次迁移：两个语言文件必须 key 一一对应，且 `src/main/java` 下的中文**字面量只许减少**（842 → **0**：未标注理由的中文串已清零）。
@@ -109,7 +111,7 @@
 - **错误按状态判断，不按文案判断。** `AppError.Http(code)` 取代了「服务器返回 HTTP 403」这种字符串，下载引擎的重取/重试逻辑改为看状态码——以前是 `message.contains("HTTP 403")`，改一句提示就会悄悄改变重试行为。解析页的失败也改成 `HomeError` 键（`FromApp`/`EmptyInput`/`NoVariant`/`QueueFailed`），由 `presentation/ErrorText.kt` 统一出文案。
 - **钥匙串（keystore）提示、分享面板标题、通用兜底错误**都已进资源；`toAppError()` 也改为返回带 `reasonKey` 的错误（`generic:network` / `generic:unknown`），所以「不要把系统英文消息当提示」这条约束现在由**类型**保证而不是靠拼字符串。
 - **域层用 `null` 表示「不显示」，界面补文案。** `VaultPolicy.title(...)` 对锁定记录返回 `null`（而不是「保险箱内容」），通知与列表各自补上本地化文案；`SleepTimer.remainingRounded` 返回 `Minutes`/`Seconds`，`PlayerGestures.seekLabelSeconds` 只返回 `-10`/`+10`（符号与数字是数据，单位是文案）。
-- **非文案的四种豁免。** 剩余的中文字面量按四类就地标注 `// l10n-ignore: <理由>`：(1) `require`/`check` 内部不变量（失败只显示统一的「操作失败」）、(2) 开发者日志、(3) 开发者诊断异常（消息可能含系统文案或路径，从不作为界面文案）、(4) 持久化内容（记录标题、文件名、MediaStore 目录名、画质标签——随语言改变会让同一内容落到不同名字）。守卫测试只统计**未标注**的中文串，当前为 0，因此新增任何中文文案都会让 `testDebugUnitTest` 失败。
+- **连诊断与兜底文案也进资源。** `core/AppText.kt` 是应用级文本解析器（`VideoDownApp` 启动时安装），给没有 Context 的数据层类提供 `require` 消息、诊断异常、日志与兜底标题的文案；JVM 套件通过 `TestText` 装上「id → 资源名」的测试缝，于是断言的是**用了哪条文案**而不是译文。只剩 **2 处**不可本地化：MediaStore 目录名（是路径）与清单格式标识行（要被再次解析）。守卫测试只统计**未标注**的中文串，当前为 0。
 - **key 只有一个解析入口。** `core/reasonKeyRes(key)` 覆盖全部 key 家族（`engine:` / `download:` / `service:` / `vault:` / `gallery:` / `x:` / `platform:` / `input:` / `update:` / `generic:`），`storedErrorMessage` 就是一次查表——**任何存进记录的 key 都不可能被原样显示**（这条规则在第二十批修掉一个「engine:LIVE 可能泄漏到提示」的隐患后固化下来）。
 - **版本号也是「结构 + 文案」。** `AppVersion` / `AppUpdateManifest` 不再自带 `label`；更新对话框用 `versionText`（清单里的版本名）与 `appVersionText`（本机版本，含内部版本号）分别成句——**两者的措辞本来就不一样**，合并成一个会改掉界面文字（设备测试 `AppUpdateEntryDeviceTest` 抓到过这一点）。
 - **句子的参数也是结构。** `AppError.Parse` 除了 `reasonKey`，还能带 `platform`（平台名）与 `detail`（数据值，例如抖音作品 ID）；`reasonKeyNeedsPlatform` / `reasonKeyNeedsDetail` 显式声明哪些文案需要参数，不靠猜 `%s` 的个数。批量导入的状态同样只报结构（`ImportNotice`、`ImportRowError`），由对话框成句。
@@ -137,7 +139,10 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 - 「我的 → 检查更新」显示当前版本，并读取一个可配置的版本清单 JSON（`versionCode` / `versionName` / `downloadUrl` / `releasePageUrl` / `notes`）判断是否有新版本。
 - 发现新版本时显示版本号与更新说明，并提供「下载新版」或「查看发布页」，在系统浏览器或下载器中打开；应用不申请安装权限，也不静默安装。
 - 更新源地址默认取构建期参数 `-PupdateManifestUrl=…`（写入 `BuildConfig.DEFAULT_UPDATE_MANIFEST_URL`），也可在「检查更新 → 更新源」中按设备修改并保留。未配置、离线或清单格式不正确时给出明确提示并保留当前版本信息。
-- 解析引擎仍随 APK 固定更新，本次不引入独立的引擎热更新。验证记录见 [应用更新入口验证](docs/validation/app-update-entry-2026-10-09.md)。
+- **正式包默认指向本仓库的 Releases**：`https://github.com/Monkey0803/VideoDown/releases/latest/download/version.json`。`releases/latest/download/…` 是稳定地址，换版本不用改应用，所以 APK 与清单同属一次 Release。
+- 发版用 `scripts/publish-release.sh v1.1.0 --notes-file <发行说明.md>`：先跑 JVM 测试，再分别构建 arm64 与 universal 两个 APK（构建期嵌入清单地址），按 `app/build.gradle.kts` 的 `versionCode` / `versionName` 生成 `version.json`，最后 `gh release create` 把两个 APK 与清单作为附件上传。tag 与 `versionName` 不一致时脚本直接拒绝。
+- 老版本要能看到升级，清单里的 `versionCode` 必须大于它自己的；附件名固定为 `videodown-arm64-v8a-release.apk` / `videodown-universal-release.apk`，清单的 `downloadUrl` 指向 arm64 包（通用包从发布页取）。
+- 解析引擎仍随 APK 固定更新，不引入独立的引擎热更新。验证记录见 [应用更新入口验证](docs/validation/app-update-entry-2026-10-09.md) 与 [1.1.0 发版记录](docs/validation/release-1.1.0-2026-10-10.md)。
 
 ## 功能对照
 

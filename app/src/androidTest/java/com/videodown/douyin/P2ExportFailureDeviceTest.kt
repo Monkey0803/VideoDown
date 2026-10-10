@@ -48,6 +48,8 @@ class P2ExportFailureDeviceTest {
         if(labels.any { node.text?.toString()?.equals(it, true) == true || node.contentDescription?.toString()?.equals(it, true) == true }) return node
         for(i in 0 until node.childCount) node.getChild(i)?.let { find(it, labels)?.let { item -> return item } }; return null
     }
+    /** SAF 抽屉里的主存储根名就是设备型号；写死真机名会让同一用例在模拟器上永远找不到。 */
+    private val deviceRootLabel = android.os.Build.MODEL ?: "SHARK PRS-A0"
     private suspend fun tapSystem(vararg labels: String) {
         report("SYSTEM_TAP_WAIT: ${labels.toList()}")
         fun drawerList(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
@@ -57,7 +59,7 @@ class P2ExportFailureDeviceTest {
         var found: AccessibilityNodeInfo? = null
         withTimeout(7000) { while(found == null) {
             found = instrumentation.uiAutomation.rootInActiveWindow?.let { root ->
-                val scope = if(labels.contentEquals(arrayOf("P2 空间配额测试")) || labels.contentEquals(arrayOf("SHARK PRS-A0"))) drawerList(root) else root
+                val scope = if(labels.contentEquals(arrayOf("P2 空间配额测试")) || labels.contentEquals(arrayOf(deviceRootLabel))) drawerList(root) else root
                 scope?.let { find(it, labels.toList()) }?.takeIf { it.isVisibleToUser && it.isEnabled }
             }
             if(found == null) delay(50)
@@ -79,7 +81,7 @@ class P2ExportFailureDeviceTest {
         }
         capture("picker-before-grant")
         // Always select the own root; a cached recent location can expose a disabled Use button.
-        tapSystem("显示根目录")
+        tapSystem("显示根目录", "Show roots")
         capture("picker-roots-drawer")
         tapSystem("P2 空间配额测试")
         tapSystem("使用此文件夹", "Use this folder"); tapSystem("允许", "Allow")
@@ -87,8 +89,8 @@ class P2ExportFailureDeviceTest {
     private suspend fun selectNewExternalFolder(name: String) {
         compose.onNodeWithText("选择文件夹").performClick()
         withTimeout(5000) { while(instrumentation.uiAutomation.rootInActiveWindow?.packageName?.toString() !in setOf("com.android.documentsui", "com.google.android.documentsui")) delay(50) }
-        tapSystem("显示根目录"); tapSystem("SHARK PRS-A0")
-        tapSystem("新建文件夹")
+        tapSystem("显示根目录", "Show roots"); tapSystem(deviceRootLabel)
+        tapSystem("新建文件夹", "New folder")
         fun editable(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
             if(node.isEditable) return node
             for(i in 0 until node.childCount) node.getChild(i)?.let { editable(it)?.let { field -> return field } }; return null

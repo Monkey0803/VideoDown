@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
+import com.videodown.douyin.core.AppLanguage
 import com.videodown.douyin.core.AppPreferences
 import com.videodown.douyin.core.LibraryLayout
 import com.videodown.douyin.core.PreferredQuality
@@ -35,6 +36,16 @@ internal fun themeModeLabelRes(mode: ThemeMode): Int = when (mode) {
 internal fun libraryLayoutLabelRes(layout: LibraryLayout): Int = when (layout) {
     LibraryLayout.WATERFALL -> R.string.layout_waterfall
     LibraryLayout.LIST -> R.string.layout_list
+}
+
+/**
+ * 语言名一律用「自己的写法」（简体中文 / English），两种语言文件里都一样：
+ * 看不懂当前界面语言的人才找得到自己要选的那一项。
+ */
+internal fun appLanguageLabelRes(language: AppLanguage): Int = when (language) {
+    AppLanguage.SYSTEM -> R.string.settings_language_system
+    AppLanguage.CHINESE -> R.string.settings_language_chinese
+    AppLanguage.ENGLISH -> R.string.settings_language_english
 }
 
 internal fun preferredQualityLabelRes(quality: PreferredQuality): Int = when (quality) {

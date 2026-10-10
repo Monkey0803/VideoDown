@@ -7,6 +7,7 @@ import com.videodown.douyin.presentation.librarySortLabelRes
 import com.videodown.douyin.presentation.history.BatchOperation
 import com.videodown.douyin.presentation.history.contextOperationLabel
 import com.videodown.douyin.presentation.components.TabPageHeader
+import com.videodown.douyin.presentation.components.AppConfirmDialog
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -21,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -196,10 +196,16 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
         if (granted) historyViewModel.exportSelected(ids, galleryOperation) else historyViewModel.showMessage(context.getString(R.string.library_need_storage_permission))
     }
     pendingDelete?.let { ids ->
-        AlertDialog(onDismissRequest = { pendingDelete = null }, title = { Text(stringResource(R.string.library_delete_selected_title)) },
-            text = { Text(stringResource(R.string.library_delete_selected_body, ids.size)) },
-            confirmButton = { TextButton(onClick = { historyViewModel.deleteSelected(ids); pendingDelete = null }) { Text(stringResource(R.string.action_confirm_delete)) } },
-            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(stringResource(R.string.action_cancel)) } })
+        AppConfirmDialog(
+            onDismissRequest = { pendingDelete = null },
+            icon = AppIcons.Delete,
+            title = stringResource(R.string.library_delete_selected_title),
+            body = stringResource(R.string.library_delete_selected_body, ids.size),
+            confirmText = stringResource(R.string.action_confirm_delete),
+            onConfirm = { historyViewModel.deleteSelected(ids); pendingDelete = null },
+            dismissText = stringResource(R.string.action_cancel),
+            destructive = true,
+        )
     }
     LaunchedEffect(state.message) {
         state.message?.let { message ->
@@ -225,6 +231,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             )
             OutlinedTextField(value = state.libraryQuery.text,
                 onValueChange = { queryChanged(state.libraryQuery.copy(text = it)) },
+                // 「已存」的搜索框与「任务」页保持一致，圆角同「解析」页的链接输入框（shapes.large）。
+                shape = MaterialTheme.shapes.large,
                 label = { Text(stringResource(R.string.history_search_hint)) }, singleLine = true, enabled = !state.batchBusy,
                 leadingIcon = { AppIcon(AppIcons.Search, null) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),

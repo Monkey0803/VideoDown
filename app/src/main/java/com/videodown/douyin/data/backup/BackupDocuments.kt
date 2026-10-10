@@ -13,8 +13,6 @@ import kotlinx.coroutines.withContext
  */
 object BackupDocuments {
     /** Suggested names for the two "create document" pickers. */
-    const val LINK_FILE_NAME = "拾影链接清单.txt"  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
-    const val SETTINGS_FILE_NAME = "拾影设置备份.json"  // l10n-ignore: 持久化内容（记录标题/文件名/目录名/画质标签）：随语言改变会让同一内容落到不同名字
 
     /** MIME types offered when opening a backup; a plain text list must also be selectable. */
     val READABLE_TYPES = arrayOf("text/plain", "application/json", "*/*")

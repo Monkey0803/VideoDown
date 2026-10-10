@@ -1,5 +1,7 @@
 package com.videodown.douyin.data.download
 
+import com.videodown.douyin.R
+import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.DownloadQueueState
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CancellationException
@@ -22,7 +24,7 @@ internal class DownloadQueueScheduler(limit: Int) {
         if (id !in permits) { permits[id] = CompletableDeferred(); pending += id; dispatch() }
     }
     suspend fun awaitSlot(id: String) {
-        val permit = mutex.withLock { permits[id] } ?: throw CancellationException("任务已移出队列")  // l10n-ignore: 开发者诊断：异常消息仅用于排查，不作为界面文案显示
+        val permit = mutex.withLock { permits[id] } ?: throw CancellationException(AppText.get(R.string.queue_task_removed))
         permit.await()
     }
     suspend fun finish(id: String) = mutex.withLock {
