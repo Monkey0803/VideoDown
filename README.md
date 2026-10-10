@@ -120,7 +120,7 @@
 - **失败要有类型，不能靠比对文案。** 相册保存失败原本是把消息文本和 6 条中文字符串比对来区分，改一句提示就会归类错误；现在是 `GalleryExportException(GalleryExportFailure)`，`galleryFailureKindOf(error)` 负责把外部异常（如 `SecurityException`）归到一个类别。批次结果里的失败也改成存 key（`BatchFailure.galleryFailureKey`），由界面出文案。X 的解析失败同理：`XParseResult.Failure(XParseFailure)` 取代 `Failure("中文句子")`，请求本身失败则复用 `AppError.Http(status)`（**HTTP 状态就是 HTTP 状态**，不再有「X 访问失败（HTTP 403）」这类专有文案）。`AppError.Parse.reasonKey` 统一承载 `engine:` / `x:` 两类 key。
 - **持久化的错误存 key，不存句子。** 任务记录会活过一次语言切换，所以引擎失败存成 `engine:<kind>`、后台服务失败存成 `service:<kind>`（`core/ErrorResources.kt`、`core/ServiceFailure.kt`），界面用 `storedErrorMessage(...)` 解析；**旧版本写进历史的中文消息**没有前缀，仍按原文显示并继续被 `legacyFailureKind` 识别。`VideoEngineException` 现在只带 `kind`，`DownloadServiceException` 只带 `ServiceFailure`。
 - **数据不是文案。** `legacyFailureKind` 里的中文是用来**匹配用户设备上已存的历史消息**的，改写就会失效。守卫测试支持按函数名豁免（`DATA_FUNCTIONS`），豁免必须写明理由，不允许用它来放过界面文案。
-- **迁移仍在进行**：解析页、设置页、任务页、已存页、播放页、批量导入、网页辅助与更新/存储/导出对话框均已跟随语言；剩下的是 domain/data 的异常与提示文案。
+- **迁移已完成**：所有用户可见文案来自 `values/` 与 `values-en/`（各 626 条 key）。`domain`/`core`/`data` 不持有界面文案，只返回值、枚举或 key，由 `core/reasonKeyRes(key)` 单点解析；其余 116 处中文字面量是内部不变量、开发者日志、开发者诊断异常与持久化内容，逐条用 `// l10n-ignore: <理由>` 登记（守卫计数为 0）。
 
 ## 通用网址与网页辅助
 

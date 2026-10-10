@@ -71,10 +71,10 @@
 
 ## 既有失败项（非本轮引入，供后续处理）
 
-- [ ] **`P2CompletionNotificationDeviceTest` 在 API 37 模拟器上超时失败**，在 API 30 真机通过。已用「临时注释掉本轮独立通知收集器仍以同样方式失败」证明与本轮改动无关，疑似模拟器 SystemUI 通知栏差异。失败日志保留在 `docs/validation/p4-features-2026-10-09/emulator-api37/P2CompletionNotificationDeviceTest.emulator-failure.xml`。
+- [ ] **`P2CompletionNotificationDeviceTest` 在 API 37 模拟器上超时失败**，在 API 30 真机通过。已用「临时注释掉本轮独立通知收集器仍以同样方式失败」证明与本轮改动无关，疑似模拟器 SystemUI 通知栏差异。失败日志保留在 `docs/validation/p4-features-2026-10-09/emulator-api37/P2CompletionNotificationDeviceTest.emulator-failure.xml`。**本轮在真机 SHARK PRS-A0 / API 30 复核：1/1 通过**，XML 存于 `docs/validation/p6-phase-c-2026-10-09/device-api30/P2CompletionNotificationDeviceTest.xml`。
 - [x] **`P1RecoveryNavigationDeviceTest#rateLimitedParseOpensSettingsWithoutRepeatingRequest` 等待的文案「打造专属空间」已在 `94a83b9` 从设置页移除**，断言未同步。本轮把断言改为当前实际渲染的页面标题「我的设置」，用例意图不变，修复后 4/4 通过。
-- [ ] **`P1DownloadIntegrationTest#known response size is checked again before writing a direct file` 曾偶发一次**（`expected:<STORAGE_FULL> but was:<NETWORK>`，2026-10-10 C1 迁移期间）。与本轮改动无关（本地 HTTP 服务 + 存储检查），强制重跑 3 次均通过，未修改用例。
-- [ ] **`P3PictureInPictureDeviceTest#pipScreenOffThenReturnKeepsActivityAndPlayer` 在 API 37 模拟器上失败**（操作真实熄屏与 PiP）。已用两种独立实验证明与本轮无关：把 `PlayerScreen.kt` 还原到 HEAD 后同样失败；只关闭新增手势覆盖层后同样失败。
+- [ ] **`P1DownloadIntegrationTest#known response size is checked again before writing a direct file` 曾偶发一次**（`expected:<STORAGE_FULL> but was:<NETWORK>`，2026-10-10 C1 迁移期间）。**该用例属于 JVM 套件（`app/src/test`），无法在真机上运行**；本轮以 `--rerun-tasks` 连跑 5 次，12 用例 × 5 次全部通过，未修改用例。
+- [ ] **`P3PictureInPictureDeviceTest#pipScreenOffThenReturnKeepsActivityAndPlayer` 在 API 37 模拟器上失败**（操作真实熄屏与 PiP）。已用两种独立实验证明与本轮无关：把 `PlayerScreen.kt` 还原到 HEAD 后同样失败；只关闭新增手势覆盖层后同样失败。**在 API 30 真机（SHARK PRS-A0）上已实测通过**：传 `manual_unlock=true` 并由人工在两轮各 120 秒窗口内解锁，四条 PiP 用例 4/4 通过（该条 26.1 秒），XML 存于 `device-api30/P3PictureInPictureDeviceTest.manual-unlock.xml`，两轮解锁后的播放器截图存于 `evidence/pip-manual-unlock-cycle-{1,2}.png`；**默认参数**的真机运行会因设备有锁屏而跳过该条（3 通过 + 1 跳过，XML 存于 `device-api30/P3PictureInPictureDeviceTest.xml`）。因此「模拟器失败、真机通过」这一差异已成立，剩下的只是模拟器差异本身未修复。
 
 ## Phase B — 差异化（已完成）
 
@@ -96,7 +96,7 @@
 
 ## Phase C — 工程与生态
 
-- [x] **C1 国际化** — **所有用户可见文案都来自 `res/values/` 与 `res/values-en/`**（各 622 条 key，一一对应）；`LocalizationGuardTest` 以棘轮方式守着：`src/main/java` 里**未标注理由的中文串数为 0**，两个语言文件 key 必须一一对应、`locales_config` 必须声明两种语言。基础设施：`res/xml/locales_config.xml`、清单 `android:localeConfig`、移除 `MainActivity` 的强制中文覆盖、`LocaleTestRunner` 把设备测试固定在 zh-CN。完成定义与「非文案」清单见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)：共处理 **842 条**中文字面量，其中 **约 726 条搬进资源**，其余 **116 处**按四类逐条就地标注 `// l10n-ignore: <理由>`——(1) `require`/`check` 内部不变量（失败只显示统一的「操作失败」）、(2) 开发者日志、(3) 开发者诊断异常（消息含系统文案或路径，从不作为界面文案）、(4) 持久化内容（记录标题、文件名、MediaStore 目录名、画质标签：随语言改变会让同一内容落到不同名字）；另有 `legacyFailureKind` 的历史消息匹配按函数名豁免。**原则**：`domain`/`core`/`data` 不持有界面文案——它们返回**值、枚举或 key**（`engine:`/`download:`/`service:`/`vault:`/`gallery:`/`x:`/`platform:`/`input:`/`update:`/`generic:`），由 `core/reasonKeyRes(key)` 单点解析、界面成句；持久化的错误只存 key，**旧版本写入的中文消息仍原样可读**。
+- [x] **C1 国际化** — **所有用户可见文案都来自 `res/values/` 与 `res/values-en/`**（各 626 条 key，一一对应）；`LocalizationGuardTest` 以棘轮方式守着：`src/main/java` 里**未标注理由的中文串数为 0**，两个语言文件 key 必须一一对应、`locales_config` 必须声明两种语言。基础设施：`res/xml/locales_config.xml`、清单 `android:localeConfig`、移除 `MainActivity` 的强制中文覆盖、`LocaleTestRunner` 把设备测试固定在 zh-CN。完成定义与「非文案」清单见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)：共处理 **842 条**中文字面量，其中 **约 726 条搬进资源**，其余 **116 处**按四类逐条就地标注 `// l10n-ignore: <理由>`——(1) `require`/`check` 内部不变量（失败只显示统一的「操作失败」）、(2) 开发者日志、(3) 开发者诊断异常（消息含系统文案或路径，从不作为界面文案）、(4) 持久化内容（记录标题、文件名、MediaStore 目录名、画质标签：随语言改变会让同一内容落到不同名字）；另有 `legacyFailureKind` 的历史消息匹配按函数名豁免。**原则**：`domain`/`core`/`data` 不持有界面文案——它们返回**值、枚举或 key**（`engine:`/`download:`/`service:`/`vault:`/`gallery:`/`x:`/`platform:`/`input:`/`update:`/`generic:`），由 `core/reasonKeyRes(key)` 单点解析、界面成句；持久化的错误只存 key，**旧版本写入的中文消息仍原样可读**。
 - [x] **C2 字幕下载 / 内嵌** — 解析结果带出可用的字幕语言，结果页出现「同时保存字幕」选项；引擎按语言下载并**内嵌**（`embedsubtitles` 是命令行专用开关、API 会忽略，必须显式加 `FFmpegEmbedSubtitle` 后处理器）；请求字幕的任务改走引擎下载。两个条目的解析与内嵌已在本地 `<track>` 页面验证，播放页字幕开关随之出现（见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)）。
 - [x] **C3 播放列表 / 合集批量下载** — 「解析合集」开关（默认关闭，上限 20）把整页条目交给既有分项选择；引擎侧 `noplaylist` / `playlistend` 改为由请求驱动；两个条目的枚举与逐条下载已在本地两视频页面验证（见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)）。
 - [x] **C4 私有保险箱 + 应用锁** — `DownloadRecord.isPrivate` + `VaultPolicy`（纯逻辑）统一决定可见性与脱敏；保险箱是独立视图，门禁用系统弹窗（Android 11+ 生物识别或凭据，9/10 凭据）；通知标题、完成通知深链、首页「最近保存」、导出链接清单与自动入库全部不泄露私密标题（见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)）。

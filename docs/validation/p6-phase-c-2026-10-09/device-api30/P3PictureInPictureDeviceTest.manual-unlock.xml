@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T06:14:55" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P3PictureInPictureDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="42.095" timestamp="2026-10-10T06:14:55" hostname="localhost">
+    <properties>
+      <property name="device" value="device-serial" />
+    </properties>
+    <testcase name="pipScreenOffThenReturnKeepsActivityAndPlayer" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="26.094" />
+    <testcase name="homeEntersRealPipHidesSpeedDialogAndReturnsWithoutResettingVideo" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="9.146" />
+    <testcase name="explicitPipEntryThenActivityClosureReleasesVideoAndSavesProgress" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="2.000" />
+    <testcase name="systemPipDismissReleasesVideo" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="4.855" />
+  </testsuite>
+</testsuites>
