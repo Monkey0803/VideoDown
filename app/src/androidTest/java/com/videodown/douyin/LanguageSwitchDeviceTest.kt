@@ -28,9 +28,10 @@ import org.junit.runner.RunWith
  * - Android 13 及以上：真的可以在应用内切换，选择写进系统的「按应用语言」，界面语言当场跟着变；
  * - Android 12 及以下：系统没有这个能力，弹窗只解释并给出去系统设置的入口，不给可选项。
  *
- * 两条路径写在一个用例里按 `SDK_INT` 分支，而不是用 `assumeTrue` 跳过另一条：本工具的
- * `connectedDebugAndroidTest` 会把 `AssumptionViolatedException` 记成 failure 并让任务失败
- * （`P3PictureInPictureDeviceTest` 的假定跳过同样如此），而这里两条路径各自都有真实断言。
+ * 两条路径写在一个用例里按 `SDK_INT` 分支，而不是用 `assumeTrue` 跳过另一条：这里两条路径各自
+ * 都有真实断言，报告的 tests/failures 不会被「假定跳过」搅浑——本工具链会把
+ * `AssumptionViolatedException` 写进 XML 的 failure 计数里（任务本身仍算通过，见
+ * docs/validation/lint-cleanup-2026-10-10.md 的复核）。
  *
  * 用真实的 MainActivity 而不是替身界面：切换语言会让系统重建 Activity，替身内容会被冲掉。
  */

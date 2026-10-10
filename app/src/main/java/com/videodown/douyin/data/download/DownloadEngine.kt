@@ -427,8 +427,9 @@ class DownloadEngine(
                 }
                 throw e
             } catch (e: Exception) {
-                if (e is DownloadServiceException)
-                Log.w(TAG, AppText.get(R.string.log_service_start_failed), e)
+                if (e is DownloadServiceException) {
+                    Log.w(TAG, AppText.get(R.string.log_service_start_failed), e)
+                }
                 val latest = history.getById(record.id) ?: record
                 history.upsert(latest.copy(status = DownloadStatus.FAILED,
                     errorMessage = when (e) {

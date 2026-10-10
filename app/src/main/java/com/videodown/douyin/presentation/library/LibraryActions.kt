@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +77,8 @@ internal fun LibraryActions(
     vaultUnlocked: Boolean = false,
 ) {
     val context = LocalContext.current
+    // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val exporter = remember(context) { GalleryExporter(context.applicationContext) }
     var exportingId by remember { mutableStateOf<String?>(null) }
@@ -99,8 +102,8 @@ internal fun LibraryActions(
                 exportingId = null
             }
             snackbar.showSnackbar(result.fold(
-                onSuccess = { context.getString(if (record.isAudio) R.string.library_saved_to_music else R.string.library_saved_to_gallery) },
-                onFailure = { context.getString(R.string.library_save_failed, galleryErrorMessage(context, it)) },
+                onSuccess = { resources.getString(if (record.isAudio) R.string.library_saved_to_music else R.string.library_saved_to_gallery) },
+                onFailure = { resources.getString(R.string.library_save_failed, galleryErrorMessage(context, it)) },
             ))
         }
     }
@@ -109,8 +112,8 @@ internal fun LibraryActions(
         val record = records.firstOrNull { it.id == pendingPermissionId }
         pendingPermissionId = null
         when {
-            !granted -> showMessage(context.getString(R.string.library_need_storage_permission))
-            record == null -> showMessage(context.getString(R.string.library_video_missing))
+            !granted -> showMessage(resources.getString(R.string.library_need_storage_permission))
+            record == null -> showMessage(resources.getString(R.string.library_video_missing))
             else -> export(record)
         }
     }
@@ -124,7 +127,7 @@ internal fun LibraryActions(
             Column(Modifier.verticalScroll(rememberScrollState()).padding(bottom = 12.dp)) {
                 Text(stringResource(if (selected.isAudio) R.string.library_actions_audio else R.string.library_actions_video), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 24.dp))
-                Text(VaultPolicy.title(selected, vaultUnlocked) ?: context.getString(R.string.vault_locked_title), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
+                Text(VaultPolicy.title(selected, vaultUnlocked) ?: resources.getString(R.string.vault_locked_title), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp))
                 LibraryActionRow(stringResource(if (selected.favorite) R.string.library_unfavorite else R.string.library_favorite), if (selected.favorite) AppIcons.FavoriteFilled else AppIcons.Favorite, enabled = !organizing) {
@@ -139,13 +142,13 @@ internal fun LibraryActions(
                 LibraryActionRow(stringResource(if (selected.isAudio) R.string.library_play_audio else R.string.library_play_video), AppIcons.Play) {
                     onDismiss()
                     if (selected.filePath?.let { File(it).isFile } == true) onPlay(selected.id)
-                    else showMessage(context.getString(R.string.library_file_missing))
+                    else showMessage(resources.getString(R.string.library_file_missing))
                 }
                 LibraryActionRow(stringResource(if (selected.isAudio) R.string.library_share_audio else R.string.library_share_video), AppIcons.Share) {
                     onDismiss()
                     val file = selected.filePath?.let(::File)
                     if (file == null || !file.isFile || !DouyinIntents.shareFile(context, file)) {
-                        showMessage(context.getString(R.string.library_share_failed))
+                        showMessage(resources.getString(R.string.library_share_failed))
                     }
                 }
                 LibraryActionRow(

@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,6 +33,8 @@ import com.videodown.douyin.presentation.components.AppIcons
 internal fun FileExportDialog(ids: List<String>, model: FileExportViewModel, onClose: () -> Unit) {
     val state by model.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
+    val resources = LocalResources.current
     val remaining = if (state.finished) ids.filter { it in state.failedIds } else ids
     var rememberedTree by remember { mutableStateOf(ServiceLocator.preferences.exportTreeUri) }
     LaunchedEffect(state.invalidTreeUri) {
@@ -48,7 +51,7 @@ internal fun FileExportDialog(ids: List<String>, model: FileExportViewModel, onC
                 ServiceLocator.preferences.exportTreeUri = tree.toString()
                 rememberedTree = tree.toString()
                 model.export(remaining, tree.toString())
-            } catch (_: Exception) { model.message(context.getString(R.string.export_permission_failed)) }
+            } catch (_: Exception) { model.message(resources.getString(R.string.export_permission_failed)) }
         }
     }
     AppDialog(

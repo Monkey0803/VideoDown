@@ -28,15 +28,17 @@ interface VaultAuthenticator {
 /**
  * The real prompt.
  *
- * Android 11 and newer asks for biometrics **or** the device credential; Android 9 and 10 can only
- * ask for the device credential, and older releases have no prompt that a background app may use,
- * so the vault reports itself unavailable there instead of pretending to be locked.
+ * Android 11 and newer asks for biometrics **or** the device credential, and Android 10 can add the
+ * credential as a fallback. Android 9's framework prompt only offers biometrics (it has no
+ * credential form), and older releases have no prompt a foreground app may use, so the vault
+ * reports itself unavailable there instead of pretending to be locked.
  */
 class SystemVaultAuthenticator : VaultAuthenticator {
     override fun isAvailable(context: Context): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false
         val keyguard = context.getSystemService(KeyguardManager::class.java) ?: return false
         if (keyguard.isDeviceSecure) return true
+        // canAuthenticate(int) 是 API 30 起：Android 10 只看锁屏凭据，没有就不算可用。
         // The framework class has no `from()`; that helper only exists in androidx.biometric, which
         // this project does not depend on.
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
@@ -46,7 +48,7 @@ class SystemVaultAuthenticator : VaultAuthenticator {
 
     @Suppress("DEPRECATION")
     override fun authenticate(activity: Activity, onResult: (Boolean) -> Unit): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false
         val builder = BiometricPrompt.Builder(activity)
             .setTitle(activity.getString(com.videodown.douyin.R.string.vault_unlock_title))
             .setSubtitle(activity.getString(com.videodown.douyin.R.string.vault_unlock_subtitle))
@@ -55,6 +57,7 @@ class SystemVaultAuthenticator : VaultAuthenticator {
                 BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL,
             )
         } else {
+            // Android 10 only: biometrics, with the device credential as a fallback.
             builder.setDeviceCredentialAllowed(true)
         }
         val callback = object : BiometricPrompt.AuthenticationCallback() {

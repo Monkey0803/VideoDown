@@ -12,6 +12,12 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!--
+      私有保险箱的门禁用框架 BiometricPrompt：canAuthenticate 与 authenticate 都要求声明这条权限，
+      缺了会抛 SecurityException（被代码吞掉后表现为「无法验证」）。
+    -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />

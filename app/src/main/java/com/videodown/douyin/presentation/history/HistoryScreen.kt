@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -95,6 +96,8 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     onRecovery: (DownloadRecord, RecoveryAction) -> Unit = { _, _ -> }) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
+    val resources = LocalResources.current
     val focusManager = LocalFocusManager.current
     val snackbar = remember { SnackbarHostState() }
     var selecting by remember { mutableStateOf(false) }
@@ -128,7 +131,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
         state.message?.let { snackbar.showSnackbar(it); viewModel.onMessageConsumed() }
     }
     LaunchedEffect(state.notice) {
-        state.notice?.let { snackbar.showSnackbar(context.getString(noticeLabel(it))); viewModel.onNoticeConsumed() }
+        state.notice?.let { snackbar.showSnackbar(resources.getString(noticeLabel(it))); viewModel.onNoticeConsumed() }
     }
     pendingSpeedLimit?.let { record ->
         AppDialog(

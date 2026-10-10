@@ -75,6 +75,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
 import com.videodown.douyin.presentation.videoPlatformLabelRes
@@ -129,6 +130,7 @@ import kotlin.math.roundToInt
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun PlayerScreen(
     recordId: String,
@@ -137,6 +139,8 @@ fun PlayerScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
+    val resources = LocalResources.current
     val activity = remember(context) { context.findActivity() }
     val pipActivity = activity as? com.videodown.douyin.presentation.MainActivity
     val inPip = pipActivity?.inPictureInPicture == true
@@ -239,7 +243,7 @@ fun PlayerScreen(
                     ))
                 }
                 player.setMediaItem(builder
-                    .setMediaMetadata(MediaMetadata.Builder().setTitle(state.record?.title).setArtist(state.record?.displayAuthor?.ifBlank { context.getString(R.string.unknown_author) }).build())
+                    .setMediaMetadata(MediaMetadata.Builder().setTitle(state.record?.title).setArtist(state.record?.displayAuthor?.ifBlank { resources.getString(R.string.unknown_author) }).build())
                     .build(), state.resumePositionMs)
                 player.prepare()
                 player.setPlaybackSpeed(state.options.speed)
@@ -361,14 +365,14 @@ fun PlayerScreen(
             val result = exporter.export(record)
             exporting = false
             snackbar.showSnackbar(result.fold(
-                onSuccess = { context.getString(if (record.isAudio) R.string.player_transfer_audio_done else R.string.player_transfer_video_done) },
-                onFailure = { context.getString(R.string.player_transfer_failed, galleryErrorMessage(context, it)) },
+                onSuccess = { resources.getString(if (record.isAudio) R.string.player_transfer_audio_done else R.string.player_transfer_video_done) },
+                onFailure = { resources.getString(R.string.player_transfer_failed, galleryErrorMessage(context, it)) },
             ))
         }
     }
     val storagePermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) exportToGallery()
-        else scope.launch { snackbar.showSnackbar(context.getString(R.string.player_transfer_permission)) }
+        else scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_transfer_permission)) }
     }
     fun requestExport() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
@@ -429,7 +433,7 @@ fun PlayerScreen(
             onTap = { playerView?.showController() },
             onSeek = { side ->
                 player.seekTo(PlayerGestures.seekTarget(player.currentPosition, player.duration, side))
-                showFeedback(context.getString(R.string.player_seek_seconds, PlayerGestures.seekLabelSeconds(side)))
+                showFeedback(resources.getString(R.string.player_seek_seconds, PlayerGestures.seekLabelSeconds(side)))
             },
             onBoost = { boosting -> boostedSpeed = boosting },
             onSwipeStart = {
@@ -440,11 +444,11 @@ fun PlayerScreen(
                 if (side == GestureSide.LEFT) {
                     val value = PlayerGestures.brightnessAfter(swipeBrightnessStart, dy, height)
                     applyBrightness(value)
-                    showFeedback(context.getString(R.string.player_brightness, (value * 100).roundToInt()))
+                    showFeedback(resources.getString(R.string.player_brightness, (value * 100).roundToInt()))
                 } else {
                     val value = PlayerGestures.volumeAfter(swipeVolumeStart, dy, height)
                     applyVolume(value)
-                    showFeedback(context.getString(R.string.player_volume, (value * 100).roundToInt()))
+                    showFeedback(resources.getString(R.string.player_volume, (value * 100).roundToInt()))
                 }
             },
             onSwipeEnd = { gestureFeedback = null },
@@ -598,18 +602,18 @@ fun PlayerScreen(
                                 enabled = state.fileExists && !exporting, busy = exporting, onClick = ::requestExport)
                             PlayerIconAction(stringResource(R.string.player_share), AppIcons.Share, enabled = state.fileExists) {
                                 val file = File(record.filePath.orEmpty())
-                                if (!DouyinIntents.shareFile(context, file)) scope.launch { snackbar.showSnackbar(context.getString(R.string.player_share_failed)) }
+                                if (!DouyinIntents.shareFile(context, file)) scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_share_failed)) }
                             }
                             if (!record.isAudio) PlayerIconAction(stringResource(R.string.player_pip), AppIcons.Pip,
                                 enabled = state.fileExists && pipActivity?.supportsPip == true) {
-                                if (pipActivity?.enterVideoPip() != true) scope.launch { snackbar.showSnackbar(context.getString(R.string.player_pip_failed)) }
+                                if (pipActivity?.enterVideoPip() != true) scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_pip_failed)) }
                             }
                             PlayerIconAction(stringResource(R.string.player_external), AppIcons.Play, enabled = state.fileExists) {
                                 val file = File(record.filePath.orEmpty())
-                                if (!DouyinIntents.playExternally(context, file)) scope.launch { snackbar.showSnackbar(context.getString(R.string.player_external_failed)) }
+                                if (!DouyinIntents.playExternally(context, file)) scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_external_failed)) }
                             }
                             PlayerIconAction(stringResource(R.string.player_view_original, stringResource(videoPlatformLabelRes(record.platform))), AppIcons.ExternalLink) {
-                                if (!DouyinIntents.openVideo(context, record)) scope.launch { snackbar.showSnackbar(context.getString(R.string.player_open_failed, platformName(context, record.platform))) }
+                                if (!DouyinIntents.openVideo(context, record)) scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_open_failed, platformName(context, record.platform))) }
                             }
                         }
                     }

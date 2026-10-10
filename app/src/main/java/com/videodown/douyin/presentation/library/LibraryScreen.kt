@@ -19,6 +19,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.lazy.LazyRow
@@ -113,13 +114,15 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     fileExportViewModel: FileExportViewModel = viewModel(),
     audioExtractionViewModel: AudioExtractionViewModel = viewModel()) {
     val context = LocalContext.current
+    // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
+    val resources = LocalResources.current
     var extractingId by rememberSaveable { mutableStateOf<String?>(null) }
     val fileExport by fileExportViewModel.state.collectAsStateWithLifecycle()
     var fileExportIds by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
     var exportSession by rememberSaveable { mutableStateOf(fileExportViewModel.sessionId) }
     LaunchedEffect(fileExportViewModel.sessionId) {
         if (exportSession != fileExportViewModel.sessionId) {
-            if (fileExportIds.isNotEmpty()) fileExportViewModel.message(context.getString(R.string.library_export_interrupted))
+            if (fileExportIds.isNotEmpty()) fileExportViewModel.message(resources.getString(R.string.library_export_interrupted))
             fileExportIds = emptyList()
             exportSession = fileExportViewModel.sessionId
         }
@@ -148,7 +151,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     allSaved.firstOrNull { it.id == editingId }?.let { LibraryOrganizationDialog(it, organizationViewModel) { editingId = null } }
     allSaved.firstOrNull { it.id == extractingId }?.let { record ->
         AudioExtractionDialog(record, audioExtractionViewModel, onClose = { extractingId = null }, onQueued = {
-            extractingId = null; historyViewModel.showMessage(context.getString(R.string.library_extract_queued))
+            extractingId = null; historyViewModel.showMessage(resources.getString(R.string.library_extract_queued))
         })
     }
     val galleryOperation = when {
@@ -179,21 +182,21 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
         val query = state.libraryQuery
         if (query.vaultUnlocked) { controlsChanged(query.copy(vaultUnlocked = false, vaultOnly = false)); return }
         val activity = context.findActivity()
-        if (activity == null) { vaultScope.launch { snackbar.showSnackbar(context.getString(R.string.vault_unavailable)) }; return }
+        if (activity == null) { vaultScope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_unavailable)) }; return }
         val authenticator = ServiceLocator.vaultAuthenticator
         if (!authenticator.isAvailable(context)) {
-            vaultScope.launch { snackbar.showSnackbar(context.getString(R.string.vault_no_keyguard)) }
+            vaultScope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_no_keyguard)) }
             return
         }
         val started = authenticator.authenticate(activity) { granted ->
             if (granted) controlsChanged(query.copy(vaultUnlocked = true, vaultOnly = true))
-            else vaultScope.launch { snackbar.showSnackbar(context.getString(R.string.vault_denied)) }
+            else vaultScope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_denied)) }
         }
-        if (!started) vaultScope.launch { snackbar.showSnackbar(context.getString(R.string.vault_unavailable)) }
+        if (!started) vaultScope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_unavailable)) }
     }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         val ids = pendingExport.toSet(); pendingExport = emptyList()
-        if (granted) historyViewModel.exportSelected(ids, galleryOperation) else historyViewModel.showMessage(context.getString(R.string.library_need_storage_permission))
+        if (granted) historyViewModel.exportSelected(ids, galleryOperation) else historyViewModel.showMessage(resources.getString(R.string.library_need_storage_permission))
     }
     pendingDelete?.let { ids ->
         AppConfirmDialog(
@@ -372,8 +375,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             onFavorite = { organizationViewModel.update(it.id, favorite = !it.favorite) },
             onToggleVault = { record ->
                 organizationViewModel.update(record.id, isPrivate = !record.isPrivate) {
-                    if (record.isPrivate) historyViewModel.showMessage(context.getString(R.string.vault_removed))
-                    else historyViewModel.showMessage(context.getString(R.string.vault_added))
+                    if (record.isPrivate) historyViewModel.showMessage(resources.getString(R.string.vault_removed))
+                    else historyViewModel.showMessage(resources.getString(R.string.vault_added))
                 }
             },
             vaultUnlocked = state.libraryQuery.vaultUnlocked,

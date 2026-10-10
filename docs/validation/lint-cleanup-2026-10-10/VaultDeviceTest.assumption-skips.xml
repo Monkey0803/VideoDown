@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="1" errors="0" skipped="0" time="0.000" timestamp="2026-10-10T11:54:46" hostname="localhost">
+  <testsuite name="com.videodown.douyin.VaultDeviceTest" tests="3" failures="1" errors="0" skipped="0" time="6.722" timestamp="2026-10-10T11:54:46" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="anUnavailableGateSaysSoInsteadOfOpening" classname="com.videodown.douyin.VaultDeviceTest" time="2.631" />
+    <testcase name="theTaskListAndTheCompletionNotificationNeverNameAPrivateRecord" classname="com.videodown.douyin.VaultDeviceTest" time="1.850">
+      <failure>org.junit.AssumptionViolatedException: Notifications are disabled on this device
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.VaultDeviceTest.theTaskListAndTheCompletionNotificationNeverNameAPrivateRecord(VaultDeviceTest.kt:165)
+</failure>
+    </testcase>
+    <testcase name="theVaultKeepsPrivateItemsOutUntilTheGateIsPassed" classname="com.videodown.douyin.VaultDeviceTest" time="2.241" />
+  </testsuite>
+</testsuites>

@@ -35,8 +35,15 @@
 - **没验证系统那侧的「应用语言」设置页**：只验证了应用写入的语言标签（`cmd locale get-app-locales`）与界面语言随之改变，没有走系统 UI 反向验证。
 - 英文资源里的 `简体中文` 是刻意的自称写法；`LocalizationGuardTest` 只管 Kotlin 字面量与两个资源文件的 key 对应，并不反对这一点。
 - 未在平板、折叠屏、横屏下验证新增行的排布。
-- **Lint 仍有 53 个 error，全部位于本轮未改动的既有代码**（`VaultAuthenticator` 的权限声明、`SettingsScreen` 等处的 `LocalContextGetResourceValueCall` 48 处、`DownloadEngine` 缩进等）；本轮新增的 4 个文件在 lint 报告中为 0 条。
+- **（当时）Lint 仍有 53 个 error，全部位于本轮未改动的既有代码**（这批已在 [lint 收敛](lint-cleanup-2026-10-10.md) 处理到 0）（`VaultAuthenticator` 的权限声明、`SettingsScreen` 等处的 `LocalContextGetResourceValueCall` 48 处、`DownloadEngine` 缩进等）；本轮新增的 4 个文件在 lint 报告中为 0 条。
 
-## 一条工具的记账问题（与本次改动无关）
+## 关于「假定跳过」的记账（2026-10-10 晚更正）
 
-本工具链会把 JUnit 的 `AssumptionViolatedException` **记成 failure 并让 `connectedDebugAndroidTest` 失败**：今天真机跑 `P3PictureInPictureDeviceTest` 的原始报告就是 `tests=4 failures=1 skipped=0`，failure body 是 `org.junit.Assume.assumeTrue`（文档此前记作「1 例按设计跳过」）。`GenericVideoDeviceTest` 的 `assumeTrue` 同理。因此本次的用例改用 `SDK_INT` 分支各自断言，而不是跳过不适用的一条；既有用例的记账口径是否要改，留给仓库维护者决定。
+先说结论：本工具链**不会**因为 `assumeTrue` 的 `AssumptionViolatedException` 让
+`connectedDebugAndroidTest` 失败——它只把这条写进 XML 的 `failures` 计数里，任务本身仍判为通过；
+设备报告里的 failures 要按「假定跳过」读。本文早先写成「记成 failure 并让任务失败」是误判，
+依据是当天 `LanguageSwitchDeviceTest` 的两次失败里**同时**存在真实断言失败，被我归错了因。
+
+当日复核证据：`DownloadSettingsDeviceTest`（6 项、1 项 `assumeTrue` 跳过）与 `VaultDeviceTest`
+（3 项、1–2 项跳过）都报 `BUILD SUCCESSFUL`，XML 里 `failures` 却是 1——即 XML 计数包含跳过，
+任务判定不含。

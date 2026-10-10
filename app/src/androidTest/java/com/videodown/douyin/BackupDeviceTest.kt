@@ -132,13 +132,15 @@ class BackupDeviceTest {
         assertEquals(listOf("https://v.douyin.com/aaa/", "https://v.douyin.com/bbb/"), links)
 
         // The parse page turns that text into the batch-import dialog's input.
+        // 测试替身：ViewModel 在 composable 之外构造（lint: ViewModelConstructorInComposable）。
+        val homeModel = com.videodown.douyin.presentation.home.HomeViewModel()
         compose.runOnUiThread {
             compose.activity.setContent {
                 com.videodown.douyin.presentation.theme.VideoDownTheme {
                     com.videodown.douyin.presentation.home.HomeScreen(
                         sharedText = null, onSharedTextConsumed = {}, onOpenHistory = {}, onOpenLibrary = {},
                         onPlayDownloaded = {}, recentRecords = emptyList(),
-                        viewModel = com.videodown.douyin.presentation.home.HomeViewModel(),
+                        viewModel = homeModel,
                         batchImportSeed = links.joinToString("\n"),
                     )
                 }

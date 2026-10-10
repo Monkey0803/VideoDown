@@ -51,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
 import com.videodown.douyin.presentation.preferredQualityLabelRes
@@ -83,6 +84,8 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     updateViewModel: UpdateViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     preferences: com.videodown.douyin.core.AppPreferences = ServiceLocator.preferences) {
     val context = LocalContext.current
+    // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
+    val resources = LocalResources.current
     val wifiOnly by preferences.wifiOnlyChanges.collectAsStateWithLifecycle()
     val autoResume by preferences.autoResumeChanges.collectAsStateWithLifecycle()
     val maxConcurrent by preferences.maxConcurrentChanges.collectAsStateWithLifecycle()
@@ -143,9 +146,9 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             val text = com.videodown.douyin.data.backup.LinkList.format(records)
             val count = text.trim().lines().size - 1
             backupMessage = if (com.videodown.douyin.data.backup.BackupDocuments.write(context, uri, text)) {
-                if (count > 0) context.getString(R.string.settings_links_exported, count)
-                else context.getString(R.string.settings_links_exported_empty)
-            } else context.getString(R.string.settings_write_failed)
+                if (count > 0) resources.getString(R.string.settings_links_exported, count)
+                else resources.getString(R.string.settings_links_exported_empty)
+            } else resources.getString(R.string.settings_write_failed)
         }
     }
     val importLinksFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -153,15 +156,15 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             val links = com.videodown.douyin.data.backup.LinkList.parse(
                 com.videodown.douyin.data.backup.BackupDocuments.read(context, uri),
             )
-            if (links.isEmpty()) backupMessage = context.getString(R.string.settings_import_empty)
+            if (links.isEmpty()) backupMessage = resources.getString(R.string.settings_import_empty)
             else onImportLinks(links.joinToString("\n"))
         }
     }
     val exportSettingsFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) sessionScope.launch {
             val text = com.videodown.douyin.data.backup.SettingsBackupCodec.encode(preferences.snapshot())
-            backupMessage = if (com.videodown.douyin.data.backup.BackupDocuments.write(context, uri, text)) context.getString(R.string.settings_backup_written)
-                else context.getString(R.string.settings_write_failed)
+            backupMessage = if (com.videodown.douyin.data.backup.BackupDocuments.write(context, uri, text)) resources.getString(R.string.settings_backup_written)
+                else resources.getString(R.string.settings_write_failed)
         }
     }
     val importSettingsFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -169,13 +172,13 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             val snapshot = com.videodown.douyin.data.backup.SettingsBackupCodec.decode(
                 com.videodown.douyin.data.backup.BackupDocuments.read(context, uri),
             )
-            if (snapshot == null) backupMessage = context.getString(R.string.settings_backup_invalid)
+            if (snapshot == null) backupMessage = resources.getString(R.string.settings_backup_invalid)
             else {
                 val applied = preferences.apply(snapshot)
-                backupMessage = if (applied.isEmpty()) context.getString(R.string.settings_backup_same)
-                    else context.getString(R.string.settings_restored,
+                backupMessage = if (applied.isEmpty()) resources.getString(R.string.settings_backup_same)
+                    else resources.getString(R.string.settings_restored,
                         // Each entry is a key; the list is worded from the values that were applied.
-                        applied.joinToString(context.getString(R.string.list_separator)) {
+                        applied.joinToString(resources.getString(R.string.list_separator)) {
                             settingsChangeText(context, it, preferences)
                         })
             }
@@ -541,7 +544,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                         ServiceLocator.historyRepository.snapshot().filter { it.media?.useBrowserSession == true &&
                             it.status in setOf(com.videodown.douyin.domain.model.DownloadStatus.RUNNING, com.videodown.douyin.domain.model.DownloadStatus.PENDING)
                         }.forEach { ServiceLocator.downloader.pause(it.id) }
-                        ServiceLocator.browserSessions.clear(); sessionMessage = context.getString(R.string.settings_session_cleared)
+                        ServiceLocator.browserSessions.clear(); sessionMessage = resources.getString(R.string.settings_session_cleared)
                     }
                 })
         }
@@ -549,13 +552,13 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.ExportFolder, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_export_links), value = stringResource(R.string.settings_file_text),
-                onClick = { exportLinksFile.launch(context.getString(R.string.backup_links_file_name)) })
+                onClick = { exportLinksFile.launch(resources.getString(R.string.backup_links_file_name)) })
             SettingsRow(icon = { AppIcon(AppIcons.BatchImport, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_import_links), value = stringResource(R.string.settings_import_value),
                 onClick = { importLinksFile.launch(com.videodown.douyin.data.backup.BackupDocuments.READABLE_TYPES) })
             SettingsRow(icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_backup_settings), value = stringResource(R.string.settings_file_json),
-                onClick = { exportSettingsFile.launch(context.getString(R.string.backup_settings_file_name)) })
+                onClick = { exportSettingsFile.launch(resources.getString(R.string.backup_settings_file_name)) })
             SettingsRow(icon = { AppIcon(AppIcons.Settings, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_restore_settings), value = stringResource(R.string.settings_restore_value),
                 onClick = { importSettingsFile.launch(com.videodown.douyin.data.backup.BackupDocuments.READABLE_TYPES) })

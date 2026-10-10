@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
 import androidx.compose.ui.unit.dp
@@ -34,6 +35,8 @@ import org.json.JSONTokener
 fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (ParsedVideos) -> Unit) {
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
+    // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
+    val resources = LocalResources.current
     var browser by remember { mutableStateOf<WebView?>(null) }
     var page by remember { mutableStateOf(initialUrl) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -63,7 +66,7 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
         busy = true
         parsing = scope.launch {
             try {
-                message = context.getString(R.string.browser_reading)
+                message = resources.getString(R.string.browser_reading)
                 when (val result = ServiceLocator.genericRepository.parse(url, true, referer, browser?.settings?.userAgentString)) {
                     is AppResult.Success -> onResult(result.value)
                     is AppResult.Failure -> message = result.error.message
@@ -85,7 +88,7 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                 val urls = JSONArray(decoded)
                 for (i in 0 until urls.length()) detect(urls.getString(i))
             }
-            message = context.getString(R.string.browser_scanned)
+            message = resources.getString(R.string.browser_scanned)
         }
     }
     DisposableEffect(Unit) { onDispose {
@@ -150,7 +153,7 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                 })
                 Text(message ?: stringResource(R.string.browser_initial_hint), Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    if (busy) TextButton(onClick = { parsing?.cancel(); message = context.getString(R.string.browser_cancelled) }) { Text(stringResource(R.string.browser_cancel_parse)) }
+                    if (busy) TextButton(onClick = { parsing?.cancel(); message = resources.getString(R.string.browser_cancelled) }) { Text(stringResource(R.string.browser_cancel_parse)) }
                     else TextButton(onClick = { parse(page, page) }) { Text(stringResource(R.string.browser_reparse_with_session)) }
                 }
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())

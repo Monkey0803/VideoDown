@@ -91,6 +91,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
 import com.videodown.douyin.presentation.storedErrorMessage
@@ -152,6 +153,8 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
+    val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
@@ -450,12 +453,12 @@ fun HomeScreen(
                 onPlayDownloaded = onPlayDownloaded,
                 onOpenAuthor = { video ->
                     if (!DouyinIntents.openAuthorProfile(context, video.author)) {
-                        scope.launch { snackbar.showSnackbar(context.getString(R.string.home_open_author_failed, platformName(context, video.platform))) }
+                        scope.launch { snackbar.showSnackbar(resources.getString(R.string.home_open_author_failed, platformName(context, video.platform))) }
                     }
                 },
                 onPreview = { video ->
                     if (!DouyinIntents.openVideo(context, video)) {
-                        scope.launch { snackbar.showSnackbar(context.getString(R.string.home_open_video_failed, platformName(context, video.platform))) }
+                        scope.launch { snackbar.showSnackbar(resources.getString(R.string.home_open_video_failed, platformName(context, video.platform))) }
                     }
                 },
                 modifier = Modifier.padding(padding),
