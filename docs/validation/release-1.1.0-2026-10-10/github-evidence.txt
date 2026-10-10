@@ -1,0 +1,23 @@
+$ gh repo view Monkey0803/VideoDown --json visibility,url
+{"defaultBranchRef":{"name":"main"},"url":"https://github.com/Monkey0803/VideoDown","visibility":"PUBLIC"}
+
+$ gh release view v1.1.0 --json tagName,name,assets
+{"assets":[{"apiUrl":"https://api.github.com/repos/Monkey0803/VideoDown/releases/assets/627680964","contentType":"application/json","createdAt":"2026-10-10T10:34:18Z","digest":"sha256:9026575e4d23bea289a73dfd3b6a4227ea20e3d05b34dc334e30efa399fecb79","downloadCount":0,"id":"RA_kwDOU0nZqM4laabE","label":"","name":"version.json","size":832,"state":"uploaded","updatedAt":"2026-10-10T10:34:18Z","url":"https://github.com/Monkey0803/VideoDown/releases/download/v1.1.0/version.json"},{"apiUrl":"https://api.github.com/repos/Monkey0803/VideoDown/releases/assets/627656281","contentType":"application/vnd.android.package-archive","createdAt":"2026-10-10T10:22:35Z","digest":"sha256:8f9a2e13f541b3160efdb4d046cbd60c6a46c4851fdd28b3096a03965b717c8b","downloadCount":1,"id":"RA_kwDOU0nZqM4laUZZ","label":"","name":"videodown-arm64-v8a-release.apk","size":78831927,"state":"uploaded","updatedAt":"2026-10-10T10:23:28Z","url":"https://github.com/Monkey0803/VideoDown/releases/download/v1.1.0/videodown-arm64-v8a-release.apk"},{"apiUrl":"https://api.github.com/repos/Monkey0803/VideoDown/releases/assets/627656285","contentType":"application/vnd.android.package-archive","createdAt":"2026-10-10T10:22:35Z","digest":"sha256:d595702192243a28415d616282e448f2a1e4c36e580cca80e6adb27ac5dda605","downloadCount":0,"id":"RA_kwDOU0nZqM4laUZd","label":"","name":"videodown-universal-release.apk","size":224216648,"state":"uploaded","updatedAt":"2026-10-10T10:24:18Z","url":"https://github.com/Monkey0803/VideoDown/releases/download/v1.1.0/videodown-universal-release.apk"}],"name":"拾影 1.1.0（Keepsake）","tagName":"v1.1.0"}
+
+$ curl -sSL https://github.com/Monkey0803/VideoDown/releases/latest/download/version.json
+{
+  "versionCode": 5,
+  "versionName": "1.1.0",
+  "downloadUrl": "https://github.com/Monkey0803/VideoDown/releases/latest/download/videodown-arm64-v8a-release.apk",
+  "releasePageUrl": "https://github.com/Monkey0803/VideoDown/releases/latest",
+  "notes": "中英双语与英文名 Keepsake：「我的 → 外观 → 语言」可在 Android 13 及以上单独选择语言。新增合集解析（默认关闭，最多 20 条）、字幕下载与内嵌、私有保险箱与应用锁、链接清单导入导出与设置备份恢复。播放器支持双击 ±10 秒、滑动亮度/音量、长按临时 2× 倍速与同名字幕开关，并新增音频睡眠定时器。下载新增全局与单任务限速、完成后自动存入相册（默认关闭）与继续观看进度。弹窗统一为卡片式，存储管理弹窗改版。"
+}
+
+$ git log --oneline -3
+53b8aaf feat(release): 发版脚本显式提示已知的 JVM 偶发超时
+086b332 feat(release): 发版脚本拆分发行说明与清单说明
+93f79f8 feat(release): 发布 1.1.0（Keepsake）：双语、卡片式弹窗与 GitHub Release 更新源
+
+$ git ls-remote --heads origin
+93f79f8db0ec69175bfc7f2ca87629d65af16498	refs/heads/1.0.2
+53b8aaf2d1a384f7dadf650484a383607eb2494c	refs/heads/main
