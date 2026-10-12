@@ -140,7 +140,8 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 - 发现新版本时显示版本号与更新说明，并提供「下载新版」或「查看发布页」，在系统浏览器或下载器中打开；应用不申请安装权限，也不静默安装。
 - 更新源地址默认取构建期参数 `-PupdateManifestUrl=…`（写入 `BuildConfig.DEFAULT_UPDATE_MANIFEST_URL`），也可在「检查更新 → 更新源」中按设备修改并保留。未配置、离线或清单格式不正确时给出明确提示并保留当前版本信息。
 - **正式包默认指向本仓库的 Releases**：`https://github.com/Monkey0803/VideoDown/releases/latest/download/version.json`。`releases/latest/download/…` 是稳定地址，换版本不用改应用，所以 APK 与清单同属一次 Release。
-- 发版用 `scripts/publish-release.sh v1.1.0 --notes-file <发行说明.md> --manifest-notes-file <中文清单说明.md> --manifest-notes-en-file <英文清单说明.md>`：先跑 JVM 测试，再分别构建 arm64 与 universal 两个 APK（构建期嵌入清单地址），按 `app/build.gradle.kts` 的 `versionCode` / `versionName` 生成 `version.json`，最后 `gh release create` 把两个 APK 与清单作为附件上传。tag 与 `versionName` 不一致时脚本直接拒绝。
+- 发版用 `scripts/publish-release.sh v1.1.1 --notes-file <发行说明.md> --manifest-notes-file <中文清单说明.md> --manifest-notes-en-file <英文清单说明.md>`：先跑 JVM 测试，再分别构建 arm64 与 universal 两个 APK（构建期嵌入清单地址），按 `app/build.gradle.kts` 的 `versionCode` / `versionName` 生成 `version.json`，最后 `gh release create` 把两个 APK 与清单作为附件上传。tag 与 `versionName` 不一致时脚本直接拒绝。
+- **发版一律落在 `main` 上**：工作区不干净直接拒绝；当前不在 `main` 时，脚本先把当前分支合并进 `main`（`--no-ff`）并推送，构建与打 tag 都在 `main` 的 HEAD 上进行（`gh release create --target main`），保证「`main` 上的代码 = 发布的包」。`--merge-only` 只做合并与推送、`--skip-merge` 只供排查、`--dry-run` 只校验并打印计划。
 - 老版本要能看到升级，清单里的 `versionCode` 必须大于它自己的；附件名固定为 `videodown-arm64-v8a-release.apk` / `videodown-universal-release.apk`，清单的 `downloadUrl` 指向 arm64 包（通用包从发布页取）。
 - 解析引擎仍随 APK 固定更新，不引入独立的引擎热更新。验证记录见 [应用更新入口验证](docs/validation/app-update-entry-2026-10-09.md) 与 [1.1.0 发版记录](docs/validation/release-1.1.0-2026-10-10.md)。
 
