@@ -40,6 +40,14 @@
   `PackageAndroidArtifact$IncrementalSplitterRunnable` 里失败（README 与 AGENTS.md 记录过同族问题）。
   删掉 `app/build/intermediates/apk` 与 `packaged_manifests` 后重跑即成功，**脚本本身没有改**。
 - **实验期间线上清单短暂被替换**（`9.9.9-test`，约 1 分钟，`downloadUrl` 始终指向真实 APK），恢复后已 `curl` 复核回到 1.1.1。
-- 模拟器上现在装的是 **release 1.1.1**（调试包也在）；真机 SHARK PRS-A0 上装的是 release 1.1.0（收尾时锁屏，未升级），要用真机验证升级可以在解锁后装 1.1.1。
+- 模拟器上现在装的是 **release 1.1.1**（调试包也在）；真机 SHARK PRS-A0 也已升级到 1.1.1（见下节）。
 - 远端 `1.0.2` 分支仍停在 1.1.0 之前的提交，尚未清理（等你决定）。
 - 老版本要看到 1.1.1 的前提是它自己的 `versionCode < 6`；本次实测 1.1.0（5）满足。
+
+## 真机（SHARK PRS-A0 / Android 11）复核（2026-10-10 晚，解锁后）
+
+- **升级路径**：真机上原本装的是 release **1.1.0（code 5）**。打开「检查更新」→「当前版本：1.1.0（内部版本 5）／**发现新版本：1.1.1**」+ 中文更新说明 +「下载新版」（`device-shark-1.1.0-sees-1.1.1.png`）。
+- **同签名覆盖安装**：`adb install -r .tooling/release-v1.1.1/videodown-arm64-v8a-release.apk` → `Success`；`dumpsys package` 复核 `versionCode=6  versionName=1.1.1`。再查显示「当前版本：1.1.1（内部版本 6）／**已是最新版本。**」（`device-shark-1.1.1-latest.png`）。
+- **保险箱门禁（本版修复的正主）**：真机「已存 → 保险箱锁」现在会弹出系统验证窗——
+  `mCurrentFocus=Window{… BiometricPrompt}`，界面为「解锁保险箱 / 验证身份后才能查看其中的内容」+ 设备凭据输入（`device-shark-vault-prompt.png`）。
+  这正是修复前在这台机器上**什么也不弹**的那条路径；操作只用点击与返回键，没有输入任何凭据，随后按返回关闭了弹窗。
