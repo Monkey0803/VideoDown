@@ -1,0 +1,15 @@
+$ adb shell input tap 保险箱锁   # 已存 → 保险箱锁
+
+$ adb shell dumpsys window | grep mCurrentFocus
+  mCurrentFocus=Window{4fd11bb mode=0 rootTaskId=1 u0 BiometricPrompt}
+
+$ adb shell uiautomator dump  # 系统验证窗上的文字
+text="解锁保险箱"
+text="验证身份后才能查看其中的内容"
+text="取消"
+text="确认"
+
+$ adb shell screencap -p /sdcard/x.png   # 凭据弹窗是 secure window，截图被系统拒绝
+screencap rc=1
+
+设备：SHARK PRS-A0 / Android 11；时间：2026-10-12 10:10

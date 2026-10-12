@@ -49,5 +49,7 @@
 - **升级路径**：真机上原本装的是 release **1.1.0（code 5）**。打开「检查更新」→「当前版本：1.1.0（内部版本 5）／**发现新版本：1.1.1**」+ 中文更新说明 +「下载新版」（`device-shark-1.1.0-sees-1.1.1.png`）。
 - **同签名覆盖安装**：`adb install -r .tooling/release-v1.1.1/videodown-arm64-v8a-release.apk` → `Success`；`dumpsys package` 复核 `versionCode=6  versionName=1.1.1`。再查显示「当前版本：1.1.1（内部版本 6）／**已是最新版本。**」（`device-shark-1.1.1-latest.png`）。
 - **保险箱门禁（本版修复的正主）**：真机「已存 → 保险箱锁」现在会弹出系统验证窗——
-  `mCurrentFocus=Window{… BiometricPrompt}`，界面为「解锁保险箱 / 验证身份后才能查看其中的内容」+ 设备凭据输入（`device-shark-vault-prompt.png`）。
-  这正是修复前在这台机器上**什么也不弹**的那条路径；操作只用点击与返回键，没有输入任何凭据，随后按返回关闭了弹窗。
+  `mCurrentFocus=Window{4fd11bb u0 BiometricPrompt}`，窗口文字为「解锁保险箱 / 验证身份后才能查看其中的内容 / 取消 / 确认」。
+  这正是修复前在这台机器上**什么也不弹**的那条路径（`device-shark-vault-prompt.txt` 是原始输出）。
+  **截图拿不到**：系统凭据弹窗是 secure window，`adb shell screencap` 返回 `rc=1`（Android 平台行为，不是应用问题），
+  所以这条以窗口焦点与 `uiautomator` 文本作为证据。操作只用点击与返回键，没有输入任何凭据，随后按返回关闭了弹窗。
