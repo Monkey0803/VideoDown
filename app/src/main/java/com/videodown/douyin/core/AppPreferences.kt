@@ -226,8 +226,13 @@ class AppPreferences(context: Context) {
         }
     }
 
-    /** Every setting that travels in a backup file. */
-    fun snapshot(): com.videodown.douyin.data.backup.SettingsSnapshot =
+    /**
+     * Every setting that travels in a backup file.
+     *
+     * [savedOrder] is not a preference — it lives on the records as their `sortIndex` — so the
+     * caller reads it from the library and hands it in; see `SavedOrder.of`.
+     */
+    fun snapshot(savedOrder: List<String>? = null): com.videodown.douyin.data.backup.SettingsSnapshot =
         com.videodown.douyin.data.backup.SettingsSnapshot(
             version = com.videodown.douyin.data.backup.SettingsBackupCodec.CURRENT_VERSION,
             themeMode = themeMode.name,
@@ -246,6 +251,7 @@ class AppPreferences(context: Context) {
             subtitlesEnabled = subtitlesEnabled,
             playlistParsing = playlistParsing,
             updateManifestUrl = updateManifestUrl,
+            savedOrder = savedOrder,
         )
 
     /**

@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="1" errors="0" skipped="0" time="0.000" timestamp="2026-10-13T09:49:52" hostname="localhost">
+  <testsuite name="com.videodown.douyin.BackupDeviceTest" tests="4" failures="1" errors="0" skipped="0" time="3.230" timestamp="2026-10-13T09:49:52" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="anImportedLinkFileBecomesBatchImportInput" classname="com.videodown.douyin.BackupDeviceTest" time="1.268" />
+    <testcase name="aSettingsBackupBringsTheSavedOrderBackThroughARealDocument" classname="com.videodown.douyin.BackupDeviceTest" time="0.415">
+      <failure>java.lang.AssertionError: 顺序变了就必须报出这条改动，got []
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.BackupDeviceTest$aSettingsBackupBringsTheSavedOrderBackThroughARealDocument$1.invokeSuspend(BackupDeviceTest.kt:190)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.BackupDeviceTest.aSettingsBackupBringsTheSavedOrderBackThroughARealDocument(BackupDeviceTest.kt:167)
+</failure>
+    </testcase>
+    <testcase name="theLinkListTravelsThroughARealDocumentAndTheRowsAreReachable" classname="com.videodown.douyin.BackupDeviceTest" time="1.156" />
+    <testcase name="aSettingsBackupRestoresRealPreferences" classname="com.videodown.douyin.BackupDeviceTest" time="0.391" />
+  </testsuite>
+</testsuites>

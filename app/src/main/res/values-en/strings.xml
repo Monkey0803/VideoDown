@@ -506,6 +506,7 @@
     <string name="settings_change_theme">Appearance mode %1$s</string>
     <string name="settings_change_quality">Default quality %1$s</string>
     <string name="settings_change_speed">Download speed limit %1$s</string>
+    <string name="settings_change_library_order">Saved order</string>
 
     <!-- Errors -->
     <string name="error_http_status">The server returned HTTP %1$d; a sign-in or verification may be needed. Try again later.</string>

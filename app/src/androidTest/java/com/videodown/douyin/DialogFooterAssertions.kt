@@ -46,6 +46,32 @@ internal fun imeVisible(activity: Activity): Boolean =
     ViewCompat.getRootWindowInsets(activity.window.decorView)
         ?.isVisible(WindowInsetsCompat.Type.ime()) == true
 
+/** 键盘当前高度（px）。 */
+internal fun imeBottomPx(activity: Activity): Int =
+    ViewCompat.getRootWindowInsets(activity.window.decorView)
+        ?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+
+/**
+ * 等键盘动画停下来。
+ *
+ * 为什么不能只用 [imeVisible] 当门槛：Insets 一出现它就为真，可那时键盘只弹了一半、可用高度还大，
+ * 「页脚完整可见」会**短暂成立**；等键盘真正弹完，布局再变一次，紧接着的断言就翻车
+ * （模拟器 API 37 横屏上实测到过这种时序）。这里要求连续两次读到同一个非零高度才算稳定。
+ *
+ * 每个用例各持一个实例，免得上一次用例的读数把这一次的第一次轮询判成"稳定"。
+ */
+internal class ImeSettler(private val activity: Activity) {
+    private var lastPx = -1
+    private var stablePolls = 0
+
+    fun settled(): Boolean {
+        val bottom = imeBottomPx(activity)
+        stablePolls = if (bottom > 0 && bottom == lastPx) stablePolls + 1 else 0
+        lastPx = bottom
+        return stablePolls >= 1
+    }
+}
+
 /**
  * 把输入法叫到**弹窗窗口**上。
  *

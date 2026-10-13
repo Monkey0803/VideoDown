@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.backup.SavedOrderTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-13T09:50:17.841Z" hostname="Alias-mini.local" time="0.048">
+  <properties/>
+  <testcase name="a library that was never reordered exports nothing" classname="com.videodown.douyin.data.backup.SavedOrderTest" time="0.001"/>
+  <testcase name="ids that no longer exist are dropped and the survivors keep the backup order" classname="com.videodown.douyin.data.backup.SavedOrderTest" time="0.002"/>
+  <testcase name="a restore on another device finds no ids and leaves the order alone" classname="com.videodown.douyin.data.backup.SavedOrderTest" time="0.0"/>
+  <testcase name="a hand-edited order is cleaned instead of trusted" classname="com.videodown.douyin.data.backup.SavedOrderTest" time="0.004"/>
+  <testcase name="a settings backup round trip restores the order through the real store" classname="com.videodown.douyin.data.backup.SavedOrderTest" time="0.04"/>
+  <testcase name="restoring puts the saved order back and leaves later records after it" classname="com.videodown.douyin.data.backup.SavedOrderTest" time="0.001"/>
+  <testcase name="only the manually ordered records are exported" classname="com.videodown.douyin.data.backup.SavedOrderTest" time="0.0"/>
+  <testcase name="a restore that changes nothing reports nothing" classname="com.videodown.douyin.data.backup.SavedOrderTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -14,6 +14,10 @@ import kotlinx.serialization.json.Json
  * or unreadable value leaves the current setting alone instead of silently resetting it to a
  * default. The SAF export directory is deliberately absent — a persisted tree permission belongs to
  * one device and would be a dangling grant after a restore.
+ *
+ * [savedOrder] carries the 已存列表's manual arrangement (see [SavedOrder]) in the same file, because
+ * "restore my settings" is also "put my list back the way I had it". The records themselves do not
+ * travel, so restoring on another device finds nothing to match and leaves the order alone.
  */
 @Serializable
 data class SettingsSnapshot(
@@ -34,6 +38,7 @@ data class SettingsSnapshot(
     val subtitlesEnabled: Boolean? = null,
     val playlistParsing: Boolean? = null,
     val updateManifestUrl: String? = null,
+    val savedOrder: List<String>? = null,
 ) {
     /**
      * The same snapshot with anything unusable removed.
@@ -51,6 +56,8 @@ data class SettingsSnapshot(
         globalSpeedLimitKbps = globalSpeedLimitKbps?.takeIf { kbps -> kbps >= 0 && kbps <= MAX_SPEED_LIMIT_KBPS },
         // A blank or non-http value means "leave the current source alone" rather than "clear it".
         updateManifestUrl = updateManifestUrl?.trim()?.takeIf { it.startsWith("http") },
+        // 顺序同样只保留可用的部分：空串、重复项与超长列表都在这里被收掉。
+        savedOrder = SavedOrder.sanitize(savedOrder),
     )
 
     companion object {

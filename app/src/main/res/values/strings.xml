@@ -505,6 +505,7 @@
     <string name="settings_change_theme">外观模式 %1$s</string>
     <string name="settings_change_quality">默认画质 %1$s</string>
     <string name="settings_change_speed">下载限速 %1$s</string>
+    <string name="settings_change_library_order">已存顺序</string>
 
     <!-- Errors -->
     <string name="error_http_status">服务器返回 HTTP %1$d，可能需要登录或验证，请稍后重试。</string>

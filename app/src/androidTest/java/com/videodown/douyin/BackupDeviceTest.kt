@@ -13,12 +13,16 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.core.PreferredQuality
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.core.SettingsChange
 import com.videodown.douyin.data.backup.BackupDocuments
 import com.videodown.douyin.data.backup.LinkList
+import com.videodown.douyin.data.backup.SavedOrder
 import com.videodown.douyin.data.backup.SettingsBackupCodec
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.presentation.MainActivity
+import com.videodown.douyin.presentation.settings.applySettingsBackup
+import com.videodown.douyin.presentation.settings.encodeSettingsBackup
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -151,6 +155,45 @@ class BackupDeviceTest {
         compose.onNodeWithText("https://v.douyin.com/aaa/", substring = true).assertExists()
         instrumentation.sendStatus(0, android.os.Bundle().apply {
             putString("stream", "BACKUP_IMPORT: file links reached the batch-import dialog\n")
+        })
+    }
+
+    /**
+     * 已存「自定义顺序」跟着设置备份走：导出 → 备份之后又拖一次 → 从同一份文件恢复 → 顺序回到备份时那一段。
+     *
+     * 恢复调的是设置界面用的同一个 [applySettingsBackup]（顺序与偏好设置一起落实、并报出改动），
+     * 所以只有「点系统选择器」这一小段没覆盖，和本类其它用例一致。
+     */
+    @Test fun aSettingsBackupBringsTheSavedOrderBackThroughARealDocument() = runBlocking {
+        val repository = ServiceLocator.historyRepository
+        val mine = listOf("first", "second", "third").map { label -> "order-$label-${UUID.randomUUID()}" }
+        mine.forEachIndexed { index, id ->
+            ownedIds += id
+            repository.upsert(
+                DownloadRecord(id, "aweme-order-$index", "顺序验证 $index", status = DownloadStatus.COMPLETED, fileName = "$index.mp4"),
+            )
+        }
+        // 手动排成 third, first, second。
+        repository.reorderLibrary(listOf(mine[2], mine[0], mine[1]))
+
+        val uri = createDocument("order-${UUID.randomUUID()}.json", "application/json")
+        // 设置界面导出时调的同一个函数。
+        val encoded = encodeSettingsBackup(ServiceLocator.preferences, repository)
+        assertTrue("Write must succeed", BackupDocuments.write(context, uri, encoded))
+
+        // 备份之后用户又拖了一次：恢复必须把这段顺序带回来。
+        repository.reorderLibrary(listOf(mine[1], mine[2], mine[0]))
+
+        val restored = SettingsBackupCodec.decode(BackupDocuments.read(context, uri))
+        assertNotNull("The file must parse as a backup", restored)
+        val applied = applySettingsBackup(restored!!, ServiceLocator.preferences, repository)
+        assertTrue("顺序变了就必须报出这条改动，got $applied", applied.contains(SettingsChange.LIBRARY_ORDER))
+
+        // 只看这三条的相对顺序：设备上可能还有别的记录也被手动排过。
+        val after = SavedOrder.of(repository.snapshot())!!.filter { it in mine }
+        assertEquals(listOf(mine[2], mine[0], mine[1]), after)
+        instrumentation.sendStatus(0, android.os.Bundle().apply {
+            putString("stream", "BACKUP_ORDER: the saved order travelled through a real document and came back\n")
         })
     }
 

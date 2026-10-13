@@ -115,20 +115,18 @@ class P2LibraryOrganizationDeviceTest {
             compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
             compose.waitUntil(5000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
             // 与真实使用一致：横屏 + 输入法弹起时，页脚按钮必须完整露在键盘之上。
-            // 旋转后系统会收起键盘，这里反复「滚到输入框并点它」直到键盘真的起来——
-            // 只有键盘弹着，后面的断言才有意义。
-            // 旋转会把键盘收起来，而「文件名称」仍持有焦点；点一个**已经持有焦点**的输入框不会
-            // 重新弹出键盘（Compose 里 requestFocus 是空操作）。所以点另一个输入框，让焦点真的切换。
-            // 旋转会把键盘收起来（输入框仍持有焦点，点它也不会重新弹出）：显式叫出来。
+            // 旋转会把键盘收起来（输入框仍持有焦点，点它不会重新弹出）：显式叫出来。
             compose.waitUntil(8000) {
                 runCatching { showDialogKeyboard() }
                 imeVisible(compose.activity)
             }
-            // 键盘动画期间可用高度还在变、排布也可能从「固定页脚」切到「整卡滚动」，
-            // 所以每轮都重新滚一次，滚到按钮既落在卡片内、又落在键盘之上为止。
+            // 键盘动画期间可用高度还在变、排布也可能从「固定页脚」切到「整卡滚动」：每轮重新滚一次，
+            // 滚到按钮既落在卡片内、又落在键盘之上，**且键盘不再变化**为止——否则键盘弹了一半时
+            // 判据会短暂成立，紧接着的断言就翻车。
+            val settler = ImeSettler(compose.activity)
             compose.waitUntil(8000) {
                 runCatching { compose.onNode(hasText("保存修改") and hasClickAction()).performScrollTo() }
-                footerVisible()
+                settler.settled() && footerVisible()
             }
             assertTrue("「保存修改」必须完整露在键盘之上，而不是被卡片挤扁或落在键盘背后", footerVisible())
             evidence("dialog-ime-landscape-after")

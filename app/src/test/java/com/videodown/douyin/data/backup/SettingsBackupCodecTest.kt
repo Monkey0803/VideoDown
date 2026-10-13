@@ -22,6 +22,7 @@ class SettingsBackupCodecTest {
         globalSpeedLimitKbps = 1024,
         subtitlesEnabled = false,
         updateManifestUrl = "https://example.com/version.json",
+        savedOrder = listOf("second", "first"),
     )
 
     @Test
@@ -94,10 +95,25 @@ class SettingsBackupCodecTest {
     }
 
     @Test
+    fun `a file without an order leaves the saved list alone`() {
+        val partial = SettingsBackupCodec.decode("""{"themeMode":"DARK"}""")!!
+        assertNull("An older backup must not clear the order", partial.savedOrder)
+    }
+
+    @Test
+    fun `a hand-edited order is cleaned when the file is sanitized`() {
+        val sanitized = SettingsBackupCodec.decode("""{"savedOrder":["a","","a","  b  ","a"]}""")!!.sanitized()
+        assertEquals(listOf("a", "b"), sanitized.savedOrder)
+        assertNull(SettingsBackupCodec.decode("""{"savedOrder":[]}""")!!.sanitized().savedOrder)
+        assertNull(SettingsBackupCodec.decode("""{"savedOrder":null}""")!!.sanitized().savedOrder)
+    }
+
+    @Test
     fun `the encoded file is human readable json`() {
         val text = SettingsBackupCodec.encode(full)
         assertTrue(text, text.startsWith("{"))
         assertTrue(text, text.contains("\n"))
         assertTrue(text, text.contains("\"themeMode\": \"DARK\""))
+        assertTrue(text, text.contains("\"second\""))
     }
 }

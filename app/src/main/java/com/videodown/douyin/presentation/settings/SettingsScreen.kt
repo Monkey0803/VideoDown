@@ -162,7 +162,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     }
     val exportSettingsFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) sessionScope.launch {
-            val text = com.videodown.douyin.data.backup.SettingsBackupCodec.encode(preferences.snapshot())
+            val text = encodeSettingsBackup(preferences, ServiceLocator.historyRepository)
             backupMessage = if (com.videodown.douyin.data.backup.BackupDocuments.write(context, uri, text)) resources.getString(R.string.settings_backup_written)
                 else resources.getString(R.string.settings_write_failed)
         }
@@ -174,7 +174,8 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             )
             if (snapshot == null) backupMessage = resources.getString(R.string.settings_backup_invalid)
             else {
-                val applied = preferences.apply(snapshot)
+                // 设置与已存顺序一起落实（顺序挂在记录上，不在偏好设置里）。
+                val applied = applySettingsBackup(snapshot, preferences, ServiceLocator.historyRepository)
                 backupMessage = if (applied.isEmpty()) resources.getString(R.string.settings_backup_same)
                     else resources.getString(R.string.settings_restored,
                         // Each entry is a key; the list is worded from the values that were applied.

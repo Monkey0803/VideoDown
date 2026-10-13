@@ -115,7 +115,9 @@ class P2BatchImportDeviceTest {
             // 输入法弹着时页脚也必须完整可见：焦点回到输入框，等键盘真的起来再断言。
             compose.onNode(hasSetTextAction() and hasText("粘贴多条分享文案或网址")).performClick()
             compose.waitUntil(5000) { imeVisible(compose.activity) }
-            compose.waitUntil(8000) { footerVisible() }
+            // 键盘动画没走完时可用高度还在变，判据会短暂成立：等它稳定下来再断言。
+            val settler = ImeSettler(compose.activity)
+            compose.waitUntil(8000) { settler.settled() && footerVisible() }
             assertTrue("「关闭」必须完整露在键盘之上，而不是被卡片挤扁或落在键盘背后", footerVisible())
             androidx.test.espresso.Espresso.closeSoftKeyboard()
             compose.onNodeWithTag("batch-import-list").performScrollToNode(hasTestTag("import-https://example.test/one"))

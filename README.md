@@ -180,7 +180,7 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 | 32 | 私有保险箱与应用锁 | `domain/model/VaultPolicy.kt` + `core/VaultAuthenticator.kt` + `data/local/DownloadLibraryMetadataRepository.kt` + `presentation/library/*` + `presentation/history/HistoryScreen.kt` + `data/download/*Notifier/Service` |
 | 31 | 字幕下载与内嵌 | `data/generic/EngineRequest.kt` + `assets/video_engine.py` + `domain/model/SubtitleLanguageSelection.kt` + `domain/model/DouyinVideo.kt` + `presentation/home/HomeScreen.kt` |
 | 29 | 合集 / 播放列表批量解析 | `data/generic/EngineRequest.kt` + `data/generic/GenericVideoRepository.kt` + `assets/video_engine.py` + `presentation/settings/SettingsScreen.kt` |
-| 30 | 链接导入导出与设置备份 | `data/backup/SettingsSnapshot.kt` + `data/backup/LinkList.kt` + `data/backup/BackupDocuments.kt` + `core/AppPreferences.kt` + `presentation/settings/SettingsScreen.kt` |
+| 30 | 链接导入导出与设置备份（含已存自定义顺序） | `data/backup/SettingsSnapshot.kt` + `data/backup/SavedOrder.kt` + `data/backup/LinkList.kt` + `data/backup/BackupDocuments.kt` + `core/AppPreferences.kt` + `presentation/settings/SettingsBackupFlow.kt` + `presentation/settings/SettingsScreen.kt` |
 
 ## 环境要求
 
@@ -405,6 +405,7 @@ Android/data/com.videodown.douyin/files/Movies/Douyin/
 - 音频档位永远不取字幕；任务卡片也不显示「含字幕」，只能从播放页的字幕开关看出。
 - **保险箱需要 Android 9 及以上**，且设备已设置锁屏或已录入指纹/人脸；否则入口会说明「请先在系统中设置锁屏密码或指纹」，而不是假装上锁。更低版本没有可供普通应用使用的验证弹窗，因此不支持。
 - **系统验证弹窗本身没有被自动化测试覆盖**：测试用可替换的实现分别驱动「通过」与「拒绝」两条路径，验证的是门禁两侧的行为（隐藏、显示、通知与导出不外泄）。
+- **设置备份里的「已存顺序」按记录 id 匹配**：同一台设备导出再恢复能把手动排好的顺序带回来；换机恢复时 id 一个都对不上，顺序保持原样（下载记录本身不随这份备份走）。
 - **保险箱保护的是「看见」，不是「取出」**：文件仍在应用私有目录里，没有额外加密；有 root 或调试备份能力的人仍能拿到文件。
 - 任务列表与首页「最近保存」本身没有门禁，所以私密条目在那里只显示「保险箱内容」；任务列表的搜索仍会匹配被隐藏的标题，只是匹配到的条目依旧显示为「保险箱内容」。
 - 保险箱内手动「保存到相册」与「分享」仍然可用——门禁已经放行，这是用户的明确操作。

@@ -116,6 +116,7 @@ fun settingsChangeText(change: SettingsChange, preferences: AppPreferences): Str
     SettingsChange.SUBTITLES -> stringResource(R.string.home_subtitles)
     SettingsChange.PLAYLIST_PARSING -> stringResource(R.string.settings_playlist_row)
     SettingsChange.UPDATE_SOURCE -> stringResource(R.string.settings_update_row)
+    SettingsChange.LIBRARY_ORDER -> stringResource(R.string.settings_change_library_order)
 }
 
 /** The same wording for callers with a `Context` but no composable scope. */
@@ -136,6 +137,7 @@ fun settingsChangeText(context: Context, change: SettingsChange, preferences: Ap
     SettingsChange.SUBTITLES -> context.getString(R.string.home_subtitles)
     SettingsChange.PLAYLIST_PARSING -> context.getString(R.string.settings_playlist_row)
     SettingsChange.UPDATE_SOURCE -> context.getString(R.string.settings_update_row)
+    SettingsChange.LIBRARY_ORDER -> context.getString(R.string.settings_change_library_order)
 }
 
 /** The platform name for callers that have a `Context` but no composable scope. */

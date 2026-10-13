@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite name="BackupDeviceTest" tests="4" failures="0"><testcase name="anImportedLinkFileBecomesBatchImportInput" classname="com.videodown.douyin.BackupDeviceTest" time="2.217" />
+    <testcase name="aSettingsBackupBringsTheSavedOrderBackThroughARealDocument" classname="com.videodown.douyin.BackupDeviceTest" time="1.148" />
+    <testcase name="theLinkListTravelsThroughARealDocumentAndTheRowsAreReachable" classname="com.videodown.douyin.BackupDeviceTest" time="1.612" />
+    <testcase name="aSettingsBackupRestoresRealPreferences" classname="com.videodown.douyin.BackupDeviceTest" time="0.324" />
+  </testsuite>
