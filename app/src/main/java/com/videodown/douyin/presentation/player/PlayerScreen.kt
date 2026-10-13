@@ -1,6 +1,8 @@
 package com.videodown.douyin.presentation.player
 
 import com.videodown.douyin.presentation.components.AppDialog
+import com.videodown.douyin.presentation.components.sharedCover
+import com.videodown.douyin.presentation.components.shimmer
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.library.authorText
@@ -28,6 +30,8 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -74,6 +78,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
@@ -90,6 +95,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
@@ -136,6 +142,11 @@ fun PlayerScreen(
     recordId: String,
     onBack: () -> Unit,
     viewModel: PlayerViewModel = viewModel(),
+    /** 导航时带过来的封面：播放器的 record 是异步读库拿到的，共享元素的目标必须同一帧就位。 */
+    coverUrl: String? = null,
+    // 两个作用域为 null 时（设备测试直接渲染播放器）不参与共享过渡，行为与改造前一致。
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -195,8 +206,14 @@ fun PlayerScreen(
             localPlayer.release()
         }
     }
+    // 视频第一帧是否已画出来：封面海报要一直留到这一刻，否则共享元素动画会在中途被抽走。
+    var firstFrameRendered by remember(player) { mutableStateOf(false) }
     DisposableEffect(player) {
         val listener = object : Player.Listener {
+            override fun onRenderedFirstFrame() {
+                firstFrameRendered = true
+            }
+
             override fun onEvents(player: Player, events: Player.Events) {
                 if (events.contains(Player.EVENT_POSITION_DISCONTINUITY) || events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED))
                     viewModel.saveProgress(player.currentMediaItem?.mediaId, player.currentPosition, player.duration, player.playbackState == Player.STATE_ENDED)
@@ -486,6 +503,21 @@ fun PlayerScreen(
                 (if (fullscreen || inPip) Modifier.fillMaxSize() else Modifier.fillMaxWidth().aspectRatio(videoAspectRatio))
                     .background(Color.Black),
             ) {
+                    // 封面海报：从「已存」封面共享元素放大过来；视频就绪后由视频盖住。
+                    // 全屏与 PiP 下不参与共享——那时容器尺寸/窗口都变了，不应再做形变。
+                    // 留到视频真正出画（或确认是纯音频）为止；全屏与 PiP 下不参与共享。
+                    val showCoverPoster = !fullscreen && !inPip && !coverUrl.isNullOrBlank() &&
+                        (state.loading || !(state.record?.isAudio == true || firstFrameRendered))
+                    if (showCoverPoster) {
+                        AsyncImage(
+                            model = coverUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize().testTag("player-cover-poster")
+                                .sharedCover(recordId, sharedTransitionScope, animatedVisibilityScope)
+                                .shimmer(),
+                        )
+                    }
                     when {
                         state.loading || (isAudio && controller == null && !connectionError) -> {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
