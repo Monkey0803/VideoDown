@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.presentation.components.AppDialogLayoutTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-13T03:54:10.053Z" hostname="Alias-mini.local" time="0.002">
+  <properties/>
+  <testcase name="bogus negative insets do not inflate the available height past the window" classname="com.videodown.douyin.presentation.components.AppDialogLayoutTest" time="0.002"/>
+  <testcase name="narrow space falls back to scrolling the whole card" classname="com.videodown.douyin.presentation.components.AppDialogLayoutTest" time="0.0"/>
+  <testcase name="available height subtracts system bars and keyboard from the window" classname="com.videodown.douyin.presentation.components.AppDialogLayoutTest" time="0.0"/>
+  <testcase name="max height is the fraction of the available height" classname="com.videodown.douyin.presentation.components.AppDialogLayoutTest" time="0.0"/>
+  <testcase name="fraction is clamped to zero through one" classname="com.videodown.douyin.presentation.components.AppDialogLayoutTest" time="0.0"/>
+  <testcase name="insets that swallow the whole window clamp to zero instead of going negative" classname="com.videodown.douyin.presentation.components.AppDialogLayoutTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

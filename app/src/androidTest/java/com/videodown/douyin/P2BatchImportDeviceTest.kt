@@ -9,6 +9,8 @@ import com.videodown.douyin.core.*
 import com.videodown.douyin.domain.model.*
 import com.videodown.douyin.domain.repository.*
 import com.videodown.douyin.presentation.MainActivity
+import com.videodown.douyin.presentation.components.APP_DIALOG_CARD_TAG
+import com.videodown.douyin.presentation.components.APP_DIALOG_SCRIM_TAG
 import com.videodown.douyin.presentation.home.*
 import com.videodown.douyin.presentation.theme.VideoDownTheme
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,6 +62,11 @@ class P2BatchImportDeviceTest {
         }
     }
     @After fun close() { compose.runOnUiThread { store.clear() } }
+
+    /** 页脚两条判据一起过：按钮落在卡片内、卡片落在容器（底部内边距 = 键盘顶边）内。 */
+    private fun footerVisible(text: String = "关闭"): Boolean =
+        compose.footerInsideCard(APP_DIALOG_CARD_TAG, text) &&
+            compose.cardInsideScrim(APP_DIALOG_CARD_TAG, APP_DIALOG_SCRIM_TAG)
     private fun parse(input: String) {
         compose.onNode(hasSetTextAction() and hasText("粘贴多条分享文案或网址")).performTextReplacement(input)
         compose.onNodeWithText("开始批量解析").performClick()
@@ -105,9 +112,12 @@ class P2BatchImportDeviceTest {
         try {
             compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
             compose.waitUntil(5000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
-            // 真实用户点「开始批量解析」时会 clearFocus 收起键盘；这里直接驱动 model，所以要显式收一下。
+            // 输入法弹着时页脚也必须完整可见：焦点回到输入框，等键盘真的起来再断言。
+            compose.onNode(hasSetTextAction() and hasText("粘贴多条分享文案或网址")).performClick()
+            compose.waitUntil(5000) { imeVisible(compose.activity) }
+            compose.waitUntil(8000) { footerVisible() }
+            assertTrue("「关闭」必须完整露在键盘之上，而不是被卡片挤扁或落在键盘背后", footerVisible())
             androidx.test.espresso.Espresso.closeSoftKeyboard()
-            compose.onNodeWithText("关闭", substring = false).assertIsDisplayed()
             compose.onNodeWithTag("batch-import-list").performScrollToNode(hasTestTag("import-https://example.test/one"))
             compose.onNodeWithText("1080P").assertIsDisplayed()
             assertEquals("1080P", model.state.value.rows.first().media.first().choice!!.label)

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-13T07:15:08" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2LibraryOrganizationDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="7.439" timestamp="2026-10-13T07:15:08" hostname="localhost">
+    <properties>
+      <property name="device" value="4f0ef8ac" />
+    </properties>
+    <testcase name="actualRenameAndCategorySurviveRotationAndFilterSavedFile" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="4.129" />
+    <testcase name="favoriteControlFiltersAndPersistsAfterHistoryReload" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="1.204" />
+    <testcase name="tappingOutsideTheCardDismissesButTappingTheCardBodyDoesNot" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="1.194" />
+    <testcase name="realPersistenceFailureShowsErrorAndRetryPreservesOriginalThenSucceeds" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="0.912" />
+  </testsuite>
+</testsuites>

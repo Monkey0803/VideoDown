@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite name="P2BatchImportDeviceTest" tests="4" failures="0"><testcase name="fiftyFailuresKeepBottomActionsAccessibleAndFailedSelectionsIntact" classname="com.videodown.douyin.P2BatchImportDeviceTest" time="3.700" />
+    <testcase name="homeBatchDialogRemainsVisibleAcrossActualRotationWithSelectionsIntact" classname="com.videodown.douyin.P2BatchImportDeviceTest" time="6.843" />
+    <testcase name="duplicateConfirmationCancelSkipAndExplicitAgainAreActualControls" classname="com.videodown.douyin.P2BatchImportDeviceTest" time="5.730" />
+    <testcase name="pastedMultipleUrlsAreDeduplicatedAndQualitySelectionControlsQueue" classname="com.videodown.douyin.P2BatchImportDeviceTest" time="3.560" />
+  </testsuite>

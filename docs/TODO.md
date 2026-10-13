@@ -1,6 +1,6 @@
 # 拾影 功能待办（TODO）
 
-> 更新日期：2026-10-12 ｜ 当前分支：`main` ｜ 版本：1.1.1 / code 6（英文名 Keepsake，更新源走 GitHub Releases）
+> 更新日期：2026-10-13 ｜ 当前分支：`main` ｜ 版本：1.1.1 / code 6（英文名 Keepsake，更新源走 GitHub Releases）
 > 依据：同类应用对标（1DM+、ADM、Snaptube、VidMate、Seal、稞麦视频下载器）与当前源码核查
 > 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）、[P4 验收记录](validation/p4-features-2026-10-09.md)、[P5 验收记录](validation/p5-features-2026-10-09.md)
 
@@ -86,11 +86,13 @@
 `validation/motion-batch0-1-2026-10-12.md`、`validation/motion-batch2-2026-10-12.md`、
 `validation/reorder-persistence-2026-10-12.md`、`validation/motion-batch4-2026-10-12.md`、
 `validation/launcher-shortcut-icons-2026-10-12.md`、`validation/shortcut-navigation-2026-10-12.md`。
-以下是明确的未完成项：
+以下是这些批次留下的遗留项（其中弹窗页脚一条已于 2026-10-13 完成，保留在此便于追溯）：
 
 - [ ] **动效手感仍未经人工复核**：测试只能证明「会动、会停、不遮挡」，证明不了快慢与观感。真机录屏（动画缩放 1.0）已入库 `validation/motion-showcase-2026-10-12/motion-on-real-device.mp4`，逐项「觉得不对该改哪里」写在同一目录的文档里；改动点都集中在单个文件（`SharedCover` 的 `boundsTransform`、`Motion` 的 token、`Shimmer` 的 `SWEEP_MS`、`EmptyStateIllustration` 的多边形参数）。
-- [ ] **弹窗页脚在横屏 + 键盘下被键盘挡住**：真机（393×873dp）横屏且输入法弹起时，重命名弹窗的「保存修改」落在键盘背后，用户需先收键盘才能点到。**已排除并回退两条无效路径**：给弹窗窗口设 `SOFT_INPUT_ADJUST_RESIZE` 在 API 30 无效；按 IME 内边距收紧高度上限在真机未被证实有效，反而让 `P2BatchImportDeviceTest` 在模拟器上 4 条全挂 `ComposeNotIdleException`（在弹窗窗口里读 `WindowInsets.ime` 的副作用）。建议方案是「IME 可见时把动作行并入可滚动区域，而不是固定在底部」，但改完必须重新验证上面那条 `ComposeNotIdle` 陷阱。
+- [x] **弹窗页脚在横屏 + 键盘下被键盘挡住**（2026-10-13 完成，证据见 [验收记录](validation/dialog-ime-2026-10-13.md)）：真机（393×873dp）横屏且输入法弹起时，重命名弹窗的「保存修改」落在键盘背后。根因是三层叠加：① 浮动弹窗对键盘只做 ADJUST_PAN（整窗上移 300px，标题被推出屏幕顶部）；② `LocalWindowInfo.containerSize` 在弹窗窗口里给的是窗口长边（横屏 2400px），原来的 0.86 高度上限从未生效；③ 扣掉键盘后可用高度只剩约 129dp，比「头部 + 动作行」的 144dp 还矮，固定页脚必然被挤扁（实测按钮 40dp → 24dp）。改法：`decorFitsSystemWindows = false` + 容器自己 `systemBarsPadding().imePadding()`、可用高度改从 `BoxWithConstraints` 取、显式外部点击关闭（容器铺满后系统判定失效）、可用高度 < 200dp 时头部与动作行一起进滚动区；`BatchImportDialog` 接入同一容器。**历史结论已失效**：2026-10-12 记录的「在弹窗窗口里读 `WindowInsets.ime` 会让 `P2BatchImportDeviceTest` 4 条全挂 `ComposeNotIdleException`」本轮未复现（真机与模拟器该用例都是 4/4），两条无效路径（`SOFT_INPUT_ADJUST_RESIZE`、按 IME 收紧高度上限）的结论仍成立。遗留边界：平板/折叠屏未验证；键盘弹起时页脚需滚一下才可点（取舍）；真机只跑了弹窗相关类（全量受 10 分钟锁屏限制）。
 - [ ] **恢复快捷方式的前置条件未解决**：三个快捷方式已按要求暂时不发布（`LauncherShortcuts.publish` 改为清空动态快捷方式，实现、图标与 intent 处理全部保留）。恢复前必须先解决「长按菜单这条路无法自动化验证」——本轮只能验证「启动器会发的那个 intent」，真实长按菜单无法用 adb 稳定唤出，回归只能靠人工长按。
+- [ ] **弹窗在非手机形态未验证**：弹窗页脚这次只覆盖手机（真机 393×873dp 横竖屏、模拟器 427×952dp）；平板 / 折叠屏下的高度上限与「整卡滚动」取舍未验证。
+- [ ] **键盘弹起时页脚要滚一下才可点，观感待人工确认**：可用高度只剩约 129dp 时头部与动作行一起进滚动区，自动化只能证明「滚得到、点得到」，证明不了这个取舍在真机上手感如何（见 [验收记录](validation/dialog-ime-2026-10-13.md) 的 `after-landscape-ime.png`）。
 - [ ] **已存自定义顺序不随备份走**：`SettingsSnapshot` 只含设置不含记录，恢复备份不会带回已存顺序（排序**方式**会随备份走）。
 - [ ] **把手隐藏条件只覆盖了「搜索」一种**：多选、批量忙、平台/分类过滤共用同一处 `reorderAllowed` 判定，但只有搜索态有用例。
 - [ ] **共享元素未自定义曲线以外的编排**：时长已接到 `AppMotion`（250ms），但未测过更慢/更快的观感差异，也没有对「从列表页进入」以外的入口（首页、任务页）做共享元素。

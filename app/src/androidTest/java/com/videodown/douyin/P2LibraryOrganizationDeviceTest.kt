@@ -11,6 +11,8 @@ import com.videodown.douyin.data.local.*
 import com.videodown.douyin.data.repository.DownloadHistoryRepositoryImpl
 import com.videodown.douyin.domain.model.*
 import com.videodown.douyin.presentation.MainActivity
+import com.videodown.douyin.presentation.components.APP_DIALOG_CARD_TAG
+import com.videodown.douyin.presentation.components.APP_DIALOG_SCRIM_TAG
 import com.videodown.douyin.presentation.history.HistoryViewModel
 import com.videodown.douyin.presentation.library.*
 import com.videodown.douyin.presentation.theme.VideoDownTheme
@@ -60,6 +62,36 @@ class P2LibraryOrganizationDeviceTest {
         directory.deleteRecursively(); Unit
     }
     private fun menu(title: String = record.title) { compose.onNodeWithText(title).performTouchInput { longClick() } }
+
+    /** 页脚两条判据一起过：按钮落在卡片内、卡片落在容器（底部内边距 = 键盘顶边）内。 */
+    private fun footerVisible(text: String = "保存修改"): Boolean =
+        compose.footerInsideCard(APP_DIALOG_CARD_TAG, text) &&
+            compose.cardInsideScrim(APP_DIALOG_CARD_TAG, APP_DIALOG_SCRIM_TAG)
+
+    /** 把证据截图存进应用缓存目录，跑完用 adb 取回（见 docs/validation 的对应记录）。 */
+    private fun evidence(name: String) {
+        val directory = File(context.cacheDir, "dialog-evidence").apply { mkdirs() }
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation
+            .takeScreenshot().let { bitmap ->
+                File(directory, "$name.png").outputStream().use {
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+                }
+                bitmap.recycle()
+            }
+    }
+    @Test fun tappingOutsideTheCardDismissesButTappingTheCardBodyDoesNot() = runBlocking {
+        menu(); compose.onNodeWithText("重命名与分类").performClick()
+        compose.onNodeWithText("重命名与分类").assertIsDisplayed()
+        // 点卡片自己的空白处（标题）不能把弹窗关掉：卡片必须挡住底下那层遮罩。
+        compose.onNodeWithText("重命名与分类").performClick()
+        compose.onNodeWithText("重命名与分类").assertIsDisplayed()
+        // 点遮罩左上角（卡片在窗口里居中，这个点一定在卡片之外）应当关闭弹窗。
+        compose.onNodeWithTag(APP_DIALOG_SCRIM_TAG)
+            .performTouchInput { click(androidx.compose.ui.geometry.Offset(30f, 30f)) }
+        compose.waitUntil(5000) { compose.onAllNodes(hasText("重命名与分类")).fetchSemanticsNodes().isEmpty() }
+        Unit
+    }
+
     @Test fun favoriteControlFiltersAndPersistsAfterHistoryReload() = runBlocking {
         menu(); compose.onNodeWithText("收藏视频", substring = false).performClick()
         compose.waitUntil(5000) { model.state.value.records.first().favorite }
@@ -82,9 +114,24 @@ class P2LibraryOrganizationDeviceTest {
         try {
             compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
             compose.waitUntil(5000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
-            // 与真实用户一致：输入完先收起键盘，再点页脚按钮。
-            androidx.test.espresso.Espresso.closeSoftKeyboard()
-            compose.onNodeWithText("保存修改").assertIsDisplayed()
+            // 与真实使用一致：横屏 + 输入法弹起时，页脚按钮必须完整露在键盘之上。
+            // 旋转后系统会收起键盘，这里反复「滚到输入框并点它」直到键盘真的起来——
+            // 只有键盘弹着，后面的断言才有意义。
+            // 旋转会把键盘收起来，而「文件名称」仍持有焦点；点一个**已经持有焦点**的输入框不会
+            // 重新弹出键盘（Compose 里 requestFocus 是空操作）。所以点另一个输入框，让焦点真的切换。
+            // 旋转会把键盘收起来（输入框仍持有焦点，点它也不会重新弹出）：显式叫出来。
+            compose.waitUntil(8000) {
+                runCatching { showDialogKeyboard() }
+                imeVisible(compose.activity)
+            }
+            // 键盘动画期间可用高度还在变、排布也可能从「固定页脚」切到「整卡滚动」，
+            // 所以每轮都重新滚一次，滚到按钮既落在卡片内、又落在键盘之上为止。
+            compose.waitUntil(8000) {
+                runCatching { compose.onNode(hasText("保存修改") and hasClickAction()).performScrollTo() }
+                footerVisible()
+            }
+            assertTrue("「保存修改」必须完整露在键盘之上，而不是被卡片挤扁或落在键盘背后", footerVisible())
+            evidence("dialog-ime-landscape-after")
             compose.onNode(hasSetTextAction() and hasText("文件名称")).assertTextContains("旅行声音")
             compose.onNodeWithText("保存修改").performClick()
             compose.waitUntil(5000) { model.state.value.records.first().title == "旅行声音" && !organization.state.value.busy }
