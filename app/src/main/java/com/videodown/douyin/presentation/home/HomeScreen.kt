@@ -82,6 +82,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
@@ -115,9 +116,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.presentation.theme.rememberEntranceAlpha
 import com.videodown.douyin.core.watchBadge
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.formatDuration
@@ -296,9 +298,11 @@ fun HomeScreen(
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         if (state.video == null) {
+            // 输入页出现时淡入；返回解析页同样重放一次。
+            val entrance = rememberEntranceAlpha()
             Column(
                 modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
-                    .padding(horizontal = 22.dp),
+                    .padding(horizontal = 22.dp).alpha(entrance),
             ) {
                 TabPageHeader(stringResource(R.string.app_name), stringResource(R.string.home_header_subtitle))
                 Card(
@@ -439,6 +443,8 @@ fun HomeScreen(
                 }
             }
         } else {
+            // 结果页淡入；两页仍由 if/else 互斥，语义树里不会同时存在。
+            val entrance = rememberEntranceAlpha()
             ResultScreen(
                 state = state,
                 onBack = viewModel::clearResult,
@@ -461,7 +467,7 @@ fun HomeScreen(
                         scope.launch { snackbar.showSnackbar(resources.getString(R.string.home_open_video_failed, platformName(context, video.platform))) }
                     }
                 },
-                modifier = Modifier.padding(padding),
+                modifier = Modifier.padding(padding).alpha(entrance),
             )
         }
     }

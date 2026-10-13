@@ -11,7 +11,9 @@ youtubedl = "0.18.1"
 okhttp = "5.3.2"
 serialization = "1.9.0"
 coroutines = "1.10.2"
-coil = "2.7.0"
+coil = "3.3.0"
+reorderable = "3.1.0"
+graphicsShapes = "1.1.0"
 junit = "4.13.2"
 androidxJunit = "1.2.1"
 espresso = "3.7.0"
@@ -43,7 +45,10 @@ youtubedl-ffmpeg = { group = "io.github.junkfood02.youtubedl-android", name = "f
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+graphics-shapes = { module = "androidx.graphics:graphics-shapes", version.ref = "graphicsShapes" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }

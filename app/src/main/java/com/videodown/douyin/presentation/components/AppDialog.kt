@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation.components
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,9 +27,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.Role
@@ -37,6 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.videodown.douyin.presentation.theme.appMotion
 
 /** 弹窗高度上限占当前窗口高度的比例；正文放得下就整段展示，放不下才滚动。 */
 private const val DEFAULT_MAX_HEIGHT_FRACTION = 0.86f
@@ -65,10 +73,26 @@ internal fun AppDialog(
     // 弹窗窗口在 usePlatformDefaultWidth = false 下就是整屏，容器高度即屏幕高度；用它取上限。
     val density = LocalDensity.current
     val containerHeight = LocalWindowInfo.current.containerSize.height
+    val motion = appMotion()
     Dialog(onDismissRequest = onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        // 只做入场：出场时弹窗窗口已被关闭，再挂动画只会让关闭显得迟滞。
+        var entered by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) { entered = true }
+        val entrance by animateFloatAsState(
+            targetValue = if (entered) 1f else 0f,
+            animationSpec = motion.normal(),
+            label = "app-dialog-entrance",
+        )
         Surface(
             modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp).widthIn(max = 420.dp)
-                .heightIn(max = with(density) { containerHeight.toDp() } * maxHeightFraction),
+                .heightIn(max = with(density) { containerHeight.toDp() } * maxHeightFraction)
+                // 只动透明度与缩放：位移会让依赖坐标的断言在动画中途读到中间值。
+                .graphicsLayer {
+                    alpha = 0.35f + 0.65f * entrance
+                    val scale = 0.94f + 0.06f * entrance
+                    scaleX = scale
+                    scaleY = scale
+                },
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surfaceContainerLow,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),

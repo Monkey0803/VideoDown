@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation.settings
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,7 @@ import com.videodown.douyin.presentation.components.AppDialog
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.theme.appMotion
 
 /** Running-task entries shown individually; the rest collapse into a count. */
 private const val VISIBLE_BUDGET_TASKS = 4
@@ -238,7 +240,12 @@ private fun StorageBudgetSection(usage: StorageUsage) {
                     fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             }
             if (!budget.isEmpty) {
-                LinearProgressIndicator(progress = { storageBudgetFraction(usage) },
+                val animatedFraction by animateFloatAsState(
+                    targetValue = storageBudgetFraction(usage),
+                    animationSpec = appMotion().fast(),
+                    label = "storage-budget",
+                )
+                LinearProgressIndicator(progress = { animatedFraction },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp).height(8.dp).clip(MaterialTheme.shapes.small),
                     color = accent,
                     trackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
