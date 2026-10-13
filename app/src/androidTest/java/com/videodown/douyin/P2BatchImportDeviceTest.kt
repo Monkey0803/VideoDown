@@ -105,6 +105,8 @@ class P2BatchImportDeviceTest {
         try {
             compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
             compose.waitUntil(5000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
+            // 真实用户点「开始批量解析」时会 clearFocus 收起键盘；这里直接驱动 model，所以要显式收一下。
+            androidx.test.espresso.Espresso.closeSoftKeyboard()
             compose.onNodeWithText("关闭", substring = false).assertIsDisplayed()
             compose.onNodeWithTag("batch-import-list").performScrollToNode(hasTestTag("import-https://example.test/one"))
             compose.onNodeWithText("1080P").assertIsDisplayed()
@@ -117,6 +119,7 @@ class P2BatchImportDeviceTest {
             assertEquals(1, calls.size)
         } finally { compose.runOnUiThread { compose.activity.requestedOrientation = previous } }
     }
+
     @Test fun fiftyFailuresKeepBottomActionsAccessibleAndFailedSelectionsIntact() {
         failing = true
         parse((1..50).joinToString(" ") { "https://example.test/long-title-$it" })
@@ -126,6 +129,8 @@ class P2BatchImportDeviceTest {
             val notice = model.state.value.notice
             !model.state.value.submitting && notice is com.videodown.douyin.presentation.home.ImportNotice.Queued && notice.failedTitles.size == 50
         }
+        // 真实用户点「开始批量解析」时会 clearFocus 收起键盘；这里直接驱动 model，所以要显式收一下。
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
         compose.onNodeWithText("关闭", substring = false).assertIsDisplayed()
         compose.onNodeWithText("下载所选").assertIsDisplayed().assertIsEnabled()
         assertEquals(50, model.state.value.selectedCount); assertTrue(starts.isEmpty())

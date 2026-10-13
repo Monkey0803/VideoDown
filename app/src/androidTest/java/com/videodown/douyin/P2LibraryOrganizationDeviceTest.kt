@@ -73,6 +73,7 @@ class P2LibraryOrganizationDeviceTest {
         compose.onNodeWithText("没有符合条件的视频").assertIsDisplayed()
         Unit
     }
+
     @Test fun actualRenameAndCategorySurviveRotationAndFilterSavedFile() = runBlocking {
         menu(); compose.onNodeWithText("重命名与分类").performClick()
         compose.onNode(hasSetTextAction() and hasText("文件名称")).performTextReplacement("旅行声音")
@@ -81,6 +82,8 @@ class P2LibraryOrganizationDeviceTest {
         try {
             compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
             compose.waitUntil(5000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
+            // 与真实用户一致：输入完先收起键盘，再点页脚按钮。
+            androidx.test.espresso.Espresso.closeSoftKeyboard()
             compose.onNodeWithText("保存修改").assertIsDisplayed()
             compose.onNode(hasSetTextAction() and hasText("文件名称")).assertTextContains("旅行声音")
             compose.onNodeWithText("保存修改").performClick()

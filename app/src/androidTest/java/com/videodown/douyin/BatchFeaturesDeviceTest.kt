@@ -22,6 +22,7 @@ import com.videodown.douyin.presentation.history.HistoryScreen
 import com.videodown.douyin.presentation.history.HistoryViewModel
 import com.videodown.douyin.presentation.home.HomeScreen
 import com.videodown.douyin.presentation.home.HomeViewModel
+import com.videodown.douyin.core.LibrarySort
 import com.videodown.douyin.presentation.library.LibraryScreen
 import com.videodown.douyin.presentation.theme.VideoDownTheme
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -159,21 +160,21 @@ class BatchFeaturesDeviceTest {
         compose.onNodeWithContentDescription("选择排序").performClick()
         compose.onNodeWithText("最早保存", substring = false).performClick()
         compose.runOnIdle {
-            assertEquals(com.videodown.douyin.presentation.library.LibrarySort.OLDEST, model.state.value.libraryQuery.sort)
+            assertEquals(LibrarySort.OLDEST, model.state.value.libraryQuery.sort)
             assertEquals(first.id, model.state.value.libraryQuery.apply(listOf(first, second)).first().id)
         }
         compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择排序"))
         compose.onNodeWithContentDescription("选择排序").performClick()
         compose.onNodeWithText("文件最大", substring = false).performClick()
         compose.runOnIdle {
-            assertEquals(com.videodown.douyin.presentation.library.LibrarySort.LARGEST, model.state.value.libraryQuery.sort)
+            assertEquals(LibrarySort.LARGEST, model.state.value.libraryQuery.sort)
             assertEquals(first.id, model.state.value.libraryQuery.apply(listOf(first, second)).first().id)
         }
         compose.onNodeWithText("文件最大", substring = false).assertIsDisplayed()
         compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择排序"))
         compose.onNodeWithContentDescription("选择排序").performClick()
         androidx.test.espresso.Espresso.pressBack()
-        compose.runOnIdle { assertEquals(com.videodown.douyin.presentation.library.LibrarySort.LARGEST, model.state.value.libraryQuery.sort) }
+        compose.runOnIdle { assertEquals(LibrarySort.LARGEST, model.state.value.libraryQuery.sort) }
         compose.onNodeWithText("文件最大", substring = false).assertIsDisplayed()
     }
     @Test fun platformFilterAndListLayoutRetainSearchAndBatchExportCopiesAllSelections() {
