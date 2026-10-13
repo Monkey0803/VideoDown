@@ -1,6 +1,6 @@
 # 拾影 功能待办（TODO）
 
-> 更新日期：2026-10-10 ｜ 当前分支：`main` ｜ 版本：1.1.1 / code 6（英文名 Keepsake，更新源走 GitHub Releases）
+> 更新日期：2026-10-12 ｜ 当前分支：`main` ｜ 版本：1.1.1 / code 6（英文名 Keepsake，更新源走 GitHub Releases）
 > 依据：同类应用对标（1DM+、ADM、Snaptube、VidMate、Seal、稞麦视频下载器）与当前源码核查
 > 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）、[P4 验收记录](validation/p4-features-2026-10-09.md)、[P5 验收记录](validation/p5-features-2026-10-09.md)
 
@@ -76,6 +76,24 @@
 - [ ] **`P1DownloadIntegrationTest#known response size is checked again before writing a direct file` 曾偶发一次**（`expected:<STORAGE_FULL> but was:<NETWORK>`，2026-10-10 C1 迁移期间）。**该用例属于 JVM 套件（`app/src/test`），无法在真机上运行**；本轮以 `--rerun-tasks` 连跑 5 次，12 用例 × 5 次全部通过，未修改用例。
 - [ ] **`P3PictureInPictureDeviceTest#pipScreenOffThenReturnKeepsActivityAndPlayer` 在 API 37 模拟器上失败**（操作真实熄屏与 PiP）。已用两种独立实验证明与本轮无关：把 `PlayerScreen.kt` 还原到 HEAD 后同样失败；只关闭新增手势覆盖层后同样失败。**在 API 30 真机（SHARK PRS-A0）上已实测通过**：传 `manual_unlock=true` 并由人工在两轮各 120 秒窗口内解锁，四条 PiP 用例 4/4 通过（该条 26.1 秒），XML 存于 `device-api30/P3PictureInPictureDeviceTest.manual-unlock.xml`，两轮解锁后的播放器截图存于 `evidence/pip-manual-unlock-cycle-{1,2}.png`；**默认参数**的真机运行会因设备有锁屏而跳过该条（3 通过 + 1 跳过，XML 存于 `device-api30/P3PictureInPictureDeviceTest.xml`）。因此「模拟器失败、真机通过」这一差异已成立，剩下的只是模拟器差异本身未修复。
   - **2026-10-12 补充：把三项动画缩放设为 0 后该条通过（`P3PictureInPictureDeviceTest` 4/4）**，说明它是动画时序敏感，而不是模拟器能力缺失；Espresso 本来就要求关闭动画，CI 应固定这一档。见 `validation/motion-batch2-2026-10-12.md`。
+
+- [ ] **`P3PlaybackDeviceTest#retainedViewModelSurvivesActualActivityRecreationWithCurrentPosition` 在 SHARK PRS-A0 / API 30 真机上 10s 超时**（2026-10-12 真机复跑，7 条中 1 条失败；同批在 API 37 模拟器通过）。未进一步定位，疑似真机 Activity 重建更慢或 OEM 行为差异。见 `validation/real-device-2026-10-12.md`。
+- [ ] **`P3PictureInPictureDeviceTest#systemPipDismissReleasesVideo` 在 SHARK PRS-A0 / API 30 真机上失败**（`PiP state did not reach expected condition`，2026-10-12；模拟器通过，差异未定位）。同批 `pipScreenOffThenReturnKeepsActivityAndPlayer` 因真机有锁屏而按环境前提跳过（默认参数），与代码无关。见 `validation/real-device-2026-10-12.md`。
+
+## 动效与快捷方式遗留（2026-10-12）
+
+动效批次 0–4 与快捷方式已提交（`feat(motion)` / `feat(library)` / `feat(shortcut)`），证据见
+`validation/motion-batch0-1-2026-10-12.md`、`validation/motion-batch2-2026-10-12.md`、
+`validation/reorder-persistence-2026-10-12.md`、`validation/motion-batch4-2026-10-12.md`、
+`validation/launcher-shortcut-icons-2026-10-12.md`、`validation/shortcut-navigation-2026-10-12.md`。
+以下是明确的未完成项：
+
+- [ ] **动效手感仍未经人工复核**：测试只能证明「会动、会停、不遮挡」，证明不了快慢与观感。真机录屏（动画缩放 1.0）已入库 `validation/motion-showcase-2026-10-12/motion-on-real-device.mp4`，逐项「觉得不对该改哪里」写在同一目录的文档里；改动点都集中在单个文件（`SharedCover` 的 `boundsTransform`、`Motion` 的 token、`Shimmer` 的 `SWEEP_MS`、`EmptyStateIllustration` 的多边形参数）。
+- [ ] **弹窗页脚在横屏 + 键盘下被键盘挡住**：真机（393×873dp）横屏且输入法弹起时，重命名弹窗的「保存修改」落在键盘背后，用户需先收键盘才能点到。**已排除并回退两条无效路径**：给弹窗窗口设 `SOFT_INPUT_ADJUST_RESIZE` 在 API 30 无效；按 IME 内边距收紧高度上限在真机未被证实有效，反而让 `P2BatchImportDeviceTest` 在模拟器上 4 条全挂 `ComposeNotIdleException`（在弹窗窗口里读 `WindowInsets.ime` 的副作用）。建议方案是「IME 可见时把动作行并入可滚动区域，而不是固定在底部」，但改完必须重新验证上面那条 `ComposeNotIdle` 陷阱。
+- [ ] **恢复快捷方式的前置条件未解决**：三个快捷方式已按要求暂时不发布（`LauncherShortcuts.publish` 改为清空动态快捷方式，实现、图标与 intent 处理全部保留）。恢复前必须先解决「长按菜单这条路无法自动化验证」——本轮只能验证「启动器会发的那个 intent」，真实长按菜单无法用 adb 稳定唤出，回归只能靠人工长按。
+- [ ] **已存自定义顺序不随备份走**：`SettingsSnapshot` 只含设置不含记录，恢复备份不会带回已存顺序（排序**方式**会随备份走）。
+- [ ] **把手隐藏条件只覆盖了「搜索」一种**：多选、批量忙、平台/分类过滤共用同一处 `reorderAllowed` 判定，但只有搜索态有用例。
+- [ ] **共享元素未自定义曲线以外的编排**：时长已接到 `AppMotion`（250ms），但未测过更慢/更快的观感差异，也没有对「从列表页进入」以外的入口（首页、任务页）做共享元素。
 
 ## Phase B — 差异化（已完成）
 
