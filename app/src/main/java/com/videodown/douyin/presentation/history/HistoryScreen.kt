@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -50,6 +51,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
+import sh.calvin.reorderable.rememberReorderableLazyListState
+import sh.calvin.reorderable.ReorderableItem
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,7 +72,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.relativeTime
@@ -87,6 +92,7 @@ import com.videodown.douyin.presentation.storedErrorMessage
 import com.videodown.douyin.presentation.taskSortLabelRes
 import com.videodown.douyin.presentation.library.authorText
 import com.videodown.douyin.presentation.failureDescription
+import com.videodown.douyin.presentation.theme.appMotion
 import com.videodown.douyin.presentation.failureTitle
 import com.videodown.douyin.presentation.recoveryActionLabel
 import com.videodown.douyin.domain.model.legacyFailureKind
@@ -95,6 +101,19 @@ import com.videodown.douyin.domain.model.legacyFailureKind
 fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewModel(),
     onRecovery: (DownloadRecord, RecoveryAction) -> Unit = { _, _ -> }) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val motion = appMotion()
+    val taskListState = rememberLazyListState()
+    // 拖拽期间按本地顺序显示待下载任务，松手后落盘一次；顺序回流后本地顺序作废。
+    var pendingOrder by remember { mutableStateOf<List<String>?>(null) }
+    val statusById = state.visibleRecords.associate { it.id to state.statusFor(it) }
+    val taskOrder = pendingOrder?.let { order ->
+        val byId = state.visibleRecords.associateBy { it.id }
+        val orderedPending = order.mapNotNull { byId[it] }
+        var next = 0
+        state.visibleRecords.map { record ->
+            if (statusById[record.id] == DownloadStatus.PENDING) orderedPending.getOrNull(next++) ?: record else record
+        }
+    } ?: state.visibleRecords
     val context = LocalContext.current
     // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
     val resources = LocalResources.current
@@ -252,30 +271,69 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                         color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
             } else {
+                // 拖拽只对待下载任务开放：队列顺序对正在下载和已结束的任务没有意义。
+                val canReorder = state.taskQuery.sort == TaskSort.STATUS && state.taskQuery.text.isBlank() && !state.batchBusy
+                val reorderableState = rememberReorderableLazyListState(taskListState) { from, to ->
+                    val id = from.key as? String ?: return@rememberReorderableLazyListState
+                    val ids = taskOrder.map { it.id }.toMutableList()
+                    val index = ids.indexOf(id)
+                    if (index >= 0 && to.index in 0..ids.size) {
+                        ids.add(to.index, ids.removeAt(index))
+                        // 只有待下载任务带队列顺序，其余记录只是跟着列表一起动。
+                        pendingOrder = ids.filter { statusById[it] == DownloadStatus.PENDING }
+                    }
+                }
+                // 松手后落盘一次；顺序回流后本地顺序作废。
+                LaunchedEffect(reorderableState) {
+                    snapshotFlow { reorderableState.isAnyItemDragging }.collect { dragging ->
+                        if (!dragging) pendingOrder?.let { order ->
+                            pendingOrder = null
+                            viewModel.reorderQueue(order)
+                        }
+                    }
+                }
                 LazyColumn(
+                    state = taskListState,
                     modifier = Modifier.testTag("task-list"),
                     contentPadding = PaddingValues(start = 22.dp, end = 22.dp, bottom = 28.dp),
                     verticalArrangement = Arrangement.spacedBy(11.dp),
                 ) {
-                    items(state.visibleRecords, key = { it.id }) { record ->
-                        TaskCard(
-                            record = record,
-                            selecting = selecting,
-                            selected = record.id in selectedIds,
-                            onToggle = { selectedIds = if (record.id in selectedIds) selectedIds - record.id else selectedIds + record.id },
-                            state = state,
-                            onPlay = { onPlay(record.id) },
-                            onPause = { viewModel.pause(record.id) },
-                            onResume = { viewModel.resume(record.id) },
-                            onRestart = { viewModel.restart(record.id) },
-                            onDelete = { pendingDelete = record },
-                            onSpeedLimit = { pendingSpeedLimit = record },
-                            onMove = { offset -> viewModel.moveInQueue(record.id, offset) },
-                            onRecover = { action -> if (action == RecoveryAction.RETRY) viewModel.resume(record.id) else onRecovery(record, action) },
-                            onShare = {
-                                record.filePath?.let(::File)?.let { DouyinIntents.shareFile(context, it) }
-                            },
-                        )
+                    items(taskOrder, key = { it.id }) { record ->
+                        // 任务卡随状态进出列表：位置变化用默认曲线，增删用快曲线淡入淡出。
+                        ReorderableItem(reorderableState, key = record.id) { _ ->
+                        Column(Modifier.animateItem(
+                            fadeInSpec = motion.fast(),
+                            placementSpec = motion.normal(),
+                            fadeOutSpec = motion.fast(),
+                        )) {
+                            TaskCard(
+                                record = record,
+                                selecting = selecting,
+                                selected = record.id in selectedIds,
+                                onToggle = { selectedIds = if (record.id in selectedIds) selectedIds - record.id else selectedIds + record.id },
+                                state = state,
+                                onPlay = { onPlay(record.id) },
+                                onPause = { viewModel.pause(record.id) },
+                                onResume = { viewModel.resume(record.id) },
+                                onRestart = { viewModel.restart(record.id) },
+                                onDelete = { pendingDelete = record },
+                                onSpeedLimit = { pendingSpeedLimit = record },
+                                onMove = { offset -> viewModel.moveInQueue(record.id, offset) },
+                                onRecover = { action -> if (action == RecoveryAction.RETRY) viewModel.resume(record.id) else onRecovery(record, action) },
+                                onShare = {
+                                    record.filePath?.let(::File)?.let { DouyinIntents.shareFile(context, it) }
+                                },
+                                // 只有待下载的任务给出拖拽把手。
+                                onDragHandle = if (canReorder && state.statusFor(record) == DownloadStatus.PENDING) {
+                                    {
+                                        AppIcon(AppIcons.Sort, stringResource(R.string.history_drag_handle),
+                                            modifier = Modifier.size(20.dp).draggableHandle().testTag("task-drag-${record.id}"),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                } else null,
+                            )
+                        }
+                        }
                     }
                 }
             }
@@ -313,6 +371,8 @@ private fun TaskCard(
     onShare: () -> Unit,
     onMove: (Int) -> Unit,
     onRecover: (RecoveryAction) -> Unit,
+    /** 待下载任务的拖拽把手；其余状态为 null（拖拽只重排待下载区间）。 */
+    onDragHandle: (@Composable () -> Unit)? = null,
 ) {
     val status = state.statusFor(record)
     val progress = state.progressFor(record.id)
@@ -358,6 +418,7 @@ private fun TaskCard(
                             color = statusColor(status))
                     }
                 }
+                onDragHandle?.invoke()
                 if (!selecting) {
                 IconButton(onClick = when (status) {
                     DownloadStatus.COMPLETED -> onPlay
@@ -387,8 +448,14 @@ private fun TaskCard(
                 }
             }
             if (status != DownloadStatus.COMPLETED) {
+                // 进度条补间到新比例；百分比文字仍用原始值，断言与读数都不受影响。
+                val animatedFraction by animateFloatAsState(
+                    targetValue = state.fractionFor(record),
+                    animationSpec = appMotion().fast(),
+                    label = "task-progress",
+                )
                 LinearProgressIndicator(
-                    progress = { state.fractionFor(record) },
+                    progress = { animatedFraction },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp).height(5.dp).clip(MaterialTheme.shapes.small),
                     color = MaterialTheme.colorScheme.primary,
                     trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,

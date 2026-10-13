@@ -8,6 +8,11 @@ import com.videodown.douyin.presentation.history.BatchOperation
 import com.videodown.douyin.presentation.history.contextOperationLabel
 import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppConfirmDialog
+import com.videodown.douyin.core.LibrarySort
+import com.videodown.douyin.presentation.components.EmptyStateIllustration
+import com.videodown.douyin.presentation.components.sharedCover
+import com.videodown.douyin.presentation.components.shimmer
+import com.videodown.douyin.presentation.theme.appMotion
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -22,6 +27,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
@@ -73,6 +82,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
+import sh.calvin.reorderable.rememberReorderableLazyStaggeredGridState
+import sh.calvin.reorderable.rememberReorderableLazyListState
+import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,7 +107,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.videodown.douyin.core.LibraryLayout
 import com.videodown.douyin.core.WatchBadge
 import com.videodown.douyin.core.ServiceLocator
@@ -112,7 +125,12 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     watchProgress: Map<String, com.videodown.douyin.domain.model.WatchProgress> = emptyMap(),
     organizationViewModel: LibraryOrganizationViewModel = viewModel(),
     fileExportViewModel: FileExportViewModel = viewModel(),
-    audioExtractionViewModel: AudioExtractionViewModel = viewModel()) {
+    audioExtractionViewModel: AudioExtractionViewModel = viewModel(),
+    // 共享元素作用域由 MainActivity 的 SharedTransitionLayout 传入；直接渲染本界面的设备测试不传，
+    // 此时封面不带共享修饰，行为与改造前一致。
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null) {
+    val motion = appMotion()
     val context = LocalContext.current
     // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
     val resources = LocalResources.current
@@ -142,6 +160,11 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     val snackbar = remember { SnackbarHostState() }
     val waterfallState = rememberLazyStaggeredGridState()
     val listState = rememberLazyListState()
+    // 首次进入时套用持久化的排序方式（手动顺序重启后要看得见）。
+    LaunchedEffect(Unit) {
+        val persisted = ServiceLocator.preferences.librarySort
+        if (persisted != state.libraryQuery.sort) historyViewModel.setLibraryQuery(state.libraryQuery.copy(sort = persisted))
+    }
     val nextLayout = if (layout == LibraryLayout.WATERFALL) LibraryLayout.LIST else LibraryLayout.WATERFALL
     // Private records only join the visible stock once the vault is unlocked, so the count, the
     // category list and every batch action are all computed over what the user may see.
@@ -162,6 +185,64 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     val galleryAction = stringResource(contextOperationLabel(galleryOperation))
     val saved = state.libraryQuery.apply(allSaved)
     val visibleIds = saved.map { it.id }.toSet()
+    // 拖拽只在「自定义排序 + 没有搜索/过滤 + 非多选」时开放：其他档位的顺序由规则决定，拖了没有意义。
+    val reorderAllowed = state.libraryQuery.sort == LibrarySort.CUSTOM &&
+        state.libraryQuery.text.isBlank() && state.libraryQuery.platform == null &&
+        state.libraryQuery.folder == null && !state.libraryQuery.favoritesOnly && !state.libraryQuery.vaultOnly
+    val canReorder = reorderAllowed && !selecting && !state.batchBusy
+    // 拖拽期间先按本地顺序显示，松手后落盘；落盘回流的新数据会取代本地顺序。
+    var draggedOrder by remember { mutableStateOf<List<String>?>(null) }
+    val displayed = draggedOrder?.let { order -> order.mapNotNull { id -> saved.firstOrNull { it.id == id } } } ?: saved
+    // 拖拽中只改本地顺序，松手（isAnyItemDragging 落回 false）才落盘一次。
+    fun moveDragged(fromKey: Any?, toIndex: Int) {
+        val id = fromKey as? String ?: return
+        val ids = displayed.map { it.id }.toMutableList()
+        val index = ids.indexOf(id)
+        if (index >= 0 && toIndex in 0..ids.size) {
+            ids.add(toIndex, ids.removeAt(index))
+            draggedOrder = ids
+        }
+    }
+    /** 把手上的无障碍动作：TalkBack 用户不能做拖拽手势，得给「前移/后移」。 */
+    val moveUpLabel = stringResource(R.string.history_move_up)
+    val moveDownLabel = stringResource(R.string.history_move_down)
+    fun moveWithinDisplayed(id: String, delta: Int) {
+        val ids = displayed.map { it.id }.toMutableList()
+        val from = ids.indexOf(id)
+        val to = (from + delta).coerceIn(0, ids.size - 1)
+        if (from < 0 || from == to) return
+        ids.add(to, ids.removeAt(from))
+        historyViewModel.reorderLibrary(ids)
+    }
+    fun accessibilityActions(id: String): List<CustomAccessibilityAction> {
+        val index = displayed.indexOfFirst { it.id == id }
+        if (index < 0) return emptyList()
+        return buildList {
+            if (index > 0) add(CustomAccessibilityAction(moveUpLabel) { moveWithinDisplayed(id, -1); true })
+            if (index < displayed.size - 1) add(CustomAccessibilityAction(moveDownLabel) { moveWithinDisplayed(id, 1); true })
+        }
+    }
+    val reorderableListState = rememberReorderableLazyListState(listState) { from, to -> moveDragged(from.key, to.index) }
+    val reorderableGridState = rememberReorderableLazyStaggeredGridState(waterfallState) { from, to -> moveDragged(from.key, to.index) }
+    LaunchedEffect(reorderableListState, reorderableGridState) {
+        snapshotFlow { reorderableListState.isAnyItemDragging || reorderableGridState.isAnyItemDragging }
+            .collect { dragging ->
+                if (!dragging) draggedOrder?.let { order ->
+                    draggedOrder = null
+                    historyViewModel.reorderLibrary(order)
+                }
+            }
+    }
+    // 第一次切到自定义排序且从来没排过：按切换前的顺序 seed 一次，切过去的瞬间列表不跳变。
+    var sortBeforeCustom by remember { mutableStateOf(state.libraryQuery.sort) }
+    LaunchedEffect(state.libraryQuery.sort, allSaved.size) {
+        val sort = state.libraryQuery.sort
+        if (sort == LibrarySort.CUSTOM && reorderAllowed && allSaved.isNotEmpty() && allSaved.none { it.sortIndex > 0L }) {
+            val seed = state.libraryQuery.copy(sort = sortBeforeCustom.takeIf { it != LibrarySort.CUSTOM } ?: LibrarySort.NEWEST)
+            historyViewModel.reorderLibrary(seed.apply(allSaved).map { it.id })
+        }
+        sortBeforeCustom = sort
+    }
     LaunchedEffect(visibleIds) { selectedIds = selectedIds.intersect(visibleIds) }
     LaunchedEffect(fileExport.finished) {
         if (fileExport.finished && selecting) selectedIds = fileExport.failedIds.intersect(visibleIds)
@@ -241,7 +322,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                 trailingIcon = { if (state.libraryQuery.text.isNotEmpty()) TextButton(onClick = { queryChanged(state.libraryQuery.copy(text = "")) }) { Text(stringResource(R.string.action_clear)) } },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp))
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp).testTag("library-search"))
             Row(Modifier.fillMaxWidth().padding(end = 14.dp), verticalAlignment = Alignment.CenterVertically) {
             LazyRow(modifier = Modifier.weight(1f).testTag("library-controls"),
                 contentPadding = PaddingValues(start = 22.dp, end = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -265,8 +346,10 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                 }
                 item {
                     LibraryPicker(stringResource(R.string.library_pick_sort), stringResource(librarySortLabelRes(state.libraryQuery.sort)), state.libraryQuery.sort,
-                        LibrarySort.entries.map { it to stringResource(librarySortLabelRes(it)) }, enabled = !state.batchBusy) {
-                        controlsChanged(state.libraryQuery.copy(sort = it))
+                        LibrarySort.entries.map { it to stringResource(librarySortLabelRes(it)) }, enabled = !state.batchBusy) { sort ->
+                        // 手动顺序重启后还要看得见，所以排序方式本身也要落盘（同 libraryLayout 的做法）。
+                        ServiceLocator.preferences.librarySort = sort
+                        controlsChanged(state.libraryQuery.copy(sort = sort))
                     }
                 }
                 item { FilterChip(selected = state.libraryQuery.favoritesOnly, enabled = !state.batchBusy && !organization.busy,
@@ -293,7 +376,13 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = 22.dp))
             if (saved.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(if (allSaved.isEmpty()) R.string.library_empty else R.string.library_empty_filtered), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        // 只在「整个已存是空的」时候插画：被搜索/过滤筛空是另一回事，配图会让人困惑。
+                        if (allSaved.isEmpty()) {
+                            EmptyStateIllustration(Modifier.padding(bottom = 20.dp))
+                        }
+                        Text(stringResource(if (allSaved.isEmpty()) R.string.library_empty else R.string.library_empty_filtered), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             } else if (layout == LibraryLayout.WATERFALL) {
                 LazyVerticalStaggeredGrid(
@@ -304,16 +393,22 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalItemSpacing = 20.dp,
                 ) {
-                    items(saved, key = { it.id }) { record ->
+                    items(displayed, key = { it.id }) { record ->
                         val watch = watchBadge(record, watchProgress)
-                        Column(Modifier.combinedClickable(
+                        ReorderableItem(reorderableGridState, key = record.id) { dragging ->
+                        Column(Modifier.animateItem(
+                            fadeInSpec = motion.fast(),
+                            placementSpec = motion.normal(),
+                            fadeOutSpec = motion.fast(),
+                        ).combinedClickable(
                                 role = Role.Button,
                                 onClickLabel = stringResource(if (selecting) R.string.library_click_select else R.string.library_click_play),
                                 onLongClickLabel = stringResource(R.string.library_long_click),
                                 onClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) onPlay(record.id) },
                                 onLongClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) selectedRecordId = record.id },
                             )) {
-                            LibraryCover(record, Modifier.fillMaxWidth(), adaptToCover = true,
+                            LibraryCover(record, Modifier.fillMaxWidth()
+                                .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope, inOverlay = true), adaptToCover = true,
                                 watch = watch,
                                 selected = if (selecting) record.id in selectedIds else null,
                                 selectionEnabled = !state.batchBusy, onSelect = { toggle(record.id) })
@@ -321,6 +416,19 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                                 style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.padding(top = 9.dp))
                             LibraryMetadata(record, Modifier.padding(top = 4.dp), watch)
+                            if (canReorder) {
+                                Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.End) {
+                                    Box(Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = .85f))) {
+                                        val actions = accessibilityActions(record.id)
+                                        AppIcon(AppIcons.Sort, stringResource(R.string.library_drag_handle),
+                                            modifier = Modifier.padding(6.dp).size(20.dp).draggableHandle()
+                                                .semantics { customActions = actions }
+                                                .testTag("library-drag-${record.id}"),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                            }
+                        }
                         }
                     }
                 }
@@ -331,10 +439,15 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                     contentPadding = PaddingValues(start = 22.dp, end = 22.dp, top = 22.dp, bottom = 30.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(saved, key = { it.id }) { record ->
+                    items(displayed, key = { it.id }) { record ->
                         val watch = watchBadge(record, watchProgress)
+                        ReorderableItem(reorderableListState, key = record.id) { dragging ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large)
+                            modifier = Modifier.animateItem(
+                                fadeInSpec = motion.fast(),
+                                placementSpec = motion.normal(),
+                                fadeOutSpec = motion.fast(),
+                            ).fillMaxWidth().clip(MaterialTheme.shapes.large)
                                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
                                 .combinedClickable(
                                     role = Role.Button,
@@ -347,7 +460,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            LibraryCover(record, Modifier.width(108.dp),
+                            LibraryCover(record, Modifier.width(108.dp)
+                                .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope, inOverlay = true),
                                 watch = watch,
                                 selected = if (selecting) record.id in selectedIds else null,
                                 selectionEnabled = !state.batchBusy, onSelect = { toggle(record.id) })
@@ -359,6 +473,15 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                                     modifier = Modifier.padding(top = 5.dp))
                                 LibraryMetadata(record, Modifier.padding(top = 5.dp), watch)
                             }
+                            if (canReorder) {
+                                val actions = accessibilityActions(record.id)
+                                AppIcon(AppIcons.Sort, stringResource(R.string.library_drag_handle),
+                                    modifier = Modifier.size(20.dp).draggableHandle()
+                                        .semantics { customActions = actions }
+                                        .testTag("library-drag-${record.id}"),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
                         }
                     }
                 }
@@ -393,9 +516,13 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
     watch: WatchBadge? = null,
     selected: Boolean? = null, selectionEnabled: Boolean = true, onSelect: () -> Unit = {}) {
     var coverAspectRatio by rememberSaveable(record.coverUrl) { mutableFloatStateOf(3f / 4f) }
+    // 封面解码出来之前显示骨架屏扫光；加载完成后停止，避免常驻的无限动画。
+    var coverLoaded by remember(record.coverUrl) { mutableStateOf(false) }
+    val showShimmer = !record.coverUrl.isNullOrBlank() && !coverLoaded
     Box(
         modifier.aspectRatio(if (adaptToCover) coverAspectRatio else 4f / 3f)
-            .clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerHighest),
+            .clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            .then(if (showShimmer) Modifier.shimmer() else Modifier),
         contentAlignment = Alignment.Center,
     ) {
         AppIcon(if (record.isAudio) AppIcons.Audio else AppIcons.Play, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -405,10 +532,11 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
             onSuccess = { result ->
-                val drawable = result.result.drawable
-                if (adaptToCover && drawable.intrinsicWidth > 0 && drawable.intrinsicHeight > 0) {
-                    coverAspectRatio = (drawable.intrinsicWidth.toFloat() / drawable.intrinsicHeight)
-                        .coerceIn(.5f, 2f)
+                coverLoaded = true
+                // Coil 3：State.Success.result 是 SuccessResult，图片本体在它的 image 上。
+                val image = result.result.image
+                if (adaptToCover && image.width > 0 && image.height > 0) {
+                    coverAspectRatio = (image.width.toFloat() / image.height).coerceIn(.5f, 2f)
                 }
             },
         )
