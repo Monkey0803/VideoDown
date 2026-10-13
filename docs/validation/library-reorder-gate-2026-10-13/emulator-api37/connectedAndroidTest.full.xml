@@ -1,0 +1,914 @@
+<testsuites tests="198" failures="34" errors="0" skipped="0" time="0.000" timestamp="2026-10-13T10:35:04" hostname="localhost">
+  <testsuite name="com.videodown.douyin.AppUpdateEntryDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="6.516" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="reportsUpToDateForTheInstalledVersion" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.885" />
+    <testcase name="entryShowsInstalledVersionAndReportsANewerBuild" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.103" />
+    <testcase name="actionsShareOneRowWhenWidthAllows" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="0.785" />
+    <testcase name="notesFollowTheChineseInterface" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="0.836" />
+    <testcase name="notesFollowTheEnglishInterface" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="0.723" />
+    <testcase name="updateSourceCanBeConfiguredFromTheDialog" classname="com.videodown.douyin.AppUpdateEntryDeviceTest" time="1.184" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.AppearanceModeDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="7.725" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="appearanceSwitchesImmediatelyPersistsAndCanFollowSystem" classname="com.videodown.douyin.AppearanceModeDeviceTest" time="7.725" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.AutoGalleryDeviceTest" tests="1" failures="1" errors="0" skipped="0" time="0.044" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="aFinishedDownloadLandsInTheGalleryAndSaysSoOnTheCompletionCard" classname="com.videodown.douyin.AutoGalleryDeviceTest" time="0.044">
+      <failure>java.lang.AssertionError: System notifications must be genuinely enabled
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.AutoGalleryDeviceTest$aFinishedDownloadLandsInTheGalleryAndSaysSoOnTheCompletionCard$1.invokeSuspend(AutoGalleryDeviceTest.kt:77)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.AutoGalleryDeviceTest.aFinishedDownloadLandsInTheGalleryAndSaysSoOnTheCompletionCard(AutoGalleryDeviceTest.kt:76)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.BackgroundDownloadDeviceTest" tests="4" failures="3" errors="0" skipped="0" time="16.299" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="secureScreenOffTransferCompletesAfterNormalManualUnlock" classname="com.videodown.douyin.BackgroundDownloadDeviceTest" time="0.013">
+      <failure>org.junit.AssumptionViolatedException: Explicit manual-unlock opt-in required
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.BackgroundDownloadDeviceTest$secureScreenOffTransferCompletesAfterNormalManualUnlock$1.invokeSuspend(BackgroundDownloadDeviceTest.kt:74)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.BackgroundDownloadDeviceTest.secureScreenOffTransferCompletesAfterNormalManualUnlock(BackgroundDownloadDeviceTest.kt:73)
+</failure>
+    </testcase>
+    <testcase name="unexpectedServiceStopFailsWithVisibleGuidanceAndRetryCompletes" classname="com.videodown.douyin.BackgroundDownloadDeviceTest" time="16.257">
+      <failure>kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 15000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:1571)
+</failure>
+    </testcase>
+    <testcase name="foregroundDownloadSurvivesHomeAndScreenOffThenNotificationPauseAndResume" classname="com.videodown.douyin.BackgroundDownloadDeviceTest" time="0.002">
+      <failure>org.junit.AssumptionViolatedException: Foreground notification must be observable
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.BackgroundDownloadDeviceTest$foregroundDownloadSurvivesHomeAndScreenOffThenNotificationPauseAndResume$1.invokeSuspend(BackgroundDownloadDeviceTest.kt:136)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.BackgroundDownloadDeviceTest.foregroundDownloadSurvivesHomeAndScreenOffThenNotificationPauseAndResume(BackgroundDownloadDeviceTest.kt:133)
+</failure>
+    </testcase>
+    <testcase name="deniedForegroundStartBecomesBackgroundFailureBeforeAnyHttpAndKeepsPartial" classname="com.videodown.douyin.BackgroundDownloadDeviceTest" time="0.027" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.BackupDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="2.331" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="anImportedLinkFileBecomesBatchImportInput" classname="com.videodown.douyin.BackupDeviceTest" time="0.769" />
+    <testcase name="aSettingsBackupBringsTheSavedOrderBackThroughARealDocument" classname="com.videodown.douyin.BackupDeviceTest" time="0.378" />
+    <testcase name="theLinkListTravelsThroughARealDocumentAndTheRowsAreReachable" classname="com.videodown.douyin.BackupDeviceTest" time="0.851" />
+    <testcase name="aSettingsBackupRestoresRealPreferences" classname="com.videodown.douyin.BackupDeviceTest" time="0.333" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.BatchFeaturesDeviceTest" tests="7" failures="0" errors="0" skipped="0" time="8.442" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="batchDownloadKeepsIndividualQualityAndSkipsDuplicates" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="1.131" />
+    <testcase name="platformFilterAndListLayoutRetainSearchAndBatchExportCopiesAllSelections" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="1.416" />
+    <testcase name="batchGalleryFailureIdentifiesVideoAndRetryDoesNotDuplicateSuccessfulCopy" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="1.310" />
+    <testcase name="sortingPickerAppliesSelectionAndDismissKeepsCurrentQuery" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="1.445" />
+    <testcase name="filteredSelectionDeletesOnlyVisibleResultAndCancelPreservesFiles" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="1.422" />
+    <testcase name="duplicateDialogCanOpenExistingFileOrExplicitlyDownloadAgain" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="0.775" />
+    <testcase name="selectedTaskPauseAndContinueDoNotTouchUnselectedTask" classname="com.videodown.douyin.BatchFeaturesDeviceTest" time="0.943" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.BrowserAssistDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="4.138" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="dynamicPageRequiresPlayThenDetectSelectAndDownload" classname="com.videodown.douyin.BrowserAssistDeviceTest" time="4.138" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.ClipboardDetectDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="3.134" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="dismissedLinkIsNeverOfferedAgain" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="0.771" />
+    <testcase name="aPlainWebLinkIsNeverOffered" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="0.830" />
+    <testcase name="copiedLinkIsOfferedAndReachesTheInputOnlyAfterConfirmation" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="0.819" />
+    <testcase name="turningThePreferenceOffStopsReadingTheClipboard" classname="com.videodown.douyin.ClipboardDetectDeviceTest" time="0.714" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.CoilImageLoadingDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="0.547" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="aRemoteCoverLoadsOverHttp" classname="com.videodown.douyin.CoilImageLoadingDeviceTest" time="0.547" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.ConcurrentStorageDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="7.135" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="engineMonitorStopsForStorageFailureAndReleasedLeaseAllowsResume" classname="com.videodown.douyin.ConcurrentStorageDeviceTest" time="7.135" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.DownloadSettingsDeviceTest" tests="6" failures="1" errors="0" skipped="0" time="5.901" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="enabledCompletionPreferencePostsIndependentNotification" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.002">
+      <failure>org.junit.AssumptionViolatedException: Enable app notifications before running this integration test
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.DownloadSettingsDeviceTest.enabledCompletionPreferencePostsIndependentNotification(DownloadSettingsDeviceTest.kt:87)
+</failure>
+    </testcase>
+    <testcase name="wifiRestrictionReactsToRealNetworkAndPreferenceChanges" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="5.846" />
+    <testcase name="preferencesSurviveRecreation" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.013" />
+    <testcase name="disabledCompletionPreferencePostsNothing" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.004" />
+    <testcase name="themeModeDefaultsToSystemAndPersistsEachChoice" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.031" />
+    <testcase name="autoResumeDefaultsToOnAndPersistsBothChoices" classname="com.videodown.douyin.DownloadSettingsDeviceTest" time="0.005" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.DynamicColorDeviceTest" tests="1" failures="1" errors="0" skipped="0" time="0.885" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="dynamicColorIsOfferedOnlyWhereSupportedAndRepaintsTheTheme" classname="com.videodown.douyin.DynamicColorDeviceTest" time="0.885">
+      <failure>java.lang.AssertionError: The brand palette must actually paint the 拾影 primary
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.DynamicColorDeviceTest.dynamicColorIsOfferedOnlyWhereSupportedAndRepaintsTheTheme(DynamicColorDeviceTest.kt:79)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.EmptyStateIllustrationDeviceTest" tests="3" failures="1" errors="0" skipped="0" time="4.132" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="anEmptyLibraryShowsTheIllustrationAndItSettles" classname="com.videodown.douyin.EmptyStateIllustrationDeviceTest" time="1.414" />
+    <testcase name="theSettledShapeIsTheRoundedSquare" classname="com.videodown.douyin.EmptyStateIllustrationDeviceTest" time="1.551">
+      <failure>java.lang.AssertionError: 终态应该已经是圆角方形（四角被填满），不能停在圆上（settled=64869 圆≈82447）
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.EmptyStateIllustrationDeviceTest.theSettledShapeIsTheRoundedSquare(EmptyStateIllustrationDeviceTest.kt:152)
+</failure>
+    </testcase>
+    <testcase name="theGateLandsOnTheSameFinalShape" classname="com.videodown.douyin.EmptyStateIllustrationDeviceTest" time="1.167" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.ExpiredPublicMediaRecoveryDeviceTest" tests="1" failures="1" errors="0" skipped="0" time="0.019" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="realRemovedMdnSourceRecoversThroughOriginalPageAndAnonymousDiscovery" classname="com.videodown.douyin.ExpiredPublicMediaRecoveryDeviceTest" time="0.019">
+      <failure>org.junit.AssumptionViolatedException: got: &lt;false&gt;, expected: is &lt;true&gt;
+	at org.junit.Assume.assumeThat(Assume.java:106)
+	at org.junit.Assume.assumeTrue(Assume.java:50)
+	at com.videodown.douyin.ExpiredPublicMediaRecoveryDeviceTest$realRemovedMdnSourceRecoversThroughOriginalPageAndAnonymousDiscovery$1.invokeSuspend(ExpiredPublicMediaRecoveryDeviceTest.kt:71)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.ExpiredPublicMediaRecoveryDeviceTest.realRemovedMdnSourceRecoversThroughOriginalPageAndAnonymousDiscovery(ExpiredPublicMediaRecoveryDeviceTest.kt:70)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.GenericVideoDeviceTest" tests="8" failures="2" errors="0" skipped="0" time="24.841" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="segmentedTaskPausesOnWifiLossAndResumesWithoutDuplicateCompletion" classname="com.videodown.douyin.GenericVideoDeviceTest" time="7.159" />
+    <testcase name="processExitResumeCheckpoint" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.002">
+      <failure>org.junit.AssumptionViolatedException: Pass process_exit_phase=seed/resume
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.GenericVideoDeviceTest$processExitResumeCheckpoint$1.invokeSuspend(GenericVideoDeviceTest.kt:61)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.GenericVideoDeviceTest.processExitResumeCheckpoint(GenericVideoDeviceTest.kt:58)
+</failure>
+    </testcase>
+    <testcase name="runtimeAndDirectHlsDashDownloadsProduceVideoAndAudio" classname="com.videodown.douyin.GenericVideoDeviceTest" time="11.316" />
+    <testcase name="cancellationStopsEngineAndPolicyBlocksBeforeNetwork" classname="com.videodown.douyin.GenericVideoDeviceTest" time="1.036" />
+    <testcase name="protectedFileIsRejectedBeforeTaskCanComplete" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.815" />
+    <testcase name="optionalPublicPageParse" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.001">
+      <failure>org.junit.AssumptionViolatedException: Pass generic_live_url to enable a public site check
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.GenericVideoDeviceTest$optionalPublicPageParse$1.invokeSuspend(GenericVideoDeviceTest.kt:31)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.GenericVideoDeviceTest.optionalPublicPageParse(GenericVideoDeviceTest.kt:29)
+</failure>
+    </testcase>
+    <testcase name="cancellingAtMergeStopsProcessGroupAndCanResume" classname="com.videodown.douyin.GenericVideoDeviceTest" time="3.724" />
+    <testcase name="browserCookieRedirectsNeverLeakAcrossHosts" classname="com.videodown.douyin.GenericVideoDeviceTest" time="0.788" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.HomeKeyboardDeviceTest" tests="5" failures="0" errors="0" skipped="0" time="5.550" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="leavingHomeAndReturningDoesNotRestoreTheKeyboardOrFocus" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="1.268" />
+    <testcase name="tappingNonInteractiveContentDismissesKeyboardWithoutClearingInput" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="0.761" />
+    <testcase name="keyboardAvoidanceKeepsInputAndSubmitVisibleAndDoneClearsFocus" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="1.250" />
+    <testcase name="systemBackDismissesKeyboardAndTheInputCanBeFocusedAgain" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="1.421" />
+    <testcase name="parseButtonDismissesKeyboardEvenWhenTheInputCannotBeParsed" classname="com.videodown.douyin.HomeKeyboardDeviceTest" time="0.850" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.HomeResultBackDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="1.741" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="systemBackReturnsToInputWithoutFinishingActivity" classname="com.videodown.douyin.HomeResultBackDeviceTest" time="0.696" />
+    <testcase name="simplifiedQualityLabelsKeepDistinctSourcesSelectable" classname="com.videodown.douyin.HomeResultBackDeviceTest" time="0.533" />
+    <testcase name="toolbarBackReturnsToTheSameInput" classname="com.videodown.douyin.HomeResultBackDeviceTest" time="0.512" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.IconIntegrationDeviceTest" tests="4" failures="1" errors="0" skipped="0" time="9.673" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="navigationRemainsUsableInLightAndDarkThemes" classname="com.videodown.douyin.IconIntegrationDeviceTest" time="7.663" />
+    <testcase name="defaultThemeKeepsBrandColorsInsteadOfWallpaperColors" classname="com.videodown.douyin.IconIntegrationDeviceTest" time="0.766" />
+    <testcase name="vectorsTintCorrectlyAndSelectedLibraryRetainsTransparentPlayCutout" classname="com.videodown.douyin.IconIntegrationDeviceTest" time="0.776" />
+    <testcase name="completedNotificationUsesTheNewSingleColorIcon" classname="com.videodown.douyin.IconIntegrationDeviceTest" time="0.468">
+      <failure>org.junit.AssumptionViolatedException: Requires notification permission on Android 13+
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.IconIntegrationDeviceTest.completedNotificationUsesTheNewSingleColorIcon(IconIntegrationDeviceTest.kt:113)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.LanguageSwitchDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="1.308" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="theLanguageRowOffersWhatThisAndroidVersionSupports" classname="com.videodown.douyin.LanguageSwitchDeviceTest" time="1.308" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.LauncherShortcutsDeviceTest" tests="9" failures="0" errors="0" skipped="0" time="15.125" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="quickParseReadsTheCopiedLinkDirectlyWithoutTheConfirmationBanner" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.007" />
+    <testcase name="theBatchImportShortcutCarriesTheClipboardLinksOnAColdStart" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="5.052" />
+    <testcase name="theEntryShortcutsAreTemporarilyNotPublished" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="0.038" />
+    <testcase name="theBatchImportShortcutOpensTheImportDialog" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="2.836" />
+    <testcase name="theQuickParseShortcutLandsOnTheParsePageWithoutAClipboardLink" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.295" />
+    <testcase name="theBatchImportShortcutOpensTheDialogFromAnotherTab" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.768" />
+    <testcase name="theQuickParseShortcutFillsTheInputForAPlainWebLink" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="1.029" />
+    <testcase name="theTasksShortcutOpensTheTaskPage" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="2.000" />
+    <testcase name="shortcutIconsAreVisibleOnALightLauncherBackground" classname="com.videodown.douyin.LauncherShortcutsDeviceTest" time="0.100" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.LibraryActionsDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="7.444" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="deletionRequiresConfirmationAndCancelPreservesTheVideo" classname="com.videodown.douyin.LibraryActionsDeviceTest" time="2.737" />
+    <testcase name="missingFileExportReportsFailureWithoutCreatingAnAlbumEntry" classname="com.videodown.douyin.LibraryActionsDeviceTest" time="0.878" />
+    <testcase name="normalTapAndMenuPlayUseTheSelectedVideo" classname="com.videodown.douyin.LibraryActionsDeviceTest" time="0.945" />
+    <testcase name="longPressInBothLayoutsShowsActionsWithoutPlaying" classname="com.videodown.douyin.LibraryActionsDeviceTest" time="2.884" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.LibraryReorderDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="8.173" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="draggingTheFirstItemDownRepinsAndPersistsTheOrder" classname="com.videodown.douyin.LibraryReorderDeviceTest" time="2.326" />
+    <testcase name="theHandleDisappearsWhileSearching" classname="com.videodown.douyin.LibraryReorderDeviceTest" time="2.096" />
+    <testcase name="theHandleDisappearsWhileSelectingOrFiltering" classname="com.videodown.douyin.LibraryReorderDeviceTest" time="2.442" />
+    <testcase name="talkBackActionsReorderWithoutADragGesture" classname="com.videodown.douyin.LibraryReorderDeviceTest" time="1.309" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.LocalizationDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="3.597" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="everyMigratedScreenFollowsTheAppLanguage" classname="com.videodown.douyin.LocalizationDeviceTest" time="2.767" />
+    <testcase name="bothLanguagesAreDeclaredSoTheSystemCanOfferThem" classname="com.videodown.douyin.LocalizationDeviceTest" time="0.830" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.Material3NavigationDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="11.762" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="appAndPlayerResourcesStayChineseAfterRecreation" classname="com.videodown.douyin.Material3NavigationDeviceTest" time="2.128" />
+    <testcase name="navigationFiltersAndDialogsRemainUsable" classname="com.videodown.douyin.Material3NavigationDeviceTest" time="6.007" />
+    <testcase name="qualityChangesAreSavedOnlyOnConfirmation" classname="com.videodown.douyin.Material3NavigationDeviceTest" time="3.627" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.MotionShowcaseDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="8.859" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="playTheMotionSetOnceForRecording" classname="com.videodown.douyin.MotionShowcaseDeviceTest" time="8.859" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P1FeaturesDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="12.566" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="concurrencySettingPersistsAndUpdatesTheActualEngine" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="2.253" />
+    <testcase name="storageDialogVisualizesTheRunningSpaceBudget" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="3.376" />
+    <testcase name="priorityControlChangesVisibleQueueAndTheNextActualHttpRequest" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="1.888" />
+    <testcase name="cleanupRequiresConfirmationAndPreservesVideosPausedAndActiveArtifacts" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="1.387" />
+    <testcase name="missingOriginalPageAndUnsupportedContentDoNotOfferUnusableRecovery" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="0.809" />
+    <testcase name="distinctFailureActionsUseTheChosenRecordsAndNetworkRetryResumesOnlyItsTask" classname="com.videodown.douyin.P1FeaturesDeviceTest" time="2.853" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P1RecoveryNavigationDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="7.205" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="rateLimitedParseOpensSettingsWithoutRepeatingRequest" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="1.603" />
+    <testcase name="storageRecoveryOpensActualSettingsStorageDialog" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="1.974" />
+    <testcase name="loginRecoveryOpensOriginalPageInActualBrowser" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="2.072" />
+    <testcase name="expiredDownloadReparsesOriginalPageRatherThanCdn" classname="com.videodown.douyin.P1RecoveryNavigationDeviceTest" time="1.556" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2AudioDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="24.562" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="cancellationAtLocalExtractionPhaseStopsProcessGroupAndCanRunAgain" classname="com.videodown.douyin.P2AudioDeviceTest" time="3.936" />
+    <testcase name="silentVideoProducesExplicitNoAudioFailureAndKeepsOriginal" classname="com.videodown.douyin.P2AudioDeviceTest" time="0.034" />
+    <testcase name="queuedLocalExtractionCanPauseThenResumeOfflineWithoutLosingOriginal" classname="com.videodown.douyin.P2AudioDeviceTest" time="6.305" />
+    <testcase name="localAacExtractionWorksOfflinePreservesEncodedSamplesAndOriginalAndSavesToMusic" classname="com.videodown.douyin.P2AudioDeviceTest" time="3.325" />
+    <testcase name="actualDashParseOffersIndependentAudioAndDownloadsOnlyItsTrack" classname="com.videodown.douyin.P2AudioDeviceTest" time="8.550" />
+    <testcase name="opusSourceFallsBackToAacAndKeepsOriginal" classname="com.videodown.douyin.P2AudioDeviceTest" time="2.412" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2AudioUiDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="4.984" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="savedAudioActuallyDecodesPlaysAndPausesInsideApp" classname="com.videodown.douyin.P2AudioUiDeviceTest" time="1.832" />
+    <testcase name="audioShareOpensSystemChooserWithReadableAudioUri" classname="com.videodown.douyin.P2AudioUiDeviceTest" time="0.572" />
+    <testcase name="actualLibraryExtractionControlsCreateAudioAndWarnBeforeDuplicate" classname="com.videodown.douyin.P2AudioUiDeviceTest" time="2.073" />
+    <testcase name="noAudioTypedFailureIsExplicitOnActualTaskScreen" classname="com.videodown.douyin.P2AudioUiDeviceTest" time="0.507" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2BatchImportDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="12.910" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="fiftyFailuresKeepBottomActionsAccessibleAndFailedSelectionsIntact" classname="com.videodown.douyin.P2BatchImportDeviceTest" time="1.179" />
+    <testcase name="homeBatchDialogRemainsVisibleAcrossActualRotationWithSelectionsIntact" classname="com.videodown.douyin.P2BatchImportDeviceTest" time="4.293" />
+    <testcase name="duplicateConfirmationCancelSkipAndExplicitAgainAreActualControls" classname="com.videodown.douyin.P2BatchImportDeviceTest" time="4.743" />
+    <testcase name="pastedMultipleUrlsAreDeduplicatedAndQualitySelectionControlsQueue" classname="com.videodown.douyin.P2BatchImportDeviceTest" time="2.695" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2CompletionNotificationDeviceTest" tests="1" failures="1" errors="0" skipped="0" time="0.061" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord" classname="com.videodown.douyin.P2CompletionNotificationDeviceTest" time="0.061">
+      <failure>java.lang.AssertionError: System notifications must be genuinely enabled
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.P2CompletionNotificationDeviceTest$productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord$1.invokeSuspend(P2CompletionNotificationDeviceTest.kt:121)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.P2CompletionNotificationDeviceTest.productionCompletionSettingAndActualNotificationClicksIdentifyEachRecord(P2CompletionNotificationDeviceTest.kt:120)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2ExportFailureDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="11.746" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="realProxyFdEnospcReportsSpaceAndRecoversWithoutChangingSource" classname="com.videodown.douyin.P2ExportFailureDeviceTest" time="6.292" />
+    <testcase name="revokedActualTreeGrantRequiresReselectionAndRecovers" classname="com.videodown.douyin.P2ExportFailureDeviceTest" time="5.454" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2ExportPickerDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="1.142" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="systemTreePickerGrantsPersistentAccessAndExportsWithoutShellPermission" classname="com.videodown.douyin.P2ExportPickerDeviceTest" time="1.142" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2FileExportDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="0.158" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="failedProviderWriteDeletesOnlyNewDocumentAndPreservesExistingCopy" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.064" />
+    <testcase name="interruptedCopyJournalDeletesOnlyUnfinishedDestination" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.012" />
+    <testcase name="unavailableOldProviderDoesNotBlockNewDestinationAndKeepsRecoveryRecord" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.014" />
+    <testcase name="actualProviderCopyPreservesBytesAndCollisionCreatesNewDocument" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.019" />
+    <testcase name="invalidTreeAndMissingRecordDoNotCreateDocuments" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.007" />
+    <testcase name="cancellationDuringCompletedIoHandoffStillDeletesCurrentDestination" classname="com.videodown.douyin.P2FileExportDeviceTest" time="0.042" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2LibraryOrganizationDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="4.775" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="actualRenameAndCategorySurviveRotationAndFilterSavedFile" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="2.143" />
+    <testcase name="favoriteControlFiltersAndPersistsAfterHistoryReload" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="1.152" />
+    <testcase name="tappingOutsideTheCardDismissesButTappingTheCardBodyDoesNot" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="0.713" />
+    <testcase name="realPersistenceFailureShowsErrorAndRetryPreservesOriginalThenSucceeds" classname="com.videodown.douyin.P2LibraryOrganizationDeviceTest" time="0.767" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest" tests="1" failures="1" errors="0" skipped="0" time="6.808" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback" classname="com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest" time="6.808">
+      <failure>java.lang.AssertionError: Explicit human-unlock opt-in required expected:&lt;true&gt; but was:&lt;null&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest$actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback$1.invokeSuspend(P2PhysicalBackgroundAudioDeviceTest.kt:106)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.P2PhysicalBackgroundAudioDeviceTest.actualSystemAudioControlsAndSecureScreenOffReturnPreservePlayback(P2PhysicalBackgroundAudioDeviceTest.kt:105)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2PhysicalExportDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="5.913" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="actualGalleryMusicAndDocumentTreeCopiesRemainReadable" classname="com.videodown.douyin.P2PhysicalExportDeviceTest" time="5.913" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P2ReleaseUiBridgeDeviceTest" tests="3" failures="3" errors="0" skipped="0" time="0.011" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="independentlyReadActuallyExportedReleaseMedia" classname="com.videodown.douyin.P2ReleaseUiBridgeDeviceTest" time="0.003">
+      <failure>java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.independentlyReadActuallyExportedReleaseMedia(P2ReleaseUiBridgeDeviceTest.kt:74)
+</failure>
+    </testcase>
+    <testcase name="preciselyEnterPublicSourceInVisibleReleaseUi" classname="com.videodown.douyin.P2ReleaseUiBridgeDeviceTest" time="0.000">
+      <failure>java.lang.NullPointerException
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.preciselyEnterPublicSourceInVisibleReleaseUi(P2ReleaseUiBridgeDeviceTest.kt:13)
+</failure>
+    </testcase>
+    <testcase name="actualReleaseUiClickAndCapture" classname="com.videodown.douyin.P2ReleaseUiBridgeDeviceTest" time="0.008">
+      <failure>org.junit.ComparisonFailure: expected:&lt;com.[videodown.douyin]&gt; but was:&lt;com.[google.android.apps.nexuslauncher]&gt;
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.actualReleaseUiClickAndCapture(P2ReleaseUiBridgeDeviceTest.kt:43)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P3BackgroundAudioDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="13.022" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="lockScreenKeepsAudioAndSystemMediaButtonsPauseAndResume" classname="com.videodown.douyin.P3BackgroundAudioDeviceTest" time="3.848" />
+    <testcase name="temporaryAudioFocusLossPausesAndRegainResumes" classname="com.videodown.douyin.P3BackgroundAudioDeviceTest" time="1.519" />
+    <testcase name="detachedUiKeepsForegroundAudioAndNotificationReturnsWithoutResettingPausedPosition" classname="com.videodown.douyin.P3BackgroundAudioDeviceTest" time="5.578" />
+    <testcase name="noisyEventPausesActualServicePlayer" classname="com.videodown.douyin.P3BackgroundAudioDeviceTest" time="2.077" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P3PictureInPictureDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="20.545" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="pipScreenOffThenReturnKeepsActivityAndPlayer" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="5.978" />
+    <testcase name="homeEntersRealPipHidesSpeedDialogAndReturnsWithoutResettingVideo" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="8.262" />
+    <testcase name="explicitPipEntryThenActivityClosureReleasesVideoAndSavesProgress" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="2.354" />
+    <testcase name="systemPipDismissReleasesVideo" classname="com.videodown.douyin.P3PictureInPictureDeviceTest" time="3.951" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P3PlaybackDeviceTest" tests="7" failures="0" errors="0" skipped="0" time="9.888" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="landscapeSpeedDialogCanScrollToMaximumSpeed" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="2.910" />
+    <testcase name="portraitSpeedOptionsAndPlayPauseIconsFollowActualPlayer" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="2.741" />
+    <testcase name="actualSpeedAndLoopControlsApplyAndKeepAudioVideoPreferencesSeparate" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="1.557" />
+    <testcase name="leavingAndNewViewModelResumeRealDecodedPosition" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="0.732" />
+    <testcase name="completedPlaybackReopensAtBeginning" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="0.849" />
+    <testcase name="replacementFileInvalidatesOldCheckpointWithoutChangingOptions" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="0.300" />
+    <testcase name="retainedViewModelSurvivesActualActivityRecreationWithCurrentPosition" classname="com.videodown.douyin.P3PlaybackDeviceTest" time="0.799" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.P3ProcessPersistenceDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="0.160" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="checkpointAndSeparateOptionsPersistAcrossProcessRestart" classname="com.videodown.douyin.P3ProcessPersistenceDeviceTest" time="0.160" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.PhysicalNetworkRecoveryDeviceTest" tests="2" failures="2" errors="0" skipped="0" time="0.002" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="wifiLossRetainsCheckpointAndQueueThenResumesExactlyOnce" classname="com.videodown.douyin.PhysicalNetworkRecoveryDeviceTest" time="0.001">
+      <failure>org.junit.AssumptionViolatedException: Pass network_test_url and network_test_sha256 for a physical network run
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.PhysicalNetworkRecoveryDeviceTest$wifiLossRetainsCheckpointAndQueueThenResumesExactlyOnce$1.invokeSuspend(PhysicalNetworkRecoveryDeviceTest.kt:97)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.PhysicalNetworkRecoveryDeviceTest.wifiLossRetainsCheckpointAndQueueThenResumesExactlyOnce(PhysicalNetworkRecoveryDeviceTest.kt:94)
+</failure>
+    </testcase>
+    <testcase name="forceStopRestoresProductionTasksAndSavedQueue" classname="com.videodown.douyin.PhysicalNetworkRecoveryDeviceTest" time="0.001">
+      <failure>org.junit.AssumptionViolatedException: Opt-in two-phase force-stop run
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.PhysicalNetworkRecoveryDeviceTest$forceStopRestoresProductionTasksAndSavedQueue$1.invokeSuspend(PhysicalNetworkRecoveryDeviceTest.kt:32)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.PhysicalNetworkRecoveryDeviceTest.forceStopRestoresProductionTasksAndSavedQueue(PhysicalNetworkRecoveryDeviceTest.kt:29)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.PlayerCoverPosterDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="1.466" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="coverPosterStaysUntilTheVideoShowsPixels" classname="com.videodown.douyin.PlayerCoverPosterDeviceTest" time="1.046" />
+    <testcase name="audioAndCoverlessEntriesShowNoPoster" classname="com.videodown.douyin.PlayerCoverPosterDeviceTest" time="0.420" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.PlayerCoverTransitionDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="4.980" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="sharedCoverMorphIsCapturedMidFlight" classname="com.videodown.douyin.PlayerCoverTransitionDeviceTest" time="4.980" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.PlayerGestureDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="2.971" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="doubleTapSeeksSwipeChangesVolumeAndBrightnessAndLongPressBoosts" classname="com.videodown.douyin.PlayerGestureDeviceTest" time="2.971" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.PlayerLandscapeDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="5.435" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="rotatingWhilePausedPreservesPositionAndReturnsToPortrait" classname="com.videodown.douyin.PlayerLandscapeDeviceTest" time="2.517" />
+    <testcase name="nativeFullscreenControlAndSystemBackKeepPlaybackRunning" classname="com.videodown.douyin.PlayerLandscapeDeviceTest" time="1.345" />
+    <testcase name="leavingFullscreenRestoresWindowAndOrientationPolicy" classname="com.videodown.douyin.PlayerLandscapeDeviceTest" time="0.999" />
+    <testcase name="landscapeVideoUsesItsOwnAspectRatioAndHasAVisibleFullscreenEntry" classname="com.videodown.douyin.PlayerLandscapeDeviceTest" time="0.574" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.PlaylistCollectionDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="10.747" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="everyEntryOfACollectionCanBeDownloaded" classname="com.videodown.douyin.PlaylistCollectionDeviceTest" time="2.764" />
+    <testcase name="aCollectionPageBecomesSeveralSelectableVideos" classname="com.videodown.douyin.PlaylistCollectionDeviceTest" time="7.983" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.PublicSiteAcceptanceDeviceTest" tests="6" failures="6" errors="0" skipped="0" time="0.026" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="douyin" classname="com.videodown.douyin.PublicSiteAcceptanceDeviceTest" time="0.005">
+      <failure>org.junit.AssumptionViolatedException: Pass public_douyin_url for an authorized public sample
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:75)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:73)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.douyin(PublicSiteAcceptanceDeviceTest.kt:67)
+</failure>
+    </testcase>
+    <testcase name="x" classname="com.videodown.douyin.PublicSiteAcceptanceDeviceTest" time="0.003">
+      <failure>org.junit.AssumptionViolatedException: Pass public_x_url for an authorized public sample
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:75)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:73)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.x(PublicSiteAcceptanceDeviceTest.kt:70)
+</failure>
+    </testcase>
+    <testcase name="weibo" classname="com.videodown.douyin.PublicSiteAcceptanceDeviceTest" time="0.004">
+      <failure>org.junit.AssumptionViolatedException: Pass public_weibo_url for an authorized public sample
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:75)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:73)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.weibo(PublicSiteAcceptanceDeviceTest.kt:68)
+</failure>
+    </testcase>
+    <testcase name="ordinaryWebPage" classname="com.videodown.douyin.PublicSiteAcceptanceDeviceTest" time="0.005">
+      <failure>org.junit.AssumptionViolatedException: Pass public_web_url for an authorized public sample
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:75)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:73)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.ordinaryWebPage(PublicSiteAcceptanceDeviceTest.kt:71)
+</failure>
+    </testcase>
+    <testcase name="readableNegativeTimestampSampleIsNotAnEmptyVideo" classname="com.videodown.douyin.PublicSiteAcceptanceDeviceTest" time="0.004">
+      <failure>org.junit.AssumptionViolatedException: Opt-in captured public Chrome clip regression
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.readableNegativeTimestampSampleIsNotAnEmptyVideo(PublicSiteAcceptanceDeviceTest.kt:36)
+</failure>
+    </testcase>
+    <testcase name="kuaishou" classname="com.videodown.douyin.PublicSiteAcceptanceDeviceTest" time="0.005">
+      <failure>org.junit.AssumptionViolatedException: Pass public_kuaishou_url for an authorized public sample
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest$verify$1.invokeSuspend(PublicSiteAcceptanceDeviceTest.kt:75)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.verify(PublicSiteAcceptanceDeviceTest.kt:73)
+	at com.videodown.douyin.PublicSiteAcceptanceDeviceTest.kuaishou(PublicSiteAcceptanceDeviceTest.kt:69)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.QualityCardsDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="2.004" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="mixedQualityCardsHaveEqualBoundsAndSelectionStillWorks" classname="com.videodown.douyin.QualityCardsDeviceTest" time="2.004" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.ResultSelectionDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="11.982" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="lastVideoPreviewPreservesQualityAndDoesNotSelectForBatch" classname="com.videodown.douyin.ResultSelectionDeviceTest" time="3.134" />
+    <testcase name="compactHeaderAndExpandableTitleStayVisible" classname="com.videodown.douyin.ResultSelectionDeviceTest" time="2.870" />
+    <testcase name="selectAllCanBeCancelledAndLandscapeSheetCanReachLastItem" classname="com.videodown.douyin.ResultSelectionDeviceTest" time="3.676" />
+    <testcase name="checkboxDoesNotChangePreviewAndBatchUsesChosenItems" classname="com.videodown.douyin.ResultSelectionDeviceTest" time="2.302" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.ShimmerDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="2.804" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="theGateChangesWhatIsRendered" classname="com.videodown.douyin.ShimmerDeviceTest" time="1.075" />
+    <testcase name="aDisabledShimmerDrawsNothingButTheBackdrop" classname="com.videodown.douyin.ShimmerDeviceTest" time="0.847" />
+    <testcase name="anEnabledShimmerStillLetsWaitForIdleReturn" classname="com.videodown.douyin.ShimmerDeviceTest" time="0.882" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.SleepTimerDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="8.011" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="theDialogStartsAndClearsARealDeadline" classname="com.videodown.douyin.SleepTimerDeviceTest" time="2.605" />
+    <testcase name="anElapsedDeadlinePausesPlaybackAndClearsItself" classname="com.videodown.douyin.SleepTimerDeviceTest" time="5.406" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.SocialVideoLiveDeviceTest" tests="2" failures="2" errors="0" skipped="0" time="0.005" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="kuaishouFullDownload" classname="com.videodown.douyin.SocialVideoLiveDeviceTest" time="0.003">
+      <failure>org.junit.AssumptionViolatedException: Pass -e live_platforms true to enable real network downloads
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.SocialVideoLiveDeviceTest$verify$1.invokeSuspend(SocialVideoLiveDeviceTest.kt:33)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.SocialVideoLiveDeviceTest.verify(SocialVideoLiveDeviceTest.kt:32)
+	at com.videodown.douyin.SocialVideoLiveDeviceTest.kuaishouFullDownload(SocialVideoLiveDeviceTest.kt:30)
+</failure>
+    </testcase>
+    <testcase name="weiboFullDownload" classname="com.videodown.douyin.SocialVideoLiveDeviceTest" time="0.002">
+      <failure>org.junit.AssumptionViolatedException: Pass -e live_platforms true to enable real network downloads
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.SocialVideoLiveDeviceTest$verify$1.invokeSuspend(SocialVideoLiveDeviceTest.kt:33)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.SocialVideoLiveDeviceTest.verify(SocialVideoLiveDeviceTest.kt:32)
+	at com.videodown.douyin.SocialVideoLiveDeviceTest.weiboFullDownload(SocialVideoLiveDeviceTest.kt:29)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.SpaceBudgetDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="3.040" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="emptyLedgerExplainsThereIsNoRunningBudget" classname="com.videodown.douyin.SpaceBudgetDeviceTest" time="0.985" />
+    <testcase name="overviewLeadsWithFreeSpaceAndNamesTheAppFootprint" classname="com.videodown.douyin.SpaceBudgetDeviceTest" time="1.004" />
+    <testcase name="overCommittedBudgetShowsTheShortfallAndAsksToFreeSpace" classname="com.videodown.douyin.SpaceBudgetDeviceTest" time="1.051" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.SpeedLimitDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="3.393" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="aPerTaskLimitIsAppliedWhenAQueuedTaskStarts" classname="com.videodown.douyin.SpeedLimitDeviceTest" time="0.529" />
+    <testcase name="aPerTaskLimitIsSetFromTheTaskCardAndShowsOnTheCard" classname="com.videodown.douyin.SpeedLimitDeviceTest" time="1.810" />
+    <testcase name="aGlobalLimitPacesARealTransferWithoutCorruptingIt" classname="com.videodown.douyin.SpeedLimitDeviceTest" time="1.054" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.SubtitleDownloadDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="34.629" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="downloadingWithSubtitlesEmbedsATextTrackThePlayerOffers" classname="com.videodown.douyin.SubtitleDownloadDeviceTest" time="25.300" />
+    <testcase name="aPageWithASubtitleTrackOffersExactlyThatLanguage" classname="com.videodown.douyin.SubtitleDownloadDeviceTest" time="9.329" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.SubtitleSidecarDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="5.952" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="aVideoWithoutSubtitlesOffersNoToggle" classname="com.videodown.douyin.SubtitleSidecarDeviceTest" time="4.079" />
+    <testcase name="aSidecarSubtitleBecomesATrackWithAToggleThatPersists" classname="com.videodown.douyin.SubtitleSidecarDeviceTest" time="1.873" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.TaskNotificationDeviceTest" tests="1" failures="1" errors="0" skipped="0" time="0.015" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="independentCardsPauseOnlyTheirOwnTaskAndFollowThePreference" classname="com.videodown.douyin.TaskNotificationDeviceTest" time="0.015">
+      <failure>java.lang.AssertionError: System notifications must be genuinely enabled
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.videodown.douyin.TaskNotificationDeviceTest$independentCardsPauseOnlyTheirOwnTaskAndFollowThePreference$1.invokeSuspend(TaskNotificationDeviceTest.kt:62)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.TaskNotificationDeviceTest.independentCardsPauseOnlyTheirOwnTaskAndFollowThePreference(TaskNotificationDeviceTest.kt:61)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.TaskReorderDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="1.408" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="draggingAPendingTaskReportsTheNewPendingOrder" classname="com.videodown.douyin.TaskReorderDeviceTest" time="1.408" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.TaskSearchDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="5.997" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="theTaskListCanBeSearchedAndReordered" classname="com.videodown.douyin.TaskSearchDeviceTest" time="5.997" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.UnavailableLinkRecoveryDeviceTest" tests="1" failures="1" errors="0" skipped="0" time="0.004" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="publicUnavailableLinkOffersOriginalPageReparse" classname="com.videodown.douyin.UnavailableLinkRecoveryDeviceTest" time="0.004">
+      <failure>org.junit.AssumptionViolatedException: got: &lt;false&gt;, expected: is &lt;true&gt;
+	at org.junit.Assume.assumeThat(Assume.java:106)
+	at org.junit.Assume.assumeTrue(Assume.java:50)
+	at com.videodown.douyin.UnavailableLinkRecoveryDeviceTest$publicUnavailableLinkOffersOriginalPageReparse$1.invokeSuspend(UnavailableLinkRecoveryDeviceTest.kt:22)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.UnavailableLinkRecoveryDeviceTest.publicUnavailableLinkOffersOriginalPageReparse(UnavailableLinkRecoveryDeviceTest.kt:21)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.VaultDeviceTest" tests="3" failures="1" errors="0" skipped="0" time="6.454" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="anUnavailableGateSaysSoInsteadOfOpening" classname="com.videodown.douyin.VaultDeviceTest" time="1.889" />
+    <testcase name="theTaskListAndTheCompletionNotificationNeverNameAPrivateRecord" classname="com.videodown.douyin.VaultDeviceTest" time="1.886">
+      <failure>org.junit.AssumptionViolatedException: Notifications are disabled on this device
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.VaultDeviceTest.theTaskListAndTheCompletionNotificationNeverNameAPrivateRecord(VaultDeviceTest.kt:165)
+</failure>
+    </testcase>
+    <testcase name="theVaultKeepsPrivateItemsOutUntilTheGateIsPassed" classname="com.videodown.douyin.VaultDeviceTest" time="2.679" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.WatchProgressDeviceTest" tests="1" failures="0" errors="0" skipped="0" time="1.724" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="aPartlyWatchedFileShowsItsProgressAndAStalePositionDisappears" classname="com.videodown.douyin.WatchProgressDeviceTest" time="1.724" />
+  </testsuite>
+  <testsuite name="com.videodown.douyin.WeiboGifDeviceTest" tests="2" failures="2" errors="0" skipped="0" time="5.145" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="selectingAnotherGifDownloadsThatMediaRatherThanAnotherQuality" classname="com.videodown.douyin.WeiboGifDeviceTest" time="4.026">
+      <failure>java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '选择视频（2）' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.videodown.douyin.WeiboGifDeviceTest.selectingAnotherGifDownloadsThatMediaRatherThanAnotherQuality(WeiboGifDeviceTest.kt:85)
+</failure>
+    </testcase>
+    <testcase name="liveGifParsesDownloadsAndPlaysThroughTheUi" classname="com.videodown.douyin.WeiboGifDeviceTest" time="1.119">
+      <failure>org.junit.AssumptionViolatedException: Pass -e live_weibo_gif true to enable the real Weibo download
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.WeiboGifDeviceTest.liveGifParsesDownloadsAndPlaysThroughTheUi(WeiboGifDeviceTest.kt:96)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.videodown.douyin.XVideoDeviceTest" tests="4" failures="3" errors="0" skipped="0" time="5.518" timestamp="2026-10-13T10:35:04" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="liveUnifiedXAddsEngineFormats" classname="com.videodown.douyin.XVideoDeviceTest" time="1.114">
+      <failure>org.junit.AssumptionViolatedException: Pass -e live_x_engine true to enable X engine integration
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.XVideoDeviceTest$liveUnifiedXAddsEngineFormats$1.invokeSuspend(XVideoDeviceTest.kt:146)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.XVideoDeviceTest.liveUnifiedXAddsEngineFormats(XVideoDeviceTest.kt:145)
+</failure>
+    </testcase>
+    <testcase name="liveEmbedFallbackReturnsAllFourQualities" classname="com.videodown.douyin.XVideoDeviceTest" time="0.993">
+      <failure>org.junit.AssumptionViolatedException: Pass -e live_x true to enable X network checks
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.XVideoDeviceTest.liveOnly(XVideoDeviceTest.kt:194)
+	at com.videodown.douyin.XVideoDeviceTest.access$liveOnly(XVideoDeviceTest.kt:37)
+	at com.videodown.douyin.XVideoDeviceTest$liveEmbedFallbackReturnsAllFourQualities$1.invokeSuspend(XVideoDeviceTest.kt:127)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16521:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-c31da258e07d0ddcb126954a4234bb0b8b6a0544-16522:1)
+	at com.videodown.douyin.XVideoDeviceTest.liveEmbedFallbackReturnsAllFourQualities(XVideoDeviceTest.kt:126)
+</failure>
+    </testcase>
+    <testcase name="switchingVideosChangesQualityAndDownloadRecord" classname="com.videodown.douyin.XVideoDeviceTest" time="2.214" />
+    <testcase name="liveGraphqlUiAndFull1080pDownload" classname="com.videodown.douyin.XVideoDeviceTest" time="1.197">
+      <failure>org.junit.AssumptionViolatedException: Pass -e live_x true to enable X network checks
+	at org.junit.Assume.assumeTrue(Assume.java:68)
+	at com.videodown.douyin.XVideoDeviceTest.liveOnly(XVideoDeviceTest.kt:194)
+	at com.videodown.douyin.XVideoDeviceTest.liveGraphqlUiAndFull1080pDownload(XVideoDeviceTest.kt:86)
+</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

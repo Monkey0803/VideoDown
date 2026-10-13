@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.presentation.library.LibraryReorderGateTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-13T10:27:32.437Z" hostname="Alias-mini.local" time="0.038">
+  <properties/>
+  <testcase name="the drag gate is strictly narrower than the seed gate" classname="com.videodown.douyin.presentation.library.LibraryReorderGateTest" time="0.034"/>
+  <testcase name="each filter closes the gate" classname="com.videodown.douyin.presentation.library.LibraryReorderGateTest" time="0.0"/>
+  <testcase name="searching closes the gate but whitespace alone does not" classname="com.videodown.douyin.presentation.library.LibraryReorderGateTest" time="0.0"/>
+  <testcase name="every rule-based sort closes the gate" classname="com.videodown.douyin.presentation.library.LibraryReorderGateTest" time="0.001"/>
+  <testcase name="custom sort with a clean query opens the gate" classname="com.videodown.douyin.presentation.library.LibraryReorderGateTest" time="0.0"/>
+  <testcase name="multi-select and batch work close the gate" classname="com.videodown.douyin.presentation.library.LibraryReorderGateTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

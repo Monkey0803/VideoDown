@@ -2,10 +2,15 @@ package com.videodown.douyin
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.lifecycle.ViewModelStore
@@ -158,6 +163,32 @@ class LibraryReorderDeviceTest {
                 compose.onAllNodesWithTag("library-drag-second", useUnmergedTree = true).fetchSemanticsNodes().isEmpty()
         }
         // 而且没有因为过滤而写坏顺序。
+        assertEquals(listOf("first", "second", "third"), storedOrder())
+    }
+
+    /**
+     * 把手的另外两个关闭条件（多选、分类过滤）在界面上真的接上了判定。
+     *
+     * 六个条件共用 `LibraryQuery.canReorder`，条件本身的穷举在 JVM 的 `LibraryReorderGateTest`；
+     * 这里证明的是"界面确实按判定收把手"，不是另一份实现。
+     */
+    @Test fun theHandleDisappearsWhileSelectingOrFiltering() {
+        fun handles() = compose.onAllNodesWithTag("library-drag-first", useUnmergedTree = true).fetchSemanticsNodes().size
+        assertEquals(1, handles())
+
+        // 多选：列表正被挑出来批量处理，此时拖出来的顺序不是用户想固定的。
+        compose.onNodeWithText("多选").performClick()
+        compose.waitUntil(5_000) { handles() == 0 }
+        compose.onNodeWithText("取消多选").performClick()
+        compose.waitUntil(5_000) { handles() == 1 }
+
+        // 分类过滤：三条都属于「未分类」，筛完列表还是三条，但顺序不再由用户决定。
+        compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择分类"))
+        compose.onNodeWithContentDescription("选择分类").performClick()
+        compose.onNodeWithText("未分类").performClick()
+        compose.waitUntil(5_000) { handles() == 0 }
+
+        // 多选与过滤都没有写坏顺序。
         assertEquals(listOf("first", "second", "third"), storedOrder())
     }
 

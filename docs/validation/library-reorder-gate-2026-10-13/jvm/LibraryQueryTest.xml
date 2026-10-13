@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.presentation.library.LibraryQueryTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-13T10:27:38.510Z" hostname="Alias-mini.local" time="0.001">
+  <properties/>
+  <testcase name="custom order falls back to newest when nothing has been placed yet" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.0"/>
+  <testcase name="platform combines with search and unmatched query returns empty" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.0"/>
+  <testcase name="a locked vault yields nothing and an unlocked one yields only private records" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.0"/>
+  <testcase name="query trims space and searches title and author ignoring case" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.001"/>
+  <testcase name="vault search, sort and favourites apply to the private subset" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.0"/>
+  <testcase name="custom order puts manually placed records first and never-ordered ones after by time" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.0"/>
+  <testcase name="sort orders by saved time or bytes with stable identity" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.0"/>
+  <testcase name="the normal library never mixes in private records" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.0"/>
+  <testcase name="duplicate identity ignores expiring URL and keeps platform quality and format distinct" classname="com.videodown.douyin.presentation.library.LibraryQueryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

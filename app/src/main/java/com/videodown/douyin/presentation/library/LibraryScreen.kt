@@ -185,11 +185,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     val galleryAction = stringResource(contextOperationLabel(galleryOperation))
     val saved = state.libraryQuery.apply(allSaved)
     val visibleIds = saved.map { it.id }.toSet()
-    // 拖拽只在「自定义排序 + 没有搜索/过滤 + 非多选」时开放：其他档位的顺序由规则决定，拖了没有意义。
-    val reorderAllowed = state.libraryQuery.sort == LibrarySort.CUSTOM &&
-        state.libraryQuery.text.isBlank() && state.libraryQuery.platform == null &&
-        state.libraryQuery.folder == null && !state.libraryQuery.favoritesOnly && !state.libraryQuery.vaultOnly
-    val canReorder = reorderAllowed && !selecting && !state.batchBusy
+    // 拖拽只在「自定义排序 + 没有搜索/过滤 + 非多选非批量忙」时开放，判定集中在 LibraryQuery 里。
+    val canReorder = state.libraryQuery.canReorder(selecting, state.batchBusy)
     // 拖拽期间先按本地顺序显示，松手后落盘；落盘回流的新数据会取代本地顺序。
     var draggedOrder by remember { mutableStateOf<List<String>?>(null) }
     val displayed = draggedOrder?.let { order -> order.mapNotNull { id -> saved.firstOrNull { it.id == id } } } ?: saved
@@ -237,7 +234,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     var sortBeforeCustom by remember { mutableStateOf(state.libraryQuery.sort) }
     LaunchedEffect(state.libraryQuery.sort, allSaved.size) {
         val sort = state.libraryQuery.sort
-        if (sort == LibrarySort.CUSTOM && reorderAllowed && allSaved.isNotEmpty() && allSaved.none { it.sortIndex > 0L }) {
+        if (state.libraryQuery.ordersManually && allSaved.isNotEmpty() && allSaved.none { it.sortIndex > 0L }) {
             val seed = state.libraryQuery.copy(sort = sortBeforeCustom.takeIf { it != LibrarySort.CUSTOM } ?: LibrarySort.NEWEST)
             historyViewModel.reorderLibrary(seed.apply(allSaved).map { it.id })
         }
