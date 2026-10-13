@@ -494,6 +494,9 @@
     <string name="sort_newest">最新保存</string>
     <string name="sort_oldest">最早保存</string>
     <string name="sort_largest">文件最大</string>
+    <string name="sort_custom">自定义排序</string>
+    <string name="library_drag_handle">拖动调整顺序</string>
+    <string name="history_drag_handle">拖动调整下载顺序</string>
     <string name="task_sort_status">按状态</string>
     <string name="task_sort_recent">最新任务</string>
     <string name="task_sort_oldest">最早任务</string>

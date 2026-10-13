@@ -21,6 +21,14 @@ interface Downloader {
     suspend fun setConcurrency(count: Int) {}
     suspend fun moveInQueue(id: String, offset: Int) {}
 
+    /**
+     * 把待下载任务按给定顺序重排（拖拽用）。
+     *
+     * [orderedPendingIds] 只是当前可见的待下载任务：没列进来的待下载任务保持它们之间的相对位置，
+     * 已在下下载或已结束的任务不受影响。
+     */
+    suspend fun reorderQueue(orderedPendingIds: List<String>) {}
+
     /** Snapshot of every task the engine currently knows about, keyed by record id. */
     val progress: StateFlow<Map<String, DownloadProgress>>
 

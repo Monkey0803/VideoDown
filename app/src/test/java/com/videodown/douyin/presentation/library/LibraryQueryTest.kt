@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation.library
 
+import com.videodown.douyin.core.LibrarySort
 import com.videodown.douyin.domain.model.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -65,5 +66,24 @@ class LibraryQueryTest {
         assertEquals(listOf("p2"), vault.copy(text = "Bob").apply(mixed).map { it.id })
         assertEquals(listOf("p1", "p2"), vault.copy(sort = LibrarySort.OLDEST).apply(mixed).map { it.id })
         assertEquals(listOf("p2"), vault.copy(favoritesOnly = true).apply(mixed).map { it.id })
+    }
+
+    @Test fun `custom order puts manually placed records first and never-ordered ones after by time`() {
+        val custom = listOf(
+            DownloadRecord("c", "c", "丙", updatedAt = 30, sortIndex = 1),
+            DownloadRecord("a", "a", "甲", updatedAt = 10, sortIndex = 2),
+            DownloadRecord("new", "new", "新保存", updatedAt = 99, sortIndex = 0),
+            DownloadRecord("old", "old", "旧保存", updatedAt = 1, sortIndex = 0),
+        )
+        assertEquals(listOf("c", "a", "new", "old"), LibraryQuery(sort = LibrarySort.CUSTOM).apply(custom).map { it.id })
+        // 过滤与自定义排序可以叠加：过滤掉之后仍然按 sortIndex 排。
+        assertEquals(listOf("c", "a"), LibraryQuery(sort = LibrarySort.CUSTOM, text = "").apply(custom.take(2)).map { it.id })
+    }
+
+    @Test fun `custom order falls back to newest when nothing has been placed yet`() {
+        assertEquals(
+            listOf("b", "c", "a"),
+            LibraryQuery(sort = LibrarySort.CUSTOM).apply(records).map { it.id },
+        )
     }
 }

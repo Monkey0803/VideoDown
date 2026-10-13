@@ -163,6 +163,16 @@ class DownloadEngine(
     override suspend fun setConcurrency(count: Int) { scheduler.setLimit(count) }
     override suspend fun moveInQueue(id: String, offset: Int) = maintenanceMutex.withLock {
         val order = scheduler.move(id, offset)
+        persistQueueOrder(order)
+    }
+
+    override suspend fun reorderQueue(orderedPendingIds: List<String>) = maintenanceMutex.withLock {
+        // 拖拽给出的是「可见待下载任务」的顺序；未列进来的待下载任务由调度器保持它们的相对位置，
+        // 再把调度器算出的完整顺序整体落盘，避免只写一半导致重启后顺序与界面不一致。
+        persistQueueOrder(scheduler.setOrder(orderedPendingIds))
+    }
+
+    private suspend fun persistQueueOrder(order: List<String>) {
         val base = history.snapshot().maxOfOrNull { it.queueOrder } ?: 0L
         order.forEachIndexed { index, recordId ->
             history.getById(recordId)?.let { history.upsert(it.copy(queueOrder = base + index + 1)) }

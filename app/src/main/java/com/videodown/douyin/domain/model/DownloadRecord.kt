@@ -85,6 +85,12 @@ data class DownloadRecord(
     val pauseCause: DownloadPauseCause? = null,
     val expectedBytes: Long? = null,
     val queueOrder: Long = 0,
+    /**
+     * 已存页「自定义排序」里的位置，`0` 表示还没被手动排过（按更新时间排到已排过的之后）。
+     *
+     * 与 [queueOrder] 分开：队列顺序只对下载队列有意义，这个只影响已存列表的展示顺序。
+     */
+    val sortIndex: Long = 0,
     val favorite: Boolean = false,
     val folder: String = "",
     /** Per-task rate cap in KB/s; `0` follows the global setting. Defaults keep old history. */

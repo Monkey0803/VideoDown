@@ -52,4 +52,26 @@ class DownloadQueueSchedulerTest {
         assertEquals(Long.MAX_VALUE, requiredStorageBytes(Long.MAX_VALUE, merging = true))
         assertNotNull(spaceFailure(100, 101)); assertNull(spaceFailure(101, 101))
     }
+
+    @Test fun `setOrder reorders only the given ids and keeps the rest where they were`() = runTest {
+        val queue = DownloadQueueScheduler(1)
+        listOf("running", "a", "hidden", "b", "c").forEach { queue.enqueue(it) }
+        // 待下载顺序：a, hidden, b, c（hidden 代表被搜索/过滤挡掉、界面看不见的任务）
+        assertEquals(listOf("a", "hidden", "b", "c"), queue.state.value.pendingIds)
+        // 界面只把可见的 a/b/c 按 c,a,b 拖过：hidden 必须留在它原来的槽位（第 2 个）。
+        queue.setOrder(listOf("c", "a", "b"))
+        assertEquals(listOf("c", "hidden", "a", "b"), queue.state.value.pendingIds)
+        // 正在下载的不参与重排。
+        assertEquals(listOf("running"), queue.state.value.runningIds)
+    }
+
+    @Test fun `setOrder ignores ids that are not waiting (running or unknown)`() = runTest {
+        val queue = DownloadQueueScheduler(1)
+        listOf("running", "a", "b").forEach { queue.enqueue(it) }
+        queue.setOrder(listOf("b", "a"))
+        assertEquals(listOf("b", "a"), queue.state.value.pendingIds)
+        // 混进正在下载或根本不存在的 id：待下载队列不受影响。
+        queue.setOrder(listOf("running", "b", "a", "nope"))
+        assertEquals(listOf("b", "a"), queue.state.value.pendingIds)
+    }
 }

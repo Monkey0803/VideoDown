@@ -1,5 +1,6 @@
 package com.videodown.douyin.presentation
 
+import com.videodown.douyin.core.LibrarySort
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -11,7 +12,6 @@ import com.videodown.douyin.core.PreferredQuality
 import com.videodown.douyin.core.SettingsChange
 import com.videodown.douyin.core.ThemeMode
 import com.videodown.douyin.presentation.history.TaskSort
-import com.videodown.douyin.presentation.library.LibrarySort
 
 /**
  * The wording for every enum the UI shows.
@@ -58,6 +58,8 @@ internal fun librarySortLabelRes(sort: LibrarySort): Int = when (sort) {
     LibrarySort.NEWEST -> R.string.sort_newest
     LibrarySort.OLDEST -> R.string.sort_oldest
     LibrarySort.LARGEST -> R.string.sort_largest
+    // 手动拖拽出来的顺序；只有在这一档才显示拖拽把手。
+    LibrarySort.CUSTOM -> R.string.sort_custom
 }
 
 internal fun taskSortLabelRes(sort: TaskSort): Int = when (sort) {
@@ -101,6 +103,7 @@ fun settingsChangeText(change: SettingsChange, preferences: AppPreferences): Str
     SettingsChange.THEME_MODE -> stringResource(R.string.settings_change_theme, stringResource(themeModeLabelRes(preferences.themeMode)))
     SettingsChange.PREFERRED_QUALITY -> stringResource(R.string.settings_change_quality, stringResource(preferredQualityLabelRes(preferences.preferredQuality)))
     SettingsChange.LIBRARY_LAYOUT -> stringResource(libraryLayoutLabelRes(preferences.libraryLayout))
+    SettingsChange.LIBRARY_SORT -> stringResource(librarySortLabelRes(preferences.librarySort))
     SettingsChange.CONCURRENCY -> stringResource(R.string.settings_concurrency_count, preferences.maxConcurrentDownloads)
     SettingsChange.SPEED_LIMIT -> stringResource(R.string.settings_change_speed, speedLimitText(preferences.globalSpeedLimitKbps))
     SettingsChange.DYNAMIC_COLOR -> stringResource(R.string.settings_dynamic_color)
@@ -120,6 +123,7 @@ fun settingsChangeText(context: Context, change: SettingsChange, preferences: Ap
     SettingsChange.THEME_MODE -> context.getString(R.string.settings_change_theme, context.getString(themeModeLabelRes(preferences.themeMode)))
     SettingsChange.PREFERRED_QUALITY -> context.getString(R.string.settings_change_quality, context.getString(preferredQualityLabelRes(preferences.preferredQuality)))
     SettingsChange.LIBRARY_LAYOUT -> context.getString(libraryLayoutLabelRes(preferences.libraryLayout))
+    SettingsChange.LIBRARY_SORT -> context.getString(librarySortLabelRes(preferences.librarySort))
     SettingsChange.CONCURRENCY -> context.getString(R.string.settings_concurrency_count, preferences.maxConcurrentDownloads)
     SettingsChange.SPEED_LIMIT -> context.getString(R.string.settings_change_speed, speedLimitText(context, preferences.globalSpeedLimitKbps))
     SettingsChange.DYNAMIC_COLOR -> context.getString(R.string.settings_dynamic_color)

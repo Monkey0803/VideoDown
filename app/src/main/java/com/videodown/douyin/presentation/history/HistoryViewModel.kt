@@ -123,7 +123,23 @@ class HistoryViewModel(
         viewModelScope.launch { downloader.moveInQueue(id, offset) }
     }
 
+    /** 任务页拖拽后的待下载顺序；只有待下载任务参与，正在进行与已结束的不受影响。 */
+    fun reorderQueue(orderedPendingIds: List<String>) {
+        if (_state.value.batchBusy || orderedPendingIds.isEmpty()) return
+        viewModelScope.launch { downloader.reorderQueue(orderedPendingIds) }
+    }
+
     fun setLibraryQuery(query: LibraryQuery) { _state.update { it.copy(libraryQuery = query) } }
+
+    /**
+     * 已存页拖拽后的新顺序，以及自定义排序的「惰性 seed」。
+     *
+     * seed 由界面发起（只有界面知道哪些条目真的可见），这里只负责落盘。
+     */
+    fun reorderLibrary(orderedIds: List<String>) {
+        if (orderedIds.isEmpty()) return
+        viewModelScope.launch { history.reorderLibrary(orderedIds) }
+    }
 
     fun deleteSelected(ids: Set<String>) = runBatch(ids, BatchOperation.DELETE) { record -> downloader.cancel(record.id, removeRecord = true) }
     fun pauseSelected(ids: Set<String>) = runBatch(ids, BatchOperation.PAUSE, { it == DownloadStatus.RUNNING || it == DownloadStatus.PENDING }) {

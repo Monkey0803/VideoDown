@@ -186,6 +186,23 @@ class AppPreferences(context: Context) {
             .ifEmpty { com.videodown.douyin.BuildConfig.DEFAULT_UPDATE_MANIFEST_URL }
         set(value) { store.edit().putString("update_manifest_url", value.trim()).apply() }
 
+    private val _librarySort = MutableStateFlow(
+        LibrarySort.entries.firstOrNull { it.name == store.getString("library_sort", null) } ?: LibrarySort.NEWEST,
+    )
+    val librarySortChanges = _librarySort.asStateFlow()
+
+    /**
+     * 已存列表的排序方式。
+     *
+     * 之所以要持久化：手动顺序（[LibrarySort.CUSTOM]）重启后如果退回「最新保存」，用户会以为白排了。
+     */
+    var librarySort: LibrarySort
+        get() = _librarySort.value
+        set(value) {
+            store.edit().putString("library_sort", value.name).apply()
+            _librarySort.value = value
+        }
+
     var preferredQuality: PreferredQuality
         get() = PreferredQuality.entries.getOrNull(store.getInt("preferred_quality", 0)) ?: PreferredQuality.HIGHEST
         set(value) { store.edit().putInt("preferred_quality", value.ordinal).apply() }
@@ -214,6 +231,7 @@ class AppPreferences(context: Context) {
         com.videodown.douyin.data.backup.SettingsSnapshot(
             version = com.videodown.douyin.data.backup.SettingsBackupCodec.CURRENT_VERSION,
             themeMode = themeMode.name,
+            librarySort = librarySort.name,
             dynamicColor = dynamicColor,
             preferredQuality = preferredQuality.name,
             libraryLayout = libraryLayout.name,
@@ -253,6 +271,11 @@ class AppPreferences(context: Context) {
         safe.libraryLayout?.let { name ->
             LibraryLayout.entries.firstOrNull { it.name == name }?.takeIf { it != libraryLayout }?.let {
                 libraryLayout = it; applied += SettingsChange.LIBRARY_LAYOUT
+            }
+        }
+        safe.librarySort?.let { name ->
+            LibrarySort.entries.firstOrNull { it.name == name }?.takeIf { it != librarySort }?.let {
+                librarySort = it; applied += SettingsChange.LIBRARY_SORT
             }
         }
         safe.maxConcurrentDownloads?.takeIf { it != maxConcurrentDownloads }?.let {

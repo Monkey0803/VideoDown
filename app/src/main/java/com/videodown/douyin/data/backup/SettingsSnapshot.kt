@@ -1,6 +1,7 @@
 package com.videodown.douyin.data.backup
 
 import com.videodown.douyin.core.LibraryLayout
+import com.videodown.douyin.core.LibrarySort
 import com.videodown.douyin.core.PreferredQuality
 import com.videodown.douyin.core.ThemeMode
 import kotlinx.serialization.Serializable
@@ -21,6 +22,7 @@ data class SettingsSnapshot(
     val dynamicColor: Boolean? = null,
     val preferredQuality: String? = null,
     val libraryLayout: String? = null,
+    val librarySort: String? = null,
     val wifiOnly: Boolean? = null,
     val autoResume: Boolean? = null,
     val maxConcurrentDownloads: Int? = null,
@@ -44,6 +46,7 @@ data class SettingsSnapshot(
         themeMode = themeMode?.takeIf { name -> ThemeMode.entries.any { it.name == name } },
         preferredQuality = preferredQuality?.takeIf { name -> PreferredQuality.entries.any { it.name == name } },
         libraryLayout = libraryLayout?.takeIf { name -> LibraryLayout.entries.any { it.name == name } },
+        librarySort = librarySort?.takeIf { name -> LibrarySort.entries.any { it.name == name } },
         maxConcurrentDownloads = maxConcurrentDownloads?.coerceIn(MIN_CONCURRENT, MAX_CONCURRENT),
         globalSpeedLimitKbps = globalSpeedLimitKbps?.takeIf { kbps -> kbps >= 0 && kbps <= MAX_SPEED_LIMIT_KBPS },
         // A blank or non-http value means "leave the current source alone" rather than "clear it".

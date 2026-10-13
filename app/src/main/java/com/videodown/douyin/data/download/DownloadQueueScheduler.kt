@@ -39,6 +39,20 @@ internal class DownloadQueueScheduler(limit: Int) {
         }
         pending.toList()
     }
+    /**
+     * 把 [ids] 按给定顺序放回它们原本占据的槽位。
+     *
+     * 只动这些 id：没出现在 [ids] 里的待下载任务（例如被搜索或过滤挡掉的）保持彼此相对位置，
+     * 也不会被挤到队尾——这是拖拽重排最容易出错的地方。
+     */
+    suspend fun setOrder(ids: List<String>): List<String> = mutex.withLock {
+        val slots = pending.withIndex().filter { it.value in ids }.map { it.index }
+        val ordered = ids.filter { id -> pending.contains(id) }
+        if (slots.size != ordered.size) return@withLock pending.toList()
+        slots.forEachIndexed { i, slot -> pending[slot] = ordered[i] }
+        publish()
+        pending.toList()
+    }
     private fun dispatch() {
         while (running.size < capacity && pending.isNotEmpty()) {
             val id = pending.removeAt(0); running += id; permits.getValue(id).complete(Unit)
