@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="2" errors="0" skipped="0" time="0.000" timestamp="2026-10-13T11:24:59" hostname="localhost">
+  <testsuite name="com.videodown.douyin.TaskNotificationDeviceTest" tests="2" failures="2" errors="0" skipped="0" time="31.769" timestamp="2026-10-13T11:24:59" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="aPausedCardOutlivesTheServiceExitAndResumesFromItsOwnAction" classname="com.videodown.douyin.TaskNotificationDeviceTest" time="16.208">
+      <failure>kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 15000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:1571)
+</failure>
+    </testcase>
+    <testcase name="independentCardsPauseOnlyTheirOwnTaskAndFollowThePreference" classname="com.videodown.douyin.TaskNotificationDeviceTest" time="15.561">
+      <failure>kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 15000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:1571)
+</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

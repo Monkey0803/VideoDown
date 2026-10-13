@@ -494,7 +494,11 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 checked = individualNotifications && notificationsAvailable,
                 onCheckedChange = { enabled ->
                     when {
-                        !enabled -> preferences.individualTaskNotifications = false
+                        !enabled -> {
+                            preferences.individualTaskNotifications = false
+                            // 服务可能已经退出（全部暂停），留下的暂停卡要当场收掉，不能等下次服务启动。
+                            com.videodown.douyin.data.download.IndividualTaskNotifications.cancelAll(context)
+                        }
                         DownloadCompletionNotifier.areNotificationsEnabled(context) -> {
                             notificationsAvailable = true
                             preferences.individualTaskNotifications = true

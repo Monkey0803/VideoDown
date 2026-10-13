@@ -41,9 +41,29 @@ class TaskNotificationDeviceTest {
     private val evidence get() = File(context.cacheDir, "task-notification-evidence").apply { mkdirs() }
     private val ownedIds = mutableListOf<String>()
 
-    private fun individualNotifications() = manager.activeNotifications.filter { it.id in 1100..1199 }
+    private fun individualNotifications() =
+        manager.activeNotifications.filter { it.id == com.videodown.douyin.data.download.IndividualTaskNotifications.ID }
     private fun titleOf(record: android.app.Notification) = record.extras.getString(Notification.EXTRA_TITLE)
     private fun send(value: String) = instrumentation.sendStatus(0, android.os.Bundle().apply { putString("stream", "$value\n") })
+    /**
+     * 通知栏证据：把当前活动通知的 id / tag / ongoing / 标题 / 动作落成文本。
+     *
+     * 为什么不用截图：`takeScreenshot()` 只拍得到应用窗口，通知栏在另一个窗口里；
+     * 而 API 37 的 `dumpsys notification --noredact` 已经不再逐条打印通知记录（实测只有 700 多行的统计）。
+     */
+    private fun writeNotificationEvidence(name: String) {
+        val lines = manager.activeNotifications
+            .filter { it.packageName == context.packageName }
+            .joinToString("\n") { posted ->
+                val postedNotification = posted.notification
+                "id=${posted.id} tag=${posted.tag} " +
+                    "ongoing=${postedNotification.flags and Notification.FLAG_ONGOING_EVENT != 0} " +
+                    "title=${titleOf(postedNotification)} " +
+                    "actions=${postedNotification.actions?.map { it.title?.toString() }}"
+            }
+        File(evidence, "$name.txt").writeText(lines + "\n")
+    }
+
     private fun capture(name: String) {
         instrumentation.uiAutomation.takeScreenshot().let { bitmap ->
             File(evidence, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -135,10 +155,93 @@ class TaskNotificationDeviceTest {
             directory.deleteRecursively()
             instrumentation.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME)
             File(evidence, "summary.txt").writeText(
-                "independent notification ids seen: 1100..1199\n" +
+                "independent notification ids seen: ${com.videodown.douyin.data.download.IndividualTaskNotifications.ID}\n" +
                     "owned tasks: ${ownedIds.size}\n" +
                     "concurrency preference restored to $originalConcurrency\n",
             )
+        }
+    }
+
+    /**
+     * 全部任务暂停后服务按设计退出：汇总通知消失，但**暂停卡必须还在**，而且点它自己的「继续」
+     * 能把服务重新拉起来。这是「从通知继续一个已暂停任务」在服务退出后唯一还走得通的路。
+     */
+    @Test fun aPausedCardOutlivesTheServiceExitAndResumesFromItsOwnAction() = runBlocking {
+        assertTrue("System notifications must be genuinely enabled", DownloadCompletionNotifier.areNotificationsEnabled(context))
+        assertTrue("Preserve any existing transfer", ServiceLocator.downloader.progress.value.values.none { it.isActive })
+        // 前台服务只有在应用处于前台时才能启动；真实点击通知也会拿到系统给的临时豁免。
+        context.startActivity(context.packageManager.getLaunchIntentForPackage(context.packageName)!!
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        compose.waitUntil(15_000) { compose.onAllNodesWithText("解析").fetchSemanticsNodes().isNotEmpty() }
+        val originalConcurrency = ServiceLocator.preferences.maxConcurrentDownloads
+        val directory = File(context.cacheDir, "task-notification-${UUID.randomUUID()}").apply { mkdirs() }
+        try {
+            instrumentation.context.assets.open("landscape-fixture.mp4").use { input ->
+                File(directory, "sample.mp4").outputStream().use { input.copyTo(it) }
+            }
+            val bytes = File(directory, "sample.mp4").length()
+            ServiceLocator.preferences.maxConcurrentDownloads = 1
+            ServiceLocator.preferences.individualTaskNotifications = true
+            FixtureServer(directory, slow = true).use { server ->
+                val title = "暂停卡存活-${UUID.randomUUID().toString().take(6)}"
+                val variant = VideoVariant("${server.baseUrl}/sample.mp4", "720P", sizeBytes = bytes)
+                val video = DouyinVideo(UUID.randomUUID().toString(), title, platform = VideoPlatform.GENERIC, variants = listOf(variant))
+                val id = ServiceLocator.downloader.start(video, variant).also(ownedIds::add)
+
+                withTimeout(20_000) { while (individualNotifications().isEmpty()) delay(100) }
+                send("MARK: running card posted")
+                val running = individualNotifications().single()
+                assertEquals(title, titleOf(running.notification))
+                val pause = running.notification.actions!!.first { it.title?.toString() == "暂停" }
+                instrumentation.runOnMainSync { pause.actionIntent.send() }
+                withTimeout(15_000) {
+                    ServiceLocator.historyRepository.observeRecord(id).first { it?.status == DownloadStatus.PAUSED }
+                }
+                send("MARK: task paused from its own card")
+
+                // 没有别的活跃任务 → 服务退出，前台服务通知（1001）随之撤掉。
+                withTimeout(20_000) { while (manager.activeNotifications.any { it.id == 1001 }) delay(100) }
+                send("MARK: service exited")
+                val retained = withTimeout(15_000) {
+                    var found: android.service.notification.StatusBarNotification? = null
+                    while (found == null) {
+                        found = individualNotifications().firstOrNull { titleOf(it.notification) == title }
+                        if (found == null) delay(100)
+                    }
+                    found
+                }
+                assertEquals("留下的暂停卡只该有「继续」",
+                    listOf("继续"), retained.notification.actions?.map { it.title?.toString() })
+                assertTrue("它背后没有正在跑的传输，必须可以被划掉",
+                    retained.notification.flags and Notification.FLAG_ONGOING_EVENT == 0)
+                writeNotificationEvidence("paused-card-after-service-exit")
+                send("SERVICE_EXIT: 汇总通知已消失；$title 的暂停卡仍在通知栏（可划掉、只带继续）")
+
+                // 点卡片自己的「继续」：服务被重新拉起，任务回到传输中。
+                val resume = retained.notification.actions!!.first { it.title?.toString() == "继续" }
+                instrumentation.runOnMainSync { resume.actionIntent.send() }
+                withTimeout(20_000) {
+                    ServiceLocator.historyRepository.observeRecord(id).first {
+                        it?.status == DownloadStatus.RUNNING || it?.status == DownloadStatus.PENDING
+                    }
+                }
+                withTimeout(20_000) { while (manager.activeNotifications.none { it.id == 1001 }) delay(100) }
+                withTimeout(20_000) {
+                    while (individualNotifications().none { card ->
+                        titleOf(card.notification) == title &&
+                            card.notification.actions?.any { it.title?.toString() == "暂停" } == true
+                    }) delay(100)
+                }
+                writeNotificationEvidence("resumed-from-card")
+                send("RESUMED_FROM_CARD: $title 回到传输中，前台服务通知重新出现")
+            }
+        } finally {
+            ServiceLocator.preferences.maxConcurrentDownloads = originalConcurrency
+            ownedIds.forEach { runCatching { ServiceLocator.downloader.cancel(it, true) } }
+            individualNotifications().forEach { manager.cancel(it.tag, it.id) }
+            ServiceLocator.preferences.individualTaskNotifications = false
+            directory.deleteRecursively()
+            instrumentation.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME)
         }
     }
 }

@@ -53,6 +53,14 @@ class DownloadService : Service() {
     /** Stable notification slot per task, so two tasks never share a pending intent. */
     private val notificationSlots = mutableMapOf<String, Int>()
 
+    /**
+     * The records the per-task observer last saw.
+     *
+     * [onDestroy] needs them to word a retained card (标题要过保险箱脱敏), and it must not do I/O at
+     * that point — the service scope is being cancelled.
+     */
+    private var latestRecords: Map<String, DownloadRecord> = emptyMap()
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -119,11 +127,12 @@ class DownloadService : Service() {
      * or resumed without opening 拾影.
      *
      * Opt-in: a busy queue would otherwise post one notification per task. A task leaves the set
-     * once it completes, fails or disappears, and every individual notification is dropped with the
-     * service — with nothing left to transfer the service exits by design, and a leftover control
-     * for a task nothing is transferring would be misleading.
+     * once it completes, fails or disappears. When nothing is left to transfer the service exits by
+     * design; the cards of tasks that are still **paused** are kept so 继续 stays reachable from the
+     * notification bar (see [retainPausedNotifications]), everything else goes with the service.
      */
     private fun observeIndividualNotifications() {
+        clearStaleIndividualNotifications()
         individualJob?.cancel()
         individualJob = serviceScope.launch {
             // Hydrate history first: an empty snapshot would otherwise look like "task deleted".
@@ -133,6 +142,7 @@ class DownloadService : Service() {
                 ServiceLocator.historyRepository.observeAll(),
             ) { progress, records -> progress to records.associateBy { it.id } }
                 .collect { (progress, recordsById) ->
+                    latestRecords = recordsById
                     if (!ServiceLocator.preferences.individualTaskNotifications) {
                         clearIndividualNotifications()
                         return@collect
@@ -161,7 +171,7 @@ class DownloadService : Service() {
         return slot
     }
 
-    private fun postIndividualNotification(record: DownloadRecord, progress: DownloadProgress?) {
+    private fun postIndividualNotification(record: DownloadRecord, progress: DownloadProgress?, retained: Boolean = false) {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) return
         val slot = slotFor(record.id)
         val status = progress?.status ?: record.status
@@ -194,21 +204,23 @@ class DownloadService : Service() {
             .setContentTitle(com.videodown.douyin.domain.model.VaultPolicy.notificationTitle(record) ?: getString(R.string.vault_locked_title))
             .setContentText(detail)
             .setProgress(100, percent, total <= 0L)
-            .setOngoing(true)
+            // 留在通知栏的暂停卡必须是可划掉的：它背后没有正在跑的传输，卡着不让划会让人以为还在下载。
+            .setOngoing(!retained)
             .setOnlyAlertOnce(true)
             .setContentIntent(contentIntent)
             .addAction(action)
             .build()
         // An extra per-task control is a convenience: failing to post it must never interrupt the
         // transfer itself, which the summary notification still reports.
-        runCatching { NotificationManagerCompat.from(this).notify(INDIVIDUAL_NOTIFICATION_BASE + slot, notification) }
+        runCatching { NotificationManagerCompat.from(this).notify(record.id, IndividualTaskNotifications.ID, notification) }
     }
 
     private fun taskAction(slot: Int, id: String, action: String, label: String, icon: Int, offset: Int): NotificationCompat.Action =
         NotificationCompat.Action(
             icon,
             label,
-            PendingIntent.getService(
+            // 前台服务而不是普通 startService：真实点击发生在应用处于后台时，普通 start 会被系统拒绝。
+            PendingIntent.getForegroundService(
                 this,
                 INDIVIDUAL_ACTION_REQUEST_BASE + slot * 2 + offset,
                 Intent(this, DownloadService::class.java).setAction(action).putExtra(EXTRA_RECORD_ID, id),
@@ -217,14 +229,45 @@ class DownloadService : Service() {
         )
 
     private fun cancelIndividualNotification(id: String) {
-        val slot = notificationSlots.remove(id) ?: return
-        NotificationManagerCompat.from(this).cancel(INDIVIDUAL_NOTIFICATION_BASE + slot)
+        notificationSlots -= id
+        IndividualTaskNotifications.cancel(this, id)
     }
 
     private fun clearIndividualNotifications() {
-        val manager = NotificationManagerCompat.from(this)
-        notificationSlots.values.forEach { slot -> manager.cancel(INDIVIDUAL_NOTIFICATION_BASE + slot) }
+        IndividualTaskNotifications.cancelAll(this)
         notificationSlots.clear()
+        trackedIds.clear()
+    }
+
+    /**
+     * 服务启动时先撤掉上一次退出时留下的暂停卡。
+     *
+     * 槽位是每次运行重新分配的（进程被杀后更是从 0 开始），旧卡留着就会出现同一个任务两张卡；
+     * 撤掉之后观察流会按当前状态重新贴一遍。
+     */
+    private fun clearStaleIndividualNotifications() = IndividualTaskNotifications.cancelAll(this)
+
+    /**
+     * 服务退出时把「已暂停」任务卡留在通知栏，其余撤掉。
+     *
+     * 为什么留：全部任务暂停后服务按既有设计退出，连卡一起撤掉的话，「从通知继续」这条路就没了
+     * （只能先打开应用）。留下的卡换成非进行态、只带「继续」，点它会把服务重新拉起来。
+     * 为什么只留暂停的：完成、失败、已删除的任务留在通知栏只会误导，而且它们另有一条通知路径；
+     * 优化开关关掉时当然一张都不留。
+     */
+    private fun retainPausedNotifications() {
+        if (!ServiceLocator.preferences.individualTaskNotifications) {
+            clearIndividualNotifications()
+            return
+        }
+        val progress = ServiceLocator.downloader.progress.value
+        trackedIds.forEach { id ->
+            val record = latestRecords[id]
+            // 暂停的任务会从 progress 里移走，所以状态要像观察流那样回落到记录上。
+            val paused = (progress[id]?.status ?: record?.status) == DownloadStatus.PAUSED
+            if (record != null && paused) postIndividualNotification(record, progress[id], retained = true)
+            else cancelIndividualNotification(id)
+        }
         trackedIds.clear()
     }
 
@@ -268,7 +311,7 @@ class DownloadService : Service() {
             .addAction(
                 0,
                 getString(R.string.history_pause_all),
-                PendingIntent.getService(
+                PendingIntent.getForegroundService(
                     this,
                     1,
                     Intent(this, DownloadService::class.java).setAction(ACTION_PAUSE_ALL),
@@ -315,7 +358,8 @@ class DownloadService : Service() {
 
     override fun onDestroy() {
         if (!expectedStop && foregroundError == null) failTransfers(com.videodown.douyin.core.ServiceFailure.INTERRUPTED.storageKey)
-        clearIndividualNotifications()
+        // 暂停中的任务卡留着，让「从通知继续」在服务退出后依然可用；其余随服务一起撤掉。
+        retainPausedNotifications()
         individualJob?.cancel()
         progressJob?.cancel()
         serviceScope.cancel()
@@ -324,7 +368,6 @@ class DownloadService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1001
-        private const val INDIVIDUAL_NOTIFICATION_BASE = 1100
         private const val INDIVIDUAL_ACTION_REQUEST_BASE = 2100
         private const val OPEN_TASKS_REQUEST = 8703
         const val ACTION_START = "com.videodown.douyin.action.START_DOWNLOAD"
