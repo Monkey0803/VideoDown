@@ -354,6 +354,7 @@ internal class FixtureServer(private val directory: File, private val slow: Bool
                             if (headers["host"]?.startsWith("localhost") == true && headers["cookie"] != null) redirectCookie.set(true)
                             val html = when (target) {
                                 "/page" -> "<html><head><title>Fixture video</title></head><body><video controls src='/sample.mp4'></video></body></html>"
+                                "/plain" -> "<html><head><title>Plain fixture</title></head><body>这个页面没有视频</body></html>"
                                 "/dynamic" -> """<html><head><title>Dynamic fixture</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0"><button style="position:absolute;inset:0;width:100%;height:100%" onclick="this.remove();let v=document.createElement('video');v.controls=true;v.src='/opaque';v.style.width='100%';document.body.append(v);v.play()">播放测试视频</button></body></html>"""
                                 else -> null
                             }

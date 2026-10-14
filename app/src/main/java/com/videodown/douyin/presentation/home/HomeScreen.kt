@@ -780,4 +780,5 @@ private fun homeErrorText(error: HomeError): String = when (error) {
     HomeError.EmptyInput -> stringResource(R.string.home_error_empty_input)
     HomeError.NoVariant -> stringResource(R.string.home_error_no_variant)
     HomeError.QueueFailed -> stringResource(R.string.home_error_queue_failed)
+    HomeError.WeChatChannels -> stringResource(R.string.engine_wechat_channels)
 }

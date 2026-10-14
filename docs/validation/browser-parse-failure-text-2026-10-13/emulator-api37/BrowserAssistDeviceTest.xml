@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-10-14T09:10:21" hostname="localhost">
+  <testsuite name="com.videodown.douyin.BrowserAssistDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="10.922" timestamp="2026-10-14T09:10:21" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="dynamicPageRequiresPlayThenDetectSelectAndDownload" classname="com.videodown.douyin.BrowserAssistDeviceTest" time="6.164" />
+    <testcase name="aPageWithoutMediaExplainsItselfInsteadOfStayingSilent" classname="com.videodown.douyin.BrowserAssistDeviceTest" time="4.758" />
+  </testsuite>
+</testsuites>

@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
 import androidx.compose.ui.unit.dp
@@ -23,12 +24,18 @@ import androidx.compose.ui.window.DialogProperties
 import com.videodown.douyin.core.AppResult
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.data.generic.BrowserMediaDetector
+import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.domain.model.ParsedVideos
+import com.videodown.douyin.presentation.appErrorText
 import kotlinx.coroutines.*
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.json.JSONArray
 import org.json.JSONTokener
+
+/** 状态行的测试标签：设备用例要断言"失败时确实有一句给人看的话"。 */
+internal const val BROWSER_STATUS_TAG = "browser-status"
 
 @Suppress("SetJavaScriptEnabled")
 @Composable
@@ -42,6 +49,9 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
     var message by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     var pageError by remember { mutableStateOf<String?>(null) }
+    // 本轮扫描是否已经出结论（探测都结束了）。没找到的结论只有在此时才算数。
+    var scanSettled by remember { mutableStateOf(false) }
+    var scanGeneration by remember { mutableStateOf(0) }
     var parsing by remember { mutableStateOf<Job?>(null) }
     val candidates = remember { mutableStateListOf<BrowserMediaDetector.Candidate>() }
     val seen = remember { mutableSetOf<String>() }
@@ -64,18 +74,29 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
     fun parse(url: String, referer: String) {
         if (busy) return
         busy = true
+        scanSettled = false
         parsing = scope.launch {
             try {
                 message = resources.getString(R.string.browser_reading)
                 when (val result = ServiceLocator.genericRepository.parse(url, true, referer, browser?.settings?.userAgentString)) {
                     is AppResult.Success -> onResult(result.value)
-                    is AppResult.Failure -> message = result.error.message
+                    // 引擎失败带的是 reasonKey，message 是空串：直接显示就成了一片空白（曾经就是这样）。
+                    // 视频号另说：通用兜底那句"打开网页播放后查找"对这个网站是死的，改用准确的说法。
+                    is AppResult.Failure -> message = if (VideoLinkExtractor.isWeChatChannelsLink(url)) {
+                        resources.getString(R.string.engine_wechat_channels)
+                    } else {
+                        appErrorText(context, result.error)
+                    }
                 }
             } finally { busy = false }
         }
     }
     fun scan() {
         probes.forEach { it.cancel() }; probes.clear(); seen.clear()
+        scanGeneration++
+        val generation = scanGeneration
+        scanSettled = false
+        message = null
         // Evaluate a read-only expression; never expose a Java/Kotlin interface to arbitrary pages.
         browser?.evaluateJavascript("""
             JSON.stringify(Array.from(new Set([
@@ -88,7 +109,12 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                 val urls = JSONArray(decoded)
                 for (i in 0 until urls.length()) detect(urls.getString(i))
             }
-            message = resources.getString(R.string.browser_scanned)
+            // 本轮探测全部结束再下结论：否则"没找到"会先于正在验证的候选出现，等于骗人。
+            scope.launch {
+                probes.toList().joinAll()
+                if (generation != scanGeneration) return@launch
+                scanSettled = true
+            }
         }
     }
     DisposableEffect(Unit) { onDispose {
@@ -121,7 +147,7 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                                 request.url.scheme !in setOf("http", "https")
                             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                                 if (url == "about:blank") return
-                                page = url; pageError = null; candidates.clear(); seen.clear()
+                                page = url; pageError = null; candidates.clear(); seen.clear(); scanSettled = false
                                 probes.forEach { it.cancel() }; probes.clear()
                                 parsing?.cancel()
                             }
@@ -151,7 +177,16 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                         loadUrl(initialUrl)
                     }
                 })
-                Text(message ?: stringResource(R.string.browser_initial_hint), Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall)
+                // 扫完必须给一句结论：找到几个、还是一个都没有。留白等于什么都不说（曾经就是这样）。
+                val verdictRes = browserStatusRes(
+                    hasMessage = message != null,
+                    scanSettled = scanSettled,
+                    busy = busy,
+                    candidateCount = candidates.size,
+                    weChatChannels = VideoLinkExtractor.isWeChatChannelsLink(page),
+                )
+                val status = message ?: stringResource(verdictRes ?: R.string.browser_initial_hint)
+                Text(status, Modifier.padding(12.dp).testTag(BROWSER_STATUS_TAG), style = MaterialTheme.typography.bodySmall)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     if (busy) TextButton(onClick = { parsing?.cancel(); message = resources.getString(R.string.browser_cancelled) }) { Text(stringResource(R.string.browser_cancel_parse)) }
                     else TextButton(onClick = { parse(page, page) }) { Text(stringResource(R.string.browser_reparse_with_session)) }

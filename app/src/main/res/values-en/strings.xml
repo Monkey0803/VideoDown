@@ -415,6 +415,8 @@
     <string name="import_duplicate_title">%1$d duplicate tasks found</string>
     <string name="import_duplicate_body">Skip what you already have, or download it again deliberately.</string>
     <string name="import_download_all">Download all anyway</string>
+    <string name="browser_nothing_found">No downloadable video was found on this page. Try playing it first and searching again, or use a link that exposes the video address.</string>
+    <string name="browser_channels_no_media">WeChat Channels content only plays inside WeChat: the page carries no downloadable address. If you already have a direct link, paste it here instead.</string>
     <string name="browser_reading">Reading the videos and qualities…</string>
     <string name="browser_scanned">Page resources were checked. If nothing shows up, start playback first; blob addresses need the underlying media resource, and DRM videos cannot be downloaded.</string>
     <string name="browser_close_page">Close the web page</string>
@@ -526,6 +528,7 @@
     <string name="engine_space">Not enough storage; free some space and continue</string>
     <string name="engine_storage_access">Could not write the video file; check that app storage is usable</string>
     <string name="engine_network">Network connection failed; check the network and try again</string>
+    <string name="engine_wechat_channels">This is a WeChat Channels link: the content only plays inside WeChat, and the web page carries no downloadable address. If you already have a direct link, paste it here instead.</string>
     <string name="engine_timeout">Parsing timed out; open the page to look for the video</string>
     <string name="engine_runtime">The parse engine could not start; check the free space or install the full package again</string>
     <string name="engine_unsupported">No downloadable video was found; sign in on the page or find it after playback</string>

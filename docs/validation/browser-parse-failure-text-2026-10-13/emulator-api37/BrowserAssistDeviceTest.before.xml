@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="1" errors="0" skipped="0" time="0.000" timestamp="2026-10-14T09:13:51" hostname="localhost">
+  <testsuite name="com.videodown.douyin.BrowserAssistDeviceTest" tests="2" failures="1" errors="0" skipped="0" time="38.130" timestamp="2026-10-14T09:13:51" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="dynamicPageRequiresPlayThenDetectSelectAndDownload" classname="com.videodown.douyin.BrowserAssistDeviceTest" time="5.998" />
+    <testcase name="aPageWithoutMediaExplainsItselfInsteadOfStayingSilent" classname="com.videodown.douyin.BrowserAssistDeviceTest" time="32.132">
+      <failure>androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:887)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:482)
+	at com.videodown.douyin.BrowserAssistDeviceTest.aPageWithoutMediaExplainsItselfInsteadOfStayingSilent(BrowserAssistDeviceTest.kt:121)
+</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.data.remote.VideoLinkExtractorChannelsTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-14T09:12:26.198Z" hostname="Alias-mini.local" time="0.0">
+  <properties/>
+  <testcase name="garbage is not a channel and never throws" classname="com.videodown.douyin.data.remote.VideoLinkExtractorChannelsTest" time="0.0"/>
+  <testcase name="share text with tracking parameters still counts" classname="com.videodown.douyin.data.remote.VideoLinkExtractorChannelsTest" time="0.0"/>
+  <testcase name="real share links are recognised" classname="com.videodown.douyin.data.remote.VideoLinkExtractorChannelsTest" time="0.0"/>
+  <testcase name="other weixin pages are not channels" classname="com.videodown.douyin.data.remote.VideoLinkExtractorChannelsTest" time="0.0"/>
+  <testcase name="other hosts are not channels" classname="com.videodown.douyin.data.remote.VideoLinkExtractorChannelsTest" time="0.0"/>
+  <testcase name="channels links stay on the generic platform" classname="com.videodown.douyin.data.remote.VideoLinkExtractorChannelsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

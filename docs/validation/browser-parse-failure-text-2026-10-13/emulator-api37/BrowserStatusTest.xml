@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.videodown.douyin.presentation.browser.BrowserStatusTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-14T09:12:26.350Z" hostname="Alias-mini.local" time="0.001">
+  <properties/>
+  <testcase name="an explicit message wins" classname="com.videodown.douyin.presentation.browser.BrowserStatusTest" time="0.001"/>
+  <testcase name="a settled scan with candidates says what was checked" classname="com.videodown.douyin.presentation.browser.BrowserStatusTest" time="0.0"/>
+  <testcase name="before a scan settles there is only the initial hint" classname="com.videodown.douyin.presentation.browser.BrowserStatusTest" time="0.0"/>
+  <testcase name="a busy parse never shows a scan verdict" classname="com.videodown.douyin.presentation.browser.BrowserStatusTest" time="0.0"/>
+  <testcase name="a settled scan with nothing found always says so" classname="com.videodown.douyin.presentation.browser.BrowserStatusTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

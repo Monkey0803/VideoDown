@@ -3,6 +3,7 @@ package com.videodown.douyin.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.videodown.douyin.core.AppResult
+import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.core.downloadFailureKind
 import com.videodown.douyin.domain.model.DownloadFailureKind
 import com.videodown.douyin.core.ServiceLocator
@@ -53,6 +54,13 @@ sealed interface HomeError {
     data object EmptyInput : HomeError
     data object NoVariant : HomeError
     data object QueueFailed : HomeError
+
+    /**
+     * 视频号：解析失败是必然的（网页里没有可下载地址，引擎也没有对应解析器）。
+     *
+     * 单独一个键，是为了不说通用兜底那句"打开网页登录或播放后查找"——那条路对这个网站是死的。
+     */
+    data object WeChatChannels : HomeError
 }
 
 data class HomeUiState(
@@ -203,7 +211,9 @@ class HomeViewModel(
                 }
 
                 is AppResult.Failure -> {
-                    _state.update { it.copy(isParsing = false, error = HomeError.FromApp(result.error),
+                    // 视频号的失败原因换一句更准的话（见 HomeError.WeChatChannels）。
+                    val isChannels = VideoLinkExtractor.extractAll(text).any { VideoLinkExtractor.isWeChatChannelsLink(it.url) }
+                    _state.update { it.copy(isParsing = false, error = if (isChannels) HomeError.WeChatChannels else HomeError.FromApp(result.error),
                         errorKind = if (result.error is com.videodown.douyin.core.AppError.InvalidLink) null else result.error.downloadFailureKind()) }
                 }
             }

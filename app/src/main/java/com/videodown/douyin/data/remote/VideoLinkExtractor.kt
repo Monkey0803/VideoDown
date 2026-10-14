@@ -25,6 +25,27 @@ object VideoLinkExtractor {
         else -> null
     }
 
+    /**
+     * 是否是视频号分享链接。
+     *
+     * 为什么单独把它认出来：分享短链 `weixin.qq.com/sph/…` 会跳到 `channels.weixin.qq.com`，而那个页面
+     * 只给标题、作者和播放数据——**播放地址是微信客户端内动态签发的，网页里没有可直接下载的地址**，
+     * 内置引擎也没有视频号的解析器（实测：打包的 yt-dlp 里没有任何 weixin/wechat 提取器）。
+     * 于是解析必然失败，这时要如实说清楚，而不是把通用兜底那句"打开网页登录或播放后查找"抛给用户——
+     * 那条路对这个网站是死的。它只决定"失败时说哪句话"，不是拒绝解析：万一页面将来真给了直链，
+     * 解析照样会成功。
+     *
+     * 只认视频号：`mp.weixin.qq.com` 的公众号文章不在此列，那种页面往往内嵌普通视频，能走通用路径。
+     */
+    fun isWeChatChannelsLink(url: String): Boolean {
+        val parsed = url.toHttpUrlOrNull() ?: return false
+        return when (parsed.host.lowercase()) {
+            "channels.weixin.qq.com" -> true
+            "weixin.qq.com", "www.weixin.qq.com" -> parsed.pathSegments.firstOrNull() == "sph"
+            else -> false
+        }
+    }
+
     fun weiboId(url: String): String? {
         val parsed = url.toHttpUrlOrNull() ?: return null
         if (platformForHost(parsed.host) != VideoPlatform.WEIBO) return null

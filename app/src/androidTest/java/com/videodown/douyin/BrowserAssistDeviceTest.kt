@@ -10,6 +10,8 @@ import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.presentation.MainActivity
+import com.videodown.douyin.presentation.browser.BROWSER_STATUS_TAG
+import org.junit.Assert.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
@@ -80,6 +82,51 @@ class BrowserAssistDeviceTest {
                 com.videodown.douyin.core.ServiceLocator.historyRepository.snapshot().filter { sourcePage.isNotEmpty() && it.sourcePageUrl == sourcePage }
                     .forEach { com.videodown.douyin.core.ServiceLocator.downloader.cancel(it.id, true) }
             }
+            directory.deleteRecursively()
+        }
+    }
+
+    /**
+     * 没有媒体的页面必须"说话"：先给扫描结论，再在解析失败时给出真正的原因。
+     *
+     * 回归：面板曾经把 `AppError.message` 直接当文案，而引擎失败带的是 `reasonKey`、message 是空串，
+     * 于是失败过一次之后状态行一片空白——用户在网页解析里看不到任何解释。
+     */
+    @Test fun aPageWithoutMediaExplainsItselfInsteadOfStayingSilent() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val directory = File(context.cacheDir, "browser-plain-${UUID.randomUUID()}").apply { mkdirs() }
+        try {
+            FixtureServer(directory).use { server ->
+                val page = server.baseUrl + "/plain"
+                compose.onNode(hasSetTextAction()).performTextReplacement(page)
+                compose.onNodeWithText("打开网页查找视频").performScrollTo().performClick()
+                compose.waitUntil(20_000) { compose.onAllNodesWithText("使用网页登录态重新解析").fetchSemanticsNodes().isNotEmpty() }
+                compose.waitUntil(20_000) {
+                    var loaded = false
+                    onView(isAssignableFrom(WebView::class.java)).check { view, _ ->
+                        loaded = (view as WebView).title == "Plain fixture" && view.progress == 100
+                    }
+                    loaded
+                }
+
+                // 1) 扫完一个候选都没有：必须给出结论，而不是留白。
+                compose.waitUntil(20_000) {
+                    compose.onAllNodesWithText(context.getString(R.string.browser_nothing_found)).fetchSemanticsNodes().isNotEmpty()
+                }
+                screenshot("browser-nothing-found.png")
+
+                // 2) 用网页登录态重新解析：失败原因要被解析成给人看的话，而不是空串或原始 key。
+                compose.onNodeWithText("使用网页登录态重新解析").performClick()
+                val resolved = listOf(R.string.engine_unsupported, R.string.generic_no_video).map(context::getString)
+                compose.waitUntil(30_000) {
+                    resolved.any { copy -> compose.onAllNodesWithText(copy, substring = true).fetchSemanticsNodes().isNotEmpty() }
+                }
+                val text = compose.onNodeWithTag(BROWSER_STATUS_TAG).fetchSemanticsNode()
+                    .config[androidx.compose.ui.semantics.SemanticsProperties.Text].joinToString("")
+                assertTrue("失败后状态行不能是空白，实际为「$text」", text.isNotBlank())
+                screenshot("browser-parse-failure-text.png")
+            }
+        } finally {
             directory.deleteRecursively()
         }
     }
