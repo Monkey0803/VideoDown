@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="2" errors="0" skipped="0" time="0.000" timestamp="2026-10-14T11:11:50" hostname="localhost">
+  <testsuite name="com.videodown.douyin.P2ReleaseUiBridgeDeviceTest" tests="3" failures="2" errors="0" skipped="0" time="0.969" timestamp="2026-10-14T11:11:50" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5556" />
+    </properties>
+    <testcase name="independentlyReadActuallyExportedReleaseMedia" classname="com.videodown.douyin.P2ReleaseUiBridgeDeviceTest" time="0.002">
+      <failure>java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.independentlyReadActuallyExportedReleaseMedia(P2ReleaseUiBridgeDeviceTest.kt:74)
+</failure>
+    </testcase>
+    <testcase name="preciselyEnterPublicSourceInVisibleReleaseUi" classname="com.videodown.douyin.P2ReleaseUiBridgeDeviceTest" time="0.000">
+      <failure>java.lang.NullPointerException
+	at com.videodown.douyin.P2ReleaseUiBridgeDeviceTest.preciselyEnterPublicSourceInVisibleReleaseUi(P2ReleaseUiBridgeDeviceTest.kt:13)
+</failure>
+    </testcase>
+    <testcase name="actualReleaseUiClickAndCapture" classname="com.videodown.douyin.P2ReleaseUiBridgeDeviceTest" time="0.967" />
+  </testsuite>
+</testsuites>
