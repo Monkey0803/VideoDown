@@ -1,0 +1,4 @@
+/sdcard/Android/data/com.videodown.douyin/files/Movies/Douyin/aac-video-fixture.mp4_video_generic_b5cc8b4f79106c4f4c4197f7_d6bd3d37.mp4 56341
+986127a6501df1ece272220762dfe75e36b4aa18a81897c126dea5fe6c1660d6  /sdcard/Android/data/com.videodown.douyin/files/Movies/Douyin/aac-video-fixture.mp4_video_generic_b5cc8b4f79106c4f4c4197f7_d6bd3d37.mp4
+/sdcard/Android/data/com.videodown.douyin/files/Movies/Douyin/landscape-fixture.mp4_video_generic_40ddd77840438be970c4899b_06525c85.mp4 10542
+98850db0131db99853d1f40e9122535df30bf80bdec8f8a6bb346dff9f570181  /sdcard/Android/data/com.videodown.douyin/files/Movies/Douyin/landscape-fixture.mp4_video_generic_40ddd77840438be970c4899b_06525c85.mp4

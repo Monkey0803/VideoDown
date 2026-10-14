@@ -1,0 +1,4 @@
+    NotificationRecord(0x02a1d448: pkg=com.videodown.douyin user=UserHandle{0} id=1100 tag=5f7354cd-1be6-4bfc-9d7a-d30f048b66c5 importance=2 key=0|com.videodown.douyin|1100|5f7354cd-1be6-4bfc-9d7a-d30f048b66c5|11294: Notification(channel=downloads shortcut=null contentView=null vibrate=null sound=null defaults=0x0 flags=0x8 color=0x00000000 actions=1 vis=PRIVATE))
+          [0] "继续" -> PendingIntent{60ce460: PendingIntentRecord{aa2a8e2 com.videodown.douyin startForegroundService (whitelist: adffb47:+30s0ms)}}
+          android.title=String (pause-resume-fixture.mp4)
+          android.text=String (已暂停)

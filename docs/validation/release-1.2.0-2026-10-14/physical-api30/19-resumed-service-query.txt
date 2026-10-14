@@ -1,0 +1,2 @@
+  * ServiceRecord{5eba853 u0 com.videodown.douyin/.data.download.DownloadService}
+    intent={act=com.videodown.douyin.action.RESUME_ONE cmp=com.videodown.douyin/.data.download.DownloadService}

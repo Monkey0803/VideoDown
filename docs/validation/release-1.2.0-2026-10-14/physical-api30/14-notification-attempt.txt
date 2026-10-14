@@ -1,0 +1,23 @@
+真机 1.2.0 发布包通知暂停/继续尝试（SHARK PRS-A0，Android 11）
+
+素材：aac-video-fixture.mp4 前 56,341 字节 + 零填充到 1,048,576 字节；仅用于制造可暂停的本地下载，不用于播放验收。服务绑定主机 127.0.0.1:18766，通过 adb reverse 暴露给设备。HEAD 立即返回，GET 支持 HTTP Range，按每 0.25 秒 4,096 字节发送。
+
+实时执行 adb shell dumpsys notification --noredact 并只抽取拾影的通知行时观察到（转录自工具输出，非完整原始 dumpsys）：
+  pkg=com.videodown.douyin id=1100 tag=77ff5c92-db9b-49eb-8507-65862043fe55 actions=1
+  [0] "暂停" -> PendingIntentRecord{... com.videodown.douyin startForegroundService ...}
+  android.title=String (slow-notification-fixture.mp4)
+  android.text=String (93%  ·  16 KB/s  ·  956 KB / 1.0 M)
+  pkg=com.videodown.douyin id=1001 tag=null actions=1
+  [0] "全部暂停" -> PendingIntentRecord{... com.videodown.douyin startForegroundService ...}
+  android.title=String (正在下载视频)
+  android.text=String (956 KB / 1.0 M  ·  16 KB/s)
+
+本机 HTTP 请求日志：
+  20:10:42 HEAD /slow-notification-fixture.mp4 -> 200
+  20:10:42 HEAD /slow-notification-fixture.mp4 (Range) -> 206
+  20:10:47 GET /slow-notification-fixture.mp4 (Range) -> 206
+  20:10:54 GET /slow-notification-fixture.mp4 -> 200
+
+限制：下载期间 UI 层级采集/触控各耗约 11–12 秒，解析结果页未及时切至任务页；直接用 adb shell 启动非导出 DownloadService 的 ACTION_PAUSE_ALL 被系统拒绝（Requires permission not exported from uid 11294）。任务随后完成，未形成已暂停状态；因此服务退出后的通知保留与从通知“继续”均未验证。不能把活动任务卡上出现“暂停”算作暂停/继续路径通过。
+
+清理：已恢复“每条任务独立通知”为关闭（见 14/15 两份 XML），移除 tcp:18766 的 adb reverse，终止主机 HTTP 服务；adb reverse --list 为空。设备旋转设置保持原值 accelerometer_rotation=1、user_rotation=0。release 包仍为 versionCode=7 / versionName=1.2.0，firstInstallTime=2026-10-14 19:59:05；现有设备数据未清除。

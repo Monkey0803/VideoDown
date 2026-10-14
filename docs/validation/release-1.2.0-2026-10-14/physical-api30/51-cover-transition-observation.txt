@@ -1,0 +1,7 @@
+Device: SHARK PRS-A0, Android 11/API 30, serial 4f0ef8ac.
+Package: com.videodown.douyin release 1.2.0/versionCode 7.
+Local fixture: HTTP over adb reverse 127.0.0.1:18769/cover-page.html. HTML contains <video controls poster="/cover.png" src="/cover-test.mp4">, og:image and og:video. Cover PNG: distinct teal, orange border, red circle. Video source: local landscape-fixture.mp4 copy.
+UI: ACTION_SEND explicitly scoped to com.videodown.douyin parsed title Physical Cover Acceptance (1); 45 shows cover on parse result; 46 shows same cover on first saved-library card.
+Transition: 48 is a 5-second screen recording of tapping first library card into player. 49 and 50 are extracted frames around 1.00–1.25 seconds: the distinct cover occupies the player video region while the old library cards remain visible/animate away. This is visual evidence of cover expansion during entry, not a measurement of animation timing or pixel-perfect motion.
+Server logs: GET /cover-page.html 200 twice, GET /cover.png 200, GET /cover-test.mp4 200.
+Cleanup: local server stopped; adb reverse list empty; accelerometer_rotation=1, user_rotation=0. Release package version/firstInstallTime/ceDataInode unchanged by this check.

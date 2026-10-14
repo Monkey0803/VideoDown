@@ -1,0 +1,5 @@
+    versionCode=7 minSdk=26 targetSdk=36
+    versionName=1.2.0
+    firstInstallTime=2026-10-14 19:59:05
+    lastUpdateTime=2026-10-14 20:00:53
+    User 0: ceDataInode=364204 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
