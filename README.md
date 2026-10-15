@@ -1,5 +1,7 @@
 # 拾影（Keepsake）— 视频下载器
 
+项目自有源码按 [GNU GPL 3.0 或更新版本](LICENSE)（`GPL-3.0-or-later`）发布。随包第三方代码、引擎和素材保留各自的许可证；引擎许可来源见[通用视频引擎说明](docs/research/universal-video-engine.md)。F-Droid 收录所需的第三方源码与素材权属核查仍在进行，见 [F-Droid 预检](docs/validation/fdroid-precheck-2026-10-15.md)。
+
 使用 Kotlin + Jetpack Compose 实现的 Android 应用，支持解析抖音、微博、快手、X（Twitter）分享链接及通用 HTTP/HTTPS 视频网址，选择分辨率下载视频、
 记录下载历史、打开原视频与作者主页并播放已下载的视频。界面使用 Compose Material 3，在「我的 → 外观模式」中可选择跟随系统、浅色或深色，确认后立即生效并在重启后保留；Android 12 及以上还可在「我的 → 动态取色（Material You）」改用系统壁纸配色。默认采用奶白、暖橙与深褐品牌主题，深色模式使用暖褐背景与杏橙强调色。颜色、文字样式与圆角统一由 `MaterialTheme` 管理。
 
