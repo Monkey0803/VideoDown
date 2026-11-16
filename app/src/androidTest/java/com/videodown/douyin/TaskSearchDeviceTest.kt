@@ -2,6 +2,7 @@ package com.videodown.douyin
 
 import android.content.Intent
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -113,6 +114,7 @@ class TaskSearchDeviceTest {
         // With only these three tasks in view, the oldest-first order is deterministic.
         search(token)
         assertAllSeededVisible()
+        compose.onNodeWithText("按状态").performClick()
         compose.onNodeWithText("最早任务").performClick()
         compose.waitForIdle()
         assertAllSeededVisible()
@@ -120,11 +122,36 @@ class TaskSearchDeviceTest {
         val thirdY = compose.onAllNodesWithTag("task-${records[2].id}")[0].fetchSemanticsNode().positionInRoot.y
         assertTrue("最早任务 must place 甲 above 丙 (y=$firstY vs $thirdY)", firstY < thirdY)
 
+        compose.onNodeWithText("最早任务").performClick()
         compose.onNodeWithText("最新任务").performClick()
         compose.waitForIdle()
         assertAllSeededVisible()
         val newestY = compose.onAllNodesWithTag("task-${records[1].id}")[0].fetchSemanticsNode().positionInRoot.y
         val middleY = compose.onAllNodesWithTag("task-${records[2].id}")[0].fetchSemanticsNode().positionInRoot.y
         assertTrue("最新任务 must place 乙 above 丙 (y=$newestY vs $middleY)", newestY < middleY)
+    }
+
+    @Test fun kubbTaskUsesFriendlyTitleSourceAndCoverPlaceholder() = runBlocking {
+        val record = DownloadRecord(
+            id = UUID.randomUUID().toString(),
+            awemeId = "kubb-fixture",
+            title = "chunklist_b123.m3u8",
+            sourcePageUrl = "https://www.kubb.tv/play/fixture?id=e2",
+            status = DownloadStatus.PAUSED,
+            totalBytes = 10_000,
+            downloadedBytes = 2_000,
+        )
+        ServiceLocator.historyRepository.upsert(record)
+        seeded += record.id
+        context.startActivity(context.packageManager.getLaunchIntentForPackage(context.packageName)!!
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        compose.waitUntil(15_000) { compose.onAllNodesWithTag("tab-tasks").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("tab-tasks").performClick()
+        compose.waitUntil(15_000) { compose.onAllNodesWithTag("task-${record.id}").fetchSemanticsNodes().isNotEmpty() }
+
+        compose.onNodeWithText(context.getString(R.string.sites_unknown_video_title)).assertIsDisplayed()
+        compose.onNodeWithText("KUBB.TV", substring = true).assertIsDisplayed()
+        compose.onNodeWithTag("task-cover-${record.id}").assertIsDisplayed()
+        compose.onNodeWithText(record.title).assertDoesNotExist()
     }
 }

@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
@@ -147,6 +148,7 @@ class ImageDownloadDeviceTest {
         compose.onNode(hasSetTextAction()).performScrollTo().performTextReplacement("https://page.example/post")
         compose.onNodeWithText("立即解析").performClick()
         compose.waitUntil(10_000) { vm.state.value.video != null }
+        compose.onNodeWithTag("result-more-options").performClick()
         // 底部按钮不在结果页的滚动容器里，只能断言存在；它们固定贴在底部按钮区。
         compose.onNodeWithText("打包下载（3 张）").assertExists()
         compose.onNodeWithText("选择画质").assertDoesNotExist()

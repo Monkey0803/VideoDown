@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.animation.SharedTransitionLayout
@@ -401,6 +402,8 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     Scaffold(
         modifier = Modifier.imePadding(),
         containerColor = MaterialTheme.colorScheme.background,
+        // 单一入口负责主页面的状态栏、刘海与手势导航安全区；全屏播放器/看图器自行处理。
+        contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             if (route in tabs && !keyboardVisible) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
@@ -469,6 +472,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                     HistoryScreen(
                         onPlay = { openRecord(it) },
                         viewModel = historyViewModel,
+                        onOpenParse = { navigateTab(Routes.HOME) },
                         onRecovery = { record, action ->
                             val page = record.sourcePageUrl.ifBlank { record.media?.pageUrl.orEmpty() }
                             when (action) {
@@ -486,6 +490,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                     LibraryScreen(
                         historyViewModel = historyViewModel,
                         onPlay = { openRecord(it) },
+                        onOpenParse = { navigateTab(Routes.HOME) },
                         watchProgress = watchProgress,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = animatedVisibilityScope,

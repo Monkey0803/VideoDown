@@ -103,4 +103,32 @@ class LibraryQueryTest {
             LibraryQuery(sort = LibrarySort.CUSTOM).apply(records).map { it.id },
         )
     }
+
+    @Test fun `filter summary ignores search and sort but counts visible filter dimensions`() {
+        val query = LibraryQuery(
+            text = "春天",
+            platform = VideoPlatform.X,
+            mediaKind = MediaKind.IMAGE,
+            sort = LibrarySort.LARGEST,
+            favoritesOnly = true,
+            folder = "收藏",
+        )
+        assertEquals(4, query.activeFilterCount)
+        assertTrue(query.hasActiveFilters)
+    }
+
+    @Test fun `clearing filters returns the ordinary newest library without locking the session`() {
+        val cleared = LibraryQuery(
+            text = "x",
+            platform = VideoPlatform.X,
+            mediaKind = MediaKind.AUDIO,
+            sort = LibrarySort.CUSTOM,
+            favoritesOnly = true,
+            folder = "a",
+            vaultOnly = true,
+            vaultUnlocked = true,
+        ).clearFilters()
+        assertEquals(LibraryQuery(vaultUnlocked = true), cleared)
+        assertFalse(cleared.hasActiveFilters)
+    }
 }

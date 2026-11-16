@@ -16,6 +16,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
@@ -69,6 +74,7 @@ internal fun VideoControlsOverlay(
     onScreenshot: () -> Unit,
     onPip: () -> Unit,
     onFullscreen: () -> Unit,
+    showScreenshot: Boolean = true,
 ) {
     val progressDescription = stringResource(R.string.player_progress)
     var position by remember(player) { mutableLongStateOf(player.currentPosition.coerceAtLeast(0L)) }
@@ -115,7 +121,9 @@ internal fun VideoControlsOverlay(
                 if (fullscreen) {
                     Row(
                         Modifier.align(Alignment.TopCenter).fillMaxWidth()
-                            .background(Color.Black.copy(alpha = .48f)).padding(horizontal = 8.dp, vertical = 4.dp),
+                            .background(Color.Black.copy(alpha = .48f))
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         IconButton(onClick = onBack) { AppIcon(AppIcons.Back, stringResource(R.string.action_back), tint = Color.White) }
@@ -162,7 +170,9 @@ internal fun VideoControlsOverlay(
 
                 Column(
                     Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                        .background(Color.Black.copy(alpha = .58f)).padding(horizontal = 12.dp, vertical = 8.dp),
+                        .background(Color.Black.copy(alpha = .58f))
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
                     if (scrubbing) {
                         Column(Modifier.align(Alignment.CenterHorizontally), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -193,7 +203,9 @@ internal fun VideoControlsOverlay(
                             stringResource(if (looping) R.string.player_loop_off else R.string.player_loop_on), onClick = onLoop)
                         PlayerControlButton(AppIcons.Settings, stringResource(R.string.player_tracks), onClick = onTracks)
                         PlayerControlButton(AppIcons.Grid, stringResource(scaleMode.labelRes()), onClick = onScaleMode)
-                        PlayerControlButton(AppIcons.SaveAlbum, stringResource(R.string.player_screenshot), onClick = onScreenshot)
+                        if (showScreenshot) {
+                            PlayerControlButton(AppIcons.SaveAlbum, stringResource(R.string.player_screenshot), onClick = onScreenshot)
+                        }
                         PlayerControlButton(AppIcons.Pip, stringResource(R.string.player_pip), onClick = onPip)
                         PlayerControlButton(if (fullscreen) AppIcons.FullscreenExit else AppIcons.Fullscreen,
                             stringResource(if (fullscreen) R.string.player_exit_fullscreen else R.string.player_enter_fullscreen), onClick = onFullscreen)

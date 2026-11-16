@@ -183,9 +183,11 @@ class LibraryReorderDeviceTest {
         compose.waitUntil(5_000) { handles() == 1 }
 
         // 分类过滤：三条都属于「未分类」，筛完列表还是三条，但顺序不再由用户决定。
+        compose.onNodeWithTag("library-filter").performClick()
         compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择分类"))
         compose.onNodeWithContentDescription("选择分类").performClick()
         compose.onNodeWithText("未分类").performClick()
+        compose.onNodeWithText("查看结果").performClick()
         compose.waitUntil(5_000) { handles() == 0 }
 
         // 多选与过滤都没有写坏顺序。

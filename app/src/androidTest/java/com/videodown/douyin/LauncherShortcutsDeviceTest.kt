@@ -28,8 +28,7 @@ import java.util.UUID
 /**
  * 快捷方式 intent 打开的页面，以及"发布"这件事本身。
  *
- * 注意：三个快捷方式**当前暂时不发布**（见 [LauncherShortcuts.publish]）；下面这些 intent 路径的用例仍然有效——
- * 处理逻辑与恢复方法都原样保留，重新发布时不用重写测试。
+ * 同时覆盖发布结果、快捷方式 intent 落地页面和图标可见性。
  */
 @RunWith(AndroidJUnit4::class)
 class LauncherShortcutsDeviceTest {
@@ -45,15 +44,10 @@ class LauncherShortcutsDeviceTest {
         }
     }
 
-    /**
-     * 三个快捷方式**暂时不发布**（用户要求先注释掉）。
-     *
-     * 这条盯住"确实清干净了"：升级安装后长按菜单里不该再留着历史发布过的条目。
-     * 恢复快捷方式时，这条要连同 [LauncherShortcuts.publish] 一起改回"三个都在"。
-     */
-    @Test fun theEntryShortcutsAreTemporarilyNotPublished() {
+    @Test fun theEntryShortcutsArePublished() {
+        LauncherShortcuts.publish(context)
         val shortcuts = ShortcutManagerCompat.getDynamicShortcuts(context)
-        assertTrue("快捷方式应暂时不发布，实际有 ${shortcuts.map { it.id }}", shortcuts.isEmpty())
+        assertEquals(setOf("quick_parse", "batch_import", "open_tasks"), shortcuts.map { it.id }.toSet())
     }
 
     @Test fun theTasksShortcutOpensTheTaskPage() {

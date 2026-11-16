@@ -7,6 +7,7 @@ import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppDialogRadioRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.AdaptivePage
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Checkbox
@@ -23,8 +24,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,6 +41,9 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -95,10 +101,14 @@ import com.videodown.douyin.presentation.failureDescription
 import com.videodown.douyin.presentation.theme.appMotion
 import com.videodown.douyin.presentation.failureTitle
 import com.videodown.douyin.presentation.recoveryActionLabel
+import com.videodown.douyin.presentation.UiDensityPolicy
 import com.videodown.douyin.domain.model.legacyFailureKind
+import com.videodown.douyin.domain.model.isGenericSiteMediaTitle
+import java.net.URI
 
 @Composable
 fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewModel(),
+    onOpenParse: () -> Unit = {},
     onRecovery: (DownloadRecord, RecoveryAction) -> Unit = { _, _ -> }) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val motion = appMotion()
@@ -120,6 +130,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     val focusManager = LocalFocusManager.current
     val snackbar = remember { SnackbarHostState() }
     var selecting by remember { mutableStateOf(false) }
+    var sortExpanded by remember { mutableStateOf(false) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     var pendingBatchDelete by remember { mutableStateOf<Set<String>?>(null) }
     fun queryChanged(query: TaskQuery) { selectedIds = emptySet(); viewModel.setTaskQuery(query) }
@@ -194,14 +205,27 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
         )
     }
 
-    Scaffold(containerColor = MaterialTheme.colorScheme.background, snackbarHost = { SnackbarHost(snackbar) }) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbar) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+    ) { padding ->
+        AdaptivePage(Modifier.fillMaxSize().padding(padding)) {
+        Column(Modifier.fillMaxWidth().fillMaxHeight()) {
             Column(Modifier.padding(horizontal = 22.dp)) {
                 TabPageHeader(stringResource(R.string.history_header_title))
-                if (!selecting) Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatCard(state.records.count { state.statusFor(it) in listOf(DownloadStatus.RUNNING, DownloadStatus.PENDING) }, stringResource(R.string.history_stat_running), Modifier.weight(1f))
-                    StatCard(state.records.count { state.statusFor(it) == DownloadStatus.COMPLETED }, stringResource(R.string.history_stat_done), Modifier.weight(1f))
-                    StatCard(state.records.count { state.statusFor(it) in listOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) }, stringResource(R.string.history_stat_resumable), Modifier.weight(1f))
+                if (!selecting && state.records.isNotEmpty()) {
+                    Text(
+                        stringResource(
+                            R.string.history_stats_compact,
+                            state.records.count { state.statusFor(it) in listOf(DownloadStatus.RUNNING, DownloadStatus.PENDING) },
+                            state.records.count { state.statusFor(it) == DownloadStatus.COMPLETED },
+                            state.records.count { state.statusFor(it) in listOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) },
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
                 }
             }
             OutlinedTextField(value = state.taskQuery.text,
@@ -214,9 +238,11 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                 trailingIcon = { if (state.taskQuery.text.isNotEmpty()) TextButton(onClick = { queryChanged(state.taskQuery.copy(text = "")) }) { Text(stringResource(R.string.action_clear)) } },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp).testTag("task-search"))
-            Text(stringResource(R.string.history_queue_line, state.queue.maxConcurrent, state.queue.pendingIds.size),
-                style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp))
-            if (state.queue.runningIds.size > state.queue.maxConcurrent) Text(stringResource(R.string.history_queue_note), modifier = Modifier.padding(horizontal = 22.dp), style = MaterialTheme.typography.labelSmall)
+            if (UiDensityPolicy.showQueueSummary(state.queue.runningIds.size, state.queue.pendingIds.size)) {
+                Text(stringResource(R.string.history_queue_line, state.queue.maxConcurrent, state.queue.pendingIds.size),
+                    style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp))
+                if (state.queue.runningIds.size > state.queue.maxConcurrent) Text(stringResource(R.string.history_queue_note), modifier = Modifier.padding(horizontal = 22.dp), style = MaterialTheme.typography.labelSmall)
+            }
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 22.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -238,23 +264,33 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                     }
                 }
             }
-            LazyRow(
-                modifier = Modifier.testTag("task-sort"),
-                contentPadding = PaddingValues(horizontal = 22.dp, vertical = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                item {
-                    Text(stringResource(R.string.history_sort), style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Box(Modifier.testTag("task-sort")) {
+                    TextButton(onClick = { sortExpanded = true }, enabled = !state.batchBusy) {
+                        AppIcon(AppIcons.Sort, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(taskSortLabelRes(state.taskQuery.sort)))
+                    }
+                    DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
+                        TaskSort.entries.forEach { sort ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(taskSortLabelRes(sort))) },
+                                onClick = {
+                                    queryChanged(state.taskQuery.copy(sort = sort))
+                                    sortExpanded = false
+                                },
+                            )
+                        }
+                    }
                 }
-                items(TaskSort.entries) { sort ->
-                    FilterChip(selected = state.taskQuery.sort == sort, enabled = !state.batchBusy,
-                        onClick = { queryChanged(state.taskQuery.copy(sort = sort)) }, label = { Text(stringResource(taskSortLabelRes(sort))) })
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { selecting = !selecting; selectedIds = emptySet() }, enabled = !state.batchBusy && state.records.isNotEmpty()) {
+                    Text(stringResource(if (selecting) R.string.action_exit_multi_select else R.string.history_multi_select))
                 }
             }
-            TextButton(onClick = { selecting = !selecting; selectedIds = emptySet() }, enabled = !state.batchBusy && state.records.isNotEmpty(),
-                modifier = Modifier.padding(horizontal = 16.dp)) { Text(stringResource(if (selecting) R.string.action_exit_multi_select else R.string.history_multi_select)) }
             if (selecting) SelectionToolbar(selectedIds.size, state.batchBusy, selectedIds == visibleIds && visibleIds.isNotEmpty(),
                 onSelectAll = { selectedIds = if (selectedIds == visibleIds) emptySet() else visibleIds },
                 onExit = { selecting = false; selectedIds = emptySet() },
@@ -267,8 +303,28 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
             if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = 22.dp))
             if (state.visibleRecords.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(if (state.records.isEmpty()) R.string.history_empty else R.string.history_empty_filtered),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
+                        Text(
+                            stringResource(if (state.records.isEmpty()) R.string.history_empty else R.string.history_empty_filtered),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        if (state.records.isEmpty()) {
+                            Text(stringResource(R.string.history_empty_hint), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+                            FilledTonalButton(onClick = onOpenParse, modifier = Modifier.padding(top = 16.dp)) {
+                                Text(stringResource(R.string.action_go_parse))
+                            }
+                        } else {
+                            FilledTonalButton(onClick = {
+                                viewModel.setFilter(HistoryFilter.ALL)
+                                queryChanged(TaskQuery())
+                            }, modifier = Modifier.padding(top = 16.dp)) {
+                                Text(stringResource(R.string.history_clear_query))
+                            }
+                        }
+                    }
                 }
             } else {
                 // 拖拽只对待下载任务开放：队列顺序对正在下载和已结束的任务没有意义。
@@ -338,6 +394,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                 }
             }
         }
+        }
     }
 }
 
@@ -393,12 +450,20 @@ private fun TaskCard(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (selecting) Checkbox(checked = selected, onCheckedChange = { onToggle() }, enabled = !state.batchBusy,
                     modifier = Modifier.semantics { stateDescription = lockedTitle })
-                AsyncImage(
-                    model = record.coverUrl, contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(width = 65.dp, height = 75.dp).clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                )
+                Box(
+                    modifier = Modifier.size(width = 84.dp, height = 52.dp).clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .testTag("task-cover-${record.id}"),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AppIcon(AppIcons.Play, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    AsyncImage(
+                        model = record.coverUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
                 Column(Modifier.weight(1f)) {
                     // The task list has no vault gate, so a private task never names itself here.
                     Text(lockedTitle, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
@@ -519,7 +584,7 @@ private fun TaskCard(
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 val limitLabel = record.speedLimitKbps.takeIf { it > 0 }
                     ?.let { stringResource(R.string.history_limit_label, speedLimitText(it)) }
-                val meta = (listOf(authorText(record.displayAuthor), relativeTimeText(relativeTime(record.updatedAt))) + listOfNotNull(limitLabel))
+                val meta = (listOf(downloadSourceText(record), relativeTimeText(relativeTime(record.updatedAt))) + listOfNotNull(limitLabel))
                     .joinToString(" · ")
                 Text(
                     meta,
@@ -610,4 +675,15 @@ private fun noticeLabel(notice: HistoryNotice): Int = when (notice) {
 /** The record's title as shown while the vault may be locked. */
 @Composable
 private fun recordTitle(record: com.videodown.douyin.domain.model.DownloadRecord, unlocked: Boolean): String =
-    com.videodown.douyin.domain.model.VaultPolicy.title(record, unlocked) ?: stringResource(R.string.vault_locked_title)
+    com.videodown.douyin.domain.model.VaultPolicy.title(record, unlocked)?.let { title ->
+        title.takeUnless(::isGenericSiteMediaTitle) ?: stringResource(R.string.sites_unknown_video_title)
+    } ?: stringResource(R.string.vault_locked_title)
+
+/** 匿名站点下载用站点名替代“未知作者”，其他平台仍沿用原作者文案。 */
+@Composable
+private fun downloadSourceText(record: DownloadRecord): String {
+    if (record.displayAuthor.isNotBlank()) return record.displayAuthor
+    val pageUrl = record.sourcePageUrl.ifBlank { record.media?.pageUrl.orEmpty() }
+    val host = runCatching { URI(pageUrl).host?.lowercase() }.getOrNull()
+    return if (host == "kubb.tv" || host?.endsWith(".kubb.tv") == true) "KUBB.TV" else authorText("")
+}

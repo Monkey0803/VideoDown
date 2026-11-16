@@ -10,6 +10,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.lifecycle.ViewModelStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -121,7 +123,8 @@ class EmptyStateIllustrationDeviceTest {
             viewModel = HistoryViewModel(history, downloader())
             store.put("history", viewModel)
         }
-        compose.setContent { VideoDownTheme { LibraryScreen(viewModel, onPlay = {}) } }
+        var openedParse = false
+        compose.setContent { VideoDownTheme { LibraryScreen(viewModel, onPlay = {}, onOpenParse = { openedParse = true }) } }
         compose.waitUntil(10_000) {
             compose.onAllNodesWithTag(EMPTY_STATE_ILLUSTRATION_TAG, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
         }
@@ -131,6 +134,8 @@ class EmptyStateIllustrationDeviceTest {
         compose.waitForIdle()
         save("empty-library", frame(EMPTY_STATE_ILLUSTRATION_TAG))
         assertTrue(File(directory, "empty-library.png").length() > 0)
+        compose.onNodeWithText("开始下载").performClick()
+        assertTrue("空状态主操作应直接回到解析页", openedParse)
     }
 
     @Test fun theSettledShapeIsTheRoundedSquare() {

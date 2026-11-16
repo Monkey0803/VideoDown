@@ -15,6 +15,7 @@ import com.videodown.douyin.presentation.components.shimmer
 import com.videodown.douyin.presentation.theme.appMotion
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.AdaptivePage
 
 import android.Manifest
 import android.os.Build
@@ -39,6 +40,10 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import com.videodown.douyin.domain.model.VideoPlatform
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.selection.toggleable
@@ -49,6 +54,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.KeyboardActions
@@ -58,9 +65,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.heightIn
@@ -121,6 +130,7 @@ import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.presentation.history.HistoryViewModel
 import java.io.File
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     watchProgress: Map<String, com.videodown.douyin.domain.model.WatchProgress> = emptyMap(),
@@ -130,7 +140,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     // 共享元素作用域由 MainActivity 的 SharedTransitionLayout 传入；直接渲染本界面的设备测试不传，
     // 此时封面不带共享修饰，行为与改造前一致。
     sharedTransitionScope: SharedTransitionScope? = null,
-    animatedVisibilityScope: AnimatedVisibilityScope? = null) {
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
+    onOpenParse: () -> Unit = {}) {
     val motion = appMotion()
     val context = LocalContext.current
     // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
@@ -150,11 +161,13 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     val organization by organizationViewModel.state.collectAsStateWithLifecycle()
     var editingId by rememberSaveable { mutableStateOf<String?>(null) }
     val focusManager = LocalFocusManager.current
+    val state by historyViewModel.state.collectAsStateWithLifecycle()
     var selecting by remember { mutableStateOf(false) }
+    var showFilters by rememberSaveable { mutableStateOf(false) }
+    var filterDraft by remember { mutableStateOf(state.libraryQuery) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     var pendingDelete by remember { mutableStateOf<Set<String>?>(null) }
     var pendingExport by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
-    val state by historyViewModel.state.collectAsStateWithLifecycle()
     var layout by remember { mutableStateOf(ServiceLocator.preferences.libraryLayout) }
     val layoutDescription = stringResource(libraryLayoutLabelRes(layout))
     var selectedRecordId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -256,6 +269,10 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     fun queryChanged(query: LibraryQuery) { selectedIds = emptySet(); historyViewModel.setLibraryQuery(query) }
 
     fun controlsChanged(query: LibraryQuery) { focusManager.clearFocus(); queryChanged(query) }
+    fun openFilters() {
+        filterDraft = state.libraryQuery
+        showFilters = true
+    }
     val vaultScope = rememberCoroutineScope()
     fun unlockVault() {
         val query = state.libraryQuery
@@ -295,7 +312,54 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             historyViewModel.onMessageConsumed()
         }
     }
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    if (showFilters) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilters = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        ) {
+            Column(
+                Modifier.fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 22.dp, vertical = 8.dp)
+                    .testTag("library-controls"),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(stringResource(R.string.library_filter_title), style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold)
+                LibraryPicker(stringResource(R.string.library_pick_platform), filterDraft.platform?.let { stringResource(videoPlatformLabelRes(it)) } ?: stringResource(R.string.library_all_platforms),
+                    filterDraft.platform, listOf(null to stringResource(R.string.library_all_platforms)) + VideoPlatform.entries.map { it to stringResource(videoPlatformLabelRes(it)) },
+                    enabled = !state.batchBusy) { filterDraft = filterDraft.copy(platform = it) }
+                LibraryPicker(stringResource(R.string.library_pick_kind), stringResource(libraryKindLabelRes(filterDraft.mediaKind)),
+                    filterDraft.mediaKind, listOf(null to stringResource(R.string.library_kind_all)) + MediaKind.entries.map { it to stringResource(libraryKindLabelRes(it)) },
+                    enabled = !state.batchBusy) { filterDraft = filterDraft.copy(mediaKind = it) }
+                LibraryPicker(stringResource(R.string.library_pick_folder), filterDraft.folder?.ifBlank { stringResource(R.string.library_uncategorized) } ?: stringResource(R.string.library_all_folders),
+                    filterDraft.folder, listOf(null to stringResource(R.string.library_all_folders)) + (allSaved.map { it.folder } + "").distinct().sorted().map { it to it.ifBlank { stringResource(R.string.library_uncategorized) } },
+                    enabled = !state.batchBusy && !organization.busy) { filterDraft = filterDraft.copy(folder = it) }
+                LibraryPicker(stringResource(R.string.library_pick_sort), stringResource(librarySortLabelRes(filterDraft.sort)), filterDraft.sort,
+                    LibrarySort.entries.map { it to stringResource(librarySortLabelRes(it)) }, enabled = !state.batchBusy) { filterDraft = filterDraft.copy(sort = it) }
+                FilterChip(
+                    selected = filterDraft.favoritesOnly,
+                    enabled = !state.batchBusy && !organization.busy,
+                    onClick = { filterDraft = filterDraft.copy(favoritesOnly = !filterDraft.favoritesOnly) },
+                    label = { Text(stringResource(R.string.library_favorites_only)) },
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = { filterDraft = filterDraft.clearFilters() }, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.library_clear_filters))
+                    }
+                    FilledTonalButton(onClick = {
+                        ServiceLocator.preferences.librarySort = filterDraft.sort
+                        controlsChanged(filterDraft)
+                        showFilters = false
+                    }, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.library_apply_filters))
+                    }
+                }
+            }
+        }
+    }
+    AdaptivePage(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    Box(Modifier.fillMaxWidth().fillMaxHeight()) {
         Column(Modifier.fillMaxSize()) {
             TabPageHeader(
                 title = stringResource(R.string.library_title),
@@ -311,6 +375,11 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                     }
                 },
             )
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
             OutlinedTextField(value = state.libraryQuery.text,
                 onValueChange = { queryChanged(state.libraryQuery.copy(text = it)) },
                 // 「已存」的搜索框与「任务」页保持一致，圆角同「解析」页的链接输入框（shapes.large）。
@@ -320,49 +389,25 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                 trailingIcon = { if (state.libraryQuery.text.isNotEmpty()) TextButton(onClick = { queryChanged(state.libraryQuery.copy(text = "")) }) { Text(stringResource(R.string.action_clear)) } },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp).testTag("library-search"))
-            Row(Modifier.fillMaxWidth().padding(end = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-            LazyRow(modifier = Modifier.weight(1f).testTag("library-controls"),
-                contentPadding = PaddingValues(start = 22.dp, end = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically) {
-                item {
-                    FilterChip(selected = state.libraryQuery.vaultOnly, enabled = !state.batchBusy,
-                        onClick = { unlockVault() },
-                        label = { Text(stringResource(if (state.libraryQuery.vaultUnlocked) R.string.vault_open else R.string.vault_locked)) },
-                        modifier = Modifier.testTag("vault-chip"))
+                modifier = Modifier.weight(1f).testTag("library-search"))
+                FilledTonalButton(onClick = ::openFilters, enabled = !state.batchBusy, modifier = Modifier.heightIn(min = 56.dp).testTag("library-filter")) {
+                    AppIcon(AppIcons.Sort, null, modifier = Modifier.size(18.dp))
+                    Text(
+                        if (state.libraryQuery.activeFilterCount > 0) stringResource(R.string.library_filter_count, state.libraryQuery.activeFilterCount)
+                        else stringResource(R.string.library_filter),
+                        modifier = Modifier.padding(start = 6.dp),
+                    )
                 }
-                item {
-                    LibraryPicker(stringResource(R.string.library_pick_platform), state.libraryQuery.platform?.let { stringResource(videoPlatformLabelRes(it)) } ?: stringResource(R.string.library_all_platforms),
-                        state.libraryQuery.platform, listOf(null to stringResource(R.string.library_all_platforms)) + VideoPlatform.entries.map { it to stringResource(videoPlatformLabelRes(it)) },
-                        enabled = !state.batchBusy) { controlsChanged(state.libraryQuery.copy(platform = it)) }
-                }
-                item {
-                    LibraryPicker(stringResource(R.string.library_pick_kind), stringResource(libraryKindLabelRes(state.libraryQuery.mediaKind)),
-                        state.libraryQuery.mediaKind,
-                        listOf(null to stringResource(R.string.library_kind_all)) +
-                            MediaKind.entries.map { it to stringResource(libraryKindLabelRes(it)) },
-                        enabled = !state.batchBusy) { controlsChanged(state.libraryQuery.copy(mediaKind = it)) }
-                }
-                item {
-                    LibraryPicker(stringResource(R.string.library_pick_folder), state.libraryQuery.folder?.ifBlank { stringResource(R.string.library_uncategorized) } ?: stringResource(R.string.library_all_folders),
-                        state.libraryQuery.folder,
-                        listOf(null to stringResource(R.string.library_all_folders)) + (allSaved.map { it.folder } + "").distinct().sorted().map { it to it.ifBlank { stringResource(R.string.library_uncategorized) } },
-                        enabled = !state.batchBusy && !organization.busy) { controlsChanged(state.libraryQuery.copy(folder = it)) }
-                }
-                item {
-                    LibraryPicker(stringResource(R.string.library_pick_sort), stringResource(librarySortLabelRes(state.libraryQuery.sort)), state.libraryQuery.sort,
-                        LibrarySort.entries.map { it to stringResource(librarySortLabelRes(it)) }, enabled = !state.batchBusy) { sort ->
-                        // 手动顺序重启后还要看得见，所以排序方式本身也要落盘（同 libraryLayout 的做法）。
-                        ServiceLocator.preferences.librarySort = sort
-                        controlsChanged(state.libraryQuery.copy(sort = sort))
-                    }
-                }
-                item { FilterChip(selected = state.libraryQuery.favoritesOnly, enabled = !state.batchBusy && !organization.busy,
-                    onClick = { controlsChanged(state.libraryQuery.copy(favoritesOnly = !state.libraryQuery.favoritesOnly)) }, label = { Text(stringResource(R.string.library_favorites_only)) }) }
             }
+            Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                FilterChip(selected = state.libraryQuery.vaultOnly, enabled = !state.batchBusy,
+                    onClick = { unlockVault() },
+                    label = { Text(stringResource(if (state.libraryQuery.vaultUnlocked) R.string.vault_open else R.string.vault_locked)) },
+                    modifier = Modifier.testTag("vault-chip"))
                 if (state.libraryQuery.vaultUnlocked) {
                     TextButton(onClick = { unlockVault() }, modifier = Modifier.testTag("vault-lock")) { Text(stringResource(R.string.vault_lock_action)) }
                 }
+                Spacer(Modifier.weight(1f))
                 TextButton(onClick = { focusManager.clearFocus(); selecting = !selecting; selectedIds = emptySet() },
                     enabled = !state.batchBusy && allSaved.isNotEmpty()) { Text(stringResource(if (selecting) R.string.action_exit_multi_select else R.string.action_multi_select)) }
             }
@@ -381,12 +426,24 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = 22.dp))
             if (saved.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
                         // 只在「整个已存是空的」时候插画：被搜索/过滤筛空是另一回事，配图会让人困惑。
                         if (allSaved.isEmpty()) {
                             EmptyStateIllustration(Modifier.padding(bottom = 20.dp))
                         }
-                        Text(stringResource(if (allSaved.isEmpty()) R.string.library_empty else R.string.library_empty_filtered), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(if (allSaved.isEmpty()) R.string.library_empty else R.string.library_empty_filtered),
+                            color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        if (allSaved.isEmpty()) {
+                            Text(stringResource(R.string.library_empty_hint), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+                            FilledTonalButton(onClick = onOpenParse, modifier = Modifier.padding(top = 16.dp)) {
+                                Text(stringResource(R.string.library_start_download))
+                            }
+                        } else {
+                            FilledTonalButton(onClick = { controlsChanged(state.libraryQuery.clearFilters()) }, modifier = Modifier.padding(top = 16.dp)) {
+                                Text(stringResource(R.string.library_clear_filters))
+                            }
+                        }
                     }
                 }
             } else if (layout == LibraryLayout.WATERFALL) {
@@ -513,6 +570,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             onExtractAudio = { audioExtractionViewModel.reset(); extractingId = it.id },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
+    }
     }
 }
 

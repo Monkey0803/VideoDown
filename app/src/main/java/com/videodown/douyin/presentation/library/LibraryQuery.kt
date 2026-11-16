@@ -18,6 +18,29 @@ data class LibraryQuery(
     /** Whether the user has passed the vault gate in this session. */
     val vaultUnlocked: Boolean = false,
 ) {
+    /** 搜索框之外启用了多少个筛选条件；排序不算筛选。 */
+    val activeFilterCount: Int
+        get() = listOfNotNull(
+            platform,
+            mediaKind,
+            folder,
+            true.takeIf { favoritesOnly },
+            true.takeIf { vaultOnly },
+        ).size
+
+    val hasActiveFilters: Boolean
+        get() = text.isNotBlank() || activeFilterCount > 0 || sort != LibrarySort.NEWEST
+
+    fun clearFilters(): LibraryQuery = copy(
+        text = "",
+        platform = null,
+        mediaKind = null,
+        sort = LibrarySort.NEWEST,
+        favoritesOnly = false,
+        folder = null,
+        vaultOnly = false,
+    )
+
     /**
      * 顺序是否由用户决定：只有「自定义排序 + 没有任何搜索/过滤」。
      *

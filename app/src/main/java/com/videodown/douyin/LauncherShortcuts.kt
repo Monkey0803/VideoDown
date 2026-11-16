@@ -25,17 +25,10 @@ object LauncherShortcuts {
     /**
      * 启动时调用。
      *
-     * **三个快捷方式暂时下线（用户要求先注释）**，所以这里不再发布，改为清掉历史上已经发布过的
-     * 动态快捷方式——否则升级安装后长按菜单里仍然留着它们，看起来像没生效。
-     *
-     * 恢复方法：把下面注释掉的那一行换回来（定义与图标都原样保留），
-     * 并与 `LauncherShortcutsDeviceTest` 里那条「不再发布」的断言一起改回。
+     * 启动器可能因用户关闭、系统限流或 OEM 策略拒绝发布；快捷入口只是便利能力，失败不能影响启动。
      */
     fun publish(context: Context) {
-        // runCatching { ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts(context)) }
-        // A launcher may refuse new shortcuts (disabled by the user, or rate limited); that only
-        // costs a convenience, so it must never affect app startup.
-        runCatching { ShortcutManagerCompat.removeAllDynamicShortcuts(context) }
+        runCatching { ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts(context)) }
     }
 
     /**

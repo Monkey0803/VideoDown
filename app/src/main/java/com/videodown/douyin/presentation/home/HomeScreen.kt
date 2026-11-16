@@ -5,6 +5,7 @@ import com.videodown.douyin.presentation.components.AppDialog
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.AdaptivePage
 
 import android.content.ClipDescription
 import android.content.ClipboardManager
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -103,6 +105,7 @@ import com.videodown.douyin.presentation.subtitleSelectionText
 import com.videodown.douyin.presentation.videoPlatformLabelRes
 import com.videodown.douyin.presentation.watchBadgeText
 import com.videodown.douyin.presentation.platformName
+import com.videodown.douyin.presentation.UiDensityPolicy
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -158,6 +161,8 @@ fun HomeScreen(
     onBatchImportSeedConsumed: () -> Unit = {},
     /** 设备用例用本地页面替代真实登录页，避免联网；生产调用不传。 */
     xLoginStartUrl: String = com.videodown.douyin.data.generic.XSession.LOGIN_URL,
+    /** 可扩展站点专区入口；追加参数保持既有设备测试的调用兼容。 */
+    onOpenSites: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -274,6 +279,22 @@ fun HomeScreen(
         keyboard?.hide()
     }
 
+    fun clipboardText(): String? {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        return clipboard?.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()?.takeIf(String::isNotBlank)
+    }
+
+    fun pasteAndParse() {
+        val copied = clipboardText()
+        if (copied == null) {
+            scope.launch { snackbar.showSnackbar(resources.getString(R.string.home_clipboard_empty)) }
+            return
+        }
+        viewModel.onInputChange(copied)
+        dismissKeyboard()
+        viewModel.parse()
+    }
+
     // Include the submit button in the visible area, not just the text cursor.
     LaunchedEffect(inputFocused, imeBottom) {
         if (inputFocused && imeBottom > 0) inputArea.bringIntoView()
@@ -331,12 +352,14 @@ fun HomeScreen(
         },
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbar) },
+        contentWindowInsets = WindowInsets(0),
     ) { padding ->
         if (state.video == null) {
             // 输入页出现时淡入；返回解析页同样重放一次。
             val entrance = rememberEntranceAlpha()
+            AdaptivePage(Modifier.fillMaxSize().padding(padding)) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
+                modifier = Modifier.fillMaxWidth().fillMaxHeight().verticalScroll(rememberScrollState())
                     .padding(horizontal = 22.dp).alpha(entrance),
             ) {
                 TabPageHeader(stringResource(R.string.app_name), stringResource(R.string.home_header_subtitle))
@@ -383,9 +406,7 @@ fun HomeScreen(
                                     ),
                                 )
                                 TextButton(modifier = Modifier.padding(end = 4.dp), onClick = {
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-                                    clipboard?.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()
-                                        ?.takeIf(String::isNotBlank)?.let {
+                                    clipboardText()?.let {
                                             viewModel.onInputChange(it)
                                             dismissKeyboard()
                                         }
@@ -439,6 +460,14 @@ fun HomeScreen(
                             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 3.dp))
                     }
                 }
+                if (UiDensityPolicy.showFirstUseGuide(
+                        hasSavedMedia = recentRecords.isNotEmpty(),
+                        input = state.input,
+                        hasClipboardOffer = state.clipboardOffer != null,
+                    )) {
+                    FirstUseGuide(onPasteAndParse = ::pasteAndParse)
+                }
+                SiteSection(onOpenSites)
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 27.dp, bottom = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -489,9 +518,11 @@ fun HomeScreen(
                     }
                 }
             }
+            }
         } else {
             // 结果页淡入；两页仍由 if/else 互斥，语义树里不会同时存在。
             val entrance = rememberEntranceAlpha()
+            AdaptivePage(Modifier.fillMaxSize().padding(padding)) {
             ResultScreen(
                 state = state,
                 onBack = viewModel::clearResult,
@@ -517,8 +548,78 @@ fun HomeScreen(
                         scope.launch { snackbar.showSnackbar(resources.getString(R.string.home_open_video_failed, platformName(context, video.platform))) }
                     }
                 },
-                modifier = Modifier.padding(padding).alpha(entrance),
+                modifier = Modifier.fillMaxSize().alpha(entrance),
             )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SiteSection(onOpenSites: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(stringResource(R.string.home_sites_title), style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Spacer(Modifier.weight(1f))
+        TextButton(onClick = onOpenSites) { Text(stringResource(R.string.home_view_all_arrow)) }
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSites).testTag("site-kubb-card"),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(46.dp).clip(MaterialTheme.shapes.large)
+                    .background(Brush.linearGradient(listOf(Color(0xFF6D5DFB), Color(0xFF3E9BFF)))),
+                contentAlignment = Alignment.Center,
+            ) { Text("K", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge) }
+            Column(Modifier.padding(start = 13.dp).weight(1f)) {
+                Text("KUBB.TV", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                Text(stringResource(R.string.home_sites_summary), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer)
+            }
+            AppIcon(AppIcons.Forward, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
+        }
+    }
+}
+
+@Composable
+private fun FirstUseGuide(onPasteAndParse: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(top = 18.dp).testTag("first-use-guide"),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+    ) {
+        Column(Modifier.padding(17.dp)) {
+            Text(
+                stringResource(R.string.home_first_use_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            Text(
+                stringResource(R.string.home_first_use_steps),
+                modifier = Modifier.padding(top = 6.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            Text(
+                stringResource(R.string.home_clipboard_privacy),
+                modifier = Modifier.padding(top = 6.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            FilledTonalButton(
+                onClick = onPasteAndParse,
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp).heightIn(min = 48.dp),
+            ) {
+                AppIcon(AppIcons.Paste, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.home_paste_and_parse))
+            }
         }
     }
 }
@@ -546,6 +647,7 @@ private fun ResultScreen(
 ) {
     val video = state.video ?: return
     var showingVideos by rememberSaveable(state.videos.firstOrNull()?.selectionKey()) { mutableStateOf(false) }
+    var advancedOptions by rememberSaveable(video.selectionKey()) { mutableStateOf(false) }
     var expandedTitle by rememberSaveable(video.selectionKey(), video.title) { mutableStateOf(false) }
     var titleOverflows by remember(video.selectionKey(), video.title) { mutableStateOf(false) }
     val windowHeight = LocalWindowInfo.current.containerSize.height
@@ -682,6 +784,13 @@ private fun ResultScreen(
                                 ?: stringResource(if (state.isLoadingSizes) R.string.home_size_loading else R.string.home_size_unknown),
                             style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
+                    if (state.canDownloadArchive) {
+                        TextButton(onClick = { advancedOptions = !advancedOptions }, modifier = Modifier.testTag("result-more-options")) {
+                            Text(stringResource(if (advancedOptions) R.string.home_less_options else R.string.home_more_options))
+                            Spacer(Modifier.width(4.dp))
+                            AppIcon(if (advancedOptions) AppIcons.ChevronUp else AppIcons.ChevronDown, null, modifier = Modifier.size(18.dp))
+                        }
+                    }
                 } else {
                 Row(Modifier.fillMaxWidth().padding(top = 22.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -693,6 +802,24 @@ private fun ResultScreen(
                     Spacer(Modifier.weight(1f))
                     Text(stringResource(R.string.home_size_note), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                state.selectedVariant?.let { selected ->
+                    Text(
+                        stringResource(R.string.home_recommended_choice, selected.label),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 10.dp),
+                    )
+                }
+                TextButton(
+                    onClick = { advancedOptions = !advancedOptions },
+                    modifier = Modifier.testTag("result-more-options"),
+                ) {
+                    Text(stringResource(if (advancedOptions) R.string.home_less_options else R.string.home_more_options))
+                    Spacer(Modifier.width(4.dp))
+                    AppIcon(if (advancedOptions) AppIcons.ChevronUp else AppIcons.ChevronDown, null, modifier = Modifier.size(18.dp))
+                }
+                if (advancedOptions) {
                 val variants = video.sortedVariants
                 variants.chunked(3).forEach { row ->
                     Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -734,13 +861,14 @@ private fun ResultScreen(
                     Text(stringResource(R.string.home_no_audio_track), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
                 }
                 }
+                }
                 // Only offered when the source really has a subtitle track and the target is a video:
                 // there is nothing to embed into an extracted audio file.
                 val subtitleTarget = state.video ?: state.videos.firstOrNull { it.selectionKey() in state.selectedMedia }
                 val subtitleChoice = subtitleTarget?.let {
                     SubtitleLanguageSelection.preferred(it.subtitleLanguages, it.autoCaptionLanguages)
                 } ?: SubtitleSelection.NONE
-                if (subtitleChoice.available && state.selectedVariant?.media?.audioOnly != true && !selectedIsImage) {
+                if (advancedOptions && subtitleChoice.available && state.selectedVariant?.media?.audioOnly != true && !selectedIsImage) {
                     Text(stringResource(R.string.home_subtitles), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 18.dp))
                     FilterChip(selected = state.saveSubtitles,
                         enabled = !state.isSubmitting && state.duplicates == null,
@@ -755,7 +883,7 @@ private fun ResultScreen(
                     modifier = Modifier.padding(top = 18.dp))
             }
         }
-        if (state.canDownloadArchive) {
+        if (state.canDownloadArchive && advancedOptions) {
             TextButton(
                 onClick = onDownloadArchive,
                 enabled = !state.isSubmitting,

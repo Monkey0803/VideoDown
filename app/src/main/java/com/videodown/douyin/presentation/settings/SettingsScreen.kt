@@ -5,6 +5,7 @@ import com.videodown.douyin.presentation.components.AppConfirmDialog
 import com.videodown.douyin.presentation.components.AppDialog
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppDialogRadioRow
+import com.videodown.douyin.presentation.components.AdaptivePage
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
@@ -423,7 +425,8 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         )
     }
 
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState())
+    AdaptivePage(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    Column(Modifier.fillMaxWidth().fillMaxHeight().verticalScroll(rememberScrollState())
         .padding(horizontal = 22.dp)) {
         TabPageHeader(stringResource(R.string.settings_header_title), stringResource(R.string.settings_header_subtitle))
         SectionLabel(stringResource(R.string.settings_section_appearance))
@@ -600,6 +603,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 title = stringResource(R.string.settings_about_row), value = "›", onClick = { showAbout = true })
         }
         Spacer(Modifier.height(28.dp))
+    }
     }
 }
 

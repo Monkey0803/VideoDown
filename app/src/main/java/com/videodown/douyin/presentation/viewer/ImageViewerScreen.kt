@@ -25,10 +25,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -419,7 +422,7 @@ fun ImageViewerScreen(
             Row(
                 Modifier.fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = .82f), Color.Transparent)))
-                    .statusBarsPadding()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
                     .padding(start = 10.dp, end = 18.dp, top = 8.dp, bottom = 24.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -474,7 +477,7 @@ fun ImageViewerScreen(
             Column(
                 Modifier.fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = .9f))))
-                    .navigationBarsPadding()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
                     .padding(top = 28.dp, bottom = 8.dp),
             ) {
                 if (availableRecords.size > 1) {
@@ -600,7 +603,9 @@ fun ImageViewerScreen(
                 }
             }
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 82.dp))
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+            .padding(bottom = 82.dp))
     }
 
     if (showingInfo) {
@@ -889,7 +894,7 @@ private fun VaultLockedViewer(state: VaultViewState, onBack: () -> Unit, onRetry
         VaultViewState.UNAVAILABLE -> stringResource(R.string.viewer_unlock_unavailable)
         VaultViewState.GRANTED -> return
     }
-    Box(Modifier.fillMaxSize().background(Color.Black).statusBarsPadding().navigationBarsPadding()) {
+    Box(Modifier.fillMaxSize().background(Color.Black).windowInsetsPadding(WindowInsets.safeDrawing)) {
         IconButton(onClick = onBack, modifier = Modifier.align(Alignment.TopStart).padding(10.dp)) {
             AppIcon(AppIcons.Back, stringResource(R.string.action_back), tint = Color.White)
         }
@@ -910,7 +915,7 @@ private fun MissingImageViewer(
     onDelete: () -> Unit,
     snackbar: SnackbarHostState,
 ) {
-    Box(Modifier.fillMaxSize().background(Color.Black).statusBarsPadding().navigationBarsPadding()) {
+    Box(Modifier.fillMaxSize().background(Color.Black).windowInsetsPadding(WindowInsets.safeDrawing)) {
         IconButton(onClick = onBack, modifier = Modifier.align(Alignment.TopStart).padding(10.dp)) {
             AppIcon(AppIcons.Back, stringResource(R.string.action_back), tint = Color.White)
         }

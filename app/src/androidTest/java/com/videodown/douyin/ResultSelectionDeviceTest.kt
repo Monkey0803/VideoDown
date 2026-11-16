@@ -88,6 +88,7 @@ class ResultSelectionDeviceTest {
         assertEquals(listOf("result-ui-1" to "720P", "result-ui-2" to "720P"), saved)
     }
     @Test fun lastVideoPreviewPreservesQualityAndDoesNotSelectForBatch() {
+        compose.onNodeWithTag("result-more-options").performClick()
         compose.onNodeWithContentDescription("画质 360P").performScrollTo().performClick()
         open(); preview(12)
         compose.onNodeWithText("当前 12/12 · 已选 0 个").assertIsDisplayed()

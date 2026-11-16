@@ -125,9 +125,11 @@ class LibraryKindFilterDeviceTest {
         compose.waitUntil(5_000) { compose.onAllNodesWithText("图片记录").fetchSemanticsNodes().isNotEmpty() }
         listOf("视频记录", "音频记录", "压缩包记录").forEach { compose.onNodeWithText(it).assertIsDisplayed() }
 
+        compose.onNodeWithTag("library-filter").performClick()
         compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择类型"))
         compose.onNodeWithContentDescription("选择类型").performClick()
         compose.onNodeWithText("图片").performClick()
+        compose.onNodeWithText("查看结果").performClick()
         compose.waitUntil(5_000) { viewModel.state.value.libraryQuery.mediaKind == MediaKind.IMAGE }
         compose.waitForIdle()
 
@@ -137,8 +139,11 @@ class LibraryKindFilterDeviceTest {
         assertEquals(MediaKind.IMAGE, viewModel.state.value.libraryQuery.mediaKind)
 
         // 选回「全部类型」应恢复完整列表。
+        compose.onNodeWithTag("library-filter").performClick()
+        compose.onNodeWithTag("library-controls").performScrollToNode(hasContentDescription("选择类型"))
         compose.onNodeWithContentDescription("选择类型").performClick()
         compose.onNodeWithText("全部类型").performClick()
+        compose.onNodeWithText("查看结果").performClick()
         compose.waitUntil(5_000) { viewModel.state.value.libraryQuery.mediaKind == null }
         compose.waitForIdle()
         listOf("视频记录", "图片记录", "音频记录", "压缩包记录").forEach { compose.onNodeWithText(it).assertIsDisplayed() }
