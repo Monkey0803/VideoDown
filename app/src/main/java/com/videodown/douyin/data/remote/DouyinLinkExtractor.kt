@@ -55,6 +55,10 @@ object DouyinLinkExtractor {
         return BARE_ID_REGEX.find(text)?.groupValues?.get(1)
     }
 
+    /** 是否是图文作品的分享链接；决定先试 `/share/note/` 还是 `/share/video/`。 */
+    fun isNoteLink(text: String): Boolean =
+        Regex("""/(?:share/)?note/""", RegexOption.IGNORE_CASE).containsMatchIn(text)
+
     /** True when the link needs one HTTP round-trip before an aweme id can be read from it. */
     fun isShortLink(url: String): Boolean = SHORT_LINK_REGEX.matches(url.trim())
 

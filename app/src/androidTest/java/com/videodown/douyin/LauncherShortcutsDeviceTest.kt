@@ -146,7 +146,7 @@ class LauncherShortcutsDeviceTest {
      */
     @Test fun theBatchImportShortcutOpensTheDialogFromAnotherTab() {
         launchWithAction(DownloadCompletionNotifier.ACTION_OPEN_LIBRARY)
-        compose.waitUntil(15_000) { compose.onAllNodesWithText("已存视频").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(15_000) { compose.onAllNodesWithText("已存内容").fetchSemanticsNodes().isNotEmpty() }
 
         launchWithAction(LauncherShortcuts.ACTION_BATCH_IMPORT)
 
@@ -166,7 +166,7 @@ class LauncherShortcutsDeviceTest {
             runCatching { context.getSystemService(ClipboardManager::class.java).clearPrimaryClip() }
         }
         launchWithAction(DownloadCompletionNotifier.ACTION_OPEN_LIBRARY)
-        compose.waitUntil(15_000) { compose.onAllNodesWithText("已存视频").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(15_000) { compose.onAllNodesWithText("已存内容").fetchSemanticsNodes().isNotEmpty() }
 
         launchWithAction(LauncherShortcuts.ACTION_QUICK_PARSE)
 

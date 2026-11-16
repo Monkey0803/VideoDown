@@ -1,0 +1,55 @@
+# 新增/受影响的设备用例逐类运行（Pixel_10_Pro / API 37 / arm64）
+===== ImageViewerDeviceTest
+Time: 1.012
+OK (2 tests)
+===== ImageDownloadDeviceTest
+Time: 3.859
+OK (3 tests)
+===== ImageArchiveDeviceTest
+Time: 10.699
+OK (4 tests)
+===== ImageGalleryDeviceTest
+Time: 0.032
+OK (1 test)
+===== ResultSelectionDeviceTest
+Time: 5.384
+OK (4 tests)
+===== BatchFeaturesDeviceTest
+Time: 8.216
+OK (7 tests)
+===== WeiboGifDeviceTest
+Time: 2.04
+OK (2 tests)
+===== AutoGalleryDeviceTest
+Time: 0.945
+OK (1 test)
+===== DownloadSettingsDeviceTest
+Time: 5.498
+OK (6 tests)
+===== TaskNotificationDeviceTest
+Time: 16.711
+Tests run: 2,  Failures: 1
+===== P2CompletionNotificationDeviceTest
+Time: 15.017
+Tests run: 1,  Failures: 1
+===== ImageViewerDeviceTest
+Time: 1.318
+OK (2 tests)
+===== ImageDownloadDeviceTest
+Time: 4.93
+OK (3 tests)
+===== ImageArchiveDeviceTest
+Time: 10.709
+OK (4 tests)
+===== ImageGalleryDeviceTest
+Time: 0.036
+OK (1 test)
+===== LibraryActionsDeviceTest
+Time: 4.347
+OK (4 tests)
+===== LibraryReorderDeviceTest
+Time: 3.64
+OK (4 tests)
+===== WeiboGifDeviceTest
+Time: 2.091
+OK (2 tests)

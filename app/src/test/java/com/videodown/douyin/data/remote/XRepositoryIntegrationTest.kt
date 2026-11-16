@@ -48,7 +48,9 @@ class XRepositoryIntegrationTest {
                 x = XVideoRepository(client(server)), fallback = fallback)
             val result = repo.parseVideos(url) as AppResult.Success
             assertEquals(1, engineCalls)
-            assertEquals(3, result.value.videos.size)
+            // 原帖 3 个媒体（视频/图片/动图）+ 引擎新增的卡片视频 = 4。
+            assertEquals(4, result.value.videos.size)
+            assertTrue(result.value.videos.any { it.isImagePost })
             assertTrue(result.value.videos.first().variants.any { it.media?.type == MediaSourceType.HLS })
             assertEquals("${XFixtures.ID}_44444", result.value.videos.last().awemeId)
         }
@@ -84,7 +86,8 @@ class XRepositoryIntegrationTest {
             } }.use { server ->
                 val result = XVideoRepository(client(server)).parse("$url/video/3")
                 assertTrue(scenario, result is AppResult.Success)
-                assertEquals(1, (result as AppResult.Success).value.selectedIndex)
+                // `/video/3` 指向第 3 个媒体（照片之后的动图），条目下标为 2。
+                assertEquals(2, (result as AppResult.Success).value.selectedIndex)
                 assertTrue(server.paths.last().startsWith("/embed?id=${XFixtures.ID}&token=52znno1b1i"))
             }
         }

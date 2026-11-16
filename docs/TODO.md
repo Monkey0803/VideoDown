@@ -1,6 +1,6 @@
 # 拾影 功能待办（TODO）
 
-> 更新日期：2026-10-13 ｜ 当前分支：`main` ｜ 版本：1.1.1 / code 6（英文名 Keepsake，更新源走 GitHub Releases）
+> 更新日期：2026-11-16 ｜ 当前分支：`main` ｜ 版本：1.2.0 / code 7（英文名 Keepsake，更新源走 GitHub Releases）
 > 依据：同类应用对标（1DM+、ADM、Snaptube、VidMate、Seal、稞麦视频下载器）与当前源码核查
 > 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）、[P4 验收记录](validation/p4-features-2026-10-09.md)、[P5 验收记录](validation/p5-features-2026-10-09.md)
 
@@ -124,15 +124,31 @@
 - [ ] **C5 自定义 UA / 代理**（用户明确本轮不做）— 需扩展 `DouyinApiClient.USER_AGENT`、`ResumableDownloader` 的请求头注入点与代理配置，故保留未做。
 - [x] **C5′ 链接导入导出与设置备份**（C5 去掉自定义 UA / 代理后的部分）— 版本化 JSON 备份编解码与校验、链接清单导出/导入、SAF 文档读写；见 [P6 验收记录](validation/p6-phase-c-2026-10-09.md)。
 
+## Phase D — 图片、看图器与打包下载（已完成）
+
+- [x] **D1 图片是一等媒体类型** — `domain/model/MediaKind.kt`（视频/音频/图片/压缩包）+ `VideoVariant.kind` + `DownloadRecord.mediaKind`；旧历史没有该字段时按视频读取。校验（`DownloadValidation`：图片看文件头、ZIP 看魔数与条目数）、扩展名（`extensionOrDefault`）、MIME（`videoMimeType`）与空间余量（图片 2 MiB）都按类型分派。
+- [x] **D2 直链图片** — `GenericVideoRepository.probeDirect` 用 `MediaSignature` 按文件头识别图片并在视频判定之前返回图片条目；新 `data/generic/ImageMedia.kt` 统一构造条目（稳定 `mediaId`、`pageUrl`、Referer）。
+- [x] **D3 平台图文** — 抖音 `images` / `image_post_info`（`/share/note/` 优先，修掉"图文帖 BFS 抓到推荐位视频"的隐患）；微博 `pic_infos`（original→largest→large→bmiddle，GIF 不重复；`livephoto` 按静态图保存、取 `largest`，`.mov` 不当视频）；X `photo`（`pbs.twimg.com` + `?name=orig`，`/photo/N` 选中第 N 张）；快手 `photo.atlas`（实测载荷确认字段后实现）。
+- [x] **D4 看图器（第三方库）** — `io.github.panpf.zoomimage:zoomimage-compose-coil3:1.4.0`（Apache-2.0，Maven Central，minSdk 21，无原生库）；`ImageViewerScreen` 只做顶栏、保存到相册/分享与文件缺失态，缩放/拖动/双击/子采样/Exif 由 `CoilZoomAsyncImage` 提供。锁 1.4.0 的原因（1.5+ 用 Kotlin 2.3/2.4 构建，元数据超出本仓库 Kotlin 2.2.21）写在 `libs.versions.toml` 注释里。
+- [x] **D5 打包下载** — `MediaKind.ARCHIVE` + `DownloadRecord.archiveEntries` + `Downloader.startArchive/findArchiveDuplicate`；`DownloadEngine` 的归档分支逐张复用 `ResumableDownloader`（已完成的图跳过、半张图续传、403/410 整帖重解析），`ImageArchiveWriter` 先写 `.tmp` 再改名，`validateArchive` 校验条目数；`ArchivePublisher` 把 ZIP 写进 `Download/拾影`（Android 10+ 走 `MediaStore.Downloads`）。结果页「打包下载（N 张）」+ 重复确认框。
+- [x] **D6 网页抓图** — `BrowserMediaDetector` 放行图片扩展名并按魔数/尺寸识别，图片候选（宽高 ≥100px、≥10 KiB）在 `BrowserAssistScreen` 里直接构造条目，不经过 yt-dlp；扫描 JS 增加 `img.currentSrc/src`。
+- [x] **D7 文案、图标与路由** — 图片/压缩包在结果页、已存、任务、通知、分享与看图器各自有文案；`MainActivity` 按记录类型分流（图片→看图器、压缩包→系统打开方式、其余→播放器），完成通知深链复用同一条分流；文案资源中英各 **790** 条 key、一一对应，`LocalizationGuardTest` 计数仍为 0。图片没有单独开底部 tab：`LibraryQuery.mediaKind` + 顶部「类型」筛选（全部/视频/音频/图片/压缩包）复用同一套搜索、排序与批量操作；列表标题/副标题随之改为「已存内容 / N 项」。
+
+验证：JVM 用例 **513** 通过；设备用例在 Pixel_10_Pro（API 37 / arm64 模拟器）上运行 `ImageViewerDeviceTest`、`ImageDownloadDeviceTest`、`ImageArchiveDeviceTest`、`ImageGalleryDeviceTest` 与全量既有用例；未覆盖边界与证据见 [图片下载验证](validation/image-download-2026-11-16.md)。在线验收：X 推文 `2121947540518060428` 已在模拟器上完成解析、3 张图片打包与看图器截图（证据在验证记录「指定 X 推文在线验收」一节）；抖音/微博/快手的真实图文链接仍需调用方在 `live_images` 下提供，默认跳过。
+
 ## 明确不做
 
 DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中画已具备）、内置站点浏览与信息流、桌面组件（widget，本轮只做快捷方式）、通知内删除。
+
+按站点登出、从外部浏览器导入 Cookie、其他站点的登录态自动复用也明确不做：`CookieManager` 没有可靠的按域删除接口，且「不读取其他浏览器账户」是本应用的既有承诺；X 之外的站点仍在网页辅助里手动使用登录态。
 
 ## 已具备（勿重复立项）
 
 平台与通用网址解析、网页辅助嗅探、批量导入（≤50 条）、画质与文件大小选择、重复提醒、下载队列与排序、暂停续传、HLS/DASH/分轨合并与校验、失败分类恢复、共享空间预留与预算可视化、残留清理、收藏/分类/重命名、相册与自定义目录导出、独立音轨与离线提取、续播与 0.5×–4× 倍速、后台音频、画中画、完成通知与通知内单任务控制、检查更新、深浅色主题、Material You 动态取色、`ACTION_SEND` 分享接入与 `VIEW` 深链、剪贴板链接识别、启动器快捷方式、任务页搜索与排序。
 
 2026-10-09 起还具备：播放手势（双击快进退、竖滑亮度音量、长按 2×）、字幕渲染与开关（含同名 sidecar）、全局与单任务限速、下载后自动存入相册、继续观看进度回填、音频睡眠定时器。
+
+2026-11-16 起还具备：**X（Twitter）登录态复用** —— 「我的 → X（Twitter）登录」登录一次，需要授权的推文在匿名路径失败后自动改用本机登录态解析与下载；有效期完全由 X 的 `Set-Cookie` 决定（App 不设 TTL、不在启动/升级/失败时清除），Cookie 过期或被服务端拒绝时给出专用提示并指引重新登录（`x:session_auth_failed`）。JVM 用例、设备用例（`XLoginSessionDeviceTest` 6 例 + 两阶段 `XLoginPersistenceDeviceTest`）与证据见 [X 登录态复用验证](validation/x-login-session-2026-11-16.md)。
 
 ## 验收命令
 
@@ -145,3 +161,5 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 ```
 
 > 通知相关设备用例需要系统已允许应用通知；`-Pandroid.testInstrumentationRunnerArguments.class` 一次只接受一个类。
+
+2026-11-16 起还具备：**图片、图文与打包下载** —— 图片直链、抖音图文、微博多图、X 多图、快手图集与网页抓图；看图器用 ZoomImage 缩放/子采样；「打包下载」一次任务产出一个 ZIP（暂停续传、条目校验、写入 `Download/拾影`）。证据见 [图片下载验证](validation/image-download-2026-11-16.md)。

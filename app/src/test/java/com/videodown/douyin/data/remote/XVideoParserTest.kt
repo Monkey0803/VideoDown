@@ -33,14 +33,16 @@ class XVideoParserTest {
     }
 
     @Test fun `graphql separates media and preserves original index across photos`() {
+        // 序号是媒体位置：3 = 第 3 个媒体（照片之后的 animated_gif），照片本身成为图片条目。
         val result = parser.graphql(XFixtures.graphql(), link.copy(mediaIndex = 3)) as XParseResult.Success
         val videos = result.value.videos
-        assertEquals(2, videos.size)
-        assertEquals(1, result.value.selectedIndex)
+        assertEquals(3, videos.size)
+        assertEquals(2, result.value.selectedIndex)
         assertNotEquals(videos[0].awemeId, videos[1].awemeId)
         assertEquals(listOf("1080P", "720P"), videos[0].sortedVariants.map { it.label })
-        assertEquals(listOf("360P"), videos[1].sortedVariants.map { it.label })
-        assertTrue(videos[1].videoWebUrl.endsWith("/video/3"))
+        assertTrue("the middle entry is the photo", videos[1].isImagePost)
+        assertEquals(listOf("360P"), videos[2].sortedVariants.map { it.label })
+        assertTrue(videos[2].videoWebUrl.endsWith("/video/3"))
         assertEquals("https://x.com/fixture", videos[0].author.profileUrl)
         assertEquals(VideoPlatform.X.referer, videos[0].variants.first().referer)
     }
@@ -75,9 +77,12 @@ class XVideoParserTest {
             put("quoted_status_result", buildJsonObject { put("result", XFixtures.tweet("999999999999999999")) })
         })
         val result = parser.graphql(XFixtures.graphql(tweet), link) as XParseResult.Success
-        assertEquals(4, result.value.videos.size)
-        // Names the quoted-video resource; the wording lives in values-en.
-        assertTrue(result.value.videos.last().mediaLabel!!.startsWith("media_label_quoted_video("))
+        // 原帖 3 个媒体（视频/图片/动图）+ 引用帖同样的 3 个。
+        assertEquals(6, result.value.videos.size)
+        // Names the quoted resource; the wording lives in values-en.
+        assertTrue(result.value.videos.any { it.mediaLabel!!.startsWith("media_label_quoted_video(") })
+        assertTrue(result.value.videos.any { it.mediaLabel!!.startsWith("media_label_quoted_image(") })
+        // 2 是照片位置，不是视频；指向非视频的序号不能被当成"第 2 个视频"静默选中。
         assertTrue(parser.graphql(XFixtures.graphql(tweet), link.copy(mediaIndex = 2)) is XParseResult.Failure)
     }
 
@@ -97,11 +102,64 @@ class XVideoParserTest {
     }
 
     @Test fun `hls and foreign media hosts cannot be saved as mp4`() {
-        val onlyHls = XFixtures.embed().replace("video/mp4", "application/x-mpegURL")
+        // 去掉照片，单独验证"视频不可保存"这条路径（照片本身现在是合法条目）。
+        val withoutPhotos = XFixtures.embed()
+            .replace("""{"type":"photo","media_url_https":"https://pbs.twimg.com/photo.jpg"},""", "")
+        val onlyHls = withoutPhotos.replace("video/mp4", "application/x-mpegURL")
         // Assert the typed reason: the wording lives in resources now.
         assertEquals(XParseFailure.UNSUPPORTED_FORMAT, (parser.syndication(onlyHls, link) as XParseResult.Failure).failure)
-        val external = XFixtures.embed().replace("video.twimg.com", "video.twimg.com.evil.example")
+        val external = withoutPhotos.replace("video.twimg.com", "video.twimg.com.evil.example")
         assertTrue(parser.syndication(external, link) is XParseResult.Failure)
+    }
+
+    @Test fun `photo only tweets become image entries with original urls`() {
+        val result = parser.graphql(XFixtures.graphql(photoTweet()), link) as XParseResult.Success
+        assertEquals(2, result.value.videos.size)
+        assertTrue(result.value.videos.all { it.isImagePost })
+        assertEquals("https://pbs.twimg.com/media/one.jpg?name=orig", result.value.videos[0].variants.single().url)
+        assertEquals(1200, result.value.videos[0].variants.single().width)
+        assertEquals(800, result.value.videos[0].variants.single().height)
+        assertEquals("png", result.value.videos[1].variants.single().media?.extension)
+        // 夹具没有作者信息，分享地址回落到 `i`（与视频分支一致）。
+        assertEquals("https://x.com/i/status/${XFixtures.ID}/photo/2", result.value.videos[1].shareUrl)
+    }
+
+    @Test fun `photo index selects the requested image and rejects out of range`() {
+        val selected = parser.graphql(XFixtures.graphql(photoTweet()), link.copy(
+            mediaIndex = 2, mediaType = XVideoLink.MediaType.PHOTO,
+        )) as XParseResult.Success
+        assertEquals(1, selected.value.selectedIndex)
+
+        assertTrue(parser.graphql(XFixtures.graphql(photoTweet()), link.copy(
+            mediaIndex = 3, mediaType = XVideoLink.MediaType.PHOTO,
+        )) is XParseResult.Failure)
+    }
+
+    @Test fun `photo urls from foreign hosts are refused`() {
+        val result = parser.graphql(XFixtures.graphql(photoTweet("https://evil.example/a.jpg")), link) as XParseResult.Success
+        // 外站图片被丢掉，只留下 pbs.twimg.com 的那张。
+        assertEquals(1, result.value.videos.size)
+        assertTrue(result.value.videos.single().variants.single().url.contains("pbs.twimg.com"))
+    }
+
+    @Test fun `photo and video paths carry their media type`() {
+        assertEquals(XVideoLink.MediaType.PHOTO,
+            XVideoLink.parse("https://x.com/a/status/${XFixtures.ID}/photo/2")!!.mediaType)
+        assertEquals(2, XVideoLink.parse("https://x.com/a/status/${XFixtures.ID}/photo/2")!!.mediaIndex)
+        assertEquals(XVideoLink.MediaType.VIDEO,
+            XVideoLink.parse("https://x.com/a/status/${XFixtures.ID}/video/1")!!.mediaType)
+    }
+
+    private fun photoTweet(firstUrl: String = "https://pbs.twimg.com/media/one.jpg"): JsonObject {
+        val media = """[
+            {"type":"photo","media_url_https":"$firstUrl","original_info":{"width":1200,"height":800}},
+            {"type":"photo","media_url_https":"https://pbs.twimg.com/media/two.png"}]"""
+        return buildJsonObject {
+            put("__typename", "Tweet")
+            put("rest_id", XFixtures.ID)
+            put("legacy", Json.parseToJsonElement("""{"id_str":"${XFixtures.ID}","full_text":"照片",
+                "extended_entities":{"media":$media}}"""))
+        }
     }
 }
 

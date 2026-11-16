@@ -2,6 +2,7 @@ package com.videodown.douyin.data.download
 
 import com.videodown.douyin.data.gallery.GalleryAutoSave
 import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.VaultPolicy
 
 /**
@@ -12,7 +13,14 @@ import com.videodown.douyin.domain.model.VaultPolicy
  * it finished, and where it landed.
  */
 /** Where an auto-saved copy landed; the notifier words each case. */
-enum class GalleryLanding { SKIPPED, SAVED, FAILED }
+enum class GalleryLanding {
+    SKIPPED,
+    SAVED,
+
+    /** 压缩包保存到公共下载目录；它不是相册条目，所以单独一种落点。 */
+    DOWNLOAD,
+    FAILED,
+}
 
 /**
  * The parts of the completion card.
@@ -24,7 +32,7 @@ data class CompletionSummary(
     /** `null` means the title must not be shown; the notification substitutes its wording. */
     val title: String?,
     val qualityLabel: String,
-    val audio: Boolean,
+    val kind: MediaKind,
     val landing: GalleryLanding,
     /** A stored reason key (see `core/ErrorResources.kt`), never a sentence. */
     val reasonKey: String? = null,
@@ -37,10 +45,10 @@ fun completionSummary(record: DownloadRecord, gallery: GalleryAutoSave): Complet
     return CompletionSummary(
         title = title,
         qualityLabel = quality,
-        audio = record.isAudio,
+        kind = record.mediaKind,
         landing = when (gallery) {
             GalleryAutoSave.Skipped -> GalleryLanding.SKIPPED
-            GalleryAutoSave.Saved -> GalleryLanding.SAVED
+            GalleryAutoSave.Saved -> if (record.isArchive) GalleryLanding.DOWNLOAD else GalleryLanding.SAVED
             is GalleryAutoSave.Failed -> GalleryLanding.FAILED
         },
         reasonKey = (gallery as? GalleryAutoSave.Failed)?.reasonKey,

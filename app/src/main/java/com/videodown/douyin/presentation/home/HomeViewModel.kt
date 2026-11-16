@@ -12,7 +12,9 @@ import com.videodown.douyin.domain.model.DownloadProgress
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.SubtitleLanguageSelection
 import com.videodown.douyin.domain.model.SubtitleSelection
+import com.videodown.douyin.domain.model.ArchiveRequest
 import com.videodown.douyin.domain.model.DownloadStatus
+import com.videodown.douyin.domain.model.archiveEntry
 import com.videodown.douyin.domain.model.VideoVariant
 import com.videodown.douyin.data.remote.ClipboardLinkPolicy
 import com.videodown.douyin.data.remote.VideoSizeProbe
@@ -47,6 +49,8 @@ sealed interface HomeInfo {
     data class StoredFailure(val stored: String) : HomeInfo
     data class Queued(val count: Int) : HomeInfo
     data class QueuedPartial(val count: Int) : HomeInfo
+    /** 打包下载已入队；压缩包不是「N 个任务」，所以单独一句。 */
+    data object ArchiveQueued : HomeInfo
 }
 
 sealed interface HomeError {
@@ -91,6 +95,10 @@ data class HomeUiState(
     val saveSubtitles: Boolean = false,
     /** Link copied elsewhere and offered for parsing; shown as a dismissible banner. */
     val clipboardOffer: String? = null,
+    /** 打包下载命中重复时的确认对象；屏幕据此弹自己的确认框。 */
+    val archiveDuplicate: DownloadRecord? = null,
+    /** 等待确认的打包请求；「仍然打包」复用它，避免重新计算勾选。 */
+    val pendingArchive: ArchiveRequest? = null,
 ) {
     val canParse: Boolean get() = input.isNotBlank() && !isParsing
     val canDownload: Boolean get() = video != null && selectedVariant != null && !isSubmitting && duplicates == null
@@ -103,6 +111,20 @@ data class HomeUiState(
 
     val isDownloadPaused: Boolean
         get() = activeRecord?.status == DownloadStatus.PAUSED || activeRecord?.status == DownloadStatus.FAILED
+
+    /** 本页解析出的图片条目（图文/图集作品）。 */
+    val imageEntries: List<DouyinVideo>
+        get() = videos.filter { it.isImagePost }
+
+    /** 打包对象：勾选了至少 2 张就只打勾选的，否则打本页全部图片。 */
+    val archiveTargets: List<DouyinVideo>
+        get() = imageEntries.let { all ->
+            val selected = all.filter { it.selectionKey() in selectedMedia }
+            if (selected.size >= 2) selected else all
+        }
+
+    val canDownloadArchive: Boolean
+        get() = imageEntries.size >= 2 && !isParsing && !isSubmitting && archiveDuplicate == null
 }
 
 class HomeViewModel(
@@ -187,7 +209,7 @@ class HomeViewModel(
         _state.update {
             it.copy(parseRequestId = it.parseRequestId + 1, isParsing = true, isLoadingSizes = false, error = null, errorKind = null, browserRequestUrl = null, info = null,
                 video = null, videos = emptyList(), selectedMedia = emptySet(), variantChoices = emptyMap(),
-                duplicates = null, isSubmitting = false, queuedCount = null, selectedVariant = null, activeDownloadId = null, activeProgress = null,
+                duplicates = null, isSubmitting = false, queuedCount = null, selectedVariant = null, activeDownloadId = null, activeProgress = null, archiveDuplicate = null, pendingArchive = null,
                 activeRecord = null)
         }
 
@@ -319,6 +341,83 @@ class HomeViewModel(
         })
     }
 
+    /**
+     * 打包下载：把本页的图片打成一个 ZIP 任务。
+     *
+     * 先查同帖同张数的归档任务，命中就弹确认框（压缩包不小，重复下载要用户明确同意）。
+     */
+    fun downloadArchive() {
+        val state = _state.value
+        if (!state.canDownloadArchive) return
+        val targets = state.archiveTargets
+        if (targets.size < 2) return
+        val entries = targets.mapNotNull { it.archiveEntry() }
+        if (entries.size != targets.size) return
+        val anchor = targets.first()
+        val request = ArchiveRequest(
+            title = anchor.title,
+            postId = anchor.awemeId.substringBefore("_img"),
+            platform = anchor.platform,
+            postPageUrl = anchor.videoWebUrl,
+            entries = entries,
+            coverUrl = anchor.coverUrl,
+            authorNickname = anchor.author.nickname,
+            authorAvatarUrl = anchor.author.avatarUrl,
+            authorSecUid = anchor.author.secUid,
+        )
+        _state.update { it.copy(isSubmitting = true, error = null, info = null) }
+        val generation = resultGeneration
+        submissionJob = viewModelScope.launch {
+            try {
+                val duplicate = downloader.findArchiveDuplicate(request)
+                if (duplicate != null) {
+                    _state.update { it.copy(archiveDuplicate = duplicate, pendingArchive = request) }
+                } else {
+                    startArchive(request, generation)
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                _state.update { it.copy(error = HomeError.QueueFailed) }
+            } finally {
+                if (generation == resultGeneration) _state.update { it.copy(isSubmitting = false) }
+            }
+        }
+    }
+
+    fun dismissArchiveDuplicate() {
+        _state.update { it.copy(archiveDuplicate = null, pendingArchive = null) }
+    }
+
+    /** 「仍然打包」：复用确认前的请求，不再看勾选是否变化。 */
+    fun confirmArchiveDuplicate() {
+        val request = _state.value.pendingArchive ?: return
+        if (_state.value.isSubmitting) return
+        _state.update { it.copy(archiveDuplicate = null, isSubmitting = true) }
+        val generation = resultGeneration
+        submissionJob = viewModelScope.launch {
+            try {
+                startArchive(request, generation)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                _state.update { it.copy(error = HomeError.QueueFailed) }
+            } finally {
+                if (generation == resultGeneration) _state.update { it.copy(isSubmitting = false) }
+            }
+        }
+    }
+
+    private suspend fun startArchive(request: ArchiveRequest, generation: Long) {
+        val id = downloader.startArchive(request)
+        if (generation != resultGeneration) return
+        _state.update {
+            it.copy(activeDownloadId = id, pendingArchive = null, archiveDuplicate = null,
+                info = HomeInfo.ArchiveQueued)
+        }
+        observeDownload(id)
+    }
+
     private fun submit(requests: List<DownloadRequest>) {
         if (requests.isEmpty() || _state.value.isSubmitting || _state.value.duplicates != null) return
         _state.update { it.copy(isSubmitting = true, info = null, error = null) }
@@ -436,6 +535,8 @@ class HomeViewModel(
                 error = null, errorKind = null, browserRequestUrl = null,
                 info = null,
                 clipboardOffer = null,
+                archiveDuplicate = null,
+                pendingArchive = null,
             )
         }
     }

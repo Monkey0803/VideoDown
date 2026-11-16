@@ -28,6 +28,16 @@ class BrowserSessionStore {
         CookieManager.getInstance().getCookie(url)
     }
 
+    /**
+     * X 的登录态是否还在本机。
+     *
+     * 每次调用都现查 [CookieManager]，**不缓存**：有效期由 X 决定，过期后系统不再返回该 Cookie，
+     * 这里自然就变成 false。因此 App 不需要、也不应该自己记一个过期时间。
+     */
+    suspend fun xSignedIn(): Boolean = XSession.origins.any { url ->
+        XSession.signedIn(cookie(url))
+    }
+
     suspend fun export(urls: List<String>, file: File) {
         val lines = urls.distinct().mapNotNull { url ->
             val parsed = url.toHttpUrlOrNull() ?: return@mapNotNull null

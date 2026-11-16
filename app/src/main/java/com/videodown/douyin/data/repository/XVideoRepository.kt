@@ -12,6 +12,19 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.io.IOException
 
 class XVideoRepository(private val http: XVideoHttpClient = XVideoHttpClient()) {
+    /**
+     * 把分享短链展开成真正的推文地址；已经是推文地址就原样返回。
+     *
+     * 登录态重试需要它：随包引擎按页面地址取媒体，合并时也要用推文地址，才能写对 X 平台和媒体 ID。
+     * 返回 null 表示这不是一条可解析的推文（或短链跳到了非 X 站点），调用方应当跳过登录态尝试。
+     */
+    suspend fun resolve(url: String): String? = try {
+        if (url.toHttpUrlOrNull()?.host == "t.co") http.expandShortLink(url).takeIf { XVideoLink.parse(it) != null }
+        else url.takeIf { XVideoLink.parse(it) != null }
+    } catch (_: IOException) {
+        null
+    }
+
     suspend fun parse(url: String): AppResult<ParsedVideos> = try {
         withTimeout(55_000) { parseWithinTimeout(url) }
     } catch (e: TimeoutCancellationException) {

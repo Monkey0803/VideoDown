@@ -74,15 +74,14 @@ class DownloadCompletionNotifier(private val context: Context, private val prefe
  * has a `Context`, and a stored key must not be shown as raw text.
  */
 private fun completionSummaryText(context: android.content.Context, summary: CompletionSummary): String {
-    val label = summary.qualityLabel.ifBlank {
-        context.getString(if (summary.audio) com.videodown.douyin.R.string.notification_kind_audio else com.videodown.douyin.R.string.notification_kind_video)
-    }
+    val label = summary.qualityLabel.ifBlank { context.getString(kindRes(summary.kind)) }
     val landing = when (summary.landing) {
         GalleryLanding.SKIPPED -> context.getString(com.videodown.douyin.R.string.notification_landing_open)
         GalleryLanding.SAVED -> context.getString(
-            if (summary.audio) com.videodown.douyin.R.string.notification_landing_music
+            if (summary.kind == com.videodown.douyin.domain.model.MediaKind.AUDIO) com.videodown.douyin.R.string.notification_landing_music
             else com.videodown.douyin.R.string.notification_landing_gallery,
         )
+        GalleryLanding.DOWNLOAD -> context.getString(com.videodown.douyin.R.string.notification_landing_download)
         GalleryLanding.FAILED -> context.getString(
             com.videodown.douyin.R.string.notification_landing_failed,
             context.getString(galleryReasonRes(summary.reasonKey)),
@@ -97,4 +96,12 @@ private fun galleryReasonRes(reasonKey: String?): Int {
     com.videodown.douyin.data.gallery.galleryFailureOf(reasonKey)?.let { return com.videodown.douyin.core.galleryFailureRes(it) }
     if (reasonKey == com.videodown.douyin.domain.model.VaultPolicy.VAULT_GALLERY_KEY) return com.videodown.douyin.R.string.notification_vault_no_gallery
     return com.videodown.douyin.R.string.gallery_write_failed
+}
+
+/** 通知里对媒体类型的称呼；压缩包也走这里，不再写死"视频"。 */
+private fun kindRes(kind: com.videodown.douyin.domain.model.MediaKind): Int = when (kind) {
+    com.videodown.douyin.domain.model.MediaKind.VIDEO -> com.videodown.douyin.R.string.notification_kind_video
+    com.videodown.douyin.domain.model.MediaKind.AUDIO -> com.videodown.douyin.R.string.notification_kind_audio
+    com.videodown.douyin.domain.model.MediaKind.IMAGE -> com.videodown.douyin.R.string.notification_kind_image
+    com.videodown.douyin.domain.model.MediaKind.ARCHIVE -> com.videodown.douyin.R.string.notification_kind_archive
 }

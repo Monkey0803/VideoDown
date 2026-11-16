@@ -58,6 +58,11 @@ Pass them as `-Pandroid.testInstrumentationRunnerArguments.<flag>=true` alongsid
 - **No string-matching on platform.** Branch on the `VideoPlatform` enum
   (`DOUYIN` / `WEIBO` / `KUAISHOU` / `X` / `GENERIC`), as the domain models already do
   exhaustively; never compare against `"douyin"`-style literals.
+- **Media type is `MediaKind`, not an extension.** Video, audio, image and archive downloads are
+  distinguished by `VideoVariant.kind` / `DownloadRecord.mediaKind` (`VIDEO` / `AUDIO` / `IMAGE` /
+  `ARCHIVE`); validation, gallery vs `Download/拾影` landing, player vs viewer routing and
+  notification copy all branch on it. Do not infer the kind from a file extension or a converted
+  URL, and keep new record fields defaulted so older `download_history.json` files still load.
 
 ## Tests & device verification
 
@@ -115,6 +120,9 @@ Each looks wrong and is deliberate; `app/build.gradle.kts` carries the full stor
 - `base.archivesName` tags artifacts `videodown-<abi>` so an arm64 APK cannot be mistaken for a
   universal one.
 - `applicationIdSuffix = ".debug"` on debug so debug and release install side by side.
+- `zoomimage = "1.4.0"` is pinned: 1.5.0+ is built with Kotlin 2.3.20/2.4.0, whose metadata the
+  repo's Kotlin 2.2.21 compiler cannot read. Bump it only together with Kotlin, and update the
+  comment in `gradle/libs.versions.toml`.
 
 ## Copy & comments
 

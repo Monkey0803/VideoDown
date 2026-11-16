@@ -3,20 +3,20 @@ package com.videodown.douyin.data.download
 import com.videodown.douyin.data.gallery.GalleryAutoSave
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.MediaDownload
+import com.videodown.douyin.domain.model.MediaKind
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CompletionSummaryTest {
 
-    private fun record(label: String = "720P", audio: Boolean = false) = DownloadRecord(
+    private fun record(label: String = "720P", kind: MediaKind = MediaKind.VIDEO) = DownloadRecord(
         id = "id",
         awemeId = "aweme",
         title = "海边的日落",
         resolutionLabel = label,
-        media = if (audio) MediaDownload(audioOnly = true) else null,
+        media = if (kind == MediaKind.AUDIO) MediaDownload(audioOnly = true) else null,
+        mediaKind = kind,
     )
 
     // The summary reports values; the notification words them in the app language.
@@ -34,14 +34,28 @@ class CompletionSummaryTest {
     fun `a saved video says it reached the gallery, not the music library`() {
         val summary = completionSummary(record(), GalleryAutoSave.Saved)
         assertEquals(GalleryLanding.SAVED, summary.landing)
-        assertFalse("A video must not claim the music library", summary.audio)
+        assertEquals(MediaKind.VIDEO, summary.kind)
     }
 
     @Test
     fun `saved audio points at the music library instead`() {
-        val summary = completionSummary(record(audio = true), GalleryAutoSave.Saved)
+        val summary = completionSummary(record(kind = MediaKind.AUDIO), GalleryAutoSave.Saved)
         assertEquals(GalleryLanding.SAVED, summary.landing)
-        assertTrue(summary.audio)
+        assertEquals(MediaKind.AUDIO, summary.kind)
+    }
+
+    @Test
+    fun `a saved image is named as an image in the gallery`() {
+        val summary = completionSummary(record(kind = MediaKind.IMAGE), GalleryAutoSave.Saved)
+        assertEquals(GalleryLanding.SAVED, summary.landing)
+        assertEquals(MediaKind.IMAGE, summary.kind)
+    }
+
+    @Test
+    fun `a saved archive points at the public download folder`() {
+        val summary = completionSummary(record(label = "", kind = MediaKind.ARCHIVE), GalleryAutoSave.Saved)
+        assertEquals(GalleryLanding.DOWNLOAD, summary.landing)
+        assertEquals(MediaKind.ARCHIVE, summary.kind)
     }
 
     @Test
@@ -54,7 +68,7 @@ class CompletionSummaryTest {
     @Test
     fun `a missing quality label is reported as blank so the notification can name the kind`() {
         assertEquals("", completionSummary(record(label = ""), GalleryAutoSave.Skipped).qualityLabel)
-        assertTrue(completionSummary(record(label = "", audio = true), GalleryAutoSave.Skipped).audio)
+        assertEquals(MediaKind.AUDIO, completionSummary(record(label = "", kind = MediaKind.AUDIO), GalleryAutoSave.Skipped).kind)
     }
 
     @Test fun `a private record is not named on the notification`() {

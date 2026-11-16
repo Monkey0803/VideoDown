@@ -4,7 +4,8 @@ import com.videodown.douyin.R
 import com.videodown.douyin.core.AppText
 /** Keeps local extraction distinct from remote audio download and other source renditions. */
 fun DownloadRecord.audioExtractionSelection(): Pair<DouyinVideo, VideoVariant> {
-    require(status == DownloadStatus.COMPLETED && !isAudio) { AppText.get(R.string.audio_extract_only_saved) }
+    // 只有视频能提取音频：图片和压缩包里没有音轨，放进去只会在引擎里失败。
+    require(status == DownloadStatus.COMPLETED && isVideo) { AppText.get(R.string.audio_extract_only_saved) }
     val variant = VideoVariant(sourcePageUrl.ifBlank { sourceUrl }, AppText.get(R.string.media_label_local_audio_m4a), sizeBytes = totalBytes.takeIf { it > 0 },
         media = MediaDownload(type = MediaSourceType.SEPARATE, mediaId = id, formatId = "local-audio",
             extension = "m4a", extractor = "local", audioOnly = true, localRecordId = id))

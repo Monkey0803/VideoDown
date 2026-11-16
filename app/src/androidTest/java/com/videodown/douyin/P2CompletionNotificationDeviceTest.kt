@@ -108,12 +108,12 @@ class P2CompletionNotificationDeviceTest {
         compose.waitForIdle()
         compose.waitUntil(5000) { compose.onAllNodesWithText(record.title).fetchSemanticsNodes().isNotEmpty() &&
             (compose.onAllNodesWithContentDescription("分享").fetchSemanticsNodes().isNotEmpty() ||
-             compose.onAllNodesWithText("已存视频").fetchSemanticsNodes().isNotEmpty()) }
+             compose.onAllNodesWithText("已存内容").fetchSemanticsNodes().isNotEmpty()) }
         capture("destination-${record.title}")
         // A library containing every record is not a precise destination for this notification.
         compose.onAllNodesWithText(record.title)[0].assertIsDisplayed()
         compose.onNodeWithContentDescription("分享").assertIsDisplayed()
-        assertFalse("Completion click must open details rather than the whole library", compose.onAllNodesWithText("已存视频").fetchSemanticsNodes().isNotEmpty())
+        assertFalse("Completion click must open details rather than the whole library", compose.onAllNodesWithText("已存内容").fetchSemanticsNodes().isNotEmpty())
         report("ACTUAL_NOTIFICATION_CLICK: opened corresponding detail ${record.id}")
     }
 

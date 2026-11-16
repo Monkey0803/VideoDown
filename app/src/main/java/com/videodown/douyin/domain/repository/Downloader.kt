@@ -4,6 +4,7 @@ import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.DownloadProgress
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.SubtitleSelection
+import com.videodown.douyin.domain.model.ArchiveRequest
 import com.videodown.douyin.domain.model.VideoVariant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +46,18 @@ interface Downloader {
 
     /** Existing matching task, or a completed task whose local file still exists. */
     suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant): DownloadRecord? = null
+
+    /**
+     * 把一组图片打成一个 ZIP 任务；返回记录 id。
+     *
+     * 默认实现抛异常，是为了让设备/单元测试里的轻量 Downloader 伪造实现不必新增方法；
+     * 真实引擎总会覆盖它，界面把异常转成「加入队列失败」。
+     */
+    suspend fun startArchive(request: ArchiveRequest): String =
+        throw UnsupportedOperationException("archive downloads are not supported by this downloader")
+
+    /** 已存在、且本地文件仍在的同一帖压缩包；用于"仍然打包"之前的重复提醒。 */
+    suspend fun findArchiveDuplicate(request: ArchiveRequest): DownloadRecord? = null
 
     /** Stops an active transfer but keeps the partial file and byte offset. */
     suspend fun pause(id: String)

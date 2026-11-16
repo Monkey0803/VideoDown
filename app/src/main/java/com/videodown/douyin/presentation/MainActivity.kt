@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import com.videodown.douyin.domain.model.RecoveryAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -72,10 +73,13 @@ import com.videodown.douyin.presentation.home.HomeScreen
 import com.videodown.douyin.presentation.home.HomeViewModel
 import com.videodown.douyin.presentation.library.LibraryScreen
 import com.videodown.douyin.presentation.player.PlayerScreen
+import com.videodown.douyin.presentation.viewer.ImageViewerScreen
 import com.videodown.douyin.presentation.settings.SettingsScreen
 import com.videodown.douyin.presentation.theme.VideoDownTheme
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
 import com.videodown.douyin.data.remote.VideoLinkExtractor
+import com.videodown.douyin.core.DouyinIntents
+import java.io.File
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.ThemeMode
 
@@ -279,6 +283,7 @@ private object Routes {
     const val LIBRARY = "library"
     const val SETTINGS = "settings"
     const val PLAYER = "player/{recordId}?cover={cover}"
+    const val IMAGE = "image/{recordId}"
 
     /**
      * 封面随路由一起传给播放器。
@@ -287,6 +292,8 @@ private object Routes {
      */
     fun player(recordId: String, coverUrl: String? = null) =
         "player/$recordId?cover=" + android.net.Uri.encode(coverUrl.orEmpty())
+
+    fun image(recordId: String) = "image/$recordId"
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -303,6 +310,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     /** Links read from a backup file; the app switches to the parse page and opens 批量导入. */
     onImportLinks: (String) -> Unit = {}) {
     val navController = rememberNavController()
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
     val keyboardVisible = WindowInsets.isImeVisible
@@ -311,8 +319,23 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     var requestedStorage by remember { mutableStateOf(false) }
     val historyState by historyViewModel.state.collectAsStateWithLifecycle()
     // 列表数据本来就在内存里，取封面不需要再读一次库。
-    fun openPlayer(id: String) {
-        navController.navigate(Routes.player(id, historyState.records.firstOrNull { it.id == id }?.coverUrl))
+    /**
+     * 列表点击与完成通知深链共用这一条分流：图片进看图器、压缩包交给系统「打开方式」、
+     * 其余进播放器。用记录类型判断，不看扩展名。
+     */
+    fun openRecord(id: String) {
+        val record = historyState.records.firstOrNull { it.id == id }
+        when {
+            record?.isImage == true -> navController.navigate(Routes.image(id))
+            record?.isArchive == true -> {
+                // 没有能打开 ZIP 的应用时退回「已存」，而不是点了没反应。
+                val file = record.filePath?.let(::File)
+                if (file == null || !file.isFile || !DouyinIntents.playExternally(context, file)) {
+                    navController.navigate(Routes.LIBRARY)
+                }
+            }
+            else -> navController.navigate(Routes.player(id, record?.coverUrl))
+        }
     }
     // Reactive so returning from the player immediately refreshes 「继续观看」 in both lists.
     val watchProgress by ServiceLocator.playbackRepository.watchProgress().collectAsStateWithLifecycle()
@@ -358,7 +381,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     }
 
     LaunchedEffect(openPlayerId) {
-        openPlayerId?.let { id -> openPlayer(id); onPlayerOpened() }
+        openPlayerId?.let { id -> openRecord(id); onPlayerOpened() }
     }
 
     LaunchedEffect(openLibrary) {
@@ -429,7 +452,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         onSharedTextConsumed = onSharedTextConsumed,
                         onOpenHistory = { navigateTab(Routes.TASKS) },
                         onOpenLibrary = { navigateTab(Routes.LIBRARY) },
-                        onPlayDownloaded = { openPlayer(it) },
+                        onPlayDownloaded = { openRecord(it) },
                         // 首页「最近保存」没有门禁，所以私密条目不进入这里。
                         recentRecords = historyState.records.filterNot { it.isPrivate },
                         viewModel = homeViewModel,
@@ -444,7 +467,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                 }
                 composable(Routes.TASKS) {
                     HistoryScreen(
-                        onPlay = { openPlayer(it) },
+                        onPlay = { openRecord(it) },
                         viewModel = historyViewModel,
                         onRecovery = { record, action ->
                             val page = record.sourcePageUrl.ifBlank { record.media?.pageUrl.orEmpty() }
@@ -462,7 +485,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                     val animatedVisibilityScope = this
                     LibraryScreen(
                         historyViewModel = historyViewModel,
-                        onPlay = { openPlayer(it) },
+                        onPlay = { openRecord(it) },
                         watchProgress = watchProgress,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = animatedVisibilityScope,
@@ -473,6 +496,16 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         openStorage = requestedStorage,
                         onStorageOpened = { requestedStorage = false },
                         onImportLinks = { text -> onImportLinks(text); navigateTab(Routes.HOME) },
+                    )
+                }
+                composable(
+                    route = Routes.IMAGE,
+                    arguments = listOf(navArgument("recordId") { type = NavType.StringType }),
+                ) { imageEntry ->
+                    val recordId = imageEntry.arguments?.getString("recordId").orEmpty()
+                    ImageViewerScreen(
+                        record = historyState.records.firstOrNull { it.id == recordId },
+                        onBack = { navController.popBackStack() },
                     )
                 }
                 composable(

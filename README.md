@@ -1,8 +1,8 @@
 # 拾影（Keepsake）— 视频下载器
 
-项目自有源码按 [GNU GPL 3.0 或更新版本](LICENSE)（`GPL-3.0-or-later`）发布。随包第三方代码、引擎和素材保留各自的许可证；引擎许可来源见[通用视频引擎说明](docs/research/universal-video-engine.md)。F-Droid 收录所需的第三方源码与素材权属核查仍在进行，见 [F-Droid 预检](docs/validation/fdroid-precheck-2026-10-15.md)。
+项目自有源码按 [GNU GPL 3.0 或更新版本](LICENSE)（`GPL-3.0-or-later`）发布。随包第三方代码、引擎和素材保留各自的许可证（看图器使用 [ZoomImage](https://github.com/panpf/zoomimage)，Apache-2.0）；引擎许可来源见[通用视频引擎说明](docs/research/universal-video-engine.md)。F-Droid 收录所需的第三方源码与素材权属核查仍在进行，见 [F-Droid 预检](docs/validation/fdroid-precheck-2026-10-15.md)。
 
-使用 Kotlin + Jetpack Compose 实现的 Android 应用，支持解析抖音、微博、快手、X（Twitter）分享链接及通用 HTTP/HTTPS 视频网址，选择分辨率下载视频、
+使用 Kotlin + Jetpack Compose 实现的 Android 应用，支持解析抖音、微博、快手、X（Twitter）分享链接及通用 HTTP/HTTPS 网址，选择分辨率下载视频、保存分享链接里的图片与图文作品（可打包成一个 ZIP）、
 记录下载历史、打开原视频与作者主页并播放已下载的视频。界面使用 Compose Material 3，在「我的 → 外观模式」中可选择跟随系统、浅色或深色，确认后立即生效并在重启后保留；Android 12 及以上还可在「我的 → 动态取色（Material You）」改用系统壁纸配色。默认采用奶白、暖橙与深褐品牌主题，深色模式使用暖褐背景与杏橙强调色。颜色、文字样式与圆角统一由 `MaterialTheme` 管理。
 
 主导航分为「解析」「任务」「已存」「我的」：解析页支持粘贴分享文案和选择画质；任务页显示实时进度及暂停、续传、删除操作；已存页展示文件仍存在的已完成视频；「我的」可设置默认画质、仅在 Wi-Fi 下下载、完成时通知、每条任务独立通知、识别剪贴板链接与动态取色，偏好在重启后保留。
@@ -23,8 +23,8 @@
 
 ## 存储、队列与失败恢复
 
-- 「我的 → 存储空间」显示下载视频、临时文件、可用空间和可清理残留。清理需要确认，并在执行前重新检查文件指纹和任务引用；保留有效视频、相册副本，以及暂停、失败或进行中任务引用的断点和合并片段。清理对象仅限未引用的下载临时文件、引擎任务目录和文件已丢失的完成记录；已存视频请在「已存」中选择删除。
-- 存储空间同时可视化运行任务的空间预算：显示尚需写入的总量（含每任务 32 MiB 工作余量和引擎合并的第二份空间）、占用比例条，以及按剩余字节排序的任务明细；预留超过当前可用空间时直接给出缺口和「清理残留或删除已存视频」的处理建议。已写入字节由可用空间反映，不重复计入预算。
+- 「我的 → 存储空间」显示下载视频、临时文件、可用空间和可清理残留。清理需要确认，并在执行前重新检查文件指纹和任务引用；保留有效媒体、相册副本，以及暂停、失败或进行中任务引用的断点和合并片段。清理对象仅限未引用的下载临时文件、引擎任务目录和文件已丢失的完成记录；已存内容请在「已存」中选择删除。
+- 存储空间同时可视化运行任务的空间预算：显示尚需写入的总量（含每任务 32 MiB 工作余量和引擎合并的第二份空间）、占用比例条，以及按剩余字节排序的任务明细；预留超过当前可用空间时直接给出缺口和「清理残留或删除已存内容」的处理建议。已写入字节由可用空间反映，不重复计入预算。
 - 运行中的下载共享空间预留账本：任务取得队列名额后，原子预留未来仍需写入的空间，每个任务保留 32 MiB 工作余量；已知大小的引擎任务按下载与合并两份空间估算。已经写入的文件占用由实际可用空间反映，不重复预留；暂停、失败、取消和完成后释放预留，等待中的任务不占空间预算。
 - 直链收到响应后按实际大小调整预算，每次写入前重新检查；未知大小按已写入量滚动检查。引擎下载、合并、音频提取和校验期间根据任务目录实际占用持续检查；空间不足保留断点并提示清理后继续。此机制协调本应用的并发任务，无法保证其他应用突然大量占用磁盘或引擎未知大小输出不会触发实际磁盘不足。
 - 「我的 → 同时下载数量」可设置 1–5 个任务，默认 3，重启后保留。提高数量立即开放名额；降低数量时正在下载、合并或校验的任务继续，新任务等待名额。
@@ -78,6 +78,17 @@
 
 验证记录见 [P5 验证记录](docs/validation/p5-features-2026-10-09.md)。
 
+## 图片、看图器与打包下载（D）
+
+- **图片是一等媒体类型**：`MediaKind`（视频 / 音频 / 图片 / 压缩包）随下载记录落盘，校验、相册落地、通知文案和「点开之后去哪」都按它分派，不靠扩展名猜。旧版本写下的历史没有这个字段，读进来仍按视频处理。
+- **支持的图片来源**：粘贴图片直链（`jpg / jpeg / png / webp / gif / avif / heic / bmp`，按文件头识别而不是只看扩展名）；抖音图文（`/note/`，分享页 `/share/note/` 优先）；微博九宫格/多图（原图优先，GIF 仍按既有方式存成 MP4）；X 多图（只接受 `pbs.twimg.com`，请求原图尺寸，`/photo/N` 选中第 N 张）；快手图集（内嵌 JSON 的 `photo.atlas`）；以及网页辅助面板里页面已加载的图片。
+- **每张图是一个独立条目**，沿用多视频结果的勾选/批量流程：可以只保存一张，也可以勾选多张逐个入队。图片下载复用直链下载器（断点续传、限速、空间预留、失败分类），工作余量按图片类型降到 2 MiB，避免九张图各占 32 MiB 被误判「空间不足」。
+- **「已存」按类型筛选，不单独开 tab**：顶部筛选条新增「类型」（全部 / 视频 / 音频 / 图片 / 压缩包），与平台、分类、排序、仅收藏、搜索可叠加；筛选生效时同样不允许拖拽自定义排序（顺序只对完整列表有意义）。列表标题改为中性的「已存内容 / N 项」，避免图片和压缩包混进来后还叫「已存视频」。
+- **看图器**使用 [ZoomImage](https://github.com/panpf/zoomimage)（Apache-2.0，Maven Central）的 `CoilZoomAsyncImage`：双指缩放、拖动、双击放大、超大图子采样与 Exif 方向都由该库提供，应用内不再自己写手势。已存/任务/首页「最近保存」点击图片记录进看图器，而不是播放器；看图器可保存到相册或分享。
+- **打包下载**：结果页在图片条目 ≥ 2 时出现「打包下载（N 张）」。它创建**一个**归档任务：逐张下载到任务目录（已完成的图在暂停/进程被杀后直接跳过），全部就绪后打成一个 ZIP（`images/001.jpg` 保序），校验条目数后落到应用私有目录，并复制到公共 `Download/拾影`（Android 10+ 走 `MediaStore.Downloads`，更低版本需要存储权限）。已存/任务里显示为「压缩包 · N 张」，点击交给系统「打开方式」，分享与「导出到文件夹」沿用既有能力。
+- 私密记录（保险箱）不自动存入相册，图片同样如此；ZIP 固定进下载目录，不经过「下载后自动存入相册」开关。
+- 看图器与打包下载的验收见 [图片下载验证](docs/validation/image-download-2026-11-16.md)：JVM 用例、模拟器设备用例与在线（opt-in）用例各自覆盖的范围与未覆盖边界都记在那份记录里。
+
 ## 合集解析（C3）
 
 - 「我的 → 解析合集」打开后，粘贴**合集 / 频道 / 播放列表**链接会把整页条目都解析出来（默认关闭，最多 20 条），随后走既有的多选界面：逐条挑画质、批量入队，重复链接沿用既有重复检查。关闭时只解析链接指向的那一个视频——一个单视频链接不该悄悄变成二十条队列。
@@ -124,15 +135,16 @@
 - **失败要有类型，不能靠比对文案。** 相册保存失败原本是把消息文本和 6 条中文字符串比对来区分，改一句提示就会归类错误；现在是 `GalleryExportException(GalleryExportFailure)`，`galleryFailureKindOf(error)` 负责把外部异常（如 `SecurityException`）归到一个类别。批次结果里的失败也改成存 key（`BatchFailure.galleryFailureKey`），由界面出文案。X 的解析失败同理：`XParseResult.Failure(XParseFailure)` 取代 `Failure("中文句子")`，请求本身失败则复用 `AppError.Http(status)`（**HTTP 状态就是 HTTP 状态**，不再有「X 访问失败（HTTP 403）」这类专有文案）。`AppError.Parse.reasonKey` 统一承载 `engine:` / `x:` 两类 key。
 - **持久化的错误存 key，不存句子。** 任务记录会活过一次语言切换，所以引擎失败存成 `engine:<kind>`、后台服务失败存成 `service:<kind>`（`core/ErrorResources.kt`、`core/ServiceFailure.kt`），界面用 `storedErrorMessage(...)` 解析；**旧版本写进历史的中文消息**没有前缀，仍按原文显示并继续被 `legacyFailureKind` 识别。`VideoEngineException` 现在只带 `kind`，`DownloadServiceException` 只带 `ServiceFailure`。
 - **数据不是文案。** `legacyFailureKind` 里的中文是用来**匹配用户设备上已存的历史消息**的，改写就会失效。守卫测试支持按函数名豁免（`DATA_FUNCTIONS`），豁免必须写明理由，不允许用它来放过界面文案。
-- **迁移已完成**：所有用户可见文案来自 `values/` 与 `values-en/`（各 626 条 key）。`domain`/`core`/`data` 不持有界面文案，只返回值、枚举或 key，由 `core/reasonKeyRes(key)` 单点解析；其余 116 处中文字面量是内部不变量、开发者日志、开发者诊断异常与持久化内容，逐条用 `// l10n-ignore: <理由>` 登记（守卫计数为 0）。
+- **迁移已完成**：所有用户可见文案来自 `values/` 与 `values-en/`（各 790 条 key）。`domain`/`core`/`data` 不持有界面文案，只返回值、枚举或 key，由 `core/reasonKeyRes(key)` 单点解析；其余 116 处中文字面量是内部不变量、开发者日志、开发者诊断异常与持久化内容，逐条用 `// l10n-ignore: <理由>` 登记（守卫计数为 0）。
 
 ## 通用网址与网页辅助
 
-粘贴 HTTP/HTTPS 网址或分享文案即可尝试解析。已知平台优先使用原有解析器，失败后进入 yt-dlp；X 推文即使原生解析成功，也会补充通用引擎找到的媒体和画质。自动解析失败时点击「打开网页查找视频」，在内置网页中登录或播放，再选择检测到的媒体资源，也可使用当前网页登录态重新解析。
+
+粘贴 HTTP/HTTPS 网址或分享文案即可尝试解析。已知平台优先使用原有解析器，失败后进入 yt-dlp；X 推文即使原生解析成功，也会补充通用引擎找到的媒体和画质。自动解析失败时点击「打开网页查找视频」，在内置网页中登录或播放，再选择检测到的媒体资源，也可使用当前网页登录态重新解析。图片直链按文件头识别（不只看扩展名）；网页辅助面板也会把页面**已加载**的图片列为候选（标注「图片 · 格式」），点选后直接构造图片下载，不经过 yt-dlp——网页图片没有对应提取器。
 
 MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Python、yt-dlp 与 FFmpeg 下载、合并并校验。任务页区分下载、合并和文件校验；只有校验完成才进入「已存」。不同格式按实际扩展名分享，MKV 等不适合相册的容器会提示使用文件分享。
 
-「我的」显示实际引擎版本，并可清除网页登录态。登录态只保存在本机；默认匿名解析，不自动读取其他浏览器账户。引擎随 APK 固定更新，不依赖解析服务器。
+「我的」显示实际引擎版本、X（Twitter）登录入口，并可清除网页登录态。登录态只保存在本机；默认匿名解析，不自动读取其他浏览器账户。X 的登录态可复用：登录一次后，X 解析在匿名路径都失败时会自动改用本机登录态重试；有效期由 X 的 `Set-Cookie` 决定，App 不设自己的过期时间，失效时解析会提示重新登录（详见下方「X（Twitter）解析」）。引擎随 APK 固定更新，不依赖解析服务器。
 
 此功能面向点播视频，不保证所有网站可用；不支持 DRM、直播录制或整站采集。部分网站会限制 WebView 登录。详细架构、依赖校验和、16 KB 原生库修复与许可来源见 [通用视频引擎说明](docs/research/universal-video-engine.md)，当前通过及未验证项见 [实施验证记录](docs/validation/universal-video-2026-09-29.md)。
 
@@ -158,8 +170,8 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 | 5 | 播放视频、横屏全屏 | `presentation/player/PlayerScreen.kt`（标题栏与播放器内均可切换横屏；按视频比例显示，切换保留进度和暂停状态，返回键先退出全屏） |
 | 6 | 画质显示文件大小 | `data/remote/VideoSizeProbe.kt`（后台读取 CDN 响应头；不可获取时明确显示大小未知） |
 | 7 | 转存到相册 | `data/gallery/GalleryExporter.kt`（通过 MediaStore 复制已完成视频） |
-| 8 | 已存视频支持瀑布流与列表切换，并记住布局选择 | `presentation/library/LibraryScreen.kt` + `core/AppPreferences.kt`（点击「我的影像库」右侧按钮切换；瀑布流按封面比例排列，列表显示封面、标题、作者和保存时间） |
-| 9 | 已存视频长按常用操作 | `presentation/library/LibraryActions.kt`（两种布局均可长按播放、分享、保存到相册、删除；删除需再次确认，保存期间防止重复操作） |
+| 8 | 已存内容支持瀑布流与列表切换，并记住布局选择 | `presentation/library/LibraryScreen.kt` + `core/AppPreferences.kt`（点击「我的影像库」右侧按钮切换；瀑布流按封面比例排列，列表显示封面、标题、作者和保存时间） |
+| 9 | 已存内容长按常用操作 | `presentation/library/LibraryActions.kt`（两种布局均可长按播放、分享、保存到相册、删除；删除需再次确认，保存期间防止重复操作） |
 | 10 | 输入页键盘避让与自动收起 | `presentation/MainActivity.kt` + `presentation/home/HomeScreen.kt`（输入框和解析按钮避让键盘；解析、完成键、粘贴、点击空白和离开页面时收起，保留输入内容） |
 | 11 | X 推文多视频选择 | `domain/model/ParsedVideos.kt` + `presentation/home/`（每个视频独立选择画质；保留 `/video/N` 指定的媒体索引） |
 | 12 | 微博动图保存为 MP4 | `data/remote/WeiboJsonParser.kt`（读取微博提供的动图 MP4；多张动图独立选择，支持转发微博，保存后可播放和分享） |
@@ -228,6 +240,17 @@ sdk.dir=/Users/<you>/Library/Android/sdk
 ./gradlew connectedDebugAndroidTest \
   -Pandroid.testInstrumentationRunnerArguments.class=com.videodown.douyin.WeiboGifDeviceTest \
   -Pandroid.testInstrumentationRunnerArguments.live_weibo_gif=true
+
+# 指定 X 推文验收：解析 → 结果页 → 图片打包 → 看图器截图（产物在应用私有 files/x-evidence/）
+adb shell "am instrument -w -e class com.videodown.douyin.XSpecifiedPostDeviceTest \
+  -e x_post_url 'https://x.com/user/status/ID' \
+  com.videodown.douyin.debug.test/com.videodown.douyin.LocaleTestRunner"
+
+# 图片/图文真实联网测试：直链图片 + 平台图文解析并打包（约数 MiB）
+# 真实作品链接会过期，仓库不内置；平台图文另传 image_live_douyin / image_live_weibo / image_live_x
+./gradlew connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.videodown.douyin.ImageLiveDeviceTest \
+  -Pandroid.testInstrumentationRunnerArguments.live_images=true
 
 # 生成 arm64 Debug APK（默认目标架构就是 arm64-v8a）
 ./gradlew assembleDebug
@@ -326,15 +349,17 @@ app/src/main/java/com/videodown/douyin/
 
 抖音 Web API 依赖会失效的请求签名（`a_bogus` / `X-Bogus`），因此解析按**可靠性从高到低**逐级降级：
 
-1. **匿名分享页（首选）**：`GET https://www.iesdouyin.com/share/video/{aweme_id}/`
-   该页面为 SSR 渲染，正文内嵌 `window._ROUTER_DATA` JSON，无需签名即可拿到完整视频信息。
+1. **匿名分享页（首选）**：视频链接先试 `GET https://www.iesdouyin.com/share/video/{aweme_id}/`，
+   图文链接（含 `/note/`）先试 `/share/note/{aweme_id}/`，另一种再兜底。该页面为 SSR 渲染，
+   正文内嵌 `window._ROUTER_DATA` JSON，无需签名即可拿到完整信息。
 2. **签名 Web 接口**：`/aweme/v1/web/aweme/detail/`（在具备有效 Cookie/签名时可用）。
 3. **旧版 v2 接口**：`/web/api/v2/aweme/iteminfo/`（仅作最后兜底）。
 
 短链 `v.douyin.com/xxxx` 通过 HTTP 302 展开后再提取 19 位 `aweme_id`。
 
 解析 JSON 时不写死字段路径，而是**广度优先搜寻找第一个「像 aweme」的对象**（同时含有 `aweme_id`
-与 `video.play_addr`）。抖音每年会数次调整 `_ROUTER_DATA` 的键名（`video_(id)/page`、`note_(id)/page`、
+且具备 `video.play_addr` **或**非空 `images`）。图文作品的 aweme 没有可播放的视频，只看 `video`
+会让 BFS 继续往下抓推荐位里的另一个视频——先认 `images` 就是为了不把错误的内容当成这条作品。抖音每年会数次调整 `_ROUTER_DATA` 的键名（`video_(id)/page`、`note_(id)/page`、
 `videoInfoRes`、`aweme_detail` 等），这种写法可以在键名变动后继续工作。
 
 ### 分辨率来源与优先级
@@ -350,8 +375,8 @@ app/src/main/java/com/videodown/douyin/
 
 ## 微博与快手解析
 
-- 微博支持正文链接（`weibo.com/{uid}/{id}`、`m.weibo.cn/status/{id}`、`m.weibo.cn/detail/{id}`）及可展开的 `t.cn` 短链。通过匿名访客流程获取临时 Cookie，再读取正文视频信息，不读取浏览器或账号 Cookie。画质来自 `playback_list`，过滤图片预览资源。
-- 快手支持 `kuaishou.com/f/...` 分享短链、`/short-video/{id}` 和移动端 `/fw/photo/{id}`。跟随分享页跳转并解析内嵌 JSON，按目标视频 ID 匹配，避免下载推荐列表中的其他视频。
+- 微博支持正文链接（`weibo.com/{uid}/{id}`、`m.weibo.cn/status/{id}`、`m.weibo.cn/detail/{id}`）及可展开的 `t.cn` 短链。通过匿名访客流程获取临时 Cookie，再读取正文媒体信息，不读取浏览器或账号 Cookie。画质来自 `playback_list`（过滤 JPEG 预览图与缩略图条）。正文的静态图片按 `pic_ids` 顺序成为独立图片条目，尺寸优先取 `original`，其次 `largest / large / bmiddle / thumbnail`；带 `video` 字段的动图仍由既有路径存成 MP4，不会重复成静态图。**Live Photo**（`type=livephoto`）按静态图保存，静帧优先取 `largest`（它的 `original` 常被微博压到 1080），`.mov` 动作片段不当作视频条目。
+- 快手支持 `kuaishou.com/f/...` 分享短链、`/short-video/{id}` 和移动端 `/fw/photo/{id}`。跟随分享页跳转并解析内嵌 JSON，按目标作品 ID 匹配，避免下载推荐列表中的其他作品。图集作品的 `photo.atlas` 给出相对路径、CDN 主机与每张尺寸，按列表顺序展开成图片条目。
 - 两个平台复用画质选择、文件大小、下载/续传、历史、播放和转存相册流程；下载请求及续传保留各平台的 Referer。已有抖音历史记录仍可读取。
 - 这些专用解析器提供 MP4 快速路径；未返回视频时会进入通用引擎。需要登录或验证时可打开网页辅助。直链地址失效会尝试重新解析一次，能够确认所选媒体和格式时刷新链接；断点不兼容则重下，身份无法确认时提示重新选择。
 
@@ -360,9 +385,10 @@ app/src/main/java/com/videodown/douyin/
 ## X（Twitter）解析
 
 - 主路径为匿名 Guest + GraphQL，失败或缺少可用媒体时自动尝试嵌入页数据接口。匿名会话只保存在内存中，过期后重建，不读取或保存登录 Cookie。
-- 支持 `x.com`、`twitter.com`、移动域名和指向推文的 `t.co` 短链；短链只允许跳转到已识别的 X 域名。`/video/N` 按原媒体位置选择，图文混排不会错选其他视频。
+- 支持 `x.com`、`twitter.com`、移动域名和指向推文的 `t.co` 短链；短链只允许跳转到已识别的 X 域名。`/video/N` 与 `/photo/N` 都按媒体在推文里的位置选择（含图片），图文混排不会错选其他媒体。纯图片推文解析为图片条目：只接受 `pbs.twimg.com` 的 HTTPS 地址并请求 `?name=orig`，外站图片直接丢弃；引用的推文同样产出图片条目。
 - 一条推文有多个视频时，结果页先选择视频，再选择该视频的画质；引用视频单独标识。下载记录保留各媒体的独立 ID、来源链接和请求头。
 - 原生路径读取页面提供的 MP4（包括动画 GIF 对应的 MP4）；对同一推文继续用 yt-dlp 补充 HLS、分轨画质及视频卡片，按媒体 ID 合并候选并保留 `/video/N` 的选择。用户选择分片画质后由引擎下载与合并。受保护或要求登录的内容可在网页辅助中使用本机授权会话重新解析；实际能否访问取决于账号和网站限制。
+- **登录态复用**：在「我的 → X（Twitter）登录」里登录一次后，需要授权的推文（受保护、敏感内容等）会在匿名路径失败后自动改用本机登录态重试，下载与失效重解析沿用同一份登录态，不需要再次登录。登录态由系统 WebView 的 `CookieManager` 持有，**有效期完全由 X 的 `Set-Cookie` 决定**：App 不设自己的过期时间、不在启动/升级/解析失败时清除它；Cookie 过期或被服务端拒绝时，解析给出 `x:session_auth_failed` 并提示重新登录。临时导出的 Cookie 文件只服务单次请求，用完即删，不进入下载记录、备份或日志。
 - `XVideoHttpClient` 集中维护网页接口版本与参数；`XSyndicationToken` 的浮点转 36 进制行为有 JavaScript 对照测试。相关接口不是稳定的开发者 API，平台调整时仍需更新适配。
 
 2026-09-29 验证：92 项单元测试通过；3 项 Android 设备测试通过，包括真实界面输入/解析/选择 1080P/保存、离线多视频切换及故障注入后的真实备用接口访问。指定推文 `2096916397947257248` 提供 1080P/720P/360P/270P，完整下载 17,618,131 字节，Android 读取到 1920×1080、约 38 秒、包含音频。截图和日志位于 `app/build/reports/x-device/`。本次未验证 X 视频的转存相册或全程播放。
@@ -398,7 +424,14 @@ Android/data/com.videodown.douyin/files/Movies/Douyin/
 
 - 抖音接口变动频繁。若三级解析全部失效，界面会给出明确错误提示（已识别视频 ID 但取不到信息），
   此时需要更新 `DouyinJsonParser` 的字段适配。
-- 图文（图集）作品没有视频流，会提示「没有可下载的视频流」。
+- 图文/图集作品不再报「没有可下载的视频流」：抖音 `/note/`、微博多图、X 多图与快手 `atlas` 都会解析成图片条目；只有正文既没有视频也没有图片时才给出该提示。
+- 图片按**原图**保存，不做转码、压缩或去水印；看图器是否支持某种容器（如 HEIC/AVIF）取决于系统解码器，落盘与相册 MIME 仍正确。
+- GIF 直链按图片保存并保留动画；微博的「动图」仍是既有路径转成 MP4，两种行为不会互相覆盖。
+- 看图器只显示单张图片，不提供左右滑动浏览同帖其他图片（可从结果页或已存逐张打开）。
+- 打包下载的 ZIP 固定写入 `Download/拾影`；Android 9 及以下需要存储权限，未授权时只保留应用内副本并说明原因。用户只勾选了部分图片时，若签名地址过期，归档任务会按原清单失败并提示重新解析，不会把未勾选的图片悄悄塞进包里。
+- 网页抓图只覆盖**页面已加载**的图片（`img.currentSrc` 与资源计时），不抓 CSS 背景图与未触发的懒加载图；候选会按宽高/大小过滤图标，但无法保证过滤掉所有装饰图。
+- 快手图集依赖分享页内嵌 `atlas`；字段改名时需要更新 `KuaishouJsonParser`，与其它平台一样属于会随站点改版失效的适配点。
+- 微博 Live Photo 只保存静帧，不下载 `.mov` 动作片段，也不会把它当成视频；动态 GIF 仍然存成 MP4。
 - `ratio=` 派生档位属于兜底策略；若接口已提供完整 `bit_rate` 列表，则以官方档位为准。
 - 合集解析最多 20 条，且**取决于各站 extractor 的能力**：需要登录、需要 JS 渲染或受地区限制的合集可能只返回部分条目，甚至与单视频一样只返回一条；实例化结果里只包含引擎能拿到直链的条目，直播、DRM 与私享内容会被过滤掉（不会以占位条目出现）。
 - 合集解析的「整页枚举」只在引擎路径生效；被 `probeDirect` 直接识别的裸视频链接没有合集概念。
@@ -412,5 +445,10 @@ Android/data/com.videodown.douyin/files/Movies/Douyin/
 - 任务列表与首页「最近保存」本身没有门禁，所以私密条目在那里只显示「保险箱内容」；任务列表的搜索仍会匹配被隐藏的标题，只是匹配到的条目依旧显示为「保险箱内容」。
 - 保险箱内手动「保存到相册」与「分享」仍然可用——门禁已经放行，这是用户的明确操作。
 - **视频号分享链接不支持解析**（`weixin.qq.com/sph/…` 及其跳转后的 `channels.weixin.qq.com`）：那个页面只给标题、作者和播放数据，**播放地址在微信客户端内动态签发**，网页里没有可直接下载的地址；随包 yt-dlp 里也没有任何 weixin/wechat 提取器（实测逐个字符串搜过）。解析必然失败，所以失败时给的是专门的说明（「这是视频号链接：内容只能在微信里播放…」），不再提示「打开网页登录或播放后查找」——那条路对这个网站是死的；若已从别处拿到直链，粘贴直链可以正常下载。判定入口是 `VideoLinkExtractor.isWeChatChannelsLink`（`mp.weixin.qq.com` 的公众号文章不在此列）。
+- **X 登录态复用只覆盖 X**：其他站点仍需在内置网页里用登录态手动重新解析；也不从外部浏览器导入 Cookie。
+- **一次只能保存一个 X 账号**（系统 WebView 的 Cookie 空间）。切换账号要先「清除网页登录态」再登录，而该清除是整站级别的——`CookieManager` 没有可靠的按站点删除接口，所以不提供「只退出 X」。
+- **真实 X 账号登录与真实受保护推文下载未自动化**：设备用例用本地写入的 Cookie 与 `about:blank` 网页验证识别、导出、界面入口与「登录后重试」；真实登录、账号权限、站点限流仍需手动验证（步骤见验证记录）。
+- **仅登录态路径可用时，多视频推文的 `/video/N` 可能回落到第一条**：登录态重试走随包引擎，引擎按整页枚举媒体，原生路径能识别的媒体位置在这里不保证。
+- **服务端拒绝登录态时无法区分成因**：登录已过期、账号没有查看权限都会表现为登录/授权要求，所以提示把两种可能都写出来，并指向重新登录，而不是断言「已过期」。
 - **网页解析面板扫完一定会给一句结论**：找到候选就说已检查资源，一个都没有就说「本页没有发现可下载的视频」；视频号页面换成上面那句说明。候选判定见 `BrowserMediaDetector`，面板的状态文案由纯函数 `browserStatusRes` 决定。
 - **不要用 `embedsubtitles` 参数**：它是 yt-dlp 的命令行专用开关，`YoutubeDL` 会直接忽略它（已实测：下载成功、无报错、文件里没有字幕轨）。引擎里必须显式添加 `FFmpegEmbedSubtitle` 后处理器。

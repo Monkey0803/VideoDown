@@ -57,7 +57,25 @@ data class VideoVariant(
     /** CDN requests and size probes must use the source platform's Referer. */
     val referer: String? = null,
     val media: MediaDownload? = null,
+    /**
+     * 这个变体最终落地的是什么媒体。
+     *
+     * 放在最后并带默认值：既有构造点全部是位置参数 + 命名参数混用，插在中间会静默移位。
+     */
+    val kind: MediaKind = MediaKind.VIDEO,
 ) {
+    /** 下载时的扩展名：来源给出的真实扩展名优先，其次按类型兜底。 */
+    val extensionOrDefault: String
+        get() = media?.extension?.takeIf { it.isNotBlank() } ?: kind.defaultExtension
+
+    /** 记录与任务分流用的类型：音频以 `audioOnly` 为准，其余看变体类型。 */
+    val mediaKind: MediaKind
+        get() = when {
+            media?.audioOnly == true -> MediaKind.AUDIO
+            kind == MediaKind.IMAGE -> MediaKind.IMAGE
+            else -> MediaKind.VIDEO
+        }
+
     val resolutionText: String
         get() = when {
             width != null && height != null -> "${width}x${height}"
@@ -103,6 +121,15 @@ data class DouyinVideo(
 
     val defaultVariant: VideoVariant?
         get() = sortedVariants.firstOrNull()
+
+    /**
+     * 这个条目描述的是图片（图文/图集作品里的某一张）。
+     *
+     * 结果页据此隐藏画质选择与字幕开关、把「在平台中预览」换成「查看原帖」，已存页据此把点击
+     * 分流到看图器而不是播放器。
+     */
+    val isImagePost: Boolean
+        get() = variants.isNotEmpty() && variants.all { it.kind == MediaKind.IMAGE }
 
     /** Native deep link that opens this exact video in the Douyin app. */
     val videoDeepLink: String

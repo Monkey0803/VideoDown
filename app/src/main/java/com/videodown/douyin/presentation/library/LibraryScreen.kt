@@ -117,6 +117,7 @@ import com.videodown.douyin.presentation.watchBadgeText
 import com.videodown.douyin.core.watchBadge
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
+import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.presentation.history.HistoryViewModel
 import java.io.File
 
@@ -336,6 +337,13 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                         enabled = !state.batchBusy) { controlsChanged(state.libraryQuery.copy(platform = it)) }
                 }
                 item {
+                    LibraryPicker(stringResource(R.string.library_pick_kind), stringResource(libraryKindLabelRes(state.libraryQuery.mediaKind)),
+                        state.libraryQuery.mediaKind,
+                        listOf(null to stringResource(R.string.library_kind_all)) +
+                            MediaKind.entries.map { it to stringResource(libraryKindLabelRes(it)) },
+                        enabled = !state.batchBusy) { controlsChanged(state.libraryQuery.copy(mediaKind = it)) }
+                }
+                item {
                     LibraryPicker(stringResource(R.string.library_pick_folder), state.libraryQuery.folder?.ifBlank { stringResource(R.string.library_uncategorized) } ?: stringResource(R.string.library_all_folders),
                         state.libraryQuery.folder,
                         listOf(null to stringResource(R.string.library_all_folders)) + (allSaved.map { it.folder } + "").distinct().sorted().map { it to it.ifBlank { stringResource(R.string.library_uncategorized) } },
@@ -399,7 +407,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                             fadeOutSpec = motion.fast(),
                         ).combinedClickable(
                                 role = Role.Button,
-                                onClickLabel = stringResource(if (selecting) R.string.library_click_select else R.string.library_click_play),
+                                onClickLabel = stringResource(if (selecting) R.string.library_click_select else libraryClickRes(record)),
                                 onLongClickLabel = stringResource(R.string.library_long_click),
                                 onClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) onPlay(record.id) },
                                 onLongClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) selectedRecordId = record.id },
@@ -448,7 +456,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
                                 .combinedClickable(
                                     role = Role.Button,
-                                    onClickLabel = stringResource(if (selecting) R.string.library_click_select else R.string.library_click_play),
+                                    onClickLabel = stringResource(if (selecting) R.string.library_click_select else libraryClickRes(record)),
                                     onLongClickLabel = stringResource(R.string.library_long_click),
                                     onClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) onPlay(record.id) },
                                     onLongClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) selectedRecordId = record.id },
@@ -522,9 +530,19 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
             .then(if (showShimmer) Modifier.shimmer() else Modifier),
         contentAlignment = Alignment.Center,
     ) {
-        AppIcon(if (record.isAudio) AppIcons.Audio else AppIcons.Play, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        AppIcon(
+            when {
+                record.isAudio -> AppIcons.Audio
+                record.isImage -> AppIcons.Grid
+                record.isArchive -> AppIcons.ExportFolder
+                else -> AppIcons.Play
+            },
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         AsyncImage(
-            model = record.coverUrl,
+            // 图片记录直接显示本地文件：CDN 链接会过期，已下载的内容不该因此变成灰底。
+            model = if (record.isImage) record.filePath?.let(::File)?.takeIf(File::isFile) ?: record.coverUrl else record.coverUrl,
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
@@ -578,9 +596,40 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
     }
 }
 
+/** 类型筛选的显示名；`null` 表示"全部类型"。 */
+private fun libraryKindLabelRes(kind: MediaKind?): Int = when (kind) {
+    null -> R.string.library_kind_all
+    MediaKind.VIDEO -> R.string.library_kind_video
+    MediaKind.AUDIO -> R.string.library_kind_audio
+    MediaKind.IMAGE -> R.string.library_kind_image
+    MediaKind.ARCHIVE -> R.string.library_kind_archive
+}
+
+/** 点击已存的落点随记录类型变化：图片查看、压缩包打开、其余播放。 */
+private fun libraryClickRes(record: DownloadRecord): Int = when {
+    record.isImage -> R.string.library_click_view_image
+    record.isArchive -> R.string.library_click_open_archive
+    else -> R.string.library_click_play
+}
+
 @Composable
 private fun LibraryMetadata(record: DownloadRecord, modifier: Modifier = Modifier, watch: WatchBadge? = null) {
-    if (record.isAudio) Text(stringResource(R.string.library_audio_m4a), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+    when {
+        record.isAudio -> Text(stringResource(R.string.library_audio_m4a), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+        record.isImage -> Text(
+            stringResource(
+                R.string.library_image_label,
+                record.filePath?.substringAfterLast('.', "")?.uppercase()?.takeIf { it.isNotBlank() } ?: "JPG",
+            ),
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.labelSmall,
+        )
+        record.isArchive -> Text(
+            stringResource(R.string.library_archive_entries, record.archiveEntries.size),
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.labelSmall,
+        )
+    }
     Text(
         listOfNotNull(relativeTimeText(relativeTime(record.updatedAt)), watch?.let { watchBadgeText(it.fraction) }).joinToString(" · "),
         color = MaterialTheme.colorScheme.onSurfaceVariant,

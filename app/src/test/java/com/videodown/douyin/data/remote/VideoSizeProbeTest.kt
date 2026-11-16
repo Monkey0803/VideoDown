@@ -1,5 +1,8 @@
 package com.videodown.douyin.data.remote
 
+import com.videodown.douyin.domain.model.MediaDownload
+import com.videodown.douyin.domain.model.MediaKind
+import com.videodown.douyin.domain.model.MediaSourceType
 import com.videodown.douyin.domain.model.VideoVariant
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -23,5 +26,25 @@ class VideoSizeProbeTest {
         val probe = VideoSizeProbe(OkHttpClient())
         val size = probe.sizeBytes(VideoVariant(url = "http://127.0.0.1:1/unreachable", label = "720P", sizeBytes = 12345L))
         assertEquals(12345L, size)
+    }
+
+    @Test
+    fun `an image variant is probed even though it carries a media descriptor`() = runBlocking {
+        val payload = "i".repeat(1234)
+        StubHttpServer(mapOf("/image.jpg" to StubResponse(body = payload, contentType = "image/jpeg"))).use { server ->
+            val variant = VideoVariant(
+                url = "${server.baseUrl}/image.jpg",
+                label = "原图",
+                kind = MediaKind.IMAGE,
+                media = MediaDownload(
+                    type = MediaSourceType.DIRECT,
+                    pageUrl = "https://page.example/post",
+                    mediaId = "post_img1",
+                    extension = "jpg",
+                    extractor = "image",
+                ),
+            )
+            assertEquals(1234L, VideoSizeProbe(OkHttpClient()).sizeBytes(variant))
+        }
     }
 }

@@ -110,9 +110,9 @@ class BatchFeaturesDeviceTest {
     @Test fun duplicateDialogCanOpenExistingFileOrExplicitlyDownloadAgain() {
         runBlocking { history.upsert(record(0)) }; showHome()
         compose.onNodeWithText("保存当前视频").performClick()
-        compose.onNodeWithText("已有相同视频和画质").assertIsDisplayed()
+        compose.onNodeWithText("已有相同内容").assertIsDisplayed()
         assertTrue(started.isEmpty())
-        compose.onNodeWithText("查看已保存视频").performClick()
+        compose.onNodeWithText("查看已保存内容").performClick()
         compose.runOnIdle { assertEquals(listOf("one"), played) }
         compose.onNodeWithText("保存当前视频").performClick()
         compose.onNodeWithText("仍然下载").performClick()
@@ -125,7 +125,7 @@ class BatchFeaturesDeviceTest {
         compose.onNodeWithText("查看全部").performClick()
         compose.onNodeWithText("全选", substring = false).performClick()
         compose.onNodeWithText("完成选择").performClick()
-        compose.onNodeWithText("保存所选 2 个视频").performClick()
+        compose.onNodeWithText("保存所选 2 项").performClick()
         compose.onNodeWithText("发现 1 个重复任务").assertIsDisplayed()
         compose.onNodeWithText("跳过重复项").performClick()
         compose.waitUntil(5000) { started.size == 1 }

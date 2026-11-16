@@ -91,7 +91,7 @@ class PublicSiteAcceptanceDeviceTest {
                     DownloadPaths(File(directory, "downloads")), scope, platform.referer, DouyinApiClient.USER_AGENT,
                     engineDownloader = EngineMediaDownloader(ServiceLocator.videoEngine, ServiceLocator.browserSessions,
                         File(directory, "sessions")), browserCookie = { requestUrl -> runBlocking { ServiceLocator.browserSessions.cookie(requestUrl) } },
-                    validateFile = { file ->
+                    validateFile = { file, _ ->
                         try { validateVideo(file) } catch (error: Exception) {
                             val evidence = File(context.cacheDir, "public-site-evidence").apply { mkdirs() }
                             file.copyTo(File(evidence, "$key-invalid.${file.extension}"), overwrite = true)

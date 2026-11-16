@@ -47,7 +47,7 @@ class SpaceBudgetDeviceTest {
         compose.waitUntil(5000) { compose.onAllNodes(hasText("空间不足", substring = true)).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("运行任务尚需 3.8 M · 1 个任务").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("预算占用 80.0%").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("空间不足：仍缺 2.9 M，请清理残留或删除已存视频后继续。").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("空间不足：仍缺 2.9 M，请清理残留或删除已存内容后继续。").performScrollTo().assertIsDisplayed()
         capture("budget-shortfall")
     }
 

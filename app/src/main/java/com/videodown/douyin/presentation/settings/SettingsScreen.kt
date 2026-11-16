@@ -75,6 +75,7 @@ import com.videodown.douyin.core.currentAppLanguage
 import com.videodown.douyin.domain.model.speedLimitOptions
 import com.videodown.douyin.core.ThemeMode
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.presentation.login.XLoginScreen
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
 
 @Composable
@@ -140,6 +141,11 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     val sessionScope = rememberCoroutineScope()
     var sessionMessage by remember { mutableStateOf<String?>(null) }
     var backupMessage by remember { mutableStateOf<String?>(null) }
+    // X 登录态由 WebView 持有；这里只显示「本机现在有没有」，有效期交给 X 决定，不存过期时间。
+    var showXLogin by remember { mutableStateOf(false) }
+    var xSignedIn by remember { mutableStateOf<Boolean?>(null) }
+    suspend fun refreshXSession() { xSignedIn = ServiceLocator.browserSessions.xSignedIn() }
+    LaunchedEffect(Unit) { refreshXSession() }
     val exportLinksFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         if (uri != null) sessionScope.launch {
             val records = ServiceLocator.historyRepository.snapshot()
@@ -193,6 +199,10 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     val installedVersion = remember { ServiceLocator.appVersion.versionName }
 
     LaunchedEffect(openStorage) { if (openStorage) { showStorage = true; onStorageOpened() } }
+    if (showXLogin) {
+        XLoginScreen(onClose = { showXLogin = false },
+            onFinished = { showXLogin = false; sessionScope.launch { refreshXSession() } })
+    }
     if (showConcurrency) {
         var chosen by remember(maxConcurrent) { mutableStateOf(maxConcurrent) }
         AppDialog(
@@ -542,6 +552,12 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 title = stringResource(R.string.settings_engine_row), value = stringResource(R.string.settings_engine_value),
                 onClick = { showAbout = true })
             Text(engineVersion, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium)
+            SettingsRow(icon = { AppIcon(AppIcons.Profile, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_x_login_row),
+                value = stringResource(if (xSignedIn == true) R.string.settings_x_login_signed_in else R.string.settings_x_login_signed_out),
+                onClick = { showXLogin = true })
+            Text(stringResource(R.string.settings_x_login_note), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
             SettingsRow(icon = { AppIcon(AppIcons.ClearSession, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_clear_session), value = sessionMessage ?: stringResource(R.string.settings_session_local),
                 onClick = {
@@ -550,6 +566,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                             it.status in setOf(com.videodown.douyin.domain.model.DownloadStatus.RUNNING, com.videodown.douyin.domain.model.DownloadStatus.PENDING)
                         }.forEach { ServiceLocator.downloader.pause(it.id) }
                         ServiceLocator.browserSessions.clear(); sessionMessage = resources.getString(R.string.settings_session_cleared)
+                        refreshXSession()
                     }
                 })
         }

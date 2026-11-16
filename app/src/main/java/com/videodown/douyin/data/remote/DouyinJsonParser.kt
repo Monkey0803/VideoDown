@@ -4,6 +4,11 @@ import com.videodown.douyin.R
 import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.DouyinAuthor
 import com.videodown.douyin.domain.model.DouyinVideo
+import com.videodown.douyin.domain.model.MediaDownload
+import com.videodown.douyin.domain.model.MediaKind
+import com.videodown.douyin.domain.model.MediaSignature
+import com.videodown.douyin.domain.model.MediaSourceType
+import com.videodown.douyin.domain.model.VideoPlatform
 import com.videodown.douyin.domain.model.VideoVariant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -30,16 +35,21 @@ class DouyinJsonParser {
     }
 
     /** Extracts and parses the `_ROUTER_DATA` blob embedded in a share page. */
-    fun parseSharePage(html: String): DouyinVideo? {
-        val raw = extractRouterData(html) ?: return null
-        val root = runCatching { json.parseToJsonElement(raw) }.getOrNull() ?: return null
-        return parseTree(root)
+    fun parseSharePage(html: String): DouyinVideo? = parseSharePageVideos(html).firstOrNull()
+
+    /** 图文作品会解析成多条目；只要第一条时用上面的单值入口。 */
+    fun parseSharePageVideos(html: String): List<DouyinVideo> {
+        val raw = extractRouterData(html) ?: return emptyList()
+        val root = runCatching { json.parseToJsonElement(raw) }.getOrNull() ?: return emptyList()
+        return parseTreeVideos(root)
     }
 
     /** Parses a JSON API response body. */
-    fun parseJson(body: String): DouyinVideo? {
-        val root = runCatching { json.parseToJsonElement(body) }.getOrNull() ?: return null
-        return parseTree(root)
+    fun parseJson(body: String): DouyinVideo? = parseJsonVideos(body).firstOrNull()
+
+    fun parseJsonVideos(body: String): List<DouyinVideo> {
+        val root = runCatching { json.parseToJsonElement(body) }.getOrNull() ?: return emptyList()
+        return parseTreeVideos(root)
     }
 
     /**
@@ -75,9 +85,12 @@ class DouyinJsonParser {
     }
 
     /** Walks the tree and converts the first aweme-shaped object it finds. */
-    fun parseTree(root: JsonElement): DouyinVideo? {
-        val aweme = findAweme(root) ?: return null
-        return toVideo(aweme)
+    fun parseTree(root: JsonElement): DouyinVideo? = parseTreeVideos(root).firstOrNull()
+
+    /** 图文作品在这里展开成「每张图一个条目」，其余作品仍是一条视频。 */
+    fun parseTreeVideos(root: JsonElement): List<DouyinVideo> {
+        val aweme = findAweme(root) ?: return emptyList()
+        return toVideos(aweme)
     }
 
     /**
@@ -110,11 +123,108 @@ class DouyinJsonParser {
     private fun looksLikeAweme(obj: JsonObject): Boolean {
         val id = obj.string("aweme_id") ?: return false
         if (id.isBlank()) return false
+        // 图文作品没有可播放的 video，但有 images：先认图片，否则 BFS 会继续往下找到
+        // 推荐位里的另一个视频，下错东西。
+        if (imageUrls(obj).isNotEmpty()) return true
         val video = obj["video"] as? JsonObject ?: return false
         // An aweme without any playable address is not useful to us.
         return video["play_addr"] is JsonObject ||
             video["play_addr_h264"] is JsonObject ||
             video["download_addr"] is JsonObject
+    }
+
+    private fun toVideos(aweme: JsonObject): List<DouyinVideo> {
+        val images = imageUrls(aweme)
+        if (images.isNotEmpty()) {
+            return images.mapIndexed { index, image -> imageEntry(aweme, index, image) }
+        }
+        return listOf(toVideo(aweme))
+    }
+
+    /** 一张图文作品里的图片；字段名跨版本不稳，取值顺序见 [imageUrls]。 */
+    private data class ImageRef(val url: String, val width: Int?, val height: Int?)
+
+    /**
+     * 图文作品的图片地址，按作品里的展示顺序去重。
+     *
+     * Douyin 的新旧载荷分别把地址放在 `images[].url_list`、`images[].display_image.url_list`
+     * 与 `image_post_info.images[].display_image.url_list`，这里都试一遍；`images` 为空时
+     * 才回退到 `image_post_info`，避免同一张图因为两处都有而出现两次。
+     */
+    private fun imageUrls(aweme: JsonObject): List<ImageRef> {
+        val result = LinkedHashMap<String, ImageRef>()
+        fun add(node: JsonObject?) {
+            if (node == null) return
+            val url = node.imageUrl() ?: return
+            result.putIfAbsent(url, ImageRef(url, node.int("width"), node.int("height")))
+        }
+        val images = aweme["images"] as? JsonArray
+        if (images != null && images.isNotEmpty()) {
+            images.forEach { element ->
+                val image = element as? JsonObject ?: return@forEach
+                add(image)
+                add(image["display_image"] as? JsonObject)
+            }
+            return result.values.toList()
+        }
+        // 直接按键取值：`obj()` 有类内与包级两份同名扩展，这里不让解析结果依赖重载选择。
+        val postImages = (aweme["image_post_info"] as? JsonObject)?.get("images") as? JsonArray
+        postImages?.forEach { element ->
+            val item = element as? JsonObject ?: return@forEach
+            add(item["display_image"] as? JsonObject)
+            add(item["thumbnail"] as? JsonObject)
+        }
+        return result.values.toList()
+    }
+
+    private fun JsonObject.imageUrl(): String? {
+        val list = (this["url_list"] ?: this["download_url_list"]) as? JsonArray ?: return null
+        return list.asSequence()
+            .mapNotNull { (it as? JsonPrimitive)?.contentOrNullSafe() }
+            .firstOrNull { it.isNotBlank() }
+    }
+
+    private fun imageEntry(aweme: JsonObject, index: Int, image: ImageRef): DouyinVideo {
+        val awemeId = aweme.string("aweme_id").orEmpty()
+        val id = "${awemeId}_img${index + 1}"
+        val author = aweme["author"] as? JsonObject
+        val extension = MediaSignature.extensionFromUrl(image.url) ?: "jpg"
+        val pageUrl = aweme.string("share_url")?.takeIf { it.isNotBlank() }
+            ?: "https://www.douyin.com/note/$awemeId"
+        val variant = VideoVariant(
+            url = image.url,
+            label = AppText.get(R.string.quality_original),
+            width = image.width,
+            height = image.height,
+            qualityRank = 0,
+            referer = VideoPlatform.DOUYIN.referer,
+            kind = MediaKind.IMAGE,
+            media = MediaDownload(
+                type = MediaSourceType.DIRECT,
+                pageUrl = pageUrl,
+                mediaId = id,
+                formatId = extension,
+                extension = extension,
+                extractor = "image",
+            ),
+        )
+        return DouyinVideo(
+            awemeId = id,
+            title = aweme.string("desc").orEmpty().ifBlank { AppText.get(R.string.fallback_title_douyin_image) },
+            coverUrl = image.url,
+            author = DouyinAuthor(
+                uid = author?.string("uid"),
+                secUid = author?.string("sec_uid"),
+                nickname = author?.string("nickname").orEmpty(),
+                avatarUrl = author?.obj("avatar_thumb")?.firstUrl()
+                    ?: author?.obj("avatar_medium")?.firstUrl(),
+                platform = VideoPlatform.DOUYIN,
+            ),
+            variants = listOf(variant),
+            shareUrl = pageUrl,
+            platform = VideoPlatform.DOUYIN,
+            mediaLabel = AppText.get(R.string.media_label_image, index + 1),
+        )
     }
 
     private fun toVideo(aweme: JsonObject): DouyinVideo {

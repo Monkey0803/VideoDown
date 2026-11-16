@@ -49,7 +49,10 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Checkbox
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.RecoveryAction
+import com.videodown.douyin.domain.model.VideoPlatform
 import com.videodown.douyin.domain.model.failureActions
+import com.videodown.douyin.domain.model.DownloadFailureKind
+import com.videodown.douyin.presentation.login.XLoginScreen
 import com.videodown.douyin.presentation.appErrorText
 import com.videodown.douyin.presentation.failureDescription
 import com.videodown.douyin.presentation.failureTitle
@@ -152,6 +155,8 @@ fun HomeScreen(
     watchProgress: Map<String, WatchProgress> = emptyMap(),
     batchImportSeed: String? = null,
     onBatchImportSeedConsumed: () -> Unit = {},
+    /** 设备用例用本地页面替代真实登录页，避免联网；生产调用不传。 */
+    xLoginStartUrl: String = com.videodown.douyin.data.generic.XSession.LOGIN_URL,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -164,6 +169,7 @@ fun HomeScreen(
     val inputArea = remember { BringIntoViewRequester() }
     var inputFocused by remember { mutableStateOf(false) }
     var showBrowser by remember(state.parseRequestId) { mutableStateOf(false) }
+    var showXLogin by remember(state.parseRequestId) { mutableStateOf(false) }
     var showBatchImport by rememberSaveable { mutableStateOf(false) }
     if (showBatchImport) BatchImportDialog(batchImportModel, { showBatchImport = false }, onOpenHistory)
     LaunchedEffect(openBatchImport) {
@@ -187,6 +193,11 @@ fun HomeScreen(
         com.videodown.douyin.presentation.browser.BrowserAssistScreen(browserUrl,
             onClose = { showBrowser = false },
             onResult = { result -> showBrowser = false; viewModel.acceptBrowserResult(result) })
+    }
+    if (showXLogin) {
+        // 登录成功后立刻用同一份输入重试：这就是「一次登录，后续不再登录」的捷径。
+        XLoginScreen(startUrl = xLoginStartUrl, onClose = { showXLogin = false },
+            onFinished = { signedIn -> showXLogin = false; if (signedIn) viewModel.parse() })
     }
     LaunchedEffect(state.queuedCount) {
         if (state.queuedCount != null) { viewModel.onQueuedConsumed(); onOpenHistory() }
@@ -228,6 +239,29 @@ fun HomeScreen(
                     else -> stringResource(R.string.home_existing_resumable)
                 }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+    }
+    state.archiveDuplicate?.let { existing ->
+        AppDialog(
+            onDismissRequest = viewModel::dismissArchiveDuplicate,
+            icon = AppIcons.Warning,
+            title = stringResource(R.string.home_archive_duplicate_title),
+            actions = {
+                FilledTonalButton(onClick = viewModel::confirmArchiveDuplicate, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.home_archive_duplicate_confirm))
+                }
+                AppDialogButtonRow {
+                    TextButton(onClick = viewModel::dismissArchiveDuplicate) { Text(stringResource(R.string.action_cancel)) }
+                }
+            },
+        ) {
+            Text(stringResource(R.string.home_archive_duplicate_body), style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("${existing.title} · " + when (existing.status) {
+                DownloadStatus.COMPLETED -> stringResource(R.string.home_existing_saved)
+                DownloadStatus.PENDING, DownloadStatus.RUNNING -> stringResource(R.string.home_existing_downloading)
+                else -> stringResource(R.string.home_existing_resumable)
+            }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
     val imeVisible = WindowInsets.isImeVisible
@@ -383,6 +417,18 @@ fun HomeScreen(
                                 }) { Text(if (action == RecoveryAction.RETRY) stringResource(R.string.home_retry_parse) else recoveryActionLabel(action)) }
                             }
                         }
+                        // X 的登录态是「登录一次、之后自动复用」的：失败时给一个直达登录网页的入口。
+                        val xLink = VideoLinkExtractor.extract(state.input)?.platform == VideoPlatform.X
+                        val xLoginHelps = state.errorKind.let {
+                            it == DownloadFailureKind.LOGIN_REQUIRED || it == DownloadFailureKind.ACCESS_DENIED ||
+                                it == DownloadFailureKind.UNKNOWN
+                        }
+                        if (xLink && xLoginHelps) {
+                            TextButton(contentPadding = PaddingValues(vertical = 8.dp), enabled = !state.isParsing,
+                                onClick = { dismissKeyboard(); showXLogin = true }) {
+                                Text(stringResource(R.string.x_login_action))
+                            }
+                        }
                         TextButton(contentPadding = PaddingValues(vertical = 8.dp), onClick = { dismissKeyboard(); showBatchImport = true }) {
                             AppIcon(AppIcons.BatchImport, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
@@ -456,6 +502,9 @@ fun HomeScreen(
                 onSelectAllMedia = viewModel::selectAllMedia,
                 onDownloadSelected = viewModel::downloadSelected,
                 onToggleSubtitles = viewModel::toggleSaveSubtitles,
+                onDownloadArchive = viewModel::downloadArchive,
+                onConfirmArchiveDuplicate = viewModel::confirmArchiveDuplicate,
+                onDismissArchiveDuplicate = viewModel::dismissArchiveDuplicate,
                 onPlayDownloaded = onPlayDownloaded,
                 onOpenAuthor = { video ->
                     if (!DouyinIntents.openAuthorProfile(context, video.author)) {
@@ -486,6 +535,9 @@ private fun ResultScreen(
     onSelectAllMedia: () -> Unit,
     onDownloadSelected: () -> Unit,
     onToggleSubtitles: (Boolean) -> Unit,
+    onDownloadArchive: () -> Unit,
+    onConfirmArchiveDuplicate: () -> Unit,
+    onDismissArchiveDuplicate: () -> Unit,
     onPlayDownloaded: (String) -> Unit,
     onOpenAuthor: (DouyinVideo) -> Unit,
     onPreview: (DouyinVideo) -> Unit,
@@ -584,11 +636,18 @@ private fun ResultScreen(
                 }
                 IconButton(onClick = { onPreview(video) }, modifier = Modifier.align(Alignment.Center)
                     .size(56.dp).clip(CircleShape).background(Color.White.copy(alpha = .28f))) {
-                    AppIcon(AppIcons.Play, stringResource(R.string.home_preview_on_platform, stringResource(videoPlatformLabelRes(video.platform))), tint = Color.White, modifier = Modifier.size(35.dp))
+                    if (video.isImagePost) {
+                        // 图片没有"在平台中预览播放"，这里打开的是原帖。
+                        AppIcon(AppIcons.ExternalLink, stringResource(R.string.home_view_post), tint = Color.White, modifier = Modifier.size(28.dp))
+                    } else {
+                        AppIcon(AppIcons.Play, stringResource(R.string.home_preview_on_platform, stringResource(videoPlatformLabelRes(video.platform))), tint = Color.White, modifier = Modifier.size(35.dp))
+                    }
                 }
-                Text(formatDuration(video.durationMs), color = Color.White, style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp).clip(MaterialTheme.shapes.small)
-                        .background(Color.Black.copy(alpha = .5f)).padding(horizontal = 7.dp, vertical = 5.dp))
+                if (!video.isImagePost) {
+                    Text(formatDuration(video.durationMs), color = Color.White, style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp).clip(MaterialTheme.shapes.small)
+                            .background(Color.Black.copy(alpha = .5f)).padding(horizontal = 7.dp, vertical = 5.dp))
+                }
             }
             Column(Modifier.padding(horizontal = 22.dp, vertical = 21.dp)) {
                 Text(video.title, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall,
@@ -611,6 +670,16 @@ private fun ResultScreen(
                 }
                 Spacer(Modifier.height(18.dp))
                 Box(Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
+                if (video.isImagePost) {
+                    // 图片只有原图一档：不显示画质选择，也不给"无音轨"这类视频概念。
+                    Row(Modifier.fillMaxWidth().padding(top = 22.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.quality_original), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                        Spacer(Modifier.weight(1f))
+                        Text(video.sortedVariants.firstOrNull()?.sizeBytes?.takeIf { it > 0L }?.let(::formatBytes)
+                                ?: stringResource(if (state.isLoadingSizes) R.string.home_size_loading else R.string.home_size_unknown),
+                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else {
                 Row(Modifier.fillMaxWidth().padding(top = 22.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.home_choose_quality), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.weight(1f))
@@ -656,6 +725,7 @@ private fun ResultScreen(
                 } else {
                     Text(stringResource(R.string.home_no_audio_track), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
                 }
+                }
                 // Only offered when the source really has a subtitle track and the target is a video:
                 // there is nothing to embed into an extracted audio file.
                 val subtitleTarget = state.video ?: state.videos.firstOrNull { it.selectionKey() in state.selectedMedia }
@@ -672,9 +742,18 @@ private fun ResultScreen(
                     Text(stringResource(R.string.home_subtitles_hint),
                         style = MaterialTheme.typography.labelMedium)
                 }
-                Text(stringResource(R.string.home_result_note),
+                Text(stringResource(if (video.isImagePost) R.string.home_result_image_note else R.string.home_result_note),
                     color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(top = 18.dp))
+            }
+        }
+        if (state.canDownloadArchive) {
+            TextButton(
+                onClick = onDownloadArchive,
+                enabled = !state.isSubmitting,
+                modifier = Modifier.padding(horizontal = 22.dp).testTag("download-archive"),
+            ) {
+                Text(stringResource(R.string.home_download_archive, state.archiveTargets.size))
             }
         }
         PrimaryButton(
@@ -686,6 +765,7 @@ private fun ResultScreen(
                 else -> stringResource(
                     when {
                         state.selectedVariant?.media?.audioOnly == true -> R.string.home_save_audio
+                        video.isImagePost -> R.string.home_save_current_image
                         state.videos.size > 1 -> R.string.home_save_current
                         else -> R.string.home_save_local
                     },
@@ -771,6 +851,7 @@ private fun homeInfoText(info: HomeInfo): String = when (info) {
     is HomeInfo.StoredFailure -> storedErrorMessage(info.stored).orEmpty()
     is HomeInfo.Queued -> stringResource(R.string.home_info_queued, info.count)
     is HomeInfo.QueuedPartial -> stringResource(R.string.home_info_queued_partial, info.count)
+    HomeInfo.ArchiveQueued -> stringResource(R.string.home_archive_queued)
 }
 
 /** The wording for a parse failure. */

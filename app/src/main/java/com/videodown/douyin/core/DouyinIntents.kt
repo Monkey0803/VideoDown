@@ -40,7 +40,8 @@ object DouyinIntents {
     }
 
     fun openVideo(context: Context, video: DouyinVideo): Boolean =
-        if (video.platform == VideoPlatform.DOUYIN) openVideo(context, video.awemeId)
+        // 图片条目的 awemeId 带 `_imgN` 后缀，拼不出合法的视频深链；图文一律回到原帖网页。
+        if (!video.isImagePost && video.platform == VideoPlatform.DOUYIN) openVideo(context, video.awemeId)
         else tryOpenWeb(context, video.videoWebUrl)
 
     fun openVideo(context: Context, record: DownloadRecord): Boolean = openVideo(context,
@@ -79,7 +80,15 @@ object DouyinIntents {
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        val chooser = Intent.createChooser(intent, context.getString(if (mimeType.startsWith("audio/")) com.videodown.douyin.R.string.share_audio else com.videodown.douyin.R.string.share_video))
+        val chooserTitle = com.videodown.douyin.R.string.share_file
+        val title = when {
+            mimeType.startsWith("audio/") -> com.videodown.douyin.R.string.share_audio
+            mimeType.startsWith("image/") -> com.videodown.douyin.R.string.share_image
+            mimeType == "application/zip" -> com.videodown.douyin.R.string.share_archive
+            mimeType.startsWith("video/") -> com.videodown.douyin.R.string.share_video
+            else -> chooserTitle
+        }
+        val chooser = Intent.createChooser(intent, context.getString(title))
         return runCatching { context.startActivity(chooser) }.isSuccess
     }
 

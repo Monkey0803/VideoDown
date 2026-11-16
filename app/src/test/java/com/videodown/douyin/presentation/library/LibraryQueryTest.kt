@@ -36,6 +36,23 @@ class LibraryQueryTest {
         assertFalse(record.copy(media = media).matchesSelection(video, variant.copy(media = media.copy(formatId = "other"))))
     }
 
+    @Test fun `media kind narrows the list and combines with search`() {
+        val mixed = listOf(
+            DownloadRecord("v", "v", "视频记录", updatedAt = 10),
+            DownloadRecord("i", "i", "图片记录", updatedAt = 40, mediaKind = MediaKind.IMAGE),
+            DownloadRecord("a", "a", "音频记录", updatedAt = 30, mediaKind = MediaKind.AUDIO,
+                media = MediaDownload(audioOnly = true)),
+            DownloadRecord("z", "z", "压缩包记录", updatedAt = 20, mediaKind = MediaKind.ARCHIVE),
+        )
+        assertEquals(listOf("i"), LibraryQuery(mediaKind = MediaKind.IMAGE).apply(mixed).map { it.id })
+        assertEquals(listOf("a"), LibraryQuery(mediaKind = MediaKind.AUDIO).apply(mixed).map { it.id })
+        assertEquals(listOf("z"), LibraryQuery(mediaKind = MediaKind.ARCHIVE).apply(mixed).map { it.id })
+        assertEquals("旧的视频记录默认仍是视频", listOf("v"), LibraryQuery(mediaKind = MediaKind.VIDEO).apply(mixed).map { it.id })
+        assertEquals(listOf("i"), LibraryQuery("图片", mediaKind = MediaKind.IMAGE).apply(mixed).map { it.id })
+        assertTrue("搜索与类型必须同时满足",
+            LibraryQuery("视频", mediaKind = MediaKind.IMAGE).apply(mixed).isEmpty())
+    }
+
     @Test fun `the normal library never mixes in private records`() {
         val mixed = listOf(
             DownloadRecord("a", "a", "公开", updatedAt = 10),

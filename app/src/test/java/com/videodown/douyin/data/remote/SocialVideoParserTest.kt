@@ -75,6 +75,22 @@ class SocialVideoParserTest {
         assertTrue(KuaishouJsonParser().parse(html, "https://m.gifshow.com/fw/photo/12345678")!!.variants.isEmpty())
     }
 
+    @Test fun `kuaishou atlas expands into one image entry per picture`() {
+        val html = """<script>window.INIT_STATE = {"photo":{"id":"3xs8rvdz44kheme","caption":"图集",
+            "user":{"id":"u1","name":"作者"},
+            "atlas":{"cdnList":[{"cdn":"p4.a.yximgs.com"}],
+                     "list":["/ufile/atlas/a_0.jpg","/ufile/atlas/a_1.webp"],
+                     "size":[{"w":1080,"h":1920},{"w":1080,"h":1440}]}}};</script>"""
+        val videos = KuaishouJsonParser().parseVideos(html, "https://m.gifshow.com/fw/photo/3xs8rvdz44kheme")
+        assertEquals(2, videos.size)
+        assertTrue(videos.all { it.isImagePost })
+        assertEquals("https://p4.a.yximgs.com/ufile/atlas/a_0.jpg", videos[0].variants.single().url)
+        assertEquals("https://p4.a.yximgs.com/ufile/atlas/a_1.webp", videos[1].variants.single().url)
+        assertEquals("webp", videos[1].variants.single().media?.extension)
+        assertEquals(1080, videos[0].variants.single().width)
+        assertEquals("media_label_image(2)", videos[1].mediaLabel)
+    }
+
     companion object {
         const val WEIBO = """{"idstr":"5348502741978964","mblogid":"RklMe8iOM","text_raw":"测试视频",
           "user":{"idstr":"5867737487","screen_name":"测试作者"},

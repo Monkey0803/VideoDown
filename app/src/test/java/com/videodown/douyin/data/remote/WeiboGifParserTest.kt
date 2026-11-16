@@ -2,6 +2,7 @@ package com.videodown.douyin.data.remote
 
 import com.videodown.douyin.core.TestText
 
+import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.VideoPlatform
 import org.junit.Assert.*
 import org.junit.Test
@@ -28,13 +29,16 @@ class WeiboGifParserTest {
         assertNull(variant.sizeBytes)
     }
 
-    @Test fun `multiple GIFs retain picture order and independent media identities`() {
+    @Test fun `multiple GIFs and still pictures retain picture order and independent media identities`() {
         val result = WeiboJsonParser().parseVideos(MULTI_GIF_POST, "RkkIUuy8h")!!
-        assertEquals(listOf("RkkIUuy8h_second", "RkkIUuy8h_first"), result.videos.map { it.awemeId })
+        // 动图仍是 mp4 条目；帖子里的静态图（第 2 张）现在是独立的图片条目。
+        assertEquals(listOf("RkkIUuy8h_second", "RkkIUuy8h_first", "RkkIUuy8h_img2"), result.videos.map { it.awemeId })
         // The label names the resource and carries its argument; the wording lives in values-en.
-        assertEquals(listOf("media_label_animated(1)", "media_label_animated(2)"), result.videos.map { it.mediaLabel })
-        assertEquals(listOf("360P", "720P"), result.videos.map { it.variants.single().label })
+        assertEquals(listOf("media_label_animated(1)", "media_label_animated(2)", "media_label_image(2)"), result.videos.map { it.mediaLabel })
+        assertEquals(listOf("360P", "720P", "quality_original"), result.videos.map { it.variants.single().label })
         assertEquals("https://video.example/second.mp4", result.selectedVideo.defaultVariant!!.url)
+        assertTrue("the still picture is an image entry", result.videos.last().isImagePost)
+        assertEquals("https://img.example/photo.jpg", result.videos.last().variants.single().url)
         assertEquals(result.selectedVideo, WeiboJsonParser().parse(MULTI_GIF_POST, "RkkIUuy8h"))
     }
 
@@ -82,12 +86,49 @@ class WeiboGifParserTest {
         assertEquals("RkkIUuy8h_second", videos.single().awemeId)
     }
 
+    @Test fun `live photos keep their still frame and prefer the largest rendition`() {
+        val result = WeiboJsonParser().parseVideos(LIVE_PHOTO_POST, "Rrei7jysH")!!
+        assertEquals(listOf("Rrei7jysH_img1", "Rrei7jysH_img2"), result.videos.map { it.awemeId })
+        assertTrue(result.videos.all { it.isImagePost })
+        assertEquals(listOf(MediaKind.IMAGE, MediaKind.IMAGE), result.videos.map { it.variants.single().kind })
+        // Live Photo 的 original 被压到 1080，largest 才是最大静帧。
+        assertEquals(
+            listOf("https://wx4.sinaimg.cn/large/lp1.jpg", "https://wx5.sinaimg.cn/large/lp2.jpg"),
+            result.videos.map { it.variants.single().url },
+        )
+        assertEquals(listOf("jpg", "jpg"), result.videos.map { it.variants.single().extensionOrDefault })
+        assertTrue("the .mov motion clip must not be offered as a video",
+            result.videos.none { video -> video.variants.any { it.url.contains("video.weibo.com") } })
+    }
+
+    @Test fun `a gif and a live photo in one post stay one mp4 and one image`() {
+        val body = """{"mblogid":"mixed","pic_ids":["gif","lp"],"pic_infos":{
+            "gif":{"type":"gif","video":"https://video.example/mixed.mp4"},
+            "lp":{"type":"livephoto","video":"https://video.weibo.com/media/play?livephoto=x.mov",
+                  "largest":{"url":"https://wx4.sinaimg.cn/large/lp.jpg","width":1080,"height":1920}}}}"""
+        val videos = WeiboJsonParser().parseVideos(body, "mixed")!!
+        assertEquals(listOf("mixed_gif", "mixed_img2"), videos.videos.map { it.awemeId })
+        assertFalse(videos.videos.first().isImagePost)
+        assertTrue(videos.videos.last().isImagePost)
+        assertEquals(MediaKind.IMAGE, videos.videos.last().variants.single().kind)
+    }
+
     companion object {
         // Sanitized shape of the supplied post; never store expiring CDN signatures in fixtures.
         const val GIF_POST = """{"idstr":"123","mblogid":"RkkIUuy8h","text_raw":"动图测试",
             "user":{"idstr":"2453184077","screen_name":"动图作者"},"pic_ids":["gif-one"],
             "pic_infos":{"gif-one":{"type":"gif","video":"http://g.us.sinaimg.cn/example.mp4?label=gif_mp4&amp;Expires=123",
                 "largest":{"url":"https://wx4.sinaimg.cn/large/gif-one.gif","width":720,"height":1280}}}}"""
+
+        /** 真实 livephoto 载荷的脱敏形状：`video` 是 .mov 动作片段，静帧在 original/largest。 */
+        const val LIVE_PHOTO_POST = """{"mblogid":"Rrei7jysH","text_raw":"选腿还是雷","user":{"idstr":"3288446905","screen_name":"作者"},
+            "pic_ids":["lp1","lp2"],"pic_infos":{
+                "lp1":{"type":"livephoto","video":"https://video.weibo.com/media/play?livephoto=lp1.mov",
+                    "original":{"url":"https://wx4.sinaimg.cn/orj1080/lp1.jpg","width":1080,"height":1920},
+                    "largest":{"url":"https://wx4.sinaimg.cn/large/lp1.jpg","width":2048,"height":2730}},
+                "lp2":{"type":"livephoto","video":"https://video.weibo.com/media/play?livephoto=lp2.mov",
+                    "original":{"url":"https://wx5.sinaimg.cn/orj1080/lp2.jpg","width":1080,"height":1439},
+                    "largest":{"url":"https://wx5.sinaimg.cn/large/lp2.jpg","width":2048,"height":2730}}}}"""
 
         const val MULTI_GIF_POST = """{"mblogid":"RkkIUuy8h","pic_ids":["second","photo","first"],"pic_infos":{
             "first":{"type":"gif","video":"https://video.example/first.mp4","largest":{"width":720,"height":1280}},

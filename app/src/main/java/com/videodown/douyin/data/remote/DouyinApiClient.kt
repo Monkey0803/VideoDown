@@ -66,11 +66,17 @@ class DouyinApiClient(
         }
     }
 
-    /** Fetches the anonymous share page that carries `_ROUTER_DATA`. */
+    /**
+     * Fetches the anonymous share page that carries `_ROUTER_DATA`.
+     *
+     * 图文作品（`/note/`）与视频共用同一套 SSR 载荷，但分享页路径不同；调用方先按链接形态决定
+     * 先试哪一种，另一种再兜底。
+     */
     @Throws(IOException::class)
-    fun fetchSharePageHtml(awemeId: String): String {
+    fun fetchSharePageHtml(awemeId: String, note: Boolean = false): String {
+        val kind = if (note) "note" else "video"
         val request = Request.Builder()
-            .url("$iesdouyinBase/share/video/$awemeId/")
+            .url("$iesdouyinBase/share/$kind/$awemeId/")
             .get()
             .header("User-Agent", USER_AGENT)
             .header("Referer", REFERER)

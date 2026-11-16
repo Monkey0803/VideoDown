@@ -85,6 +85,21 @@ class GenericVideoRepository(
                 if (!response.isSuccessful) return@use null
                 val mime = response.header("Content-Type").orEmpty().substringBefore(';').lowercase()
                 val bytes = response.peekBody(512).bytes()
+                // 图片直链：魔数命中就按图片条目返回，不能落到下面的视频判定里被判失败。
+                val imageExtension = MediaSignature.imageExtension(bytes, mime)
+                if (imageExtension != null) {
+                    val size = response.header("Content-Range")?.substringAfterLast('/')?.toLongOrNull()
+                        ?: if (response.code == 200) response.header("Content-Length")?.toLongOrNull() else null
+                    return@use ImageMedia.entry(
+                        url = response.request.url.toString(),
+                        pageUrl = url,
+                        extension = imageExtension,
+                        sizeBytes = size,
+                        referer = referer ?: response.request.url.toString(),
+                        userAgent = userAgent,
+                        browserSession = browser,
+                    )
+                }
                 val mp4 = bytes.size >= 8 && bytes.copyOfRange(4, 8).contentEquals("ftyp".toByteArray())
                 val webm = bytes.size >= 4 && bytes.take(4) == listOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
                 val prefix = bytes.toString(Charsets.ISO_8859_1)

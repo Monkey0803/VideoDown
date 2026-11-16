@@ -1,6 +1,7 @@
 package com.videodown.douyin.presentation.library
 
 import com.videodown.douyin.core.LibrarySort
+import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.VideoPlatform
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -42,6 +43,7 @@ class LibraryReorderGateTest {
     fun `each filter closes the gate`() {
         assertFalse("平台过滤", open.copy(platform = VideoPlatform.DOUYIN).ordersManually)
         assertFalse("分类过滤", open.copy(folder = "旅行").ordersManually)
+        assertFalse("类型过滤", open.copy(mediaKind = MediaKind.IMAGE).ordersManually)
         assertFalse("仅收藏", open.copy(favoritesOnly = true).ordersManually)
         assertFalse("保险箱", open.copy(vaultOnly = true).ordersManually)
     }

@@ -11,7 +11,11 @@ import java.util.concurrent.TimeUnit
 /** Reads the size advertised by a video CDN without downloading the video body. */
 class VideoSizeProbe(private val client: OkHttpClient) {
     suspend fun sizeBytes(variant: VideoVariant): Long? = withContext(Dispatchers.IO) {
-        if (variant.media != null) return@withContext variant.sizeBytes?.takeIf { it > 0L }
+        // 引擎/直链格式的大小由来源报告，探测没有意义；图片不同——解析器往往不知道大小，
+        // 结果页不该因此显示"未知"，所以图片仍走一次 HEAD/Range。
+        if (variant.media != null && variant.kind != com.videodown.douyin.domain.model.MediaKind.IMAGE) {
+            return@withContext variant.sizeBytes?.takeIf { it > 0L }
+        }
         variant.sizeBytes?.takeIf { it > 0L } ?: runCatching { probe(variant.url, variant.referer ?: DouyinApiClient.REFERER) }.getOrNull()
     }
 

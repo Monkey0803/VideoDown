@@ -74,7 +74,7 @@ class ResultSelectionDeviceTest {
         compose.onNodeWithText("收起标题").performScrollTo().performClick()
         compose.onNodeWithText("展开标题").assertIsDisplayed()
         open()
-        compose.onNodeWithText("选择视频（12）").assertIsDisplayed()
+        compose.onNodeWithText("选择内容（12）").assertIsDisplayed()
         screenshot("result-selection.png")
     }
     @Test fun checkboxDoesNotChangePreviewAndBatchUsesChosenItems() {
@@ -83,7 +83,7 @@ class ResultSelectionDeviceTest {
         compose.onNodeWithContentDescription("勾选动画 2").performClick().assertIsOn()
         compose.onNodeWithText("完成选择").assertIsDisplayed().performClick()
         compose.onNodeWithText("当前 1/12 · 已选 2 个").assertIsDisplayed()
-        compose.onNodeWithText("保存所选 2 个视频").performClick()
+        compose.onNodeWithText("保存所选 2 项").performClick()
         compose.waitUntil(5000) { saved.size == 2 }
         assertEquals(listOf("result-ui-1" to "720P", "result-ui-2" to "720P"), saved)
     }

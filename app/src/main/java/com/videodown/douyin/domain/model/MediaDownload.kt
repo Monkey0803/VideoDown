@@ -44,5 +44,13 @@ fun videoMimeType(extension: String): String = when (extension.lowercase()) {
     "mov" -> "video/quicktime"
     "ts" -> "video/mp2t"
     "mp4", "m4v" -> "video/mp4"
+    "jpg", "jpeg" -> "image/jpeg"
+    "png" -> "image/png"
+    "webp" -> "image/webp"
+    "gif" -> "image/gif"
+    "avif" -> "image/avif"
+    "heic", "heif" -> "image/heic"
+    "bmp" -> "image/bmp"
+    "zip" -> "application/zip"
     else -> "application/octet-stream"
 }

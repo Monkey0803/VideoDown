@@ -148,7 +148,11 @@ class HistoryViewModel(
     fun resumeSelected(ids: Set<String>) = runBatch(ids, BatchOperation.RESUME, { it == DownloadStatus.PAUSED || it == DownloadStatus.FAILED }, { it.canRetryDownload }) {
         downloader.resume(it.id)
     }
-    fun exportSelected(ids: Set<String>, operation: BatchOperation = BatchOperation.SAVE_TO_GALLERY) = runBatch(ids, operation, { it == DownloadStatus.COMPLETED }) {
+    fun exportSelected(ids: Set<String>, operation: BatchOperation = BatchOperation.SAVE_TO_GALLERY) = runBatch(
+        ids, operation, { it == DownloadStatus.COMPLETED },
+        // 压缩包不是相册条目：完成时已写入下载目录，批量"保存到相册"直接跳过而不是记失败。
+        eligibleRecord = { !it.isArchive },
+    ) {
         exportRecord(it).getOrThrow()
     }
 

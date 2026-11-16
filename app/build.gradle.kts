@@ -195,6 +195,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
+    implementation(libs.zoomimage.compose.coil3)
     implementation(libs.reorderable)
     implementation(libs.graphics.shapes)
 

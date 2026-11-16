@@ -125,7 +125,14 @@ internal fun LibraryActions(
             containerColor = MaterialTheme.colorScheme.background,
         ) {
             Column(Modifier.verticalScroll(rememberScrollState()).padding(bottom = 12.dp)) {
-                Text(stringResource(if (selected.isAudio) R.string.library_actions_audio else R.string.library_actions_video), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
+                Text(stringResource(
+                    when {
+                        selected.isAudio -> R.string.library_actions_audio
+                        selected.isImage -> R.string.library_actions_image
+                        selected.isArchive -> R.string.library_actions_archive
+                        else -> R.string.library_actions_video
+                    },
+                ), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 24.dp))
                 Text(VaultPolicy.title(selected, vaultUnlocked) ?: resources.getString(R.string.vault_locked_title), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
@@ -138,20 +145,40 @@ internal fun LibraryActions(
                     onToggleVault(selected); onDismiss()
                 }
                 LibraryActionRow(stringResource(R.string.library_export_folder), AppIcons.ExportFolder, enabled = !organizing) { onFileExport(selected); onDismiss() }
-                if (!selected.isAudio) LibraryActionRow(stringResource(R.string.library_extract_audio), AppIcons.ExtractAudio, enabled = !organizing) { onExtractAudio(selected); onDismiss() }
-                LibraryActionRow(stringResource(if (selected.isAudio) R.string.library_play_audio else R.string.library_play_video), AppIcons.Play) {
+                if (selected.isVideo) LibraryActionRow(stringResource(R.string.library_extract_audio), AppIcons.ExtractAudio, enabled = !organizing) { onExtractAudio(selected); onDismiss() }
+                LibraryActionRow(stringResource(
+                    when {
+                        selected.isAudio -> R.string.library_play_audio
+                        selected.isImage -> R.string.library_open_image
+                        selected.isArchive -> R.string.library_open_archive
+                        else -> R.string.library_play_video
+                    },
+                ), when {
+                    selected.isAudio -> AppIcons.Audio
+                    selected.isImage -> AppIcons.Grid
+                    selected.isArchive -> AppIcons.ExportFolder
+                    else -> AppIcons.Play
+                }) {
                     onDismiss()
                     if (selected.filePath?.let { File(it).isFile } == true) onPlay(selected.id)
                     else showMessage(resources.getString(R.string.library_file_missing))
                 }
-                LibraryActionRow(stringResource(if (selected.isAudio) R.string.library_share_audio else R.string.library_share_video), AppIcons.Share) {
+                LibraryActionRow(stringResource(
+                    when {
+                        selected.isAudio -> R.string.library_share_audio
+                        selected.isImage -> R.string.library_share_image
+                        selected.isArchive -> R.string.library_share_archive
+                        else -> R.string.library_share_video
+                    },
+                ), AppIcons.Share) {
                     onDismiss()
                     val file = selected.filePath?.let(::File)
                     if (file == null || !file.isFile || !DouyinIntents.shareFile(context, file)) {
                         showMessage(resources.getString(R.string.library_share_failed))
                     }
                 }
-                LibraryActionRow(
+                // 压缩包在完成时已写入公共下载目录，这里不再提供"保存到相册"（它不是相册条目）。
+                if (!selected.isArchive) LibraryActionRow(
                     stringResource(if (exportingId == selected.id) R.string.library_saving else if (selected.isAudio) R.string.library_save_to_music else R.string.library_save_to_gallery),
                     if (selected.isAudio) AppIcons.Audio else AppIcons.SaveAlbum,
                     enabled = exportingId == null && pendingPermissionId == null,

@@ -139,6 +139,42 @@ class DouyinJsonParserTest {
 
     /** Stray braces and quoted braces inside strings must not break brace counting. */
     @Test
+    fun `image posts become one entry per image with stable identities`() {
+        val videos = parser.parseSharePageVideos(noteSharePageHtml())
+
+        assertEquals(listOf("7123456789012345678_img1", "7123456789012345678_img2"), videos.map { it.awemeId })
+        assertTrue(videos.all { it.isImagePost })
+        assertEquals("https://p3-sign.douyinpic.com/note-1.jpeg", videos[0].variants.single().url)
+        assertEquals("jpg", videos[0].variants.single().media?.extension)
+        assertEquals(videos[0].awemeId, videos[0].variants.single().media?.mediaId)
+        assertEquals("media_label_image(1)", videos[0].mediaLabel)
+        assertEquals("https://www.douyin.com/note/7123456789012345678", videos[0].videoWebUrl)
+        assertEquals(1080, videos[0].variants.single().width)
+        assertEquals(videos[0], parser.parseSharePage(noteSharePageHtml()))
+    }
+
+    @Test
+    fun `an image post never falls through to a recommended video`() {
+        // 图文作品自身的 aweme 没有 video.play_addr；若只看 video，BFS 会继续往下抓到推荐位的视频。
+        val videos = parser.parseSharePageVideos(noteSharePageHtml(includeRecommendation = true))
+
+        assertEquals(2, videos.size)
+        assertTrue(videos.all { it.isImagePost })
+        assertTrue(videos.none { it.variants.any { variant -> variant.url.contains("recommended") } })
+    }
+
+    @Test
+    fun `image_post_info payloads are understood too`() {
+        val html = "<script>window._ROUTER_DATA = {\"loaderData\":{\"note/1/page\":{\"videoInfoRes\":{\"item_list\":[" +
+            "{\"aweme_id\":\"7000000000000000002\",\"desc\":\"图文\",\"image_post_info\":{\"images\":[{\"display_image\":{\"url_list\":[\"https://p3.douyinpic.com/i/one.webp\"]}}]}}" +
+            "]}}}};</script>"
+        val videos = parser.parseSharePageVideos(html)
+        assertEquals(1, videos.size)
+        assertEquals("webp", videos.single().variants.single().media?.extension)
+        assertEquals("https://p3.douyinpic.com/i/one.webp", videos.single().variants.single().url)
+    }
+
+    @Test
     fun `extracts router data when strings contain braces`() {
         val html = """<script>window._ROUTER_DATA = {"a":"}{ not a real brace","b":{"c":1}}</script>"""
         val extracted = parser.extractRouterData(html)
@@ -256,5 +292,18 @@ class DouyinJsonParserTest {
           "errors": null
         }
         """.trimIndent()
+    }
+
+    private fun noteSharePageHtml(includeRecommendation: Boolean = false): String {
+        val recommendation = if (includeRecommendation) {
+            ""","recommend_list":[{"aweme_id":"7000000000000000001","desc":"推荐","video":{"play_addr":{"url_list":["https://v.example/recommended.mp4"],"width":720,"height":1280}}}]"""
+        } else {
+            ""
+        }
+        val aweme = """{"aweme_id":"7123456789012345678","desc":"周末九宫格","author":{"uid":"1","sec_uid":"sec","nickname":"作者","avatar_thumb":{"url_list":["https://p9-sign.douyinpic.com/avatar.jpeg"]}},
+            "images":[{"url_list":["https://p3-sign.douyinpic.com/note-1.jpeg"],"width":1080,"height":1440},
+                      {"url_list":["https://p3-sign.douyinpic.com/note-2.jpeg"],"width":1080,"height":1440}],
+            "share_url":"https://www.douyin.com/note/7123456789012345678"$recommendation}"""
+        return """<html><script>window._ROUTER_DATA = {"loaderData":{"note_(7123456789012345678)/page":{"videoInfoRes":{"item_list":[$aweme]}}}};</script></html>"""
     }
 }

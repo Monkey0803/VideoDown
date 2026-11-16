@@ -403,7 +403,13 @@ private fun TaskCard(
                     // The task list has no vault gate, so a private task never names itself here.
                     Text(lockedTitle, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    Text("${record.resolutionLabel} · ${formatBytes(state.totalFor(record).takeIf { it > 0 } ?: state.downloadedFor(record))}",
+                    val sizeText = formatBytes(state.totalFor(record).takeIf { it > 0 } ?: state.downloadedFor(record))
+                    Text(
+                        when {
+                            record.isArchive -> stringResource(R.string.library_archive_entries, record.archiveEntries.size)
+                            record.resolutionLabel.isBlank() -> sizeText
+                            else -> "${record.resolutionLabel} · $sizeText"
+                        },
                         style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 7.dp))
                     Row(Modifier.padding(top = 7.dp), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -426,6 +432,8 @@ private fun TaskCard(
                     DownloadStatus.PAUSED, DownloadStatus.FAILED -> if (guidance != null && guidance.primary != RecoveryAction.RETRY) ({ onRecover(guidance.primary) }) else onResume
                 }, enabled = !state.batchBusy && (guidance == null || canRecover(guidance.primary)), modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
                     AppIcon(when {
+                        status == DownloadStatus.COMPLETED && record.isImage -> AppIcons.Grid
+                        status == DownloadStatus.COMPLETED && record.isArchive -> AppIcons.ExportFolder
                         status == DownloadStatus.COMPLETED -> AppIcons.Play
                         status == DownloadStatus.RUNNING || status == DownloadStatus.PENDING -> AppIcons.Pause
                         guidance?.primary == RecoveryAction.BROWSER -> AppIcons.Browser
@@ -436,7 +444,13 @@ private fun TaskCard(
                         else -> AppIcons.ResumeDownload
                     },
                         contentDescription = when (status) {
-                            DownloadStatus.COMPLETED -> stringResource(R.string.action_play)
+                            DownloadStatus.COMPLETED -> stringResource(
+                                when {
+                                    record.isImage -> R.string.library_click_view_image
+                                    record.isArchive -> R.string.library_click_open_archive
+                                    else -> R.string.action_play
+                                },
+                            )
                             DownloadStatus.RUNNING, DownloadStatus.PENDING -> stringResource(R.string.action_pause)
                             else -> guidance?.primary?.let { recoveryActionLabel(it) } ?: stringResource(R.string.action_resume)
                         }, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(17.dp))

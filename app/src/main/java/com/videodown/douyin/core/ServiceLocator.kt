@@ -20,6 +20,7 @@ import com.videodown.douyin.domain.repository.DownloadHistoryRepository
 import com.videodown.douyin.domain.repository.Downloader
 import com.videodown.douyin.domain.repository.VideoRepository
 import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.domain.model.archiveEntry
 import com.videodown.douyin.domain.model.VideoPlatform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +74,13 @@ object ServiceLocator {
         GenericVideoRepository(videoEngine, browserSessions, douyinApiClient.okHttpClient, sessionDirectory,
             playlistEnabled = { preferences.playlistParsing })
     }
-    val videoRepository: VideoRepository by lazy { MultiPlatformVideoRepository(douyinRepository, fallback = genericRepository) }
+    val videoRepository: VideoRepository by lazy {
+        MultiPlatformVideoRepository(douyinRepository, fallback = genericRepository,
+            // 登录态只由 WebView 持有；这里每次现查，读过期 Cookie 由系统 CookieManager 负责丢弃。
+            sessionFallback = SessionVideoParser { url ->
+                if (browserSessions.xSignedIn()) genericRepository.parse(url, browserSession = true) else null
+            })
+    }
 
     val galleryExporter by lazy { com.videodown.douyin.data.gallery.GalleryExporter(appContext) }
 
@@ -112,11 +119,19 @@ object ServiceLocator {
      * The engine calls this before releasing the queue slot, so the copy must not block it. The
      * completion notification is posted afterwards, so one card can report both facts.
      */
+    /** 压缩包不去相册，固定写入公共下载目录；其余记录仍走「自动存入相册」开关。 */
+    private val archivePublisher by lazy { com.videodown.douyin.data.download.ArchivePublisher(appContext) }
+
     private fun completeDownload(record: DownloadRecord) {
         appScope.launch {
-            val gallery = runCatching { autoGalleryExport.save(record) }
-                .getOrElse { com.videodown.douyin.data.gallery.GalleryAutoSave.Failed(com.videodown.douyin.data.gallery.GalleryExportFailure.WRITE_FAILED.storageKey) }
-            runCatching { completionNotifier.notifyCompleted(record, gallery) }
+            val landing = if (record.isArchive) {
+                runCatching { archivePublisher.publish(record) }
+                    .getOrElse { com.videodown.douyin.data.gallery.GalleryAutoSave.Failed(com.videodown.douyin.data.gallery.GalleryExportFailure.WRITE_FAILED.storageKey) }
+            } else {
+                runCatching { autoGalleryExport.save(record) }
+                    .getOrElse { com.videodown.douyin.data.gallery.GalleryAutoSave.Failed(com.videodown.douyin.data.gallery.GalleryExportFailure.WRITE_FAILED.storageKey) }
+            }
+            runCatching { completionNotifier.notifyCompleted(record, landing) }
         }
     }
 
@@ -151,7 +166,8 @@ object ServiceLocator {
             onCompleted = ::completeDownload,
             onTaskScheduled = ::startDownloadService,
             engineDownloader = EngineMediaDownloader(videoEngine, browserSessions, sessionDirectory, historyRepository, maintenanceMutex),
-            validateFile = ::validateVideo,
+            // 按记录类型校验：视频要视频轨，图片只认文件头，压缩包校验条目数。
+            validateFile = { file, record -> com.videodown.douyin.data.download.validateDownloadedFile(file, record) },
             browserCookie = { url -> runBlocking { browserSessions.cookie(url) } },
             refreshSource = { record ->
                 val source = if (record.media?.useBrowserSession == true) record.sourcePageUrl
@@ -169,6 +185,16 @@ object ServiceLocator {
                         fresh.takeIf { sameItem && sameSelection }
                     }
                 }?.singleOrNull()
+            },
+            // 归档任务 403/410 时整帖重解析：只有张数一致才替换（用户只选了部分图片时保持原清单，
+            // 让任务按过期地址失败并提示重新解析，避免把没选的图悄悄塞进包里）。
+            refreshArchive = { record ->
+                val page = record.sourcePageUrl.ifBlank { record.sourceUrl }
+                if (page.isBlank()) null
+                else (videoRepository.parseVideos(page) as? AppResult.Success)?.value?.videos
+                    ?.filter { it.isImagePost }
+                    ?.mapNotNull { it.archiveEntry() }
+                    ?.takeIf { it.size == record.archiveEntries.size }
             },
         )
     }

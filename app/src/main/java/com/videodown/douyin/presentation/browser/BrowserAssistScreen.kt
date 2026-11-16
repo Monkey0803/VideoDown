@@ -24,6 +24,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.videodown.douyin.core.AppResult
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.data.generic.BrowserMediaDetector
+import com.videodown.douyin.data.generic.ImageMedia
 import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.domain.model.ParsedVideos
 import com.videodown.douyin.presentation.appErrorText
@@ -101,6 +102,7 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
         browser?.evaluateJavascript("""
             JSON.stringify(Array.from(new Set([
               ...Array.from(document.querySelectorAll('video,video source')).flatMap(v=>[v.currentSrc,v.src]),
+              ...Array.from(document.querySelectorAll('img')).flatMap(v=>[v.currentSrc,v.src]),
               ...performance.getEntriesByType('resource').map(r=>r.name)
             ].filter(Boolean))))
         """.trimIndent()) { encoded ->
@@ -194,8 +196,34 @@ fun BrowserAssistScreen(initialUrl: String, onClose: () -> Unit, onResult: (Pars
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 LazyColumn(Modifier.fillMaxWidth().heightIn(max = 180.dp)) {
                     items(candidates.toList(), key = { it.url }) { candidate ->
-                        TextButton(enabled = !busy, onClick = { parse(candidate.url, candidate.pageUrl) }, modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(R.string.browser_candidate, candidate.type, candidate.url.toUri().host.orEmpty()), maxLines = 1)
+                        TextButton(enabled = !busy, onClick = {
+                            if (candidate.isImage) {
+                                // 图片候选不再交给 yt-dlp：网页里的图片没有提取器，直接构造下载条目。
+                                onResult(ParsedVideos(listOf(
+                                    ImageMedia.entry(
+                                        url = candidate.url,
+                                        pageUrl = candidate.pageUrl,
+                                        extension = candidate.extension ?: "jpg",
+                                        sizeBytes = candidate.sizeBytes,
+                                        width = candidate.width,
+                                        height = candidate.height,
+                                        referer = candidate.pageUrl,
+                                        userAgent = candidate.userAgent,
+                                        browserSession = true,
+                                    ),
+                                )))
+                            } else {
+                                parse(candidate.url, candidate.pageUrl)
+                            }
+                        }, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                if (candidate.isImage) {
+                                    stringResource(R.string.browser_candidate_image, (candidate.extension ?: "jpg").uppercase())
+                                } else {
+                                    stringResource(R.string.browser_candidate, candidate.type, candidate.url.toUri().host.orEmpty())
+                                },
+                                maxLines = 1,
+                            )
                         }
                     }
                 }

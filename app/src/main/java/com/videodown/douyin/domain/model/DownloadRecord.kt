@@ -101,8 +101,29 @@ data class DownloadRecord(
     val subtitleAutomatic: Boolean = false,
     /** Kept out of the normal library, the task titles and every automatic export. */
     val isPrivate: Boolean = false,
+    /**
+     * 这条记录最终落地的是什么媒体。
+     *
+     * 旧版本写下的历史没有这个字段，反序列化后按 [MediaKind.VIDEO] 处理；图片和压缩包靠它分流，
+     * 所以不要用扩展名去猜。
+     */
+    val mediaKind: MediaKind = MediaKind.VIDEO,
+    /** 打包下载的图片清单；只有 [MediaKind.ARCHIVE] 记录使用。 */
+    val archiveEntries: List<ArchiveEntry> = emptyList(),
 ) {
     val isAudio: Boolean get() = media?.audioOnly == true
+
+    val isImage: Boolean get() = mediaKind == MediaKind.IMAGE
+
+    val isArchive: Boolean get() = mediaKind == MediaKind.ARCHIVE
+
+    /**
+     * 视频：能播放、能提取音频。
+     *
+     * 旧版本写下的音频记录没有 mediaKind（反序列化后是 VIDEO），所以还要排除 `audioOnly`，
+     * 否则「提取音频」会把这些音频记录当成视频再提取一次。
+     */
+    val isVideo: Boolean get() = mediaKind == MediaKind.VIDEO && !isAudio
 
     val progressFraction: Float
         get() = when {

@@ -4,6 +4,10 @@ import com.videodown.douyin.R
 import com.videodown.douyin.core.AppText
 import com.videodown.douyin.domain.model.DouyinAuthor
 import com.videodown.douyin.domain.model.DouyinVideo
+import com.videodown.douyin.domain.model.MediaDownload
+import com.videodown.douyin.domain.model.MediaKind
+import com.videodown.douyin.domain.model.MediaSignature
+import com.videodown.douyin.domain.model.MediaSourceType
 import com.videodown.douyin.domain.model.ParsedVideos
 import com.videodown.douyin.domain.model.VideoPlatform
 import com.videodown.douyin.domain.model.VideoVariant
@@ -18,10 +22,91 @@ class WeiboJsonParser {
         val root = response.obj("data")?.takeIf { it.containsKey("id") || it.containsKey("idstr") } ?: response
         for (post in listOfNotNull(root, root.obj("retweeted_status"))) {
             val videos = listOfNotNull(parseVideo(post, requestedId)?.takeIf { it.variants.isNotEmpty() }) +
-                parseGifVideos(post, requestedId)
+                parseGifVideos(post, requestedId) +
+                parsePictures(post, requestedId)
             if (videos.isNotEmpty()) return ParsedVideos(videos)
         }
         return null
+    }
+
+    /**
+     * 微博正文里的静态图片（九宫格/多图）。
+     *
+     * GIF 图片带 `video` 字段，由 [parseGifVideos] 以 mp4 形式产出，这里跳过以免重复；
+     * 位置编号沿用原帖的附件顺序，动图被跳过时图片序号仍是它在原帖里的位置。
+     */
+    private fun parsePictures(post: JsonObject, requestedId: String): List<DouyinVideo> {
+        val pictures = post.obj("pic_infos") ?: return emptyList()
+        val pictureIds = (post["pic_ids"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
+            ?: pictures.keys.toList()
+        val id = post.text("mblogid") ?: post.text("idstr") ?: post.text("id") ?: requestedId
+        val user = post.obj("user")
+        val page = "https://m.weibo.cn/status/$id"
+        val title = (post.text("text_raw") ?: post.text("text") ?: AppText.get(R.string.fallback_title_weibo_image))
+            .replace(Regex("<[^>]*>"), "").replace("&amp;", "&").trim().take(160)
+            .ifBlank { AppText.get(R.string.fallback_title_weibo_image) }
+        return pictureIds.distinct().mapIndexedNotNull { index, pictureId ->
+            val picture = pictures.obj(pictureId) ?: return@mapIndexedNotNull null
+            // `video` 在载荷里是字符串（mp4 地址），不是对象；动图交给 parseGifVideos。
+            // Live Photo 例外：它的 `video` 是 .mov 动作片段，静态帧本身仍是可保存的图片，
+            // 不能因为带了 video 字段就整张丢掉——否则微博的 livephoto 帖子会解析成空。
+            val isLivePhoto = picture.text("type") == "livephoto"
+            if (!isLivePhoto && picture.text("video") != null) return@mapIndexedNotNull null
+            // 静态图原图优先，其后才是站方压过的大图；Live Photo 的 `original` 常被压到 1080，
+            // 而 `largest` 才是它能提供的最大静帧，所以两者顺序不同。URL 缺失就换下一个尺寸。
+            val sizeKeys = if (isLivePhoto) LIVE_PHOTO_SIZE_KEYS else PIC_SIZE_KEYS
+            val size = sizeKeys.mapNotNull { picture.obj(it) }.firstOrNull { it.text("url") != null }
+                ?: return@mapIndexedNotNull null
+            val url = pictureUrl(size.text("url")) ?: return@mapIndexedNotNull null
+            val width = size.number("width")?.takeIf { it in 1..Int.MAX_VALUE.toLong() }?.toInt()
+            val height = size.number("height")?.takeIf { it in 1..Int.MAX_VALUE.toLong() }?.toInt()
+            val extension = MediaSignature.extensionFromUrl(url) ?: "jpg"
+            val entryId = "${id}_img${index + 1}"
+            DouyinVideo(
+                awemeId = entryId,
+                title = title,
+                coverUrl = url,
+                author = DouyinAuthor(
+                    uid = user?.text("idstr") ?: user?.text("id"),
+                    nickname = user?.text("screen_name").orEmpty(),
+                    avatarUrl = mediaUrl(user?.text("avatar_hd") ?: user?.text("profile_image_url")),
+                    platform = VideoPlatform.WEIBO,
+                ),
+                variants = listOf(
+                    VideoVariant(
+                        url = url,
+                        label = AppText.get(R.string.quality_original),
+                        width = width,
+                        height = height,
+                        qualityRank = 0,
+                        referer = VideoPlatform.WEIBO.referer,
+                        kind = MediaKind.IMAGE,
+                        media = MediaDownload(
+                            type = MediaSourceType.DIRECT,
+                            pageUrl = page,
+                            mediaId = entryId,
+                            formatId = extension,
+                            extension = extension,
+                            extractor = "image",
+                        ),
+                    ),
+                ),
+                shareUrl = page,
+                platform = VideoPlatform.WEIBO,
+                mediaLabel = AppText.get(R.string.media_label_image, index + 1),
+            )
+        }
+    }
+
+    /** 图片地址规范化：补全 `//` 前缀并把新浪图床的 http 改成 https。 */
+    private fun pictureUrl(raw: String?): String? = mediaUrl(raw)?.let(::forceHttpsSina)
+
+    private fun forceHttpsSina(url: String): String {
+        val parsed = url.toHttpUrl() ?: return url
+        return if (parsed.scheme == "http" &&
+            (parsed.host == "sinaimg.cn" || parsed.host.endsWith(".sinaimg.cn"))) {
+            parsed.newBuilder().scheme("https").build().toString()
+        } else url
     }
 
     private fun parseVideo(post: JsonObject, requestedId: String): DouyinVideo? {
@@ -77,12 +162,11 @@ class WeiboJsonParser {
             .replace(Regex("<[^>]*>"), "").replace("&amp;", "&").trim().take(160).ifBlank { AppText.get(R.string.fallback_title_weibo_gif) }
         return pictureIds.distinct().mapNotNull { pictureId ->
             val picture = pictures.obj(pictureId) ?: return@mapNotNull null
+            // Live Photo 的 video 是 .mov 动作片段，不是 GIF；静态帧由 parsePictures 产出。
+            if (picture.text("type") == "livephoto") return@mapNotNull null
             val source = mp4Url(picture.text("video"))?.toHttpUrl() ?: return@mapNotNull null
             // Weibo still advertises HTTP for GIF renditions; its image CDN also serves HTTPS.
-            val url = if (source.scheme == "http" &&
-                (source.host == "sinaimg.cn" || source.host.endsWith(".sinaimg.cn"))) {
-                source.newBuilder().scheme("https").build().toString()
-            } else source.toString()
+            val url = forceHttpsSina(source.toString())
             val sizes = listOf("largest", "original", "large", "bmiddle", "thumbnail")
                 .mapNotNull { picture.obj(it) }
             val dimensions = sizes.firstOrNull { (it.number("width") ?: 0) > 0 && (it.number("height") ?: 0) > 0 }
@@ -101,5 +185,12 @@ class WeiboJsonParser {
                 shareUrl = "https://m.weibo.cn/status/$id", platform = VideoPlatform.WEIBO,
             )
         }.mapIndexed { index, video -> video.copy(mediaLabel = AppText.get(R.string.media_label_animated, index + 1)) }
+    }
+
+    private companion object {
+        /** 微博图片的尺寸档位；`original` 才是真原图，`largest` 往往是压缩过的最大可用图。 */
+        val PIC_SIZE_KEYS = listOf("original", "largest", "large", "bmiddle", "thumbnail")
+        /** Live Photo 的静帧：`largest` 通常比被压到 1080 的 `original` 更大。 */
+        val LIVE_PHOTO_SIZE_KEYS = listOf("largest", "original", "large", "bmiddle", "thumbnail")
     }
 }

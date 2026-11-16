@@ -7,7 +7,7 @@
     <string name="tab_settings">Settings</string>
 
     <string name="download_channel_name">Downloads</string>
-    <string name="download_channel_desc">Shows the progress of video downloads in flight</string>
+    <string name="download_channel_desc">Shows the progress of downloads in flight</string>
 
     <!-- Update dialog -->
     <string name="action_cancel">Cancel</string>
@@ -44,7 +44,7 @@
     <string name="storage_cleanup_section">Cleanup</string>
     <string name="storage_reclaimable">Reclaimable: %1$s · %2$d items</string>
     <string name="storage_missing">Records with missing files: %1$d</string>
-    <string name="storage_hint">Temporary files hold download resume points and merge fragments; files still referenced by a task are kept. To free space used by saved videos, delete them in Saved.</string>
+    <string name="storage_hint">Temporary files hold download resume points and merge fragments; files still referenced by a task are kept. To free space used by saved items, delete them in Saved.</string>
     <string name="storage_working">Working on storage…</string>
     <string name="storage_cleanup_action">Clean leftovers and invalid records</string>
     <string name="storage_budget_entry">· %1$s needs %2$s more</string>
@@ -110,6 +110,10 @@
     <string name="settings_backup_same">The backup matches the current settings</string>
     <string name="settings_restored">Restored: %1$s</string>
     <string name="settings_session_cleared">Cleared; related tasks were paused</string>
+    <string name="settings_x_login_row">X (Twitter) sign-in</string>
+    <string name="settings_x_login_signed_in">Signed in</string>
+    <string name="settings_x_login_signed_out">Not signed in</string>
+    <string name="settings_x_login_note">The session stays on this device and X decides how long it lasts; when it stops working, parsing asks you to sign in again.</string>
     <string name="settings_concurrency_title">Simultaneous downloads</string>
     <string name="settings_concurrency_body">Running tasks continue; after lowering the number, new tasks wait for a free slot. Downloading, merging, verifying and retrying all take a slot.</string>
     <string name="settings_concurrency_count">%1$d tasks</string>
@@ -185,14 +189,14 @@
     <string name="action_ignore">Ignore</string>
     <string name="action_parse">Parse</string>
     <string name="home_header_subtitle">Paste a share link to save the video you like.</string>
-    <string name="home_duplicate_single">The same video and quality already exist</string>
+    <string name="home_duplicate_single">The same item already exists</string>
     <string name="home_duplicate_many">%1$d duplicate tasks found</string>
-    <string name="home_duplicate_body_single">This video is already in your records. Open it, or save another copy.</string>
-    <string name="home_duplicate_body_many">Some of the selected videos are already saved at the same quality. Skipping duplicates downloads the rest.</string>
+    <string name="home_duplicate_body_single">This item is already in your records. Open it, or save another copy.</string>
+    <string name="home_duplicate_body_many">Some of the selected items are already saved at the same quality. Skipping duplicates downloads the rest.</string>
     <string name="home_existing_saved">Saved</string>
     <string name="home_existing_downloading">Downloading</string>
     <string name="home_existing_resumable">Resumable</string>
-    <string name="home_view_saved">Open saved video</string>
+    <string name="home_view_saved">Open saved item</string>
     <string name="home_view_tasks">Open download task</string>
     <string name="home_skip_duplicates">Skip duplicates</string>
     <string name="home_download_anyway">Download anyway</string>
@@ -211,9 +215,9 @@
     <string name="home_no_recent">Saved videos appear here</string>
     <string name="home_open_author_failed">Could not open the %1$s account</string>
     <string name="home_open_video_failed">Could not open the %1$s video</string>
-    <string name="home_select_videos">Choose videos (%1$d)</string>
+    <string name="home_select_videos">Choose items (%1$d)</string>
     <string name="home_selected_hint">%1$d selected · tap a cover to preview, then save the ticked ones</string>
-    <string name="home_video_index">Video %1$d</string>
+    <string name="home_video_index">Item %1$d</string>
     <string name="home_preview_label">Preview %1$s</string>
     <string name="home_check_label">Tick %1$s</string>
     <string name="home_no_variant">No usable quality</string>
@@ -240,9 +244,10 @@
     <string name="home_subtitles_selected">%1$s selected</string>
     <string name="home_subtitles_offer">Also save subtitles (%1$s)</string>
     <string name="home_subtitles_hint">Embeds the subtitles into the video file, so the subtitle switch works offline too.</string>
-    <string name="home_result_note">Play and share it from Saved afterwards. The available qualities depend on the video source.</string>
+    <string name="home_result_image_note">Open and share it from Saved afterwards; images are saved as-is.</string>
+    <string name="home_result_note">Open and share it from Saved afterwards. Available qualities depend on the source.</string>
     <string name="home_submitting">Adding to the queue…</string>
-    <string name="home_save_selected">Save %1$d selected videos</string>
+    <string name="home_save_selected">Save %1$d selected items</string>
     <string name="home_save_audio">Save audio to this device</string>
     <string name="home_save_current">Save this video</string>
     <string name="home_save_local">Save to this device</string>
@@ -322,10 +327,16 @@
     <string name="history_notice_cleared">Download history cleared</string>
 
     <!-- Library screen -->
-    <string name="library_title">Saved videos</string>
-    <string name="library_subtitle">%1$d videos · playable offline</string>
+    <string name="library_title">Saved items</string>
+    <string name="library_subtitle">%1$d items · available offline</string>
     <string name="library_switch_layout">Switch to %1$s</string>
     <string name="library_pick_platform">Choose platform</string>
+    <string name="library_pick_kind">Choose type</string>
+    <string name="library_kind_all">All types</string>
+    <string name="library_kind_video">Videos</string>
+    <string name="library_kind_audio">Audio</string>
+    <string name="library_kind_image">Images</string>
+    <string name="library_kind_archive">ZIPs</string>
     <string name="library_all_platforms">All platforms</string>
     <string name="library_pick_folder">Choose category</string>
     <string name="library_uncategorized">Uncategorised</string>
@@ -542,8 +553,8 @@
     <string name="service_notification_failed">Updating the background notification failed; return to the app and try again</string>
     <string name="service_time_limit">The system time limit for background downloads was reached; return to the app to continue</string>
     <string name="service_interrupted">The background download service was interrupted; return to the app and try again</string>
-    <string name="service_downloading_one">Downloading a video</string>
-    <string name="service_downloading_many">Downloading %1$d videos</string>
+    <string name="service_downloading_one">Downloading</string>
+    <string name="service_downloading_many">Downloading %1$d items</string>
 
     <!-- Gallery export -->
     <string name="gallery_not_completed">The video has not finished downloading</string>
@@ -558,13 +569,22 @@
     <!-- X parse failures -->
     <string name="x_not_found">That video does not exist or has no downloadable MP4 address</string>
     <string name="x_unsupported_format">This X video only offers formats that are not supported yet; no downloadable MP4 was found</string>
-    <string name="x_no_video">This X post returned no downloadable video; it may only contain images or an external link</string>
-    <string name="x_login_required">This X post needs a sign-in or authorisation; anonymous download is not supported</string>
+    <string name="x_no_video">This X post returned no downloadable media</string>
+    <string name="x_login_required">This X post needs a sign-in or authorisation; sign in to X in Settings and retry</string>
     <string name="x_unavailable">This X post is no longer available</string>
     <string name="x_restricted">This X post is unavailable or access is restricted</string>
     <string name="x_invalid">X did not return usable post data; try again later</string>
     <string name="x_rate_limited">X is rate limiting requests; try again later</string>
     <string name="x_network">Could not reach X; check the network and try again</string>
+
+    <!-- X sign-in -->
+    <string name="x_login_action">Sign in to X and retry</string>
+    <string name="x_login_title">Sign in to X (Twitter)</string>
+    <string name="x_login_hint">Sign in on the page below; the session stays on this device and X decides how long it lasts.</string>
+    <string name="x_login_checking">Checking the sign-in state…</string>
+    <string name="x_login_signed_in">Signed in; you can finish</string>
+    <string name="x_login_signed_out">Not signed in yet; complete the sign-in on the page below</string>
+    <string name="x_session_auth_failed">The saved X session was used but access is still refused: it may have expired, or this account may not be allowed to view this post. Sign in to X again in Settings.</string>
 
     <!-- Export summary -->
     <string name="export_done">%1$d exported</string>
@@ -671,7 +691,7 @@
     <string name="update_reason_failed">The update check failed; try again later</string>
 
     <!-- Parse page outcomes -->
-    <string name="home_info_already_queued">The selected videos are already recorded; nothing to download again</string>
+    <string name="home_info_already_queued">The selected items are already recorded; nothing to download again</string>
     <string name="home_info_queued">%1$d download tasks added</string>
     <string name="home_info_queued_partial">%1$d download tasks added; the rest could not be added, try again</string>
 
@@ -680,7 +700,7 @@
     <string name="storage_budget_headline">Running tasks still need %1$s · %2$d tasks</string>
     <string name="storage_budget_idle">No running download is reserving space right now.</string>
     <string name="storage_budget_fits">The budget fits in the free space; the actual space is still checked before every write.</string>
-    <string name="storage_budget_short">Not enough space: %1$s short. Clean up leftovers or delete saved videos and continue.</string>
+    <string name="storage_budget_short">Not enough space: %1$s short. Clean up leftovers or delete saved items and continue.</string>
     <string name="storage_budget_percent">Budget %1$s%%</string>
 
     <!-- Download failures -->
@@ -698,7 +718,7 @@
 
     <!-- Vault and notifications -->
     <string name="vault_locked_title">Vault item</string>
-    <string name="notification_channel_description">Alerts when a video download finishes</string>
+    <string name="notification_channel_description">Alerts when a download finishes</string>
 
     <!-- Player gestures and sleep timer -->
     <string name="player_seek_seconds">%1$s s</string>
@@ -826,4 +846,43 @@
     <!-- Backup files -->
     <string name="backup_links_file_name">keepsake-links.txt</string>
     <string name="backup_settings_file_name">keepsake-settings-backup.json</string>
+
+    <!-- Images and ZIP downloads -->
+    <string name="media_label_image">Image %1$d</string>
+    <string name="media_label_quoted_image">Quoted · image %1$d</string>
+    <string name="fallback_title_web_image">Web image</string>
+    <string name="fallback_title_douyin_image">Douyin image</string>
+    <string name="fallback_title_weibo_image">Weibo image</string>
+    <string name="fallback_title_x_image">X image</string>
+    <string name="fallback_title_kuaishou_image">Kuaishou image</string>
+    <string name="fallback_title_archive">Image archive</string>
+    <string name="home_save_current_image">Save this image</string>
+    <string name="home_view_post">Open post</string>
+    <string name="home_download_archive">Download as ZIP (%1$d)</string>
+    <string name="home_archive_duplicate_title">This ZIP already exists</string>
+    <string name="home_archive_duplicate_body">The images in this post were already packaged. Open the existing ZIP, or package them again.</string>
+    <string name="home_archive_duplicate_confirm">Package again</string>
+    <string name="home_archive_queued">Packaging started</string>
+    <string name="library_click_view_image">View image</string>
+    <string name="library_click_open_archive">Open ZIP</string>
+    <string name="library_open_image">View image</string>
+    <string name="library_open_archive">Open ZIP</string>
+    <string name="library_share_image">Share image</string>
+    <string name="library_share_archive">Share ZIP</string>
+    <string name="library_image_label">Image · %1$s</string>
+    <string name="library_archive_entries">ZIP · %1$d images</string>
+    <string name="library_actions_image">Image actions</string>
+    <string name="library_actions_archive">ZIP actions</string>
+    <string name="notification_kind_image">Image</string>
+    <string name="notification_kind_archive">ZIP</string>
+    <string name="notification_landing_download">Saved to Downloads · tap to view</string>
+    <string name="share_image">Share image</string>
+    <string name="share_archive">Share ZIP</string>
+    <string name="share_file">Share file</string>
+    <string name="viewer_title">Image</string>
+    <string name="viewer_missing">The image file is missing</string>
+    <string name="browser_candidate_image">Image · %1$s</string>
+    <string name="download_not_an_image">The downloaded file is not a valid image</string>
+    <string name="download_invalid_archive">The ZIP is incomplete or corrupt</string>
+    <string name="archive_saved_downloads">Saved to Downloads/拾影</string>
 </resources>

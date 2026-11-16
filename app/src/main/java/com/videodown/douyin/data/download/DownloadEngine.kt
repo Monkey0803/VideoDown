@@ -6,16 +6,20 @@ import android.util.Log
 import com.videodown.douyin.data.generic.EngineMediaDownloader
 import com.videodown.douyin.data.generic.VideoEngineException
 import com.videodown.douyin.domain.model.TransferPhase
+import com.videodown.douyin.domain.model.ArchiveEntry
+import com.videodown.douyin.domain.model.ArchiveRequest
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.DownloadProgress
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
+import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.SubtitleSelection
 import com.videodown.douyin.domain.model.VideoVariant
 import com.videodown.douyin.domain.model.VideoPlatform
 import com.videodown.douyin.domain.repository.DownloadHistoryRepository
 import com.videodown.douyin.domain.repository.Downloader
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -44,6 +48,7 @@ import com.videodown.douyin.domain.model.StorageBudgetEntry
 import com.videodown.douyin.core.downloadFailureKind
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 import java.util.UUID
 
 /**
@@ -69,8 +74,10 @@ class DownloadEngine(
     private val onTaskScheduled: suspend () -> Unit = {},
     private val engineDownloader: EngineMediaDownloader? = null,
     private val browserCookie: ((String) -> String?)? = null,
-    private val validateFile: ((File) -> Unit)? = null,
+    private val validateFile: ((File, DownloadRecord) -> Unit)? = null,
     private val refreshSource: (suspend (DownloadRecord) -> VideoVariant?)? = null,
+    /** 归档任务遇到过期图片地址时整帖重新解析，按同序替换清单。 */
+    private val refreshArchive: (suspend (DownloadRecord) -> List<ArchiveEntry>?)? = null,
     private val maintenanceMutex: Mutex = Mutex(),
     private val concurrencyChanges: Flow<Int>? = null,
     private val availableBytes: () -> Long = { paths.downloadDir.usableSpace },
@@ -192,12 +199,64 @@ class DownloadEngine(
             .sortedWith(compareByDescending<DownloadRecord> { it.status == DownloadStatus.COMPLETED }
                 .thenByDescending { it.updatedAt }).firstOrNull()
 
+    override suspend fun startArchive(request: ArchiveRequest): String = maintenanceMutex.withLock {
+        val entries = request.entries
+        require(entries.isNotEmpty())
+        val id = UUID.randomUUID().toString()
+        val fileId = "${request.platform.name.lowercase()}_${request.postId}_${id.take(8)}"
+        val fileName = paths.buildArchiveFileName(request.title, entries.size, fileId)
+        val now = System.currentTimeMillis()
+        val known = entries.sumOf { it.sizeBytes?.coerceAtLeast(0L) ?: 0L }
+        val record = DownloadRecord(
+            id = id,
+            awemeId = request.postId,
+            title = request.title,
+            authorNickname = request.authorNickname,
+            authorAvatarUrl = request.authorAvatarUrl,
+            authorSecUid = request.authorSecUid,
+            coverUrl = request.coverUrl,
+            sourceUrl = request.postPageUrl,
+            expectedBytes = known.takeIf { it > 0L },
+            queueOrder = (history.snapshot().maxOfOrNull { it.queueOrder } ?: 0L) + 1,
+            fileName = fileName,
+            partialPath = "",
+            status = DownloadStatus.PENDING,
+            createdAt = now,
+            updatedAt = now,
+            platform = request.platform,
+            sourcePageUrl = request.postPageUrl,
+            downloadReferer = request.platform.referer,
+            mediaKind = MediaKind.ARCHIVE,
+            archiveEntries = entries,
+        )
+        history.upsert(record)
+        updateProgress(id) {
+            DownloadProgress(id = id, downloadedBytes = 0L, totalBytes = known.takeIf { it > 0L } ?: -1L, status = DownloadStatus.PENDING)
+        }
+        launch(record)
+        return@withLock id
+    }
+
+    /**
+     * 同一帖、同样张数的归档任务；不看图片 URL，因为签名地址每次解析都会变。
+     */
+    override suspend fun findArchiveDuplicate(request: ArchiveRequest): DownloadRecord? =
+        history.snapshot()
+            .filter {
+                it.isArchive && it.platform == request.platform && it.awemeId == request.postId &&
+                    it.archiveEntries.size == request.entries.size
+            }
+            .filter { it.status != DownloadStatus.COMPLETED || it.filePath?.let { path -> File(path).isFile } == true }
+            .sortedWith(compareByDescending<DownloadRecord> { it.status == DownloadStatus.COMPLETED }
+                .thenByDescending { it.updatedAt })
+            .firstOrNull()
+
     override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String = maintenanceMutex.withLock {
         val id = UUID.randomUUID().toString()
         val fileId = if (video.platform == VideoPlatform.DOUYIN) video.awemeId
             else "${video.platform.name.lowercase()}_${video.awemeId}"
-        val fileName = paths.buildFileName(video.title, variant.label, fileId + "_" + id.take(8))
-            .substringBeforeLast('.') + "." + (variant.media?.extension ?: "mp4")
+        // 扩展名以变体为准：图片是 jpg/png，视频是 mp4/webm，不能再写死 .mp4 再替换。
+        val fileName = paths.buildFileName(video.title, variant.label, fileId + "_" + id.take(8), variant.extensionOrDefault)
         val partial = File(paths.downloadDir, "$fileName.part")
         val now = System.currentTimeMillis()
 
@@ -213,6 +272,7 @@ class DownloadEngine(
             expectedBytes = variant.sizeBytes,
             queueOrder = (history.snapshot().maxOfOrNull { it.queueOrder } ?: 0L) + 1,
             media = variant.media,
+            mediaKind = variant.mediaKind,
             resolutionLabel = variant.label,
             fileName = fileName,
             partialPath = partial.absolutePath,
@@ -353,12 +413,13 @@ class DownloadEngine(
      * never spends an attempt on a disk that is still too full.
      */
     private fun storageAllowsAutoResume(record: DownloadRecord): Boolean {
-        val engine = record.media?.usesEngine == true
+        val engine = record.media?.usesEngine == true || record.isArchive
         val footprint = if (engine) taskDirectoryBytes(paths.engineDirectory(record.id))
             else File(record.partialPath).length()
         val expected = record.expectedBytes ?: record.totalBytes.takeIf { it > 0 }
-        val required = maxOf(requiredStorageBytes(expected, footprint, merging = engine),
-            saturatingStorageAdd(footprint, STORAGE_RESERVE_BYTES))
+        val reserve = reserveFor(record)
+        val required = maxOf(requiredStorageBytes(expected, footprint, merging = engine, reserveBytes = reserve),
+            saturatingStorageAdd(footprint, reserve))
         return availableBytes() >= required
     }
 
@@ -415,14 +476,15 @@ class DownloadEngine(
                 // Reordering persists while this job is waiting. Read it after the
                 // maintenance gate so initial transfer updates retain that durable order.
                 val current = maintenanceMutex.withLock { history.getById(record.id) } ?: return@launch
-                val engine = current.media?.usesEngine == true
+                val engine = current.media?.usesEngine == true || current.isArchive
                 val footprint = {
                     if (engine) taskDirectoryBytes(paths.engineDirectory(current.id))
                     else File(current.partialPath).length() + paths.finalFileFor(current).length()
                 }
                 val expected = current.expectedBytes ?: current.totalBytes.takeIf { it > 0 }
-                val peak = maxOf(requiredStorageBytes(expected, merging = engine),
-                    saturatingStorageAdd(footprint(), STORAGE_RESERVE_BYTES))
+                val reserve = reserveFor(current)
+                val peak = maxOf(requiredStorageBytes(expected, merging = engine, reserveBytes = reserve),
+                    saturatingStorageAdd(footprint(), reserve))
                 val lease = storageReservations.acquire(peak, footprint, label = current.title.ifBlank { current.fileName })
                 storage = lease
                 runTransfer(current, lease)
@@ -444,6 +506,7 @@ class DownloadEngine(
                 history.upsert(latest.copy(status = DownloadStatus.FAILED,
                     errorMessage = when (e) {
                         // Stored as a key: the record outlives the language it was written in.
+                        is DownloadContentException -> e.reasonKey
                         is VideoEngineException -> com.videodown.douyin.core.engineErrorKey(e.kind)
                         is InsufficientStorageException -> e.error.reasonKey ?: e.error.message
                         is DownloadServiceException -> e.message
@@ -492,6 +555,10 @@ class DownloadEngine(
 
     private suspend fun runTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
         seedTaskLimiter(initial)
+        if (initial.isArchive) {
+            runArchiveTransfer(initial, storage)
+            return
+        }
         // Subtitles are an extractor feature: a direct HTTP transfer would finish successfully and
         // silently produce a file without them. An engine-parsed direct variant always carries the
         // page it came from, so it can be handed to the engine instead.
@@ -543,7 +610,7 @@ class DownloadEngine(
                         networkPolicy = networkPolicy,
                         availableBytes = availableBytes,
                         checkStorage = { total, writingThrough ->
-                            storage.updatePeak(requiredStorageBytes(maxOf(total, writingThrough)))
+                            storage.updatePeak(requiredStorageBytes(maxOf(total, writingThrough), reserveBytes = reserveFor(record)))
                         },
                         throttle = { bytes -> throttle(record, bytes) },
                         onProgress = { downloaded, total, speed, rangeSupported, etag ->
@@ -575,7 +642,7 @@ class DownloadEngine(
 
             when (outcome) {
                 is ResumableDownloader.Outcome.Completed -> {
-                    try { validateFile?.invoke(outcome.file) } catch (error: Exception) { outcome.file.delete(); throw error }
+                    try { validateFile?.invoke(outcome.file, record) } catch (error: Exception) { outcome.file.delete(); throw error }
                     val completed = record.copy(
                         status = DownloadStatus.COMPLETED,
                         filePath = outcome.file.absolutePath,
@@ -735,7 +802,13 @@ class DownloadEngine(
         val record = history.getById(id) ?: return
         if (record.status == DownloadStatus.COMPLETED) return
         val partial = File(record.partialPath)
-        val onDisk = if (partial.exists()) partial.length() else record.downloadedBytes
+        val onDisk = if (record.isArchive) {
+            archiveDownloadedBytes(paths.engineDirectory(record.id))
+        } else if (partial.exists()) {
+            partial.length()
+        } else {
+            record.downloadedBytes
+        }
         history.upsert(
             record.copy(
                 status = DownloadStatus.PAUSED,
@@ -752,6 +825,189 @@ class DownloadEngine(
     private fun updateProgress(id: String, transform: () -> DownloadProgress) {
         _progress.update { current -> current + (id to transform()) }
     }
+
+    /** 归档任务已落盘的字节：已完成的图片加上当前半张图，暂停后的进度条才不会显示 0。 */
+    private fun archiveDownloadedBytes(directory: File): Long = directory.walkTopDown()
+        .filter { it.isFile && it.name != "archive.zip" && !it.name.endsWith(".publishing") }
+        .fold(0L) { total, file -> saturatingStorageAdd(total, file.length().coerceAtLeast(0L)) }
+
+    /**
+     * 归档任务：逐张复用直链下载器写进任务目录，全部就绪后再打 ZIP。
+     *
+     * 已存在的图片文件直接跳过，所以暂停、进程被杀或 403 触发重新解析之后继续时，都不会重下
+     * 已经完成的图；ZIP 本身只写一次（先 `.tmp` 再改名），不会留下半个包。
+     */
+    private suspend fun runArchiveTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
+        var record = initial.copy(status = DownloadStatus.RUNNING, phase = TransferPhase.DOWNLOADING,
+            errorMessage = null, failureKind = null, pauseCause = null)
+        history.upsert(record)
+        val directory = paths.engineDirectory(record.id)
+        directory.mkdirs()
+        val knownTotal = record.expectedBytes
+            ?: record.archiveEntries.sumOf { it.sizeBytes?.coerceAtLeast(0L) ?: 0L }.takeIf { it > 0L }
+        var refreshed = false
+        var attempt = 0
+
+        while (true) {
+            var completedBytes = 0L
+            for ((index, entry) in record.archiveEntries.withIndex()) {
+                val target = File(directory, ImageArchiveWriter.entryName(index, entry.extension))
+                if (target.isFile && target.length() > 0L) {
+                    completedBytes += target.length()
+                    continue
+                }
+                if (!networkPolicy.isAllowed()) throw WifiRequiredException()
+                val partial = File(target.parentFile, target.name + ".part")
+                // 与直链任务一样从断点续传：上一轮中断留下的半张图接着写，而不是从 0 重来。
+                val alreadyDownloaded = if (partial.isFile) partial.length() else 0L
+                var lastPersistAt = 0L
+                val outcome = downloader.download(
+                    ResumableDownloader.DownloadRequest(
+                        url = entry.url,
+                        partialFile = partial,
+                        finalFile = target,
+                        alreadyDownloaded = alreadyDownloaded,
+                        referer = entry.referer ?: record.downloadReferer,
+                        userAgent = userAgent,
+                        networkPolicy = networkPolicy,
+                        availableBytes = availableBytes,
+                        checkStorage = { total, _ ->
+                            storage.updatePeak(requiredStorageBytes(
+                                maxOf(knownTotal ?: 0L, total).takeIf { it > 0L },
+                                merging = true,
+                            ))
+                        },
+                        throttle = { bytes -> throttle(record, bytes) },
+                        onProgress = { downloaded, _, speed, _, _ ->
+                            val written = completedBytes + downloaded
+                            updateProgress(record.id) {
+                                DownloadProgress(record.id, written, knownTotal ?: -1L, DownloadStatus.RUNNING, speed)
+                            }
+                            val tick = System.currentTimeMillis()
+                            if (tick - lastPersistAt >= PERSIST_INTERVAL_MS) {
+                                lastPersistAt = tick
+                                record = record.copy(downloadedBytes = written, totalBytes = knownTotal ?: -1L, updatedAt = tick)
+                                history.upsert(record)
+                            }
+                        },
+                    ),
+                )
+                when (outcome) {
+                    is ResumableDownloader.Outcome.Completed -> completedBytes += outcome.file.length()
+                    is ResumableDownloader.Outcome.Paused -> {
+                        markArchivePaused(record, completedBytes + outcome.downloadedBytes, outcome.totalBytes)
+                        return
+                    }
+                    is ResumableDownloader.Outcome.Failed -> {
+                        val httpStatus = (outcome.error as? com.videodown.douyin.core.AppError.Http)?.code
+                        if (!refreshed && httpStatus in setOf(401, 403, 410)) {
+                            val fresh = refreshArchive?.invoke(record)
+                            if (fresh != null && fresh.size == record.archiveEntries.size) {
+                                refreshed = true
+                                record = record.copy(archiveEntries = fresh)
+                                history.upsert(record)
+                                break
+                            }
+                        }
+                        attempt++
+                        val retryable = httpStatus == null || httpStatus !in 400..499
+                        if (attempt <= MAX_RETRIES && retryable) {
+                            delay(RETRY_BASE_DELAY_MS * (1L shl (attempt - 1)))
+                            break
+                        }
+                        markArchiveFailed(record, outcome.error, completedBytes + outcome.downloadedBytes, knownTotal)
+                        return
+                    }
+                }
+            }
+            val allDone = record.archiveEntries.indices.all { index ->
+                val file = File(directory, ImageArchiveWriter.entryName(index, record.archiveEntries[index].extension))
+                file.isFile && file.length() > 0L
+            }
+            if (!allDone) continue
+            publishArchive(record, directory, knownTotal, storage)
+            return
+        }
+    }
+
+    private suspend fun publishArchive(
+        record: DownloadRecord,
+        directory: File,
+        knownTotal: Long?,
+        storage: StorageReservations.Lease,
+    ) {
+        updateProgress(record.id) {
+            DownloadProgress(record.id, record.downloadedBytes, knownTotal ?: -1L, DownloadStatus.RUNNING,
+                phase = TransferPhase.MERGING)
+        }
+        withContext(NonCancellable + Dispatchers.IO) {
+            val entries = record.archiveEntries.mapIndexed { index, entry ->
+                val name = ImageArchiveWriter.entryName(index, entry.extension)
+                name to File(directory, name)
+            }
+            val zip = File(directory, "archive.zip")
+            val publishing = File(directory, "archive.zip.publishing")
+            try {
+                ImageArchiveWriter.write(entries, zip)
+                validateFile?.invoke(zip, record)
+                val output = File(paths.downloadDir, record.fileName)
+                storage.updatePeak(saturatingStorageAdd(zip.length() * 2, STORAGE_RESERVE_BYTES))
+                if (!zip.renameTo(output)) {
+                    zip.copyTo(publishing, overwrite = true)
+                    if (!publishing.renameTo(output)) throw IOException("archive publish failed")
+                    zip.delete()
+                }
+                val completed = record.copy(
+                    status = DownloadStatus.COMPLETED,
+                    filePath = output.absolutePath,
+                    fileName = output.name,
+                    downloadedBytes = output.length(),
+                    totalBytes = output.length(),
+                    phase = TransferPhase.DOWNLOADING,
+                    errorMessage = null, failureKind = null, pauseCause = null,
+                    updatedAt = System.currentTimeMillis(),
+                )
+                history.upsert(completed)
+                runCatching { onCompleted(completed) }
+                _progress.update { it - record.id }
+            } finally {
+                publishing.delete()
+                directory.deleteRecursively()
+            }
+        }
+    }
+
+    private suspend fun markArchivePaused(record: DownloadRecord, downloaded: Long, total: Long) {
+        history.upsert(
+            record.copy(
+                status = DownloadStatus.PAUSED,
+                downloadedBytes = downloaded,
+                totalBytes = total.takeIf { it > 0L } ?: record.totalBytes,
+                pauseCause = DownloadPauseCause.NETWORK,
+                updatedAt = System.currentTimeMillis(),
+            ),
+        )
+        _progress.update { it - record.id }
+    }
+
+    private suspend fun markArchiveFailed(record: DownloadRecord, error: com.videodown.douyin.core.AppError, downloaded: Long, total: Long?) {
+        history.upsert(
+            record.copy(
+                status = DownloadStatus.FAILED,
+                downloadedBytes = downloaded,
+                totalBytes = total ?: record.totalBytes,
+                errorMessage = error.message,
+                failureKind = error.downloadFailureKind(),
+                pauseCause = null,
+                updatedAt = System.currentTimeMillis(),
+            ),
+        )
+        _progress.update { it - record.id }
+    }
+
+    /** 图片任务的工作余量比视频小得多，按类型取值避免批量图片被误判空间不足。 */
+    private fun reserveFor(record: DownloadRecord): Long =
+        if (record.isImage) IMAGE_RESERVE_BYTES else STORAGE_RESERVE_BYTES
 
     private companion object {
         const val TAG = "DownloadEngine"

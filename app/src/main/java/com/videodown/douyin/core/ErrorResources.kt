@@ -65,6 +65,8 @@ fun reasonKeyRes(key: String?): Int? = when {
     key == "download:out_of_space" -> R.string.download_out_of_space
     key == "download:storage_write" -> R.string.download_storage_write
     key == "download:network" -> R.string.download_network_failed
+    key == com.videodown.douyin.data.download.DOWNLOAD_NOT_AN_IMAGE -> R.string.download_not_an_image
+    key == com.videodown.douyin.data.download.DOWNLOAD_INVALID_ARCHIVE -> R.string.download_invalid_archive
     key == "generic:network" -> R.string.error_network_failed
     key == "generic:unknown" -> R.string.error_unknown
     key == "input:x_link" -> R.string.input_x_link
@@ -120,6 +122,7 @@ fun xFailureRes(failure: com.videodown.douyin.data.remote.XParseFailure): Int = 
     com.videodown.douyin.data.remote.XParseFailure.INVALID -> R.string.x_invalid
     com.videodown.douyin.data.remote.XParseFailure.RATE_LIMITED -> R.string.x_rate_limited
     com.videodown.douyin.data.remote.XParseFailure.NETWORK -> R.string.x_network
+    com.videodown.douyin.data.remote.XParseFailure.SESSION_AUTH_FAILED -> R.string.x_session_auth_failed
 }
 
 /** The resource for an update-check failure. */

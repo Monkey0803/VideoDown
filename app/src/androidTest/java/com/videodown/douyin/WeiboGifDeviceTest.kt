@@ -82,14 +82,40 @@ class WeiboGifDeviceTest {
         }
         show(repository, recorder)
         parseThroughUi()
-        compose.onNodeWithText("选择视频（2）").assertIsDisplayed()
-        compose.onNodeWithText("动图 2").performClick()
+        // 「选择内容（N）」只在多条目面板里；先打开「查看全部」再断言。
+        compose.onNodeWithText("查看全部").performClick()
+        compose.onNodeWithText("选择内容（2）").assertIsDisplayed()
+        compose.onNodeWithText("动图 2").performScrollTo().performClick()
         compose.onNodeWithText("360P").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("720P").assertDoesNotExist()
-        compose.onNodeWithText("保存到本地").performClick()
+        // 多条目结果的主按钮是「保存当前视频」，「保存到本地」只在单条目结果出现。
+        compose.onNodeWithText("保存当前视频").performClick()
         compose.waitUntil(5_000) { downloads.isNotEmpty() }
         assertEquals("fixture_two", downloads.single().first.awemeId)
         assertEquals("https://video.example/two.mp4", downloads.single().second.url)
+    }
+
+    @Test fun livePhotosParseAsImageEntriesAndOfferTheArchiveAction() {
+        val parsed = WeiboJsonParser().parseVideos("""{"mblogid":"fixture_live","text_raw":"Live Photo 测试",
+            "pic_ids":["lp1","lp2"],"pic_infos":{
+                "lp1":{"type":"livephoto","video":"https://video.weibo.com/media/play?livephoto=x.mov",
+                    "largest":{"url":"https://wx4.sinaimg.cn/large/lp1.jpg","width":1080,"height":1920}},
+                "lp2":{"type":"livephoto","video":"https://video.weibo.com/media/play?livephoto=y.mov",
+                    "largest":{"url":"https://wx5.sinaimg.cn/large/lp2.jpg","width":1080,"height":1439}}
+            }}""", "fixture_live")!!
+        assertEquals(2, parsed.videos.size)
+        assertTrue(parsed.videos.all { it.isImagePost })
+        val repository = object : VideoRepository {
+            override suspend fun parseShareText(shareText: String) = AppResult.Success(parsed.selectedVideo)
+            override suspend fun parseVideos(shareText: String) = AppResult.Success(parsed)
+        }
+        show(repository)
+        parseThroughUi()
+        // 底部按钮区不随结果页滚动，用 assertExists；重点是「图片」路径出现且没有画质选择。
+        compose.onNodeWithText("打包下载（2 张）").assertExists()
+        compose.onNodeWithText("保存这张图片").assertExists()
+        compose.onNodeWithText("选择画质").assertDoesNotExist()
+        assertEquals(listOf("fixture_live_img1", "fixture_live_img2"), vm.state.value.videos.map { it.awemeId })
     }
 
     @Test fun liveGifParsesDownloadsAndPlaysThroughTheUi() {
@@ -125,7 +151,7 @@ class WeiboGifDeviceTest {
         compose.mainClock.advanceTimeBy(5_000)
         compose.waitForIdle()
         compose.onNodeWithText("已加入下载队列").assertDoesNotExist()
-        compose.onNodeWithText("查看已保存视频").performClick()
+        compose.onNodeWithText("查看已保存内容").performClick()
         var playbackDetails = "PlayerView not attached"
         try {
             compose.waitUntil(10_000) {

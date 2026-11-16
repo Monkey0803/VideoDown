@@ -2,11 +2,14 @@ package com.videodown.douyin.presentation.library
 
 import com.videodown.douyin.core.LibrarySort
 import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.VideoPlatform
 
 data class LibraryQuery(
     val text: String = "",
     val platform: VideoPlatform? = null,
+    /** 只看某一类媒体（视频/音频/图片/压缩包）；`null` 为全部。 */
+    val mediaKind: MediaKind? = null,
     val sort: LibrarySort = LibrarySort.NEWEST,
     val favoritesOnly: Boolean = false,
     val folder: String? = null,
@@ -24,7 +27,7 @@ data class LibraryQuery(
      */
     val ordersManually: Boolean
         get() = sort == LibrarySort.CUSTOM && text.isBlank() && platform == null && folder == null &&
-            !favoritesOnly && !vaultOnly
+            mediaKind == null && !favoritesOnly && !vaultOnly
 
     /**
      * 拖拽把手是否出现、能不能拖。
@@ -38,7 +41,8 @@ data class LibraryQuery(
         val words = text.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
         val matching = records.filter { record ->
             record.isPrivate == vaultOnly && (!vaultOnly || vaultUnlocked) &&
-                (platform == null || record.platform == platform) && (!favoritesOnly || record.favorite) &&
+                (platform == null || record.platform == platform) &&
+                (mediaKind == null || record.mediaKind == mediaKind) && (!favoritesOnly || record.favorite) &&
                 (folder == null || record.folder == folder) && words.all { word ->
                 record.title.contains(word, ignoreCase = true) || record.authorNickname.contains(word, ignoreCase = true)
             }

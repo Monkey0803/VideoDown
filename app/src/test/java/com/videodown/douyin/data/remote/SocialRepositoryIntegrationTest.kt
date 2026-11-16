@@ -22,8 +22,10 @@ class SocialRepositoryIntegrationTest {
             val result = repository.parseVideos("https://weibo.com/1234567890/RkkIUuy8h")
             assertTrue(result.toString(), result is AppResult.Success)
             val videos = (result as AppResult.Success).value.videos
-            assertEquals(2, videos.size)
+            // 两个动图 + 帖子里的第 2 张静态图。
+            assertEquals(3, videos.size)
             assertTrue(videos.all { it.variants.size == 1 && it.platform == VideoPlatform.WEIBO })
+            assertTrue(videos.last().isImagePost)
             assertNotEquals(videos[0].awemeId, videos[1].awemeId)
             val legacy = repository.parseUrl("https://weibo.com/1234567890/RkkIUuy8h")
             assertEquals(videos.first(), (legacy as AppResult.Success).value)
