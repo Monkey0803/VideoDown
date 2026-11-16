@@ -83,6 +83,33 @@ class DownloadPreferencesIntegrationTest {
         assertEquals("saved", freshEngine.findDuplicate(video, variant)?.id)
     }
 
+    @Test fun `paused site task metadata can be repaired without changing transfer state`() = runBlocking {
+        history.upsert(DownloadRecord(
+            id = "site-paused",
+            awemeId = "media",
+            title = "chunklist",
+            status = DownloadStatus.PAUSED,
+            downloadedBytes = 4096,
+            sourcePageUrl = "https://m.kubb.tv/list",
+        ))
+        val repaired = engine.refreshMetadata(
+            "site-paused",
+            DouyinVideo(
+                awemeId = "media",
+                title = "真实影片名称",
+                coverUrl = "https://static.kubb.tv/poster.jpg",
+                shareUrl = "https://www.kubb.tv/play/fixture",
+                platform = com.videodown.douyin.domain.model.VideoPlatform.GENERIC,
+            ),
+        )!!
+
+        assertEquals("真实影片名称", repaired.title)
+        assertEquals("https://static.kubb.tv/poster.jpg", repaired.coverUrl)
+        assertEquals("https://www.kubb.tv/play/fixture", repaired.sourcePageUrl)
+        assertEquals(4096, repaired.downloadedBytes)
+        assertEquals(DownloadStatus.PAUSED, repaired.status)
+    }
+
     @Test fun `blocked start resume and restart send no HTTP and keep partial data`() = runBlocking {
         policy.allowed.value = false
         val server = server()

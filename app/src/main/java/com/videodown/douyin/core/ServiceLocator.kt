@@ -15,6 +15,9 @@ import com.videodown.douyin.data.remote.DouyinApiClient
 import com.videodown.douyin.data.repository.DownloadHistoryRepositoryImpl
 import com.videodown.douyin.data.repository.DouyinRepositoryImpl
 import com.videodown.douyin.data.repository.MultiPlatformVideoRepository
+import com.videodown.douyin.data.site.OnlinePlaybackSessionStore
+import com.videodown.douyin.data.site.SiteSourceRegistry
+import com.videodown.douyin.data.site.SiteWatchHistoryStore
 import com.videodown.douyin.domain.repository.DouyinRepository
 import com.videodown.douyin.domain.repository.DownloadHistoryRepository
 import com.videodown.douyin.domain.repository.Downloader
@@ -46,6 +49,12 @@ object ServiceLocator {
     }
 
     val playbackRepository by lazy { com.videodown.douyin.data.playback.PlaybackPreferences(appContext) }
+
+    val siteSources by lazy { SiteSourceRegistry() }
+    val onlinePlaybackSessions by lazy { OnlinePlaybackSessionStore() }
+    val siteWatchHistory by lazy {
+        SiteWatchHistoryStore(File(appContext.filesDir, "site_watch_history.json"))
+    }
 
     val douyinApiClient: DouyinApiClient by lazy { DouyinApiClient() }
 

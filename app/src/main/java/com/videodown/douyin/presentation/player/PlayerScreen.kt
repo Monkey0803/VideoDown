@@ -916,7 +916,7 @@ private fun VideoScaleMode.labelRes(): Int = when (this) {
  * it actually recognises its own gesture, so a still finger produces a tap (and a double tap) while
  * a moving one produces a swipe instead.
  */
-private fun Modifier.playerGestures(
+internal fun Modifier.playerGestures(
     currentPosition: () -> Long,
     duration: () -> Long,
     onTap: () -> Unit,

@@ -151,6 +151,16 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 
 此功能面向点播视频，不保证所有网站可用；不支持 DRM、直播录制或整站采集。部分网站会限制 WebView 登录。详细架构、依赖校验和、16 KB 原生库修复与许可来源见 [通用视频引擎说明](docs/research/universal-video-engine.md)，当前通过及未验证项见 [实施验证记录](docs/validation/universal-video-2026-09-29.md)。
 
+## 站点专区与 KUBB.TV 在线播放
+
+解析页的「站点专区」是独立于通用粘贴解析的站点入口；「查看全部」进入站点中心，并显示最多 100 条独立的最近观看记录。站点由 `SiteSourceRegistry` 注册，页面只依赖稳定站点 ID、频道、域名白名单和能力声明，后续新增适配器无需修改主导航。
+
+首个适配器为 KUBB.TV。页面顶部提供电影、电视剧、综艺、动漫、短剧、体育、纪录片、华人、游戏、新闻、娱乐、生活、音乐、时尚、科技和小视频共 16 个原生频道，频道内容仍由站点移动网页展示；电视直播不显示。站点浏览器只允许 HTTP/HTTPS 和 KUBB.TV 主域导航，拦截登录、账号、会员与支付路径，关闭文件/内容访问、混合内容、多窗口及第三方 Cookie。用户主动点击的外链交给系统浏览器，无手势跳转和弹窗不放行。
+
+进入影片或带 `?id=` 的选集页面后，App 并行使用当前页面和 WebView 实际加载的 HLS/直链候选解析媒体；多个有效媒体会先选择画质。播放地址只保存在进程内，观看历史只保存可重新解析的规范页面 URL、标题、封面、时长和进度。进程重建导致会话失效时返回原站点页面重新解析，再从断点继续。
+
+在线播放复用本地播放器的进度条、倍速、循环、轨道、比例、手势、全屏和画中画控制；依赖本地文件的截图、抽帧预览和文件分享不会出现。媒体请求逐次附加 Referer/User-Agent，并使用无 Cookie 的 OkHttp 数据源。播放器内「下载」把本次解析的原始 `DouyinVideo` / `VideoVariant` 交给既有下载器，因此仍保留 HLS、请求头、重复确认、暂停续传和下载历史语义。直播、DRM、登录/会员/付费内容继续明确拒绝，不尝试录制或绕过授权。
+
 ## 应用更新入口
 
 - 「我的 → 检查更新」显示当前版本，并读取一个可配置的版本清单 JSON（`versionCode` / `versionName` / `downloadUrl` / `releasePageUrl` / `notes` / `notesEn`）判断是否有新版本。`notesEn` 是英文说明：弹窗按界面语言在两者之间选，缺一版就回落到另一版（`AppUpdateManifest.notesFor`）。
@@ -254,6 +264,12 @@ adb shell "am instrument -w -e class com.videodown.douyin.XSpecifiedPostDeviceTe
 ./gradlew connectedDebugAndroidTest \
   -Pandroid.testInstrumentationRunnerArguments.class=com.videodown.douyin.ImageLiveDeviceTest \
   -Pandroid.testInstrumentationRunnerArguments.live_images=true
+
+# KUBB.TV 匿名公开内容在线验收：电影、电视剧、动漫、小视频各解析一条，并短时播放首条
+# 默认跳过；站点结构、地区策略和媒体流量均可能变化。增加 live_kubb_download 会创建下载任务后立即取消。
+./gradlew connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.videodown.douyin.KubbLiveDeviceTest \
+  -Pandroid.testInstrumentationRunnerArguments.live_kubb=true
 
 # 生成 arm64 Debug APK（默认目标架构就是 arm64-v8a）
 ./gradlew assembleDebug
@@ -433,6 +449,7 @@ Android/data/com.videodown.douyin/files/Movies/Douyin/
 - 图片中心只浏览仍存在于应用下载记录和私有文件目录中的原文件；删除下载记录不会连带删除用户此前另存到系统相册的副本。
 - 打包下载的 ZIP 固定写入 `Download/拾影`；Android 9 及以下需要存储权限，未授权时只保留应用内副本并说明原因。用户只勾选了部分图片时，若签名地址过期，归档任务会按原清单失败并提示重新解析，不会把未勾选的图片悄悄塞进包里。
 - 网页抓图只覆盖**页面已加载**的图片（`img.currentSrc` 与资源计时），不抓 CSS 背景图与未触发的懒加载图；候选会按宽高/大小过滤图标，但无法保证过滤掉所有装饰图。
+- **KUBB.TV 依赖公开网页结构而非私有签名 API**：站点改版、媒体 CDN 域名变化、地区限制或反自动化策略都可能让频道仍能浏览但解析暂不可用；此时会显示站点/解析错误，不会尝试登录、会员、付费、DRM 或直播绕过。在线播放会话仅在当前进程有效，重启后需返回观看记录重新解析最新地址。
 - 快手图集依赖分享页内嵌 `atlas`；字段改名时需要更新 `KuaishouJsonParser`，与其它平台一样属于会随站点改版失效的适配点。
 - 微博 Live Photo 会保存静帧和配对的 `.mov`，在应用内始终作为一条记录共同下载、续传、播放、分享、导出、重命名和删除；打包下载则写为 `images/NNN.*` 与 `livephotos/NNN.mov`。Android `MediaStore` 没有跨厂商统一的 Live Photo 配对字段，因此另存到系统相册后是 Pictures 与 Movies 中的两个原始媒体项，应用内的成对关系仍保留；动态 GIF 继续按既有路径存成 MP4。
 - `ratio=` 派生档位属于兜底策略；若接口已提供完整 `bit_rate` 列表，则以官方档位为准。

@@ -203,6 +203,21 @@ class DownloadEngine(
             .sortedWith(compareByDescending<DownloadRecord> { it.status == DownloadStatus.COMPLETED }
                 .thenByDescending { it.updatedAt }).firstOrNull()
 
+    override suspend fun refreshMetadata(id: String, video: DouyinVideo): DownloadRecord? = maintenanceMutex.withLock {
+        val existing = history.getById(id) ?: return@withLock null
+        if (existing.status == DownloadStatus.RUNNING || existing.status == DownloadStatus.PENDING) return@withLock existing
+        val updated = existing.copy(
+            title = video.title,
+            authorNickname = video.author.nickname,
+            authorAvatarUrl = video.author.avatarUrl,
+            authorSecUid = video.author.secUid,
+            coverUrl = video.coverUrl ?: existing.coverUrl,
+            sourcePageUrl = video.videoWebUrl.ifBlank { existing.sourcePageUrl },
+        )
+        if (updated != existing) history.upsert(updated)
+        updated
+    }
+
     override suspend fun startArchive(request: ArchiveRequest): String = maintenanceMutex.withLock {
         val entries = request.entries
         require(entries.isNotEmpty())

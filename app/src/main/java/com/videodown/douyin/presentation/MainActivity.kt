@@ -285,6 +285,9 @@ private object Routes {
     const val SETTINGS = "settings"
     const val PLAYER = "player/{recordId}?cover={cover}"
     const val IMAGE = "image/{recordId}"
+    const val SITES = "sites"
+    const val SITE = "site/{siteId}?page={page}"
+    const val STREAM = "stream/{sessionId}"
 
     /**
      * 封面随路由一起传给播放器。
@@ -295,6 +298,9 @@ private object Routes {
         "player/$recordId?cover=" + android.net.Uri.encode(coverUrl.orEmpty())
 
     fun image(recordId: String) = "image/$recordId"
+    fun site(siteId: String, pageUrl: String? = null) =
+        "site/${android.net.Uri.encode(siteId)}?page=${android.net.Uri.encode(pageUrl.orEmpty())}"
+    fun stream(sessionId: String) = "stream/${android.net.Uri.encode(sessionId)}"
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -439,7 +445,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
             NavHost(
                 navController = navController,
                 startDestination = Routes.HOME,
-                modifier = if (route == Routes.PLAYER || route == Routes.IMAGE) {
+                modifier = if (route == Routes.PLAYER || route == Routes.IMAGE || route == Routes.STREAM) {
                     Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
                 } else {
                     Modifier.padding(padding).consumeWindowInsets(padding).background(MaterialTheme.colorScheme.background)
@@ -466,6 +472,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         watchProgress = watchProgress,
                         batchImportSeed = batchImportSeed,
                         onBatchImportSeedConsumed = onBatchImportSeedConsumed,
+                        onOpenSites = { navController.navigate(Routes.SITES) },
                     )
                 }
                 composable(Routes.TASKS) {
@@ -531,6 +538,40 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         coverUrl = playerEntry.arguments?.getString("cover")?.takeIf(String::isNotBlank),
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = animatedVisibilityScope,
+                    )
+                }
+                composable(Routes.SITES) {
+                    com.videodown.douyin.presentation.sites.SiteHubScreen(
+                        onBack = { navController.popBackStack() },
+                        onOpenSite = { siteId, page -> navController.navigate(Routes.site(siteId, page)) },
+                    )
+                }
+                composable(
+                    route = Routes.SITE,
+                    arguments = listOf(
+                        navArgument("siteId") { type = NavType.StringType },
+                        navArgument("page") { type = NavType.StringType; defaultValue = "" },
+                    ),
+                ) { siteEntry ->
+                    val adapter = ServiceLocator.siteSources.adapter(siteEntry.arguments?.getString("siteId").orEmpty())
+                    if (adapter != null) {
+                        com.videodown.douyin.presentation.sites.SiteBrowserScreen(
+                            adapter = adapter,
+                            initialPageUrl = siteEntry.arguments?.getString("page")?.takeIf(String::isNotBlank),
+                            onBack = { navController.popBackStack() },
+                            onOpenPlayer = { navController.navigate(Routes.stream(it)) },
+                        )
+                    } else {
+                        LaunchedEffect(Unit) { navController.popBackStack() }
+                    }
+                }
+                composable(
+                    route = Routes.STREAM,
+                    arguments = listOf(navArgument("sessionId") { type = NavType.StringType }),
+                ) { streamEntry ->
+                    com.videodown.douyin.presentation.sites.OnlinePlayerScreen(
+                        sessionId = streamEntry.arguments?.getString("sessionId").orEmpty(),
+                        onBack = { navController.popBackStack() },
                     )
                 }
             }

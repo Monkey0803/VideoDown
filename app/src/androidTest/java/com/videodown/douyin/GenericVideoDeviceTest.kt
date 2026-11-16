@@ -356,6 +356,8 @@ internal class FixtureServer(private val directory: File, private val slow: Bool
                                 "/page" -> "<html><head><title>Fixture video</title></head><body><video controls src='/sample.mp4'></video></body></html>"
                                 "/plain" -> "<html><head><title>Plain fixture</title></head><body>这个页面没有视频</body></html>"
                                 "/dynamic" -> """<html><head><title>Dynamic fixture</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0"><button style="position:absolute;inset:0;width:100%;height:100%" onclick="this.remove();let v=document.createElement('video');v.controls=true;v.src='/opaque';v.style.width='100%';document.body.append(v);v.play()">播放测试视频</button></body></html>"""
+                                "/list-selection" -> """<html><head><title>List selection fixture</title></head><body><div class="video-teaser"><a href="/play/selected" title="真实影片名称" onclick="return false"><img class="poster" src="/poster.jpg" alt="真实影片名称"></a><div class="title"><a href="/play/selected" onclick="return false">真实影片名称</a></div></div></body></html>"""
+                                "/play/fixture" -> """<html><head><title>Metadata fixture</title><meta property="og:title" content="Fixture Series"><meta property="og:image" content="/poster.jpg"></head><body><div class="episode-list"><button class="active">Episode 2</button></div></body></html>"""
                                 else -> null
                             }
                             val file = File(directory, if (target == "/opaque") "sample.mp4" else target.removePrefix("/"))

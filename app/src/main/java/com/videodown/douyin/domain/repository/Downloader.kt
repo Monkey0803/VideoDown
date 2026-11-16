@@ -47,6 +47,9 @@ interface Downloader {
     /** Existing matching task, or a completed task whose local file still exists. */
     suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant): DownloadRecord? = null
 
+    /** 用重新解析到的页面展示信息修复旧任务；运行中的任务由传输循环独占，避免旧快照覆盖。 */
+    suspend fun refreshMetadata(id: String, video: DouyinVideo): DownloadRecord? = null
+
     /**
      * 把一组图片打成一个 ZIP 任务；返回记录 id。
      *
