@@ -118,8 +118,8 @@ class PlayerLandscapeDeviceTest {
             assertTrue(playerView()!!.width > playerView()!!.height)
         }
         saveScreenshot("landscape-player.png")
-        compose.onNodeWithContentDescription("退出全屏").assertDoesNotExist()
-        clickNativeFullscreen()
+        compose.onNodeWithContentDescription("退出全屏").assertIsDisplayed()
+        compose.onNodeWithContentDescription("退出全屏").performClick()
         waitForOrientation(Configuration.ORIENTATION_PORTRAIT)
         waitForSystemBars(true)
         compose.runOnIdle {

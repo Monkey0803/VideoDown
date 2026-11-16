@@ -41,6 +41,9 @@ class ImageArchiveWriterTest {
         assertEquals("images/001.jpg", ImageArchiveWriter.entryName(0, "jpg"))
         assertEquals("images/010.png", ImageArchiveWriter.entryName(9, "png"))
         assertEquals("images/001.jpg", ImageArchiveWriter.entryName(0, ".JPG"))
+        assertEquals("livephotos/001.mov", ImageArchiveWriter.livePhotoMotionEntryName(0, "mov"))
+        assertEquals("livephotos/001.mov", ImageArchiveWriter.livePhotoMotionEntryName(0, "../../escape"))
+        assertEquals("still_motion.mov", DownloadPaths(temp.root).buildLivePhotoMotionFileName("still.jpg", "../escape"))
     }
 
     @Test fun `a missing source file fails without leaving a half archive`() {

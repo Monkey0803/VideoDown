@@ -101,7 +101,8 @@
 
 证据与未覆盖边界见 [P5 验收记录](validation/p5-features-2026-10-09.md)。同批 JVM 324 用例通过；10 个 Phase B 设备用例在 Android 17 / API 37 模拟器与 Android 11 / API 30 真机均通过。
 
-- [x] **B1 播放器手势与字幕渲染** — `PlayerGestures` 纯几何 + 仅在系统控件隐藏时接管的覆盖层（双击 ±10s、左滑亮度、右滑音量、长按临时 2×）；内嵌字幕由 `PlayerView` 渲染，同名 `.srt`/`.vtt`/`.ass` 作为外部轨道加载，「字幕」开关按轨道存在与否显示并保留。
+- [x] **B1 播放器手势与字幕渲染** — `PlayerGestures` 纯几何 + 自定义控制层后的画面手势（双击 ±10s、左滑亮度、右滑音量、长按临时 2×）；内嵌字幕由 `PlayerView` 渲染，同名 `.srt`/`.vtt`/`.ass` 作为外部轨道加载，「字幕」开关按轨道存在与否显示并保留。
+- [x] **B1.1 沉浸式视频控制与进阶工具** — Compose 控制层统一播放、进度、倍速、循环、轨道、比例、截图、PiP 与全屏；横拖按需抽帧预览，解码失败支持回退、重试与外部打开。音频服务保持不变。证据见 [验收记录](validation/video-player-advanced-2026-11-16.md)。
 - [x] **B2 全局 / 单任务限速** — `TokenBucket` + 共享/每任务 `BandwidthLimiter`，钩子在 `ResumableDownloader` 写入前且位于空间检查之后；设置页全局限速与任务卡单任务限速。引擎下载不受限速（边界见验收记录）。
 - [x] **B3 下载完成自动存入相册（开关）** — `AutoGalleryExport` 决定是否/能否复制，完成通知在同一张卡上报告去向；拷贝移出传输协程，不再占用队列名额。
 - [x] **B4 继续观看** — `PlaybackRepository.watchProgress()` 返回 `StateFlow<Map<String, WatchProgress>>`，`WatchProgress` 携带文件 size/mtime 用于剔除陈旧进度；「已存」与首页「最近保存」显示进度条与「已看 N%」。
@@ -128,11 +129,11 @@
 
 - [x] **D1 图片是一等媒体类型** — `domain/model/MediaKind.kt`（视频/音频/图片/压缩包）+ `VideoVariant.kind` + `DownloadRecord.mediaKind`；旧历史没有该字段时按视频读取。校验（`DownloadValidation`：图片看文件头、ZIP 看魔数与条目数）、扩展名（`extensionOrDefault`）、MIME（`videoMimeType`）与空间余量（图片 2 MiB）都按类型分派。
 - [x] **D2 直链图片** — `GenericVideoRepository.probeDirect` 用 `MediaSignature` 按文件头识别图片并在视频判定之前返回图片条目；新 `data/generic/ImageMedia.kt` 统一构造条目（稳定 `mediaId`、`pageUrl`、Referer）。
-- [x] **D3 平台图文** — 抖音 `images` / `image_post_info`（`/share/note/` 优先，修掉"图文帖 BFS 抓到推荐位视频"的隐患）；微博 `pic_infos`（original→largest→large→bmiddle，GIF 不重复；`livephoto` 按静态图保存、取 `largest`，`.mov` 不当视频）；X `photo`（`pbs.twimg.com` + `?name=orig`，`/photo/N` 选中第 N 张）；快手 `photo.atlas`（实测载荷确认字段后实现）。
-- [x] **D4 看图器（第三方库）** — `io.github.panpf.zoomimage:zoomimage-compose-coil3:1.4.0`（Apache-2.0，Maven Central，minSdk 21，无原生库）；`ImageViewerScreen` 只做顶栏、保存到相册/分享与文件缺失态，缩放/拖动/双击/子采样/Exif 由 `CoilZoomAsyncImage` 提供。锁 1.4.0 的原因（1.5+ 用 Kotlin 2.3/2.4 构建，元数据超出本仓库 Kotlin 2.2.21）写在 `libs.versions.toml` 注释里。
+- [x] **D3 平台图文** — 抖音 `images` / `image_post_info`（`/share/note/` 优先，修掉"图文帖 BFS 抓到推荐位视频"的隐患）；微博 `pic_infos`（original→largest→large→bmiddle；同一 GIF 条目可选 MP4 转码或 GIF 原图，不重复内容；`livephoto` 作为静帧 + 原始 `.mov` 成对媒体，只有两者均完成才完成任务）；X `photo`（`pbs.twimg.com` + `?name=orig`，`/photo/N` 选中第 N 张）；快手 `photo.atlas`（实测载荷确认字段后实现）。
+- [x] **D4 看图器（第三方库）** — `io.github.panpf.zoomimage:zoomimage-compose-coil3:1.4.0`（Apache-2.0，Maven Central，minSdk 21，无原生库）；`ImageViewerScreen` 提供普通库/保险箱分区的全量图片中心、横向翻页、缩略图、3 秒沉浸控制栏、保存/分享/详情/来源与确认删除，缩放/拖动/双击/子采样/Exif 仍由 `CoilZoomAsyncImage` 提供。删除后前进、末尾回退、最后一张退出；保险箱每次进入先走系统认证。锁 1.4.0 的原因（1.5+ 用 Kotlin 2.3/2.4 构建，元数据超出本仓库 Kotlin 2.2.21）写在 `libs.versions.toml` 注释里。
 - [x] **D5 打包下载** — `MediaKind.ARCHIVE` + `DownloadRecord.archiveEntries` + `Downloader.startArchive/findArchiveDuplicate`；`DownloadEngine` 的归档分支逐张复用 `ResumableDownloader`（已完成的图跳过、半张图续传、403/410 整帖重解析），`ImageArchiveWriter` 先写 `.tmp` 再改名，`validateArchive` 校验条目数；`ArchivePublisher` 把 ZIP 写进 `Download/拾影`（Android 10+ 走 `MediaStore.Downloads`）。结果页「打包下载（N 张）」+ 重复确认框。
 - [x] **D6 网页抓图** — `BrowserMediaDetector` 放行图片扩展名并按魔数/尺寸识别，图片候选（宽高 ≥100px、≥10 KiB）在 `BrowserAssistScreen` 里直接构造条目，不经过 yt-dlp；扫描 JS 增加 `img.currentSrc/src`。
-- [x] **D7 文案、图标与路由** — 图片/压缩包在结果页、已存、任务、通知、分享与看图器各自有文案；`MainActivity` 按记录类型分流（图片→看图器、压缩包→系统打开方式、其余→播放器），完成通知深链复用同一条分流；文案资源中英各 **790** 条 key、一一对应，`LocalizationGuardTest` 计数仍为 0。图片没有单独开底部 tab：`LibraryQuery.mediaKind` + 顶部「类型」筛选（全部/视频/音频/图片/压缩包）复用同一套搜索、排序与批量操作；列表标题/副标题随之改为「已存内容 / N 项」。
+- [x] **D7 文案、图标与路由** — 图片/压缩包在结果页、已存、任务、通知、分享与看图器各自有文案；`MainActivity` 按记录类型分流（图片→看图器、压缩包→系统打开方式、其余→播放器），完成通知深链复用同一条分流；文案资源中英各 **836** 条 string key、一一对应。图片没有单独开底部 tab：`LibraryQuery.mediaKind` + 顶部「类型」筛选（全部/视频/音频/图片/压缩包）复用同一套搜索、排序与批量操作；列表标题/副标题随之改为「已存内容 / N 项」。
 
 验证：JVM 用例 **513** 通过；设备用例在 Pixel_10_Pro（API 37 / arm64 模拟器）上运行 `ImageViewerDeviceTest`、`ImageDownloadDeviceTest`、`ImageArchiveDeviceTest`、`ImageGalleryDeviceTest` 与全量既有用例；未覆盖边界与证据见 [图片下载验证](validation/image-download-2026-11-16.md)。在线验收：X 推文 `2121947540518060428` 已在模拟器上完成解析、3 张图片打包与看图器截图（证据在验证记录「指定 X 推文在线验收」一节）；抖音/微博/快手的真实图文链接仍需调用方在 `live_images` 下提供，默认跳过。
 

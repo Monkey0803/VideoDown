@@ -6,6 +6,7 @@ import com.videodown.douyin.domain.model.DouyinAuthor
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.MediaDownload
 import com.videodown.douyin.domain.model.MediaKind
+import com.videodown.douyin.domain.model.LivePhotoMotion
 import com.videodown.douyin.domain.model.MediaSignature
 import com.videodown.douyin.domain.model.MediaSourceType
 import com.videodown.douyin.domain.model.ParsedVideos
@@ -62,6 +63,17 @@ class WeiboJsonParser {
             val height = size.number("height")?.takeIf { it in 1..Int.MAX_VALUE.toLong() }?.toInt()
             val extension = MediaSignature.extensionFromUrl(url) ?: "jpg"
             val entryId = "${id}_img${index + 1}"
+            val motion = if (isLivePhoto) {
+                mediaUrl(picture.text("video"))?.let { motionUrl ->
+                    LivePhotoMotion(
+                        sourceUrl = motionUrl,
+                        referer = VideoPlatform.WEIBO.referer,
+                        extension = "mov",
+                    )
+                }
+            } else null
+            // Live Photo 的语义必须完整：载荷缺少动态片段时不退化成普通静态图。
+            if (isLivePhoto && motion == null) return@mapIndexedNotNull null
             DouyinVideo(
                 awemeId = entryId,
                 title = title,
@@ -81,6 +93,7 @@ class WeiboJsonParser {
                         qualityRank = 0,
                         referer = VideoPlatform.WEIBO.referer,
                         kind = MediaKind.IMAGE,
+                        livePhotoMotion = motion,
                         media = MediaDownload(
                             type = MediaSourceType.DIRECT,
                             pageUrl = page,
@@ -93,7 +106,10 @@ class WeiboJsonParser {
                 ),
                 shareUrl = page,
                 platform = VideoPlatform.WEIBO,
-                mediaLabel = AppText.get(R.string.media_label_image, index + 1),
+                mediaLabel = AppText.get(
+                    if (isLivePhoto) R.string.media_label_live_photo else R.string.media_label_image,
+                    index + 1,
+                ),
             )
         }
     }
@@ -174,15 +190,50 @@ class WeiboJsonParser {
             val height = dimensions?.number("height")?.takeIf { it in 1..Int.MAX_VALUE.toLong() }?.toInt()
             val cover = mediaUrl(picture.obj("largecover")?.text("url"))
                 ?: sizes.firstNotNullOfOrNull { mediaUrl(it.text("url")) }
+            val page = "https://m.weibo.cn/status/$id"
+            val variants = mutableListOf(
+                VideoVariant(
+                    url,
+                    qualityLabel(width, height),
+                    width,
+                    height,
+                    qualityRank = minOf(width ?: 0, height ?: 0),
+                    referer = VideoPlatform.WEIBO.referer,
+                ),
+            )
+            // 微博同时保留 GIF 原图和便于播放的 MP4 转码。两者是同一媒体的下载格式，
+            // 放进同一个条目的变体列表，结果页可选择而不会把一张动图重复成两条内容。
+            listOf("original", "largest", "large", "bmiddle", "thumbnail")
+                .mapNotNull { picture.obj(it) }
+                .firstNotNullOfOrNull { size ->
+                    pictureUrl(size.text("url"))?.takeIf { MediaSignature.extensionFromUrl(it) == "gif" }
+            }?.let { gifUrl ->
+                variants += VideoVariant(
+                    url = gifUrl,
+                    label = "GIF",
+                    width = width,
+                    height = height,
+                    qualityRank = minOf(width ?: 0, height ?: 0),
+                    referer = VideoPlatform.WEIBO.referer,
+                    media = MediaDownload(
+                        type = MediaSourceType.DIRECT,
+                        pageUrl = page,
+                        mediaId = "${id}_$pictureId",
+                        formatId = "gif",
+                        extension = "gif",
+                        extractor = "image",
+                    ),
+                    kind = MediaKind.IMAGE,
+                )
+            }
             DouyinVideo(
                 awemeId = "${id}_$pictureId", title = title, coverUrl = cover,
                 author = DouyinAuthor(uid = user?.text("idstr") ?: user?.text("id"),
                     nickname = user?.text("screen_name").orEmpty(),
                     avatarUrl = mediaUrl(user?.text("avatar_hd") ?: user?.text("profile_image_url")),
                     platform = VideoPlatform.WEIBO),
-                variants = listOf(VideoVariant(url, qualityLabel(width, height), width, height,
-                    qualityRank = minOf(width ?: 0, height ?: 0), referer = VideoPlatform.WEIBO.referer)),
-                shareUrl = "https://m.weibo.cn/status/$id", platform = VideoPlatform.WEIBO,
+                variants = variants,
+                shareUrl = page, platform = VideoPlatform.WEIBO,
             )
         }.mapIndexed { index, video -> video.copy(mediaLabel = AppText.get(R.string.media_label_animated, index + 1)) }
     }

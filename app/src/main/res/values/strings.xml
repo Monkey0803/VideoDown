@@ -232,6 +232,7 @@
     <string name="home_unknown_author">未知作者</string>
     <string name="home_view_author">查看作者</string>
     <string name="home_choose_quality">选择画质</string>
+    <string name="home_choose_format">选择下载格式</string>
     <string name="home_size_note">文件大小以视频源为准</string>
     <string name="home_quality_label">画质 %1$s</string>
     <string name="home_size_loading">获取大小中…</string>
@@ -721,6 +722,25 @@
 
     <!-- Player gestures and sleep timer -->
     <string name="player_seek_seconds">%1$s 秒</string>
+    <string name="player_rewind_10">快退 10 秒</string>
+    <string name="player_forward_10">快进 10 秒</string>
+    <string name="player_tracks">音轨与字幕</string>
+    <string name="player_audio_tracks">音轨</string>
+    <string name="player_subtitle_tracks">字幕轨</string>
+    <string name="player_track_auto">自动选择</string>
+    <string name="player_no_extra_tracks">当前视频没有可选择的音轨或字幕轨</string>
+    <string name="player_screenshot">截取当前画面</string>
+    <string name="player_screenshot_done">截图已保存到相册</string>
+    <string name="player_screenshot_failed">截图失败，请稍后重试</string>
+    <string name="player_scale_fit">适应画面</string>
+    <string name="player_scale_title">画面比例</string>
+    <string name="player_scale_crop">裁剪填充</string>
+    <string name="player_scale_stretch">拉伸填充</string>
+    <string name="player_enter_fullscreen">进入全屏</string>
+    <string name="player_exit_fullscreen">退出全屏</string>
+    <string name="player_playback_failed">视频播放失败</string>
+    <string name="player_retry_playback">重新播放</string>
+    <string name="player_progress">播放进度</string>
     <string name="sleep_remaining_minutes">约剩 %1$d 分</string>
     <string name="sleep_remaining_seconds">约剩 %1$d 秒</string>
     <string name="download_wifi_paused">已暂停：仅在 Wi-Fi 下下载，请连接 Wi-Fi 后点击继续</string>
@@ -848,6 +868,7 @@
 
     <!-- 图片与打包下载 -->
     <string name="media_label_image">图片 %1$d</string>
+    <string name="media_label_live_photo">Live Photo %1$d</string>
     <string name="media_label_quoted_image">引用 · 图片 %1$d</string>
     <string name="fallback_title_web_image">网页图片</string>
     <string name="fallback_title_douyin_image">抖音图文</string>
@@ -878,8 +899,33 @@
     <string name="share_image">分享图片</string>
     <string name="share_archive">分享压缩包</string>
     <string name="share_file">分享文件</string>
+    <string name="share_live_photo">分享 Live Photo</string>
     <string name="viewer_title">查看图片</string>
     <string name="viewer_missing">图片文件不存在</string>
+    <string name="viewer_count">%1$d / %2$d</string>
+    <string name="viewer_thumbnail">第%1$d张：%2$s</string>
+    <string name="viewer_info">图片信息</string>
+    <string name="viewer_more">更多操作</string>
+    <string name="viewer_open_source">打开来源</string>
+    <string name="viewer_source_failed">无法打开图片来源</string>
+    <string name="viewer_delete_title">删除这张图片？</string>
+    <string name="viewer_delete_body">这会移除“%1$s”的应用内原文件和下载记录，不会删除已经保存到系统相册的副本。</string>
+    <string name="viewer_delete_failed">删除失败，请稍后重试</string>
+    <string name="viewer_delete_stale">删除失效记录</string>
+    <string name="viewer_unlocking">正在验证保险箱…</string>
+    <string name="viewer_unlock_denied">未通过验证，私密图片仍保持锁定。</string>
+    <string name="viewer_unlock_unavailable">此设备暂时无法验证保险箱。</string>
+    <string name="viewer_unlock_retry">重新验证</string>
+    <string name="viewer_detail_author">作者</string>
+    <string name="viewer_detail_platform">来源平台</string>
+    <string name="viewer_detail_format">文件格式</string>
+    <string name="viewer_detail_dimensions">原图尺寸</string>
+    <string name="viewer_detail_size">文件大小</string>
+    <string name="viewer_detail_saved_at">保存时间</string>
+    <string name="viewer_detail_unknown">未知</string>
+    <string name="viewer_live_photo_play">实况</string>
+    <string name="viewer_live_photo_stop">停止</string>
+    <string name="viewer_detail_live_photo">动态片段</string>
     <string name="browser_candidate_image">图片 · %1$s</string>
     <string name="download_not_an_image">下载到的文件不是有效图片</string>
     <string name="download_invalid_archive">压缩包不完整或已损坏</string>

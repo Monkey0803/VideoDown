@@ -15,4 +15,6 @@ data class ArchiveEntry(
     /** CDN 防盗链需要的来源页；为空时用品台 referer。 */
     val referer: String? = null,
     val sizeBytes: Long? = null,
+    /** Live Photo 的 MOV 与本图片使用同一下标写入归档。 */
+    val livePhotoMotion: LivePhotoMotion? = null,
 )

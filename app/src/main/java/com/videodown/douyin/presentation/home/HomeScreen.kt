@@ -128,6 +128,7 @@ import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.formatDuration
 import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.SubtitleLanguageSelection
 import com.videodown.douyin.domain.model.SubtitleSelection
 import com.videodown.douyin.domain.model.DouyinVideo
@@ -550,6 +551,8 @@ private fun ResultScreen(
     val windowHeight = LocalWindowInfo.current.containerSize.height
     val screenHeight = with(LocalDensity.current) { windowHeight.toDp().value }
     val batchSelected = state.videos.size > 1 && state.selectedMedia.isNotEmpty()
+    val selectedIsImage = state.selectedVariant?.kind == MediaKind.IMAGE
+    val hasMixedDownloadFormats = video.variants.map { it.kind }.distinct().size > 1
     val selectableKeys = state.videos.filter { state.variantChoices[it.selectionKey()] != null }.map { it.selectionKey() }.toSet()
     val allSelected = selectableKeys.isNotEmpty() && state.selectedMedia == selectableKeys
     val resultScroll = rememberScrollState()
@@ -636,14 +639,14 @@ private fun ResultScreen(
                 }
                 IconButton(onClick = { onPreview(video) }, modifier = Modifier.align(Alignment.Center)
                     .size(56.dp).clip(CircleShape).background(Color.White.copy(alpha = .28f))) {
-                    if (video.isImagePost) {
+                    if (video.isImagePost || selectedIsImage) {
                         // 图片没有"在平台中预览播放"，这里打开的是原帖。
                         AppIcon(AppIcons.ExternalLink, stringResource(R.string.home_view_post), tint = Color.White, modifier = Modifier.size(28.dp))
                     } else {
                         AppIcon(AppIcons.Play, stringResource(R.string.home_preview_on_platform, stringResource(videoPlatformLabelRes(video.platform))), tint = Color.White, modifier = Modifier.size(35.dp))
                     }
                 }
-                if (!video.isImagePost) {
+                if (!video.isImagePost && !selectedIsImage) {
                     Text(formatDuration(video.durationMs), color = Color.White, style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp).clip(MaterialTheme.shapes.small)
                             .background(Color.Black.copy(alpha = .5f)).padding(horizontal = 7.dp, vertical = 5.dp))
@@ -681,7 +684,12 @@ private fun ResultScreen(
                     }
                 } else {
                 Row(Modifier.fillMaxWidth().padding(top = 22.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.home_choose_quality), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        stringResource(if (hasMixedDownloadFormats) R.string.home_choose_format else R.string.home_choose_quality),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                     Spacer(Modifier.weight(1f))
                     Text(stringResource(R.string.home_size_note), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -722,7 +730,7 @@ private fun ResultScreen(
                             onClick = { onSelectVariant(variant) }, label = { Text(variant.label) })
                     }
                     Text(stringResource(R.string.home_audio_only_hint), style = MaterialTheme.typography.labelMedium)
-                } else {
+                } else if (!selectedIsImage) {
                     Text(stringResource(R.string.home_no_audio_track), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
                 }
                 }
@@ -732,7 +740,7 @@ private fun ResultScreen(
                 val subtitleChoice = subtitleTarget?.let {
                     SubtitleLanguageSelection.preferred(it.subtitleLanguages, it.autoCaptionLanguages)
                 } ?: SubtitleSelection.NONE
-                if (subtitleChoice.available && state.selectedVariant?.media?.audioOnly != true) {
+                if (subtitleChoice.available && state.selectedVariant?.media?.audioOnly != true && !selectedIsImage) {
                     Text(stringResource(R.string.home_subtitles), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 18.dp))
                     FilterChip(selected = state.saveSubtitles,
                         enabled = !state.isSubmitting && state.duplicates == null,
@@ -742,7 +750,7 @@ private fun ResultScreen(
                     Text(stringResource(R.string.home_subtitles_hint),
                         style = MaterialTheme.typography.labelMedium)
                 }
-                Text(stringResource(if (video.isImagePost) R.string.home_result_image_note else R.string.home_result_note),
+                Text(stringResource(if (video.isImagePost || selectedIsImage) R.string.home_result_image_note else R.string.home_result_note),
                     color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(top = 18.dp))
             }
@@ -765,7 +773,7 @@ private fun ResultScreen(
                 else -> stringResource(
                     when {
                         state.selectedVariant?.media?.audioOnly == true -> R.string.home_save_audio
-                        video.isImagePost -> R.string.home_save_current_image
+                        video.isImagePost || selectedIsImage -> R.string.home_save_current_image
                         state.videos.size > 1 -> R.string.home_save_current
                         else -> R.string.home_save_local
                     },

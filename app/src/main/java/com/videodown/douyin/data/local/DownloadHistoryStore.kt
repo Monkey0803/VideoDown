@@ -84,6 +84,13 @@ class DownloadHistoryStore(
             if (deleteFiles) {
                 _records.value.forEach { record ->
                     record.filePath?.let { runCatching { File(it).delete() } }
+                    record.livePhotoMotion?.filePath?.let { runCatching { File(it).delete() } }
+                    record.livePhotoMotion?.fileName?.takeIf(String::isNotBlank)?.let { name ->
+                        (record.filePath?.let(::File)?.parentFile
+                            ?: record.partialPath.takeIf(String::isNotBlank)?.let(::File)?.parentFile)?.let { parent ->
+                            runCatching { File(parent, "$name.part").delete() }
+                        }
+                    }
                     record.partialPath.takeIf { it.isNotBlank() }?.let { runCatching { File(it).delete() } }
                 }
             }

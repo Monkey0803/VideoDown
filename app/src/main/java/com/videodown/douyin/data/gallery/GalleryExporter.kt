@@ -36,38 +36,52 @@ class GalleryExporter(private val context: Context) {
             if (source.extension.lowercase() !in target.containers) {
                 throw GalleryExportException(GalleryExportFailure.UNSUPPORTED_CONTAINER)
             }
-
-            val resolver = context.contentResolver
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, source.name)
-                put(MediaStore.MediaColumns.MIME_TYPE, videoMimeType(source.extension))
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, target.relativePath)  // l10n-ignore: MediaStore 目录名是路径而非文案，随语言改变会把同一份文件写到不同目录
-                    put(MediaStore.MediaColumns.IS_PENDING, 1)
-                }
-            }
-            val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                target.collection.api29
-            } else {
-                target.collection.legacy
-            }
-            val inserted = resolver.insert(collection, values)
-                ?: throw GalleryExportException(GalleryExportFailure.CREATE_FAILED)
+            val stillUri = insert(source, target)
             try {
-                val output = resolver.openOutputStream(inserted, "w")
-                    ?: throw GalleryExportException(GalleryExportFailure.WRITE_FAILED)
-                output.use { stream -> source.inputStream().use { it.copyTo(stream) } }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val ready = ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }
-                    if (resolver.update(inserted, ready, null, null) <= 0) {
-                        throw GalleryExportException(GalleryExportFailure.FINISH_FAILED)
-                    }
+                record.livePhotoMotion?.let { pairedMotion ->
+                    val motion = pairedMotion.filePath?.let(::File)
+                        ?: throw GalleryExportException(GalleryExportFailure.FILE_MISSING)
+                    if (!motion.isFile) throw GalleryExportException(GalleryExportFailure.FILE_MISSING)
+                    insert(motion, VideoTarget)
                 }
-                inserted
+                stillUri
             } catch (error: Throwable) {
-                resolver.delete(inserted, null, null)
+                context.contentResolver.delete(stillUri, null, null)
                 throw error
             }
+        }
+    }
+
+    private fun insert(source: File, target: ExportTarget): Uri {
+        if (source.extension.lowercase() !in target.containers) {
+            throw GalleryExportException(GalleryExportFailure.UNSUPPORTED_CONTAINER)
+        }
+        val resolver = context.contentResolver
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, source.name)
+            put(MediaStore.MediaColumns.MIME_TYPE, videoMimeType(source.extension))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, target.relativePath)  // l10n-ignore: MediaStore 目录名是路径而非文案，随语言改变会把同一份文件写到不同目录
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+        }
+        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) target.collection.api29 else target.collection.legacy
+        val inserted = resolver.insert(collection, values)
+            ?: throw GalleryExportException(GalleryExportFailure.CREATE_FAILED)
+        try {
+            val output = resolver.openOutputStream(inserted, "w")
+                ?: throw GalleryExportException(GalleryExportFailure.WRITE_FAILED)
+            output.use { stream -> source.inputStream().use { it.copyTo(stream) } }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val ready = ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }
+                if (resolver.update(inserted, ready, null, null) <= 0) {
+                    throw GalleryExportException(GalleryExportFailure.FINISH_FAILED)
+                }
+            }
+            return inserted
+        } catch (error: Throwable) {
+            resolver.delete(inserted, null, null)
+            throw error
         }
     }
 

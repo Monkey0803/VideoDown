@@ -63,6 +63,8 @@ data class VideoVariant(
      * 放在最后并带默认值：既有构造点全部是位置参数 + 命名参数混用，插在中间会静默移位。
      */
     val kind: MediaKind = MediaKind.VIDEO,
+    /** 与图片静帧绑定的 Live Photo 动态片段；不是独立视频条目。 */
+    val livePhotoMotion: LivePhotoMotion? = null,
 ) {
     /** 下载时的扩展名：来源给出的真实扩展名优先，其次按类型兜底。 */
     val extensionOrDefault: String
@@ -75,6 +77,8 @@ data class VideoVariant(
             kind == MediaKind.IMAGE -> MediaKind.IMAGE
             else -> MediaKind.VIDEO
         }
+
+    val isLivePhoto: Boolean get() = kind == MediaKind.IMAGE && livePhotoMotion != null
 
     val resolutionText: String
         get() = when {

@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
+import com.videodown.douyin.domain.model.LivePhotoMotion
 import com.videodown.douyin.domain.model.MediaKind
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -68,5 +69,72 @@ class ImageGalleryDeviceTest {
         instrumentation.sendStatus(0, Bundle().apply {
             putString("stream", "gallery image: ${source.name} saved under Pictures/拾影\n")
         })
+    }
+
+    @Test fun aLivePhotoExportsItsStillAndMotionToTheirMediaCollections() = runBlocking {
+        val still = pngFile()
+        val motion = File(directory, "${still.nameWithoutExtension}_motion.mov").apply {
+            writeBytes(instrumentation.context.assets.open("landscape-fixture.mp4").use { it.readBytes() })
+        }
+        val record = DownloadRecord(
+            id = "live", awemeId = "post_live", title = "实况照片", fileName = still.name,
+            filePath = still.absolutePath, status = DownloadStatus.COMPLETED, mediaKind = MediaKind.IMAGE,
+            livePhotoMotion = LivePhotoMotion(
+                sourceUrl = "https://example.test/live.mov",
+                fileName = motion.name,
+                filePath = motion.absolutePath,
+            ),
+        )
+
+        val stillUri = ServiceLocator.galleryExporter.export(record).getOrThrow()
+        val motionUri = context.contentResolver.query(
+            MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+            arrayOf(MediaStore.Video.Media._ID),
+            "${MediaStore.MediaColumns.DISPLAY_NAME} = ?",
+            arrayOf(motion.name),
+            null,
+        )?.use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                .buildUpon().appendPath(cursor.getLong(0).toString()).build()
+        } ?: throw AssertionError("the live photo motion is not queryable")
+        context.contentResolver.query(
+            motionUri,
+            arrayOf(
+                MediaStore.MediaColumns.DISPLAY_NAME,
+                MediaStore.MediaColumns.MIME_TYPE,
+                MediaStore.MediaColumns.RELATIVE_PATH,
+            ),
+            null, null, null,
+        )!!.use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(motion.name, cursor.getString(0))
+            // 测试素材内容是 MP4，MediaStore 会覆盖写入时声明的 video/quicktime。
+            assertTrue(cursor.getString(1).startsWith("video/"))
+            assertEquals("Movies/拾影/", cursor.getString(2))
+        }
+        context.contentResolver.delete(stillUri, null, null)
+        context.contentResolver.delete(motionUri, null, null)
+        Unit
+    }
+
+    @Test fun anIncompleteLivePhotoNeverExportsOnlyItsStill() = runBlocking {
+        val still = pngFile()
+        val record = DownloadRecord(
+            id = "incomplete-live", awemeId = "post_incomplete", title = "不完整实况照片",
+            fileName = still.name, filePath = still.absolutePath, status = DownloadStatus.COMPLETED,
+            mediaKind = MediaKind.IMAGE,
+            livePhotoMotion = LivePhotoMotion(sourceUrl = "https://example.test/missing.mov"),
+        )
+
+        assertTrue(ServiceLocator.galleryExporter.export(record).isFailure)
+        val count = context.contentResolver.query(
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+            arrayOf(MediaStore.Images.Media._ID),
+            "${MediaStore.MediaColumns.DISPLAY_NAME} = ?",
+            arrayOf(still.name),
+            null,
+        )?.use { it.count } ?: 0
+        assertEquals(0, count)
     }
 }

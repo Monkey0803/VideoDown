@@ -43,8 +43,11 @@ class DownloadStorageRepository(
             if (temporary && file.canonicalPath !in protected &&
                 !(file.name.endsWith(".publishing") && active.isNotEmpty())) candidates += info
         }
-        val missing = records.filter { it.status == DownloadStatus.COMPLETED && it.id !in active &&
-            it.filePath?.let { path -> File(path).isFile } != true }.map { it.id }.toSet()
+        val missing = records.filter { record ->
+            record.status == DownloadStatus.COMPLETED && record.id !in active &&
+                (record.filePath?.let { path -> File(path).isFile } != true ||
+                    record.livePhotoMotion?.let { motion -> motion.filePath?.let { File(it).isFile } == true } == false)
+        }.map { it.id }.toSet()
         return StorageUsage(videoBytes, temporaryBytes, available(root).coerceAtLeast(0), candidates, missing, budget = budget())
     }
 
@@ -66,7 +69,8 @@ class DownloadStorageRepository(
             plan.missingRecordIds.forEach { id ->
                 val record = history.getById(id)
                 if (id !in current.missingRecordIds || record?.status != DownloadStatus.COMPLETED ||
-                    id in activeIds() || record.filePath?.let { File(it).isFile } == true) skipped++
+                    id in activeIds() || (record.filePath?.let { File(it).isFile } == true &&
+                        record.livePhotoMotion?.let { motion -> motion.filePath?.let { File(it).isFile } == true } != false)) skipped++
                 else { history.delete(id); removed++ }
             }
             StorageCleanupResult(freed, entries, removed, skipped, failed)
@@ -76,6 +80,11 @@ class DownloadStorageRepository(
     private fun protectedPaths(records: List<DownloadRecord>, root: File): Set<String> = buildSet {
         records.forEach { record ->
             record.filePath?.let { add(File(it).canonicalPath) }
+            record.livePhotoMotion?.filePath?.let { add(File(it).canonicalPath) }
+            record.livePhotoMotion?.fileName?.takeIf(String::isNotBlank)?.let { name ->
+                add(File(root, name).canonicalPath)
+                add(File(root, "$name.part").canonicalPath)
+            }
             if (record.partialPath.isNotBlank()) add(File(record.partialPath).canonicalPath)
             if (record.fileName.isNotBlank()) {
                 add(File(root, record.fileName).canonicalPath)

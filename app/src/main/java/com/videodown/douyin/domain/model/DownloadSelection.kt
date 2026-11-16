@@ -4,6 +4,7 @@ package com.videodown.douyin.domain.model
 fun DownloadRecord.matchesSelection(video: DouyinVideo, variant: VideoVariant): Boolean {
     if (platform != video.platform || awemeId != video.awemeId) return false
     if (!resolutionLabel.trim().equals(variant.label.trim(), ignoreCase = true)) return false
+    if ((livePhotoMotion != null) != (variant.livePhotoMotion != null)) return false
     val previous = media
     val next = variant.media
     return if (previous != null && next != null) previous.sameMedia(next)

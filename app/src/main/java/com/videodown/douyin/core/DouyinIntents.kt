@@ -3,6 +3,7 @@ package com.videodown.douyin.core
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.ClipData
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.videodown.douyin.domain.model.DouyinAuthor
@@ -90,6 +91,26 @@ object DouyinIntents {
         }
         val chooser = Intent.createChooser(intent, context.getString(title))
         return runCatching { context.startActivity(chooser) }.isSuccess
+    }
+
+    /** Live Photo 以静帧 + MOV 成对分享；普通记录仍走单文件分享。 */
+    fun shareRecord(context: Context, record: DownloadRecord): Boolean {
+        val still = record.filePath?.let(::File)?.takeIf(File::isFile) ?: return false
+        val pairedMotion = record.livePhotoMotion ?: return shareFile(context, still)
+        val motion = pairedMotion.filePath?.let(::File)?.takeIf(File::isFile) ?: return false
+        val uris = listOfNotNull(uriFor(context, still), uriFor(context, motion))
+        if (uris.size != 2) return false
+        val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+            type = "*/*"
+            putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+            clipData = ClipData.newUri(context.contentResolver, still.name, uris.first()).apply {
+                addItem(ClipData.Item(uris.last()))
+            }
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        return runCatching {
+            context.startActivity(Intent.createChooser(intent, context.getString(com.videodown.douyin.R.string.share_live_photo)))
+        }.isSuccess
     }
 
     private fun uriFor(context: Context, file: File): Uri? = runCatching {

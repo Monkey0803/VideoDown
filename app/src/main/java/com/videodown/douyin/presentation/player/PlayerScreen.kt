@@ -21,6 +21,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,6 +68,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -78,6 +80,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -98,8 +101,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.media3.common.AudioAttributes
@@ -110,6 +115,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.videodown.douyin.data.playback.AudioPlaybackService
+import com.videodown.douyin.data.playback.VideoFrameExporter
+import com.videodown.douyin.data.playback.VideoFrameProvider
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.videodown.douyin.core.ServiceLocator
@@ -121,16 +128,20 @@ import com.videodown.douyin.presentation.relativeTimeText
 import com.videodown.douyin.data.gallery.GalleryExporter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.videodown.douyin.domain.model.playbackSpeeds
 import com.videodown.douyin.domain.model.SleepTimer
 import com.videodown.douyin.domain.model.PlayerGestures
 import com.videodown.douyin.domain.model.GestureSide
+import com.videodown.douyin.domain.model.VideoScaleMode
 import com.videodown.douyin.data.playback.SubtitleSidecarResolver
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.roundToInt
 import java.io.File
@@ -160,6 +171,7 @@ fun PlayerScreen(
     val exporter = remember(context) { GalleryExporter(context.applicationContext) }
     var fullscreen by rememberSaveable(recordId) { mutableStateOf(false) }
     var choosingSpeed by remember { mutableStateOf(false) }
+    var choosingScale by remember { mutableStateOf(false) }
     var choosingSleep by remember { mutableStateOf(false) }
     var exporting by remember { mutableStateOf(false) }
     var videoAspectRatio by remember(recordId) { mutableStateOf(16f / 9f) }
@@ -172,13 +184,22 @@ fun PlayerScreen(
     var hasTextTrack by remember(recordId) { mutableStateOf(false) }
     var subtitlesEnabled by remember { mutableStateOf(ServiceLocator.preferences.subtitlesEnabled) }
     var playerView by remember { mutableStateOf<PlayerView?>(null) }
+    var customControlsVisible by remember { mutableStateOf(true) }
+    var controlInteraction by remember { mutableIntStateOf(0) }
+    var choosingTracks by remember { mutableStateOf(false) }
+    var videoScaleMode by remember(recordId) { mutableStateOf(VideoScaleMode.FIT) }
+    var playerIsPlaying by remember { mutableStateOf(false) }
+    var rawBuffering by remember { mutableStateOf(false) }
+    var showBuffering by remember { mutableStateOf(false) }
+    var playbackError by remember { mutableStateOf<PlaybackException?>(null) }
     var swipeBrightnessStart by remember { mutableStateOf(0f) }
     var swipeVolumeStart by remember { mutableStateOf(0f) }
 
     LaunchedEffect(recordId) { viewModel.load(recordId) }
 
     val localPlayer = remember(context) {
-        ExoPlayer.Builder(context).build().apply {
+        val renderers = DefaultRenderersFactory(context).setEnableDecoderFallback(true)
+        ExoPlayer.Builder(context, renderers).build().apply {
             repeatMode = Player.REPEAT_MODE_OFF
             setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(), true)
             setHandleAudioBecomingNoisy(true)
@@ -219,10 +240,21 @@ fun PlayerScreen(
                     viewModel.saveProgress(player.currentMediaItem?.mediaId, player.currentPosition, player.duration, player.playbackState == Player.STATE_ENDED)
             }
             override fun onIsPlayingChanged(playing: Boolean) {
+                playerIsPlaying = playing
                 viewModel.saveProgress(player.currentMediaItem?.mediaId, player.currentPosition, player.duration, player.playbackState == Player.STATE_ENDED)
             }
             override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_ENDED) viewModel.saveProgress(player.currentMediaItem?.mediaId, 0, player.duration, true)
+                rawBuffering = playbackState == Player.STATE_BUFFERING
+                if (playbackState == Player.STATE_READY) playbackError = null
+                if (playbackState == Player.STATE_ENDED) {
+                    customControlsVisible = true
+                    controlInteraction++
+                    viewModel.saveProgress(player.currentMediaItem?.mediaId, 0, player.duration, true)
+                }
+            }
+            override fun onPlayerError(error: PlaybackException) {
+                playbackError = error
+                customControlsVisible = true
             }
             override fun onTracksChanged(tracks: androidx.media3.common.Tracks) {
                 hasTextTrack = tracks.groups.any { group ->
@@ -243,7 +275,41 @@ fun PlayerScreen(
         }
     }
 
+    LaunchedEffect(rawBuffering) {
+        if (!rawBuffering) showBuffering = false
+        else {
+            delay(250)
+            if (rawBuffering) showBuffering = true
+        }
+    }
+    LaunchedEffect(customControlsVisible, playerIsPlaying, controlInteraction, playbackError) {
+        if (customControlsVisible && playerIsPlaying && playbackError == null) {
+            delay(3_000)
+            customControlsVisible = false
+        }
+    }
+
     val filePath = state.record?.filePath
+    var frameProvider by remember { mutableStateOf<VideoFrameProvider?>(null) }
+    LaunchedEffect(filePath, isAudio) {
+        frameProvider?.close()
+        frameProvider = if (!isAudio && filePath?.let(::File)?.isFile == true) {
+            withContext(Dispatchers.IO) { runCatching { VideoFrameProvider(File(filePath)) }.getOrNull() }
+        } else null
+    }
+    DisposableEffect(Unit) { onDispose { frameProvider?.close() } }
+    val frameExporter = remember(context) { VideoFrameExporter(context.applicationContext) }
+    var gestureSeekTarget by remember { mutableStateOf<Long?>(null) }
+    var gesturePreview by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    LaunchedEffect(gestureSeekTarget, frameProvider) {
+        val target = gestureSeekTarget
+        val provider = frameProvider
+        if (target == null || provider == null) gesturePreview = null
+        else {
+            delay(120)
+            gesturePreview = provider.preview(target).getOrNull()
+        }
+    }
     val sidecar = remember(filePath) { filePath?.let { SubtitleSidecarResolver.find(File(it)) } }
     LaunchedEffect(filePath, state.fileExists, player) {
         if (filePath != null && state.fileExists && (!isAudio || controller != null)) {
@@ -316,6 +382,33 @@ fun PlayerScreen(
             }
         }
     }
+    if (choosingScale && !inPip) AppDialog(
+        onDismissRequest = { choosingScale = false },
+        icon = AppIcons.Grid,
+        title = stringResource(R.string.player_scale_title),
+        actions = {
+            AppDialogButtonRow {
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { choosingScale = false }) { Text(stringResource(R.string.action_close)) }
+            }
+        },
+    ) {
+        VideoScaleMode.entries.forEach { mode ->
+            val label = stringResource(mode.labelRes())
+            TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                videoScaleMode = mode
+                choosingScale = false
+                gestureFeedback = label
+                scope.launch {
+                    delay(900)
+                    if (gestureFeedback == label) gestureFeedback = null
+                }
+                controlInteraction++
+            }) {
+                Text(label + if (mode == videoScaleMode) stringResource(R.string.player_speed_current) else "")
+            }
+        }
+    }
 
     if (choosingSleep && !inPip) AppDialog(
         onDismissRequest = { choosingSleep = false },
@@ -341,6 +434,7 @@ fun PlayerScreen(
         TextButton(modifier = Modifier.fillMaxWidth(), enabled = state.sleepTimerRemaining != null,
             onClick = { viewModel.setSleepTimer(0); choosingSleep = false }) { Text(stringResource(R.string.player_sleep_off)) }
     }
+    if (choosingTracks && !inPip && !isAudio) VideoTrackDialog(player) { choosingTracks = false }
 
     DisposableEffect(activity) {
         val previousOrientation = activity?.requestedOrientation
@@ -400,6 +494,22 @@ fun PlayerScreen(
             exportToGallery()
         }
     }
+    fun captureFrame() {
+        scope.launch {
+            val result = frameExporter.export(File(filePath.orEmpty()), player.currentPosition)
+            snackbar.showSnackbar(resources.getString(if (result.isSuccess) R.string.player_screenshot_done else R.string.player_screenshot_failed))
+        }
+    }
+    val screenshotPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) captureFrame()
+        else scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_transfer_permission)) }
+    }
+    fun requestScreenshot() {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) screenshotPermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        else captureFrame()
+    }
 
     val audioManager = remember(context) { context.getSystemService(android.media.AudioManager::class.java) }
     val maxVolume = remember(audioManager) { audioManager?.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC) ?: 1 }
@@ -443,11 +553,11 @@ fun PlayerScreen(
     LaunchedEffect(boostedSpeed, player) {
         player.setPlaybackSpeed(if (boostedSpeed) PlayerGestures.LONG_PRESS_SPEED else state.options.speed)
     }
-    // Only while the player's own controls are hidden: otherwise the seek bar and buttons inside
-    // PlayerView would never see a touch.
-    val gestureModifier = if (!isAudio && !inPip && state.fileExists && !controllerVisible) {
+    val gestureModifier = if (!isAudio && !inPip && state.fileExists) {
         Modifier.playerGestures(
-            onTap = { playerView?.showController() },
+            currentPosition = { player.currentPosition },
+            duration = { player.duration },
+            onTap = { customControlsVisible = !customControlsVisible; controlInteraction++ },
             onSeek = { side ->
                 player.seekTo(PlayerGestures.seekTarget(player.currentPosition, player.duration, side))
                 showFeedback(resources.getString(R.string.player_seek_seconds, PlayerGestures.seekLabelSeconds(side)))
@@ -469,6 +579,16 @@ fun PlayerScreen(
                 }
             },
             onSwipeEnd = { gestureFeedback = null },
+            onSeekDrag = { target ->
+                gestureSeekTarget = target
+                gestureFeedback = formatPlaybackTime(target)
+            },
+            onSeekDragEnd = { target ->
+                player.seekTo(target)
+                gestureSeekTarget = null
+                gestureFeedback = null
+                controlInteraction++
+            },
         )
     } else {
         Modifier
@@ -529,7 +649,8 @@ fun PlayerScreen(
                                 player = player,
                                 fullscreen = fullscreen,
                                 onFullscreenChange = { if (!isAudio && !inPip) fullscreen = it },
-                                controlsEnabled = !inPip,
+                                controlsEnabled = isAudio && !inPip,
+                                resizeMode = videoScaleMode,
                                 onViewCreated = { playerView = it },
                                 onControllerVisibilityChange = { controllerVisible = it },
                                 modifier = Modifier.fillMaxSize()
@@ -539,6 +660,29 @@ fun PlayerScreen(
                             // itself, so an ancestor would never see an unconsumed down.
                             if (gestureModifier !== Modifier) {
                                 Box(Modifier.fillMaxSize().then(gestureModifier).testTag("player-surface"))
+                            }
+                            if (!isAudio && !inPip) {
+                                VideoControlsOverlay(
+                                    player = player,
+                                    title = state.record?.title.orEmpty(),
+                                    visible = customControlsVisible,
+                                    fullscreen = fullscreen,
+                                    buffering = showBuffering,
+                                    looping = state.options.loop,
+                                    frameProvider = frameProvider,
+                                    scaleMode = videoScaleMode,
+                                    onBack = { if (fullscreen) fullscreen = false else onBack() },
+                                    onInteraction = { customControlsVisible = true; controlInteraction++ },
+                                    onSpeed = { choosingSpeed = true; customControlsVisible = true; controlInteraction++ },
+                                    onLoop = { viewModel.options(state.options.copy(loop = !state.options.loop)); controlInteraction++ },
+                                    onTracks = { choosingTracks = true; customControlsVisible = true; controlInteraction++ },
+                                    onScaleMode = { choosingScale = true; customControlsVisible = true; controlInteraction++ },
+                                    onScreenshot = ::requestScreenshot,
+                                    onPip = {
+                                        if (pipActivity?.enterVideoPip() != true) scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_pip_failed)) }
+                                    },
+                                    onFullscreen = { fullscreen = !fullscreen; controlInteraction++ },
+                                )
                             }
                             // The speed boost stays on screen for as long as the finger is held.
                             (gestureFeedback ?: boostedSpeed.takeIf { it }
@@ -553,6 +697,34 @@ fun PlayerScreen(
                                         .padding(horizontal = 14.dp, vertical = 8.dp)
                                         .testTag("gesture-feedback"),
                                 )
+                            }
+                            gestureSeekTarget?.let { target ->
+                                Column(Modifier.align(Alignment.Center).padding(top = 112.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    gesturePreview?.let { bitmap ->
+                                        Image(bitmap.asImageBitmap(), null, contentScale = ContentScale.Fit,
+                                            modifier = Modifier.width(160.dp).height(90.dp).clip(MaterialTheme.shapes.medium).background(Color.Black))
+                                    }
+                                    Text(formatPlaybackTime(target), color = Color.White,
+                                        modifier = Modifier.clip(MaterialTheme.shapes.small).background(Color.Black.copy(alpha = .6f))
+                                            .padding(horizontal = 10.dp, vertical = 5.dp))
+                                }
+                            }
+                            playbackError?.let {
+                                Column(Modifier.align(Alignment.Center).clip(MaterialTheme.shapes.large)
+                                    .background(Color.Black.copy(alpha = .82f)).padding(20.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(stringResource(R.string.player_playback_failed), color = Color.White)
+                                    Row {
+                                        TextButton(onClick = { playbackError = null; player.prepare(); player.play() }) {
+                                            Text(stringResource(R.string.player_retry_playback))
+                                        }
+                                        TextButton(onClick = {
+                                            if (!DouyinIntents.playExternally(context, File(filePath.orEmpty()))) {
+                                                scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_external_failed)) }
+                                            }
+                                        }) { Text(stringResource(R.string.player_external)) }
+                                    }
+                                }
                             }
                         }
                         else -> {
@@ -683,6 +855,7 @@ private fun VideoSurface(
     fullscreen: Boolean,
     onFullscreenChange: (Boolean) -> Unit,
     controlsEnabled: Boolean,
+    resizeMode: VideoScaleMode,
     onViewCreated: (PlayerView) -> Unit,
     onControllerVisibilityChange: (Boolean) -> Unit,
     modifier: Modifier,
@@ -692,7 +865,9 @@ private fun VideoSurface(
             PlayerView(ctx).apply {
                 this.player = player
                 useController = true
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                controllerAutoShow = controlsEnabled
+                if (!controlsEnabled) hideController()
+                this.resizeMode = resizeMode.media3Mode()
                 setEnableComposeSurfaceSyncWorkaround(true)
                 onViewCreated(this)
             }
@@ -700,8 +875,10 @@ private fun VideoSurface(
         onReset = { view -> onViewCreated(view) },
         update = { view ->
             view.player = player
-            view.useController = controlsEnabled
+            view.useController = true
+            view.controllerAutoShow = controlsEnabled
             if (!controlsEnabled) view.hideController()
+            view.resizeMode = resizeMode.media3Mode()
             view.setFullscreenButtonClickListener(onFullscreenChange)
             view.setFullscreenButtonState(fullscreen)
             view.setControllerVisibilityListener(object : PlayerView.ControllerVisibilityListener {
@@ -719,6 +896,19 @@ private fun VideoSurface(
     )
 }
 
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+private fun VideoScaleMode.media3Mode(): Int = when (this) {
+    VideoScaleMode.FIT -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+    VideoScaleMode.CROP -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+    VideoScaleMode.STRETCH -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+}
+
+private fun VideoScaleMode.labelRes(): Int = when (this) {
+    VideoScaleMode.FIT -> R.string.player_scale_fit
+    VideoScaleMode.CROP -> R.string.player_scale_crop
+    VideoScaleMode.STRETCH -> R.string.player_scale_stretch
+}
+
 /**
  * Touch gestures for the video surface.
  *
@@ -727,12 +917,16 @@ private fun VideoSurface(
  * a moving one produces a swipe instead.
  */
 private fun Modifier.playerGestures(
+    currentPosition: () -> Long,
+    duration: () -> Long,
     onTap: () -> Unit,
     onSeek: (GestureSide) -> Unit,
     onBoost: (Boolean) -> Unit,
     onSwipeStart: () -> Unit,
     onSwipe: (side: GestureSide, dy: Float, height: Int) -> Unit,
     onSwipeEnd: () -> Unit,
+    onSeekDrag: (Long) -> Unit,
+    onSeekDragEnd: (Long) -> Unit,
 ): Modifier = this
     // Tap detection first and dragging last: in the main pointer pass the inner node sees a move
     // before the tap detector consumes it, which is what lets a swipe become a drag rather than a tap.
@@ -751,6 +945,26 @@ private fun Modifier.playerGestures(
             waitForUpOrCancellation()
             onBoost(false)
         }
+    }
+    .pointerInput(Unit) {
+        var startPosition = 0L
+        var totalDx = 0f
+        var target = 0L
+        detectHorizontalDragGestures(
+            onDragStart = {
+                startPosition = currentPosition().coerceAtLeast(0L)
+                totalDx = 0f
+                target = startPosition
+            },
+            onHorizontalDrag = { change, amount ->
+                totalDx += amount
+                target = PlayerGestures.dragSeekTarget(startPosition, totalDx, size.width, duration())
+                change.consume()
+                onSeekDrag(target)
+            },
+            onDragEnd = { onSeekDragEnd(target) },
+            onDragCancel = { onSeekDragEnd(startPosition) },
+        )
     }
     .pointerInput(Unit) {
         detectVerticalDragGestures(

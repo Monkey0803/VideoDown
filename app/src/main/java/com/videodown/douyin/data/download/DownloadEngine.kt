@@ -195,7 +195,11 @@ class DownloadEngine(
         history.snapshot().filter { it.matchesSelection(video, variant) }
             .filterNot { it.status == DownloadStatus.FAILED && it.failureKind in setOf(DownloadFailureKind.LOGIN_REQUIRED, DownloadFailureKind.ACCESS_DENIED) &&
                 variant.media?.useBrowserSession == true && it.media?.useBrowserSession != true }
-            .filter { it.status != DownloadStatus.COMPLETED || it.filePath?.let { path -> File(path).isFile } == true }
+            .filter { record ->
+                record.status != DownloadStatus.COMPLETED ||
+                    (record.filePath?.let { path -> File(path).isFile } == true &&
+                        record.livePhotoMotion?.let { motion -> motion.filePath?.let { File(it).isFile } == true } != false)
+            }
             .sortedWith(compareByDescending<DownloadRecord> { it.status == DownloadStatus.COMPLETED }
                 .thenByDescending { it.updatedAt }).firstOrNull()
 
@@ -206,7 +210,12 @@ class DownloadEngine(
         val fileId = "${request.platform.name.lowercase()}_${request.postId}_${id.take(8)}"
         val fileName = paths.buildArchiveFileName(request.title, entries.size, fileId)
         val now = System.currentTimeMillis()
-        val known = entries.sumOf { it.sizeBytes?.coerceAtLeast(0L) ?: 0L }
+        val known = entries.sumOf {
+            saturatingStorageAdd(
+                it.sizeBytes?.coerceAtLeast(0L) ?: 0L,
+                it.livePhotoMotion?.expectedBytes?.coerceAtLeast(0L) ?: 0L,
+            )
+        }
         val record = DownloadRecord(
             id = id,
             awemeId = request.postId,
@@ -259,6 +268,10 @@ class DownloadEngine(
         val fileName = paths.buildFileName(video.title, variant.label, fileId + "_" + id.take(8), variant.extensionOrDefault)
         val partial = File(paths.downloadDir, "$fileName.part")
         val now = System.currentTimeMillis()
+        val livePhotoMotion = variant.livePhotoMotion?.copy(
+            fileName = paths.buildLivePhotoMotionFileName(fileName, variant.livePhotoMotion.extension),
+            filePath = null,
+        )
 
         val record = DownloadRecord(
             id = id,
@@ -269,10 +282,15 @@ class DownloadEngine(
             authorSecUid = video.author.secUid,
             coverUrl = video.coverUrl,
             sourceUrl = variant.url,
-            expectedBytes = variant.sizeBytes,
+            expectedBytes = variant.sizeBytes?.let { stillBytes ->
+                livePhotoMotion?.expectedBytes?.let { motionBytes ->
+                    saturatingStorageAdd(stillBytes.coerceAtLeast(0L), motionBytes.coerceAtLeast(0L))
+                } ?: stillBytes
+            },
             queueOrder = (history.snapshot().maxOfOrNull { it.queueOrder } ?: 0L) + 1,
             media = variant.media,
             mediaKind = variant.mediaKind,
+            livePhotoMotion = livePhotoMotion,
             resolutionLabel = variant.label,
             fileName = fileName,
             partialPath = partial.absolutePath,
@@ -336,6 +354,8 @@ class DownloadEngine(
             return@withLock
         }
         runCatching { File(record.partialPath).delete() }
+        paths.livePhotoMotionPartialFileFor(record)?.let { runCatching { it.delete() } }
+        paths.livePhotoMotionFileFor(record)?.let { runCatching { it.delete() } }
         paths.engineDirectory(record.id).deleteRecursively()
         runCatching { paths.finalFileFor(record).delete() }
 
@@ -348,6 +368,7 @@ class DownloadEngine(
             pauseCause = null,
             etag = null,
             filePath = null,
+            livePhotoMotion = record.livePhotoMotion?.copy(filePath = null),
             updatedAt = System.currentTimeMillis(),
         )
         history.upsert(reset)
@@ -367,6 +388,8 @@ class DownloadEngine(
         val record = history.getById(id)
         if (record != null) {
             runCatching { File(record.partialPath).delete() }
+            paths.livePhotoMotionPartialFileFor(record)?.let { runCatching { it.delete() } }
+            paths.livePhotoMotionFileFor(record)?.let { runCatching { it.delete() } }
             paths.engineDirectory(record.id).deleteRecursively()
             runCatching { paths.finalFileFor(record).delete() }
         }
@@ -479,7 +502,9 @@ class DownloadEngine(
                 val engine = current.media?.usesEngine == true || current.isArchive
                 val footprint = {
                     if (engine) taskDirectoryBytes(paths.engineDirectory(current.id))
-                    else File(current.partialPath).length() + paths.finalFileFor(current).length()
+                    else File(current.partialPath).length() + paths.finalFileFor(current).length() +
+                        (paths.livePhotoMotionPartialFileFor(current)?.length() ?: 0L) +
+                        (paths.livePhotoMotionFileFor(current)?.length() ?: 0L)
                 }
                 val expected = current.expectedBytes ?: current.totalBytes.takeIf { it > 0 }
                 val reserve = reserveFor(current)
@@ -575,6 +600,11 @@ class DownloadEngine(
             if (!networkPolicy.isAllowed()) throw WifiRequiredException()
             val partial = File(record.partialPath)
             val finalFile = paths.finalFileFor(record)
+            if (record.isLivePhoto && record.filePath == finalFile.absolutePath && finalFile.isFile) {
+                validateFile?.invoke(finalFile, record)
+                finishDirectTransfer(record, finalFile, finalFile.length(), storage)
+                return
+            }
             val startBytes = if (partial.exists()) partial.length() else 0L
             val now = System.currentTimeMillis()
 
@@ -643,20 +673,7 @@ class DownloadEngine(
             when (outcome) {
                 is ResumableDownloader.Outcome.Completed -> {
                     try { validateFile?.invoke(outcome.file, record) } catch (error: Exception) { outcome.file.delete(); throw error }
-                    val completed = record.copy(
-                        status = DownloadStatus.COMPLETED,
-                        filePath = outcome.file.absolutePath,
-                        downloadedBytes = outcome.totalBytes,
-                        totalBytes = outcome.totalBytes,
-                        errorMessage = null, failureKind = null,
-                        pauseCause = null,
-                        updatedAt = System.currentTimeMillis(),
-                    )
-                    history.upsert(completed)
-                    // Only a newly completed transfer emits; restoring history never re-notifies.
-                    runCatching { onCompleted(completed) }
-                        .onFailure { Log.w(TAG, AppText.get(R.string.log_completion_notify_failed), it) }
-                    _progress.update { it - record.id }
+                    finishDirectTransfer(record, outcome.file, outcome.totalBytes, storage)
                     return
                 }
 
@@ -735,6 +752,164 @@ class DownloadEngine(
         }
     }
 
+    /** 静帧和 MOV 共同成功后才提交 Live Photo；暂停/失败时保留两边可续传的文件。 */
+    private suspend fun finishDirectTransfer(
+        sourceRecord: DownloadRecord,
+        primaryFile: File,
+        primaryBytes: Long,
+        storage: StorageReservations.Lease,
+    ) {
+        var record = sourceRecord.copy(
+            status = DownloadStatus.RUNNING,
+            filePath = primaryFile.absolutePath,
+            downloadedBytes = primaryBytes,
+            totalBytes = primaryBytes,
+            errorMessage = null,
+            failureKind = null,
+            pauseCause = null,
+            updatedAt = System.currentTimeMillis(),
+        )
+        history.upsert(record)
+        record = downloadLivePhotoMotion(record, primaryBytes, storage) ?: return
+        val completed = record.copy(
+            status = DownloadStatus.COMPLETED,
+            errorMessage = null,
+            failureKind = null,
+            pauseCause = null,
+            updatedAt = System.currentTimeMillis(),
+        )
+        history.upsert(completed)
+        runCatching { onCompleted(completed) }
+            .onFailure { Log.w(TAG, AppText.get(R.string.log_completion_notify_failed), it) }
+        _progress.update { it - record.id }
+    }
+
+    private suspend fun downloadLivePhotoMotion(
+        initial: DownloadRecord,
+        primaryBytes: Long,
+        storage: StorageReservations.Lease,
+    ): DownloadRecord? {
+        var record = initial
+        var motion = record.livePhotoMotion ?: return record
+        val finalFile = paths.livePhotoMotionFileFor(record) ?: return record
+        val partial = paths.livePhotoMotionPartialFileFor(record) ?: return record
+        if (finalFile.isFile && finalFile.length() > 0L) {
+            validateFile?.invoke(finalFile, record.copy(mediaKind = MediaKind.VIDEO, livePhotoMotion = null))
+            return record.copy(
+                livePhotoMotion = motion.copy(filePath = finalFile.absolutePath),
+                downloadedBytes = saturatingStorageAdd(primaryBytes, finalFile.length()),
+                totalBytes = saturatingStorageAdd(primaryBytes, finalFile.length()),
+            )
+        }
+        var attempt = 0
+        var refreshed = false
+        while (true) {
+            if (!networkPolicy.isAllowed()) throw WifiRequiredException()
+            val startBytes = partial.length()
+            record = record.copy(
+                status = DownloadStatus.RUNNING,
+                downloadedBytes = saturatingStorageAdd(primaryBytes, startBytes),
+                pauseCause = null,
+                updatedAt = System.currentTimeMillis(),
+            )
+            history.upsert(record)
+            var lastPersistAt = 0L
+            val outcome = downloader.download(
+                ResumableDownloader.DownloadRequest(
+                    url = motion.sourceUrl,
+                    partialFile = partial,
+                    finalFile = finalFile,
+                    alreadyDownloaded = startBytes,
+                    referer = motion.referer ?: record.downloadReferer ?: record.platform.referer,
+                    userAgent = record.media?.userAgent ?: userAgent,
+                    networkPolicy = networkPolicy,
+                    availableBytes = availableBytes,
+                    checkStorage = { total, writingThrough ->
+                        storage.updatePeak(requiredStorageBytes(
+                            saturatingStorageAdd(primaryBytes, maxOf(total, writingThrough)),
+                            reserveBytes = reserveFor(record),
+                        ))
+                    },
+                    throttle = { bytes -> throttle(record, bytes) },
+                    onProgress = { downloaded, total, speed, _, _ ->
+                        val aggregateDownloaded = saturatingStorageAdd(primaryBytes, downloaded)
+                        val aggregateTotal = saturatingStorageAdd(primaryBytes, total.coerceAtLeast(0L))
+                        updateProgress(record.id) {
+                            DownloadProgress(record.id, aggregateDownloaded, aggregateTotal, DownloadStatus.RUNNING, speed)
+                        }
+                        val now = System.currentTimeMillis()
+                        if (now - lastPersistAt >= PERSIST_INTERVAL_MS) {
+                            lastPersistAt = now
+                            record = record.copy(
+                                downloadedBytes = aggregateDownloaded,
+                                totalBytes = aggregateTotal,
+                                updatedAt = now,
+                            )
+                            history.upsert(record)
+                        }
+                    },
+                ),
+            )
+            when (outcome) {
+                is ResumableDownloader.Outcome.Completed -> {
+                    try {
+                        validateFile?.invoke(outcome.file, record.copy(mediaKind = MediaKind.VIDEO, livePhotoMotion = null))
+                    } catch (error: Exception) {
+                        outcome.file.delete()
+                        throw error
+                    }
+                    motion = motion.copy(filePath = outcome.file.absolutePath)
+                    return record.copy(
+                        livePhotoMotion = motion,
+                        downloadedBytes = saturatingStorageAdd(primaryBytes, outcome.totalBytes),
+                        totalBytes = saturatingStorageAdd(primaryBytes, outcome.totalBytes),
+                    )
+                }
+                is ResumableDownloader.Outcome.Paused -> {
+                    history.upsert(record.copy(
+                        status = DownloadStatus.PAUSED,
+                        downloadedBytes = saturatingStorageAdd(primaryBytes, outcome.downloadedBytes),
+                        totalBytes = saturatingStorageAdd(primaryBytes, outcome.totalBytes.coerceAtLeast(0L)),
+                        pauseCause = DownloadPauseCause.NETWORK,
+                        updatedAt = System.currentTimeMillis(),
+                    ))
+                    _progress.update { it - record.id }
+                    return null
+                }
+                is ResumableDownloader.Outcome.Failed -> {
+                    val httpStatus = (outcome.error as? com.videodown.douyin.core.AppError.Http)?.code
+                    if (!refreshed && httpStatus in setOf(401, 403, 410)) {
+                        refreshed = true
+                        val fresh = refreshSource?.invoke(record)?.livePhotoMotion
+                        if (fresh != null) {
+                            motion = fresh.copy(fileName = motion.fileName, filePath = null)
+                            record = record.copy(livePhotoMotion = motion)
+                            history.upsert(record)
+                            continue
+                        }
+                    }
+                    attempt++
+                    val retryableStatus = httpStatus == null || httpStatus !in 400..499
+                    if (attempt <= MAX_RETRIES && outcome.error !is com.videodown.douyin.core.AppError.Storage && retryableStatus) {
+                        delay(RETRY_BASE_DELAY_MS * (1L shl (attempt - 1)))
+                        continue
+                    }
+                    history.upsert(record.copy(
+                        status = DownloadStatus.FAILED,
+                        downloadedBytes = saturatingStorageAdd(primaryBytes, outcome.downloadedBytes),
+                        totalBytes = saturatingStorageAdd(primaryBytes, outcome.totalBytes.coerceAtLeast(0L)),
+                        errorMessage = outcome.error.message,
+                        failureKind = outcome.error.downloadFailureKind(),
+                        pauseCause = null,
+                        updatedAt = System.currentTimeMillis(),
+                    ))
+                    _progress.update { it - record.id }
+                    return null
+                }
+            }
+        }
+    }
+
     private suspend fun runEngineTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
         val executor = requireNotNull(engineDownloader) { AppText.get(R.string.diag_engine_downloader_absent) }
         var record = initial.copy(status = DownloadStatus.RUNNING, errorMessage = null, failureKind = null,
@@ -804,6 +979,8 @@ class DownloadEngine(
         val partial = File(record.partialPath)
         val onDisk = if (record.isArchive) {
             archiveDownloadedBytes(paths.engineDirectory(record.id))
+        } else if (record.isLivePhoto && record.filePath?.let(::File)?.isFile == true) {
+            saturatingStorageAdd(File(record.filePath).length(), paths.livePhotoMotionPartialFileFor(record)?.length() ?: 0L)
         } else if (partial.exists()) {
             partial.length()
         } else {
@@ -844,14 +1021,14 @@ class DownloadEngine(
         val directory = paths.engineDirectory(record.id)
         directory.mkdirs()
         val knownTotal = record.expectedBytes
-            ?: record.archiveEntries.sumOf { it.sizeBytes?.coerceAtLeast(0L) ?: 0L }.takeIf { it > 0L }
+            ?: archiveAssets(record.archiveEntries).sumOf { it.sizeBytes?.coerceAtLeast(0L) ?: 0L }.takeIf { it > 0L }
         var refreshed = false
         var attempt = 0
 
         while (true) {
             var completedBytes = 0L
-            for ((index, entry) in record.archiveEntries.withIndex()) {
-                val target = File(directory, ImageArchiveWriter.entryName(index, entry.extension))
+            for (entry in archiveAssets(record.archiveEntries)) {
+                val target = File(directory, entry.name)
                 if (target.isFile && target.length() > 0L) {
                     completedBytes += target.length()
                     continue
@@ -920,9 +1097,8 @@ class DownloadEngine(
                     }
                 }
             }
-            val allDone = record.archiveEntries.indices.all { index ->
-                val file = File(directory, ImageArchiveWriter.entryName(index, record.archiveEntries[index].extension))
-                file.isFile && file.length() > 0L
+            val allDone = archiveAssets(record.archiveEntries).all { entry ->
+                File(directory, entry.name).let { it.isFile && it.length() > 0L }
             }
             if (!allDone) continue
             publishArchive(record, directory, knownTotal, storage)
@@ -941,10 +1117,7 @@ class DownloadEngine(
                 phase = TransferPhase.MERGING)
         }
         withContext(NonCancellable + Dispatchers.IO) {
-            val entries = record.archiveEntries.mapIndexed { index, entry ->
-                val name = ImageArchiveWriter.entryName(index, entry.extension)
-                name to File(directory, name)
-            }
+            val entries = archiveAssets(record.archiveEntries).map { it.name to File(directory, it.name) }
             val zip = File(directory, "archive.zip")
             val publishing = File(directory, "archive.zip.publishing")
             try {
@@ -977,6 +1150,32 @@ class DownloadEngine(
         }
     }
 
+    private data class ArchiveAsset(
+        val name: String,
+        val url: String,
+        val referer: String?,
+        val sizeBytes: Long?,
+    )
+
+    private fun archiveAssets(entries: List<ArchiveEntry>): List<ArchiveAsset> = buildList {
+        entries.forEachIndexed { index, entry ->
+            add(ArchiveAsset(
+                ImageArchiveWriter.entryName(index, entry.extension),
+                entry.url,
+                entry.referer,
+                entry.sizeBytes,
+            ))
+            entry.livePhotoMotion?.let { motion ->
+                add(ArchiveAsset(
+                    ImageArchiveWriter.livePhotoMotionEntryName(index, motion.extension),
+                    motion.sourceUrl,
+                    motion.referer ?: entry.referer,
+                    motion.expectedBytes,
+                ))
+            }
+        }
+    }
+
     private suspend fun markArchivePaused(record: DownloadRecord, downloaded: Long, total: Long) {
         history.upsert(
             record.copy(
@@ -1005,9 +1204,9 @@ class DownloadEngine(
         _progress.update { it - record.id }
     }
 
-    /** 图片任务的工作余量比视频小得多，按类型取值避免批量图片被误判空间不足。 */
+    /** 普通图片的工作余量较小；Live Photo 还包含 MOV，必须按视频任务预留。 */
     private fun reserveFor(record: DownloadRecord): Long =
-        if (record.isImage) IMAGE_RESERVE_BYTES else STORAGE_RESERVE_BYTES
+        if (record.isImage && !record.isLivePhoto) IMAGE_RESERVE_BYTES else STORAGE_RESERVE_BYTES
 
     private companion object {
         const val TAG = "DownloadEngine"

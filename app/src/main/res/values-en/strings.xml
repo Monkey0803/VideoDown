@@ -233,6 +233,7 @@
     <string name="home_unknown_author">Unknown author</string>
     <string name="home_view_author">View author</string>
     <string name="home_choose_quality">Choose quality</string>
+    <string name="home_choose_format">Choose download format</string>
     <string name="home_size_note">File sizes come from the video source</string>
     <string name="home_quality_label">Quality %1$s</string>
     <string name="home_size_loading">Fetching size…</string>
@@ -722,6 +723,25 @@
 
     <!-- Player gestures and sleep timer -->
     <string name="player_seek_seconds">%1$s s</string>
+    <string name="player_rewind_10">Rewind 10 seconds</string>
+    <string name="player_forward_10">Forward 10 seconds</string>
+    <string name="player_tracks">Audio and subtitles</string>
+    <string name="player_audio_tracks">Audio tracks</string>
+    <string name="player_subtitle_tracks">Subtitle tracks</string>
+    <string name="player_track_auto">Auto</string>
+    <string name="player_no_extra_tracks">This video has no selectable audio or subtitle tracks</string>
+    <string name="player_screenshot">Capture current frame</string>
+    <string name="player_screenshot_done">Screenshot saved to gallery</string>
+    <string name="player_screenshot_failed">Screenshot failed; try again</string>
+    <string name="player_scale_fit">Fit</string>
+    <string name="player_scale_title">Display mode</string>
+    <string name="player_scale_crop">Crop to fill</string>
+    <string name="player_scale_stretch">Stretch to fill</string>
+    <string name="player_enter_fullscreen">Enter fullscreen</string>
+    <string name="player_exit_fullscreen">Exit fullscreen</string>
+    <string name="player_playback_failed">Video playback failed</string>
+    <string name="player_retry_playback">Play again</string>
+    <string name="player_progress">Playback progress</string>
     <string name="sleep_remaining_minutes">about %1$d min left</string>
     <string name="sleep_remaining_seconds">about %1$d s left</string>
     <string name="download_wifi_paused">Paused: Wi-Fi only is on. Connect to Wi-Fi and tap resume</string>
@@ -849,6 +869,7 @@
 
     <!-- Images and ZIP downloads -->
     <string name="media_label_image">Image %1$d</string>
+    <string name="media_label_live_photo">Live Photo %1$d</string>
     <string name="media_label_quoted_image">Quoted · image %1$d</string>
     <string name="fallback_title_web_image">Web image</string>
     <string name="fallback_title_douyin_image">Douyin image</string>
@@ -879,8 +900,33 @@
     <string name="share_image">Share image</string>
     <string name="share_archive">Share ZIP</string>
     <string name="share_file">Share file</string>
+    <string name="share_live_photo">Share Live Photo</string>
     <string name="viewer_title">Image</string>
     <string name="viewer_missing">The image file is missing</string>
+    <string name="viewer_count">%1$d / %2$d</string>
+    <string name="viewer_thumbnail">Image %1$d: %2$s</string>
+    <string name="viewer_info">Image details</string>
+    <string name="viewer_more">More actions</string>
+    <string name="viewer_open_source">Open source</string>
+    <string name="viewer_source_failed">Couldn’t open the image source</string>
+    <string name="viewer_delete_title">Delete this image?</string>
+    <string name="viewer_delete_body">This removes “%1$s” and its download record from the app. Copies already saved to the system gallery are not deleted.</string>
+    <string name="viewer_delete_failed">Couldn’t delete the image. Try again.</string>
+    <string name="viewer_delete_stale">Delete missing record</string>
+    <string name="viewer_unlocking">Verifying the vault…</string>
+    <string name="viewer_unlock_denied">Verification was declined. Private images remain locked.</string>
+    <string name="viewer_unlock_unavailable">Vault verification is not available on this device.</string>
+    <string name="viewer_unlock_retry">Verify again</string>
+    <string name="viewer_detail_author">Author</string>
+    <string name="viewer_detail_platform">Platform</string>
+    <string name="viewer_detail_format">Format</string>
+    <string name="viewer_detail_dimensions">Dimensions</string>
+    <string name="viewer_detail_size">File size</string>
+    <string name="viewer_detail_saved_at">Saved</string>
+    <string name="viewer_detail_unknown">Unknown</string>
+    <string name="viewer_live_photo_play">Live</string>
+    <string name="viewer_live_photo_stop">Stop</string>
+    <string name="viewer_detail_live_photo">Motion clip</string>
     <string name="browser_candidate_image">Image · %1$s</string>
     <string name="download_not_an_image">The downloaded file is not a valid image</string>
     <string name="download_invalid_archive">The ZIP is incomplete or corrupt</string>

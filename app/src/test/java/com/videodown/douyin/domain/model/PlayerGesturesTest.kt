@@ -68,4 +68,26 @@ class PlayerGesturesTest {
         assertEquals(2f, PlayerGestures.LONG_PRESS_SPEED, 0.001f)
         assertEquals(10_000L, PlayerGestures.SEEK_STEP_MS)
     }
+
+    @Test
+    fun `drag direction locks only after touch slop`() {
+        assertEquals(GestureAxis.NONE, PlayerGestures.axisFor(3f, 4f, 8f))
+        assertEquals(GestureAxis.HORIZONTAL, PlayerGestures.axisFor(12f, 6f, 8f))
+        assertEquals(GestureAxis.VERTICAL, PlayerGestures.axisFor(4f, -14f, 8f))
+    }
+
+    @Test
+    fun `horizontal drag seeks a quarter duration across the screen`() {
+        assertEquals(75_000L, PlayerGestures.dragSeekTarget(50_000L, 500f, 1000, 200_000L))
+        assertEquals(25_000L, PlayerGestures.dragSeekTarget(50_000L, -500f, 1000, 200_000L))
+        assertEquals(0L, PlayerGestures.dragSeekTarget(5_000L, -1000f, 1000, 200_000L))
+        assertEquals(200_000L, PlayerGestures.dragSeekTarget(195_000L, 1000f, 1000, 200_000L))
+    }
+
+    @Test
+    fun `video scale mode cycles without persistence`() {
+        assertEquals(VideoScaleMode.CROP, VideoScaleMode.FIT.next())
+        assertEquals(VideoScaleMode.STRETCH, VideoScaleMode.CROP.next())
+        assertEquals(VideoScaleMode.FIT, VideoScaleMode.STRETCH.next())
+    }
 }

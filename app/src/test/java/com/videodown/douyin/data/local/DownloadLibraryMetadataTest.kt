@@ -38,6 +38,34 @@ class DownloadLibraryMetadataTest {
         assertArrayEquals(ByteArray(40) { it.toByte() }, File(after.filePath!!).readBytes())
         assertFalse(File(journal, "rename.json").exists())
     }
+    @Test fun `renaming a live photo moves its still and motion together`() = runBlocking {
+        val still = File(paths.downloadDir, "live.jpg").apply { writeBytes(byteArrayOf(1, 2, 3)) }
+        val motion = File(paths.downloadDir, "live_motion.mov").apply { writeBytes(byteArrayOf(4, 5, 6, 7)) }
+        val before = DownloadRecord(
+            id = "live-photo", awemeId = "post-live", title = "实况照片",
+            fileName = still.name, filePath = still.path, partialPath = still.path + ".part",
+            status = DownloadStatus.COMPLETED, mediaKind = MediaKind.IMAGE,
+            livePhotoMotion = LivePhotoMotion(
+                sourceUrl = "https://example.test/live.mov",
+                fileName = motion.name,
+                filePath = motion.path,
+            ),
+        ).also { history.upsert(it) }
+
+        assertTrue(repository().update(before.id, "海边实况", null, null).isSuccess)
+        val after = history.getById(before.id)!!
+        val renamedStill = File(after.filePath!!)
+        val renamedMotion = File(after.livePhotoMotion!!.filePath!!)
+        assertTrue(renamedStill.isFile)
+        assertTrue(renamedMotion.isFile)
+        assertEquals("海边实况", after.title)
+        assertEquals(renamedStill.nameWithoutExtension + "_motion.mov", renamedMotion.name)
+        assertArrayEquals(byteArrayOf(1, 2, 3), renamedStill.readBytes())
+        assertArrayEquals(byteArrayOf(4, 5, 6, 7), renamedMotion.readBytes())
+        assertFalse(still.exists())
+        assertFalse(motion.exists())
+        assertFalse(File(journal, "rename.json").exists())
+    }
     @Test fun `invalid names and active missing or outside files are rejected without loss`() = runBlocking {
         val before = saved(); val repo = repository()
         assertTrue(repo.update(before.id, "../escape", null, null).isFailure)

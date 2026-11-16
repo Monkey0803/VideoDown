@@ -55,7 +55,23 @@ class DownloadLibraryMetadataRepository(
                     require(safe(target)) { AppText.get(R.string.meta_target_name_unusable) }
                     if (target != original) {
                         require(!target.exists()) { AppText.get(R.string.meta_target_exists) }
-                        changed = changed.copy(fileName = fileName, filePath = target.absolutePath, partialPath = target.path + ".part")
+                        val motionOriginal = record.livePhotoMotion?.filePath?.let(::File)
+                        val motionTarget = motionOriginal?.let {
+                            File(paths.downloadDir, paths.buildLivePhotoMotionFileName(fileName, it.extension))
+                        }
+                        if (motionOriginal != null) {
+                            require(safe(motionOriginal) && motionOriginal.isFile) { AppText.get(R.string.meta_local_file_unusable) }
+                            require(motionTarget != null && safe(motionTarget) && !motionTarget.exists()) { AppText.get(R.string.meta_target_exists) }
+                        }
+                        changed = changed.copy(
+                            fileName = fileName,
+                            filePath = target.absolutePath,
+                            partialPath = target.path + ".part",
+                            livePhotoMotion = record.livePhotoMotion?.copy(
+                                fileName = motionTarget?.name.orEmpty(),
+                                filePath = motionTarget?.absolutePath,
+                            ),
+                        )
                         val operation = Rename(record, changed)
                         withContext(NonCancellable) {
                             privateDirectory.mkdirs()
@@ -66,11 +82,21 @@ class DownloadLibraryMetadataRepository(
                                 journal.delete()
                                 error(AppText.get(R.string.meta_rename_failed))
                             }
+                            if (motionOriginal != null && motionTarget != null && !motionOriginal.renameTo(motionTarget)) {
+                                target.renameTo(original)
+                                journal.delete()
+                                error(AppText.get(R.string.meta_rename_failed))
+                            }
                             try { history.upsertDurably(changed) }
                             catch (error: Exception) {
                                 // Roll back ordinary persistence failures; a process kill leaves
                                 // the durable journal so startup can finish the authorized move.
-                                if (history.getById(record.id)?.filePath == original.absolutePath && target.renameTo(original)) journal.delete()
+                                if (history.getById(record.id)?.filePath == original.absolutePath) {
+                                    val motionRolledBack = motionOriginal?.let { originalMotion ->
+                                        checkNotNull(motionTarget).renameTo(originalMotion)
+                                    } ?: true
+                                    if (motionRolledBack && target.renameTo(original)) journal.delete()
+                                }
                                 throw error
                             }
                             check(journal.delete()) { AppText.get(R.string.meta_journal_finish_failed) }
@@ -90,7 +116,13 @@ class DownloadLibraryMetadataRepository(
         val operation = json.decodeFromString(Rename.serializer(), journal.readText())
         val before = operation.before.filePath?.let(::File) ?: error(AppText.get(R.string.meta_rename_record_invalid))
         val after = operation.after.filePath?.let(::File) ?: error(AppText.get(R.string.meta_rename_record_invalid))
+        val beforeMotion = operation.before.livePhotoMotion?.filePath?.let(::File)
+        val afterMotion = operation.after.livePhotoMotion?.filePath?.let(::File)
         require(safe(before) && safe(after) && operation.before.id == operation.after.id) { AppText.get(R.string.meta_rename_path_invalid) }
+        require((beforeMotion == null && afterMotion == null) ||
+            (beforeMotion != null && afterMotion != null && safe(beforeMotion) && safe(afterMotion))) {
+            AppText.get(R.string.meta_rename_path_invalid)
+        }
         val current = history.getById(operation.before.id)
         if (current == null) {
             // A deleted record must never be recreated. Preserve any leftover video for manual recovery.
@@ -98,9 +130,19 @@ class DownloadLibraryMetadataRepository(
         }
         require(current.status == DownloadStatus.COMPLETED && current.id !in activeIds()) { AppText.get(R.string.meta_file_in_use) }
         require(current.filePath != null && setOf(before.path, after.path).contains(current.filePath)) { AppText.get(R.string.meta_record_path_changed) }
-        if (after.isFile && !before.exists()) history.upsertDurably(operation.after)
+        if (after.isFile && !before.exists()) {
+            if (beforeMotion?.isFile == true && afterMotion?.exists() == false) {
+                check(beforeMotion.renameTo(afterMotion)) { AppText.get(R.string.meta_rename_restore_failed) }
+            }
+            require(afterMotion == null || afterMotion.isFile) { AppText.get(R.string.meta_rename_state_needs_check) }
+            history.upsertDurably(operation.after)
+        }
         else if (before.isFile && !after.exists()) {
             check(before.renameTo(after)) { AppText.get(R.string.meta_rename_restore_failed) }
+            if (beforeMotion?.isFile == true && afterMotion?.exists() == false) {
+                check(beforeMotion.renameTo(afterMotion)) { AppText.get(R.string.meta_rename_restore_failed) }
+            }
+            require(afterMotion == null || afterMotion.isFile) { AppText.get(R.string.meta_rename_state_needs_check) }
             history.upsertDurably(operation.after)
         } else error(AppText.get(R.string.meta_rename_state_needs_check))
         check(journal.delete()) { AppText.get(R.string.meta_journal_clear_failed) }

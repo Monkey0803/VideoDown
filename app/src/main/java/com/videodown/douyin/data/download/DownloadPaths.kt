@@ -33,6 +33,17 @@ class DownloadPaths private constructor(private val baseDirectory: () -> File) {
 
     fun partialFileFor(record: DownloadRecord): File = File(downloadDir, "${record.fileName}.part")
 
+    fun livePhotoMotionFileFor(record: DownloadRecord): File? = record.livePhotoMotion?.fileName
+        ?.takeIf(String::isNotBlank)?.let { File(downloadDir, it) }
+
+    fun livePhotoMotionPartialFileFor(record: DownloadRecord): File? =
+        livePhotoMotionFileFor(record)?.let { File(it.parentFile, it.name + ".part") }
+
+    fun buildLivePhotoMotionFileName(stillFileName: String, extension: String = "mov"): String {
+        val stem = stillFileName.substringBeforeLast('.', stillFileName)
+        return "${stem}_motion.${safeExtension(extension, "mov")}"
+    }
+
     fun buildFileName(title: String, resolutionLabel: String, awemeId: String, extension: String = "mp4"): String {
         val safeTitle = sanitizeTitle(title, "douyin_video")
         val safeResolution = resolutionLabel
@@ -63,6 +74,9 @@ class DownloadPaths private constructor(private val baseDirectory: () -> File) {
 
     private fun sanitizeId(awemeId: String, fallback: String): String =
         awemeId.replace(Regex("[^A-Za-z0-9_-]"), "").take(100).ifBlank { fallback }
+
+    private fun safeExtension(extension: String, fallback: String): String = extension.trimStart('.')
+        .lowercase().takeIf { it.matches(Regex("[a-z0-9]{1,10}")) } ?: fallback
 
     /** Path used by `FileProvider` for the given absolute file path. */
     fun fileProviderUri(file: File): String = file.toURI().toString()

@@ -110,12 +110,16 @@ data class DownloadRecord(
     val mediaKind: MediaKind = MediaKind.VIDEO,
     /** 打包下载的图片清单；只有 [MediaKind.ARCHIVE] 记录使用。 */
     val archiveEntries: List<ArchiveEntry> = emptyList(),
+    /** Live Photo 静帧对应的 MOV；与本记录共同下载、移动和删除。 */
+    val livePhotoMotion: LivePhotoMotion? = null,
 ) {
     val isAudio: Boolean get() = media?.audioOnly == true
 
     val isImage: Boolean get() = mediaKind == MediaKind.IMAGE
 
     val isArchive: Boolean get() = mediaKind == MediaKind.ARCHIVE
+
+    val isLivePhoto: Boolean get() = isImage && livePhotoMotion != null
 
     /**
      * 视频：能播放、能提取音频。

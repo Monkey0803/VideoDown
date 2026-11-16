@@ -57,7 +57,9 @@ class DocumentTreeExporter(
     }
     override suspend fun export(id: String, treeUri: String): Result<String> {
         var created: Uri? = null
+        var createdMotion: Uri? = null
         val journal = File(journalDirectory, java.util.UUID.randomUUID().toString() + ".pending")
+        val motionJournal = File(journalDirectory, java.util.UUID.randomUUID().toString() + ".pending")
         return try {
             val result = withContext(Dispatchers.IO) { maintenanceMutex.withLock {
                 activeJournals.add(journal)
@@ -103,23 +105,62 @@ class DocumentTreeExporter(
                     }
                 }
                 currentCoroutineContext().ensureActive()
+                record.livePhotoMotion?.let { pairedMotion ->
+                    val motion = pairedMotion.filePath?.let(::File)
+                        ?: throw IOException(AppText.get(R.string.export_local_file_missing))
+                    require(motion.isFile && !Files.isSymbolicLink(motion.toPath()) &&
+                        motion.canonicalFile.parentFile == paths.downloadDir.canonicalFile) {
+                        AppText.get(R.string.export_local_file_unusable)
+                    }
+                    val motionName = availableExportName(motion.name, names + name)
+                    createdMotion = DocumentsContract.createDocument(
+                        resolver,
+                        parent,
+                        videoMimeType(motion.extension),
+                        motionName,
+                    ) ?: throw IOException(AppText.get(R.string.export_create_failed))
+                    val motionTarget = checkNotNull(createdMotion)
+                    activeJournals.add(motionJournal)
+                    val motionTemporary = File(journalDirectory, motionJournal.name + ".new")
+                    motionTemporary.outputStream().use {
+                        it.write(motionTarget.toString().toByteArray(Charsets.UTF_8)); it.fd.sync()
+                    }
+                    check(motionTemporary.renameTo(motionJournal)) { AppText.get(R.string.export_journal_save_failed) }
+                    motion.inputStream().use { input ->
+                        val output = resolver.openOutputStream(motionTarget, "w")
+                            ?: throw IOException(AppText.get(R.string.export_write_failed))
+                        output.use { stream -> input.copyTo(stream, 64 * 1024) }
+                    }
+                    currentCoroutineContext().ensureActive()
+                }
                 Result.success(target.toString())
             } }
             withContext(NonCancellable + Dispatchers.IO) {
                 maintenanceMutex.withLock {
                     check(journal.delete()) { AppText.get(R.string.export_journal_finish_failed) }
+                    if (createdMotion != null) check(motionJournal.delete()) { AppText.get(R.string.export_journal_finish_failed) }
                     activeJournals.remove(journal)
+                    activeJournals.remove(motionJournal)
                 }
             }
             result
         } catch (error: Exception) {
             // The destination is newly created, so cleanup never touches a preexisting file.
             withContext(NonCancellable + Dispatchers.IO) {
-                maintenanceMutex.withLock { if (created == null) activeJournals.remove(journal) }
+                maintenanceMutex.withLock {
+                    if (created == null) activeJournals.remove(journal)
+                    if (createdMotion == null) activeJournals.remove(motionJournal)
+                }
                 created?.let { target ->
                     maintenanceMutex.withLock {
                         if (runCatching { DocumentsContract.deleteDocument(resolver, target) }.getOrDefault(false)) journal.delete()
                         activeJournals.remove(journal)
+                    }
+                }
+                createdMotion?.let { target ->
+                    maintenanceMutex.withLock {
+                        if (runCatching { DocumentsContract.deleteDocument(resolver, target) }.getOrDefault(false)) motionJournal.delete()
+                        activeJournals.remove(motionJournal)
                     }
                 }
             }

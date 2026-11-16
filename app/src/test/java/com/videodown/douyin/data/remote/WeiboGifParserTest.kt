@@ -20,13 +20,17 @@ class WeiboGifParserTest {
         assertEquals("https://weibo.com/u/2453184077", video.author.profileUrl)
         assertEquals("https://m.weibo.cn/status/RkkIUuy8h", video.shareUrl)
         assertEquals("https://wx4.sinaimg.cn/large/gif-one.gif", video.coverUrl)
-        val variant = video.variants.single()
+        val variant = video.variants.first { it.kind == MediaKind.VIDEO }
         assertEquals("https://g.us.sinaimg.cn/example.mp4?label=gif_mp4&Expires=123", variant.url)
         assertEquals("720P", variant.label)
         assertEquals(720, variant.width)
         assertEquals(1280, variant.height)
         assertEquals("https://weibo.com/", variant.referer)
         assertNull(variant.sizeBytes)
+        val gif = video.variants.first { it.kind == MediaKind.IMAGE }
+        assertEquals("GIF", gif.label)
+        assertEquals("https://wx4.sinaimg.cn/large/gif-one.gif", gif.url)
+        assertEquals("gif", gif.extensionOrDefault)
     }
 
     @Test fun `multiple GIFs and still pictures retain picture order and independent media identities`() {
@@ -72,7 +76,7 @@ class WeiboGifParserTest {
     @Test fun `missing picture order and invalid dimensions still allow an MP4`() {
         val body = """{"idstr":"123","pic_infos":{"broken":false,"gif":{"video":"//video.example/a.mp4",
             "largest":{"url":"https://img.example/a.gif","width":0,"height":-1}}}}"""
-        val variant = WeiboJsonParser().parse(body, "123")!!.variants.single()
+        val variant = WeiboJsonParser().parse(body, "123")!!.variants.first { it.kind == MediaKind.VIDEO }
         assertEquals("https://video.example/a.mp4", variant.url)
         assertNull(variant.width)
         assertNull(variant.height)
@@ -86,7 +90,7 @@ class WeiboGifParserTest {
         assertEquals("RkkIUuy8h_second", videos.single().awemeId)
     }
 
-    @Test fun `live photos keep their still frame and prefer the largest rendition`() {
+    @Test fun `live photos preserve the still frame and paired mov`() {
         val result = WeiboJsonParser().parseVideos(LIVE_PHOTO_POST, "Rrei7jysH")!!
         assertEquals(listOf("Rrei7jysH_img1", "Rrei7jysH_img2"), result.videos.map { it.awemeId })
         assertTrue(result.videos.all { it.isImagePost })
@@ -97,8 +101,14 @@ class WeiboGifParserTest {
             result.videos.map { it.variants.single().url },
         )
         assertEquals(listOf("jpg", "jpg"), result.videos.map { it.variants.single().extensionOrDefault })
-        assertTrue("the .mov motion clip must not be offered as a video",
-            result.videos.none { video -> video.variants.any { it.url.contains("video.weibo.com") } })
+        assertEquals(
+            listOf(
+                "https://video.weibo.com/media/play?livephoto=lp1.mov",
+                "https://video.weibo.com/media/play?livephoto=lp2.mov",
+            ),
+            result.videos.map { it.variants.single().livePhotoMotion?.sourceUrl },
+        )
+        assertTrue(result.videos.all { it.variants.single().isLivePhoto })
     }
 
     @Test fun `a gif and a live photo in one post stay one mp4 and one image`() {
@@ -111,6 +121,44 @@ class WeiboGifParserTest {
         assertFalse(videos.videos.first().isImagePost)
         assertTrue(videos.videos.last().isImagePost)
         assertEquals(MediaKind.IMAGE, videos.videos.last().variants.single().kind)
+    }
+
+    @Test fun `live photo without a motion resource never degrades to a still image`() {
+        val body = """{"mblogid":"incomplete","pic_ids":["lp"],"pic_infos":{
+            "lp":{"type":"livephoto","largest":{"url":"https://wx4.sinaimg.cn/large/lp.jpg"}}}}"""
+        assertNull(WeiboJsonParser().parseVideos(body, "incomplete"))
+    }
+
+    @Test fun `specified Weibo animation offers both MP4 and original GIF formats`() {
+        val video = WeiboJsonParser().parseVideos(ORIGINAL_GIF_POST, "RroaXt3As")!!.selectedVideo
+        assertEquals("RroaXt3As_00652g1vly1ij1ttxd2xgg30fe0b4qva", video.awemeId)
+        assertEquals(listOf(MediaKind.VIDEO, MediaKind.IMAGE), video.variants.map { it.kind })
+        assertEquals(listOf("400P", "GIF"), video.variants.map { it.label })
+        assertTrue(video.variants.first().url.contains(".mp4?label=gif_mp4"))
+        val gif = video.variants.last()
+        assertEquals("https://wx1.sinaimg.cn/orj1080/00652g1vly1ij1ttxd2xgg30fe0b4qva.gif", gif.url)
+        assertEquals("gif", gif.extensionOrDefault)
+        assertEquals(MediaKind.IMAGE, gif.mediaKind)
+    }
+
+    @Test fun `specified long Weibo picture post exposes all eleven images`() {
+        val pictureIds = (1..11).map { "photo-$it" }
+        val pictures = pictureIds.joinToString(",") { id ->
+            """"$id":{"type":"pic","original":{"url":"https://wx1.sinaimg.cn/orj1080/$id.jpg","width":1080,"height":1620},"largest":{"url":"https://wx1.sinaimg.cn/large/$id.jpg","width":1365,"height":2048}}"""
+        }
+        val body = """{"mblogid":"RrDD8EUZW","isLongText":true,"text_raw":"山田あい",
+            "user":{"idstr":"2453184077","screen_name":"进击的阿光"},
+            "pic_num":11,"pic_ids":${pictureIds.joinToString(prefix = "[\"", postfix = "\"]", separator = "\",\"")},
+            "pic_infos":{$pictures}}"""
+
+        val result = WeiboJsonParser().parseVideos(body, "RrDD8EUZW")!!
+
+        assertEquals(11, result.videos.size)
+        assertTrue(result.videos.all { it.isImagePost })
+        assertEquals((1..11).map { "RrDD8EUZW_img$it" }, result.videos.map { it.awemeId })
+        assertEquals((1..11).map { "media_label_image($it)" }, result.videos.map { it.mediaLabel })
+        assertEquals("https://wx1.sinaimg.cn/orj1080/photo-1.jpg", result.selectedVideo.defaultVariant!!.url)
+        assertEquals("https://m.weibo.cn/status/RrDD8EUZW", result.selectedVideo.shareUrl)
     }
 
     companion object {
@@ -129,6 +177,15 @@ class WeiboGifParserTest {
                 "lp2":{"type":"livephoto","video":"https://video.weibo.com/media/play?livephoto=lp2.mov",
                     "original":{"url":"https://wx5.sinaimg.cn/orj1080/lp2.jpg","width":1080,"height":1439},
                     "largest":{"url":"https://wx5.sinaimg.cn/large/lp2.jpg","width":2048,"height":2730}}}}"""
+
+        /** 指定帖子 `RroaXt3As` 的脱敏媒体结构，同时包含站方 MP4 转码与 GIF 原图。 */
+        const val ORIGINAL_GIF_POST = """{"mblogid":"RroaXt3As","text_raw":"好好开车，好好工作",
+            "user":{"idstr":"5571216925","screen_name":"单良污妖"},
+            "pic_ids":["00652g1vly1ij1ttxd2xgg30fe0b4qva"],"pic_infos":{
+                "00652g1vly1ij1ttxd2xgg30fe0b4qva":{"type":"gif",
+                    "video":"http://g.us.sinaimg.cn/o0/animation.mp4?label=gif_mp4&amp;Expires=123",
+                    "original":{"url":"https://wx1.sinaimg.cn/orj1080/00652g1vly1ij1ttxd2xgg30fe0b4qva.gif","width":554,"height":400},
+                    "largest":{"url":"https://wx1.sinaimg.cn/large/00652g1vly1ij1ttxd2xgg30fe0b4qva.gif","width":554,"height":400}}}}"""
 
         const val MULTI_GIF_POST = """{"mblogid":"RkkIUuy8h","pic_ids":["second","photo","first"],"pic_infos":{
             "first":{"type":"gif","video":"https://video.example/first.mp4","largest":{"width":720,"height":1280}},

@@ -66,6 +66,7 @@ internal enum class AppIcons(@get:DrawableRes val resourceId: Int) {
     Storage(R.drawable.ic_shiying_storage),
     Settings(R.drawable.ic_shiying_settings),
     Info(R.drawable.ic_shiying_info),
+    More(R.drawable.ic_shiying_more),
     ClearSession(R.drawable.ic_shiying_clear_session),
     Back(R.drawable.ic_shiying_back),
     Forward(R.drawable.ic_shiying_forward),

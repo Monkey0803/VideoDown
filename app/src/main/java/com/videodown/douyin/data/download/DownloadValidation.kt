@@ -24,7 +24,10 @@ class DownloadContentException(val reasonKey: String) : Exception(reasonKey)
 fun validateDownloadedFile(file: File, record: DownloadRecord) {
     when (record.mediaKind) {
         MediaKind.IMAGE -> validateImage(file)
-        MediaKind.ARCHIVE -> validateArchive(file, record.archiveEntries.size)
+        MediaKind.ARCHIVE -> validateArchive(
+            file,
+            record.archiveEntries.sumOf { 1 + if (it.livePhotoMotion != null) 1 else 0 },
+        )
         else -> validateVideo(file)
     }
 }

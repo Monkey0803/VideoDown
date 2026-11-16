@@ -321,7 +321,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                                 onMove = { offset -> viewModel.moveInQueue(record.id, offset) },
                                 onRecover = { action -> if (action == RecoveryAction.RETRY) viewModel.resume(record.id) else onRecovery(record, action) },
                                 onShare = {
-                                    record.filePath?.let(::File)?.let { DouyinIntents.shareFile(context, it) }
+                                    DouyinIntents.shareRecord(context, record)
                                 },
                                 // 只有待下载的任务给出拖拽把手。
                                 onDragHandle = if (canReorder && state.statusFor(record) == DownloadStatus.PENDING) {

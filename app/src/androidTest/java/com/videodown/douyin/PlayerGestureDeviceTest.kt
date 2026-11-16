@@ -165,10 +165,29 @@ class PlayerGestureDeviceTest {
         assertTrue("A swipe up must raise brightness: $brightnessBefore -> $brightnessAfter",
             brightnessAfter in 0f..1f && brightnessAfter > 0f && brightnessAfter != brightnessBefore)
 
+        // 横向滑动预览后在松手处提交 seek，且不与两侧竖滑冲突。
+        val player = compose.runOnUiThread { findPlayerView(compose.activity.window.decorView)!!.player!! }
+        instrumentation.runOnMainSync { player.pause(); player.seekTo(5_000) }
+        compose.onNodeWithTag("player-surface").performTouchInput {
+            down(Offset(width * 0.2f, height * 0.25f))
+            moveTo(Offset(width * 0.45f, height * 0.25f)); advanceEventTime(32)
+            moveTo(Offset(width * 0.8f, height * 0.25f)); advanceEventTime(32)
+            up()
+        }
+        val seekDeadline = SystemClock.elapsedRealtime() + 3_000
+        var seekPosition = 0L
+        while (SystemClock.elapsedRealtime() < seekDeadline) {
+            seekPosition = compose.runOnUiThread { player.currentPosition }
+            if (seekPosition > 5_000) break
+            Thread.sleep(50)
+        }
+        assertTrue("A horizontal drag must seek forward", seekPosition > 5_000)
+
         // Long press: the boost indicator stays while the finger is held and clears on release.
         // The long-press threshold is a virtual-time timeout, so the main clock is driven by hand.
         compose.mainClock.autoAdvance = false
-        compose.onNodeWithTag("player-surface").performTouchInput { down(Offset(width * 0.5f, height * 0.5f)) }
+        // 自定义控制层显示时中央区域保留给播放键；上方空白画面仍由长按手势接管。
+        compose.onNodeWithTag("player-surface").performTouchInput { down(Offset(width * 0.5f, height * 0.25f)) }
         compose.mainClock.advanceTimeBy(1_000)
         compose.mainClock.advanceTimeByFrame()
         assertTrue("The boost indicator must stay up while the finger is held", feedbackShown("2× 快进中"))
@@ -180,6 +199,7 @@ class PlayerGestureDeviceTest {
             "seek=+10s/-10s confirmed by the on-screen label\n" +
                 "volume=$volumeBefore -> $volumeAfter (max=$max)\n" +
                 "brightness=$brightnessBefore -> $brightnessAfter\n" +
+                "horizontalSeek=5000 -> $seekPosition\n" +
                 "longPressBoost=shown while held, cleared on release\n",
         )
         instrumentation.sendStatus(0, android.os.Bundle().apply {

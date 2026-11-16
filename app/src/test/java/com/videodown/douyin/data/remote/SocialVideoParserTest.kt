@@ -5,9 +5,13 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class SocialVideoParserTest {
+    @org.junit.Before
+    fun installTextResolver() = com.videodown.douyin.core.TestText.install()
+
     @Test fun `recognizes the supplied URLs and shared captions`() {
         assertEquals(VideoPlatform.WEIBO, VideoLinkExtractor.extract("分享 https://weibo.com/1234567890/RklMe8iOM，推荐")?.platform)
         assertEquals("RklMe8iOM", VideoLinkExtractor.weiboId("https://weibo.com/1234567890/RklMe8iOM"))
+        assertEquals("RrDD8EUZW", VideoLinkExtractor.weiboId("https://weibo.com/2453184077/RrDD8EUZW"))
         assertEquals(VideoPlatform.KUAISHOU, VideoLinkExtractor.extract("视频 https://www.kuaishou.com/f/X3uQi2UzJmqN2fq。")?.platform)
         assertEquals(VideoPlatform.DOUYIN, VideoLinkExtractor.extract("https://v.douyin.com/Abcd/")?.platform)
     }

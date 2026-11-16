@@ -105,6 +105,7 @@ class WeiboGifDeviceTest {
             }}""", "fixture_live")!!
         assertEquals(2, parsed.videos.size)
         assertTrue(parsed.videos.all { it.isImagePost })
+        assertTrue(parsed.videos.all { it.variants.single().livePhotoMotion?.sourceUrl?.endsWith(".mov") == true })
         val repository = object : VideoRepository {
             override suspend fun parseShareText(shareText: String) = AppResult.Success(parsed.selectedVideo)
             override suspend fun parseVideos(shareText: String) = AppResult.Success(parsed)
@@ -116,6 +117,63 @@ class WeiboGifDeviceTest {
         compose.onNodeWithText("保存这张图片").assertExists()
         compose.onNodeWithText("选择画质").assertDoesNotExist()
         assertEquals(listOf("fixture_live_img1", "fixture_live_img2"), vm.state.value.videos.map { it.awemeId })
+        assertEquals(listOf("Live Photo 1", "Live Photo 2"), vm.state.value.videos.map { it.mediaLabel })
+    }
+
+    @Test fun aWeiboAnimationCanChooseTheOriginalGifInsteadOfTheMp4Transcode() {
+        val parsed = WeiboJsonParser().parseVideos("""{"mblogid":"RroaXt3As","text_raw":"好好开车，好好工作",
+            "pic_ids":["gif"],"pic_infos":{"gif":{"type":"gif",
+                "video":"https://video.example/animation.mp4",
+                "original":{"url":"https://wx1.sinaimg.cn/orj1080/animation.gif","width":554,"height":400}}}}""", "RroaXt3As")!!
+        val repository = object : VideoRepository {
+            override suspend fun parseShareText(shareText: String) = AppResult.Success(parsed.selectedVideo)
+            override suspend fun parseVideos(shareText: String) = AppResult.Success(parsed)
+        }
+        val downloads = CopyOnWriteArrayList<VideoVariant>()
+        val recorder = object : Downloader by engine {
+            override suspend fun start(video: DouyinVideo, variant: VideoVariant, subtitles: SubtitleSelection): String {
+                downloads += variant
+                return "gif-task"
+            }
+        }
+
+        show(repository, recorder)
+        parseThroughUi()
+        compose.onNodeWithText("选择下载格式").assertIsDisplayed()
+        compose.onNodeWithText("400P").assertIsDisplayed()
+        compose.onNodeWithText("GIF").assertIsDisplayed().performClick()
+        compose.onNodeWithText("保存这张图片").assertExists().performClick()
+        compose.waitUntil(5_000) { downloads.isNotEmpty() }
+        assertEquals(MediaKind.IMAGE, downloads.single().kind)
+        assertEquals("gif", downloads.single().extensionOrDefault)
+        assertEquals("https://wx1.sinaimg.cn/orj1080/animation.gif", downloads.single().url)
+    }
+
+    @Test fun anElevenPictureWeiboPostOpensTheImageResultInsteadOfFailing() {
+        val pictureIds = (1..11).map { "photo-$it" }
+        val pictures = pictureIds.joinToString(",") { id ->
+            """"$id":{"type":"pic","original":{"url":"https://wx1.sinaimg.cn/orj1080/$id.jpg","width":1080,"height":1620}}"""
+        }
+        val body = """{"mblogid":"RrDD8EUZW","isLongText":true,"text_raw":"山田あい",
+            "pic_num":11,"pic_ids":${pictureIds.joinToString(prefix = "[\"", postfix = "\"]", separator = "\",\"")},
+            "pic_infos":{$pictures}}"""
+        val parsed = WeiboJsonParser().parseVideos(body, "RrDD8EUZW")!!
+        val repository = object : VideoRepository {
+            override suspend fun parseShareText(shareText: String) = AppResult.Success(parsed.selectedVideo)
+            override suspend fun parseVideos(shareText: String) = AppResult.Success(parsed)
+        }
+
+        show(repository)
+        parseThroughUi()
+
+        assertNull(vm.state.value.error)
+        assertEquals(11, vm.state.value.videos.size)
+        assertTrue(vm.state.value.videos.all { it.isImagePost })
+        compose.onNodeWithText("打包下载（11 张）").assertExists()
+        compose.onNodeWithText("保存这张图片").assertExists()
+        compose.onNodeWithText("查看全部").performClick()
+        compose.onNodeWithText("选择内容（11）").assertIsDisplayed()
+        compose.onNodeWithText("图片 11").performScrollTo().assertIsDisplayed()
     }
 
     @Test fun liveGifParsesDownloadsAndPlaysThroughTheUi() {

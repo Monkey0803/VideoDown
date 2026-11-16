@@ -227,11 +227,22 @@ class HistoryViewModel(
         viewModelScope.launch { downloader.restart(id) }
     }
 
-    fun delete(id: String) {
-        if (_state.value.batchBusy) return
+    fun delete(id: String, onComplete: (Result<Unit>) -> Unit = {}) {
+        if (_state.value.batchBusy) {
+            onComplete(Result.failure(IllegalStateException("Batch operation is in progress")))
+            return
+        }
         viewModelScope.launch {
-            downloader.cancel(id, removeRecord = true)
-            _state.update { it.copy(notice = HistoryNotice.DELETED) }
+            val result = try {
+                downloader.cancel(id, removeRecord = true)
+                Result.success(Unit)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                Result.failure(error)
+            }
+            if (result.isSuccess) _state.update { it.copy(notice = HistoryNotice.DELETED) }
+            onComplete(result)
         }
     }
 

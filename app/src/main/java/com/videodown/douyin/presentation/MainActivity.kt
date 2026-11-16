@@ -436,7 +436,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
             NavHost(
                 navController = navController,
                 startDestination = Routes.HOME,
-                modifier = if (route == Routes.PLAYER) {
+                modifier = if (route == Routes.PLAYER || route == Routes.IMAGE) {
                     Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
                 } else {
                     Modifier.padding(padding).consumeWindowInsets(padding).background(MaterialTheme.colorScheme.background)
@@ -504,8 +504,10 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                 ) { imageEntry ->
                     val recordId = imageEntry.arguments?.getString("recordId").orEmpty()
                     ImageViewerScreen(
-                        record = historyState.records.firstOrNull { it.id == recordId },
+                        records = historyState.records,
+                        initialRecordId = recordId,
                         onBack = { navController.popBackStack() },
+                        onDelete = { id, done -> historyViewModel.delete(id, done) },
                     )
                 }
                 composable(

@@ -30,5 +30,6 @@ fun DouyinVideo.archiveEntry(): ArchiveEntry? {
         extension = variant.extensionOrDefault,
         referer = variant.referer,
         sizeBytes = variant.sizeBytes,
+        livePhotoMotion = variant.livePhotoMotion,
     )
 }

@@ -10,6 +10,8 @@ import com.videodown.douyin.data.local.DownloadHistoryStore
 import com.videodown.douyin.data.repository.DownloadHistoryRepositoryImpl
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
+import com.videodown.douyin.domain.model.LivePhotoMotion
+import com.videodown.douyin.domain.model.MediaKind
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -27,13 +29,14 @@ class P2FileExportDeviceTest {
     private lateinit var temporary: File
     private lateinit var exporter: DocumentTreeExporter
     private lateinit var source: File
+    private lateinit var history: DownloadHistoryRepositoryImpl
     @Before fun setup() = runBlocking {
         InstrumentationRegistry.getInstrumentation().uiAutomation.adoptShellPermissionIdentity("android.permission.MANAGE_DOCUMENTS")
         resolver.call(Uri.parse("content://com.videodown.douyin.test.export"), "fixture-reset", null, null)
         temporary = File(context.cacheDir, "p2-export-${System.nanoTime()}").apply { mkdirs() }
         val paths = DownloadPaths(temporary)
         source = File(paths.downloadDir, "fixture.mp4").apply { writeBytes(ByteArray(200_000) { (it % 251).toByte() }) }
-        val history = DownloadHistoryRepositoryImpl(DownloadHistoryStore(File(temporary, "history.json")))
+        history = DownloadHistoryRepositoryImpl(DownloadHistoryStore(File(temporary, "history.json")))
         history.upsert(DownloadRecord("saved", "media", "fixture", fileName = source.name, filePath = source.path,
             partialPath = source.path + ".part", status = DownloadStatus.COMPLETED))
         exporter = DocumentTreeExporter(resolver, history, paths, Mutex(), File(temporary, "export-journal"))
@@ -57,6 +60,48 @@ class P2FileExportDeviceTest {
             assertArrayEquals(source.readBytes(), resolver.openInputStream(Uri.parse(output))!!.use { it.readBytes() })
         }
         assertTrue(source.isFile)
+    }
+    @Test fun livePhotoExportCopiesStillAndMotionIntoTheSameTree() = runBlocking {
+        val still = File(source.parentFile, "live.jpg").apply { writeBytes(byteArrayOf(1, 3, 5, 7)) }
+        val motion = File(source.parentFile, "live_motion.mov").apply { writeBytes(byteArrayOf(2, 4, 6, 8, 10)) }
+        history.upsert(DownloadRecord(
+            id = "live", awemeId = "post-live", title = "实况照片",
+            fileName = still.name, filePath = still.path, partialPath = still.path + ".part",
+            status = DownloadStatus.COMPLETED, mediaKind = MediaKind.IMAGE,
+            livePhotoMotion = LivePhotoMotion(
+                sourceUrl = "https://example.test/live.mov",
+                fileName = motion.name,
+                filePath = motion.path,
+            ),
+        ))
+
+        val stillOutput = Uri.parse(exporter.export("live", tree.toString()).getOrThrow())
+        assertEquals(listOf("live.jpg", "live_motion.mov"), names().sorted())
+        assertArrayEquals(still.readBytes(), resolver.openInputStream(stillOutput)!!.use { it.readBytes() })
+        val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, "root")
+        val motionId = resolver.query(
+            children,
+            arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME),
+            null, null, null,
+        )!!.use { cursor ->
+            var id: String? = null
+            while (cursor.moveToNext()) if (cursor.getString(1) == motion.name) id = cursor.getString(0)
+            checkNotNull(id)
+        }
+        val motionOutput = DocumentsContract.buildDocumentUriUsingTree(tree, motionId)
+        assertArrayEquals(motion.readBytes(), resolver.openInputStream(motionOutput)!!.use { it.readBytes() })
+    }
+    @Test fun incompleteLivePhotoNeverExportsOnlyItsStill() = runBlocking {
+        val still = File(source.parentFile, "incomplete.jpg").apply { writeBytes(byteArrayOf(1, 2, 3)) }
+        history.upsert(DownloadRecord(
+            id = "incomplete-live", awemeId = "post-incomplete", title = "不完整实况照片",
+            fileName = still.name, filePath = still.path, partialPath = still.path + ".part",
+            status = DownloadStatus.COMPLETED, mediaKind = MediaKind.IMAGE,
+            livePhotoMotion = LivePhotoMotion(sourceUrl = "https://example.test/missing.mov"),
+        ))
+
+        assertTrue(exporter.export("incomplete-live", tree.toString()).isFailure)
+        assertTrue(names().isEmpty())
     }
     @Test fun failedProviderWriteDeletesOnlyNewDocumentAndPreservesExistingCopy() = runBlocking {
         exporter.export("saved", tree.toString()).getOrThrow()

@@ -145,6 +145,22 @@ class P3PlaybackDeviceTest {
         waitForPlayer { it.playbackParameters.speed == 4f }
         assertEquals(4f, PlaybackPreferences(context, preferenceName).options(false).speed)
     }
+    @Test fun advancedControlsCycleScaleAndOpenTrackPanel() {
+        val video = record(); show(video)
+        compose.onNodeWithContentDescription("适应画面").performClick()
+        compose.onNodeWithText("画面比例").assertIsDisplayed()
+        compose.onNodeWithText("裁剪填充", substring = false).performClick()
+        compose.waitUntil(5_000) { compose.runOnUiThread { find(compose.activity.window.decorView)!!.resizeMode } == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM }
+        compose.onNodeWithContentDescription("裁剪填充").performClick()
+        compose.onNodeWithText("拉伸填充", substring = false).performClick()
+        compose.waitUntil(5_000) { compose.runOnUiThread { find(compose.activity.window.decorView)!!.resizeMode } == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL }
+        compose.onNodeWithContentDescription("拉伸填充").performClick()
+        compose.onNodeWithText("适应画面", substring = false).performClick()
+        compose.waitUntil(5_000) { compose.runOnUiThread { find(compose.activity.window.decorView)!!.resizeMode } == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT }
+        compose.onNodeWithContentDescription("音轨与字幕").performClick()
+        compose.onNodeWithText("音轨与字幕").assertIsDisplayed()
+        compose.onNodeWithText("关闭").performClick()
+    }
     @Test fun completedPlaybackReopensAtBeginning() {
         val record = record(); show(record)
         compose.runOnUiThread { player().seekTo(player().duration - 100); player().play() }
@@ -153,6 +169,13 @@ class P3PlaybackDeviceTest {
         val file = File(record.filePath!!)
         assertEquals(0L, preferences.checkpoint(record.id, file.length(), file.lastModified()).resumePosition())
         show(record); waitForPlayer { it.currentPosition in 0..1000 }
+    }
+    @Test fun completedPlaybackOffersReplayAndStartsFromBeginning() {
+        val video = record(); show(video)
+        compose.runOnUiThread { player().seekTo(player().duration - 100); player().play() }
+        waitForPlayer { it.playbackState == Player.STATE_ENDED }
+        compose.onNodeWithContentDescription("重新播放").assertIsDisplayed().performClick()
+        waitForPlayer { it.playbackState == Player.STATE_READY && it.isPlaying && it.currentPosition < 2_000 }
     }
     @Test fun replacementFileInvalidatesOldCheckpointWithoutChangingOptions() {
         val record = record(); val file = File(record.filePath!!)

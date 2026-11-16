@@ -18,7 +18,13 @@ internal object ImageArchiveWriter {
 
     /** 归档里第 [index] 张图的条目名；用补零数字保序，也保证不会重名。 */
     fun entryName(index: Int, extension: String): String =
-        "$ENTRY_DIRECTORY/%03d.%s".format(index + 1, extension.trimStart('.').lowercase().ifBlank { "jpg" })
+        "$ENTRY_DIRECTORY/%03d.%s".format(index + 1, safeExtension(extension, "jpg"))
+
+    fun livePhotoMotionEntryName(index: Int, extension: String): String =
+        "livephotos/%03d.%s".format(index + 1, safeExtension(extension, "mov"))
+
+    private fun safeExtension(extension: String, fallback: String): String = extension.trimStart('.')
+        .lowercase().takeIf { it.matches(Regex("[a-z0-9]{1,10}")) } ?: fallback
 
     /**
      * 写入并发布 ZIP，返回最终文件大小。

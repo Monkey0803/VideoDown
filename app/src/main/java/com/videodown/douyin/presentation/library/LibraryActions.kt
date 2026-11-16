@@ -172,8 +172,7 @@ internal fun LibraryActions(
                     },
                 ), AppIcons.Share) {
                     onDismiss()
-                    val file = selected.filePath?.let(::File)
-                    if (file == null || !file.isFile || !DouyinIntents.shareFile(context, file)) {
+                    if (!DouyinIntents.shareRecord(context, selected)) {
                         showMessage(resources.getString(R.string.library_share_failed))
                     }
                 }
