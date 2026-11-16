@@ -926,6 +926,14 @@
     <string name="viewer_live_photo_play">实况</string>
     <string name="viewer_live_photo_stop">停止</string>
     <string name="viewer_detail_live_photo">动态片段</string>
+    <string name="viewer_slideshow_start">幻灯片</string>
+    <string name="viewer_slideshow_pause">暂停</string>
+    <string name="viewer_slideshow_interval">%1$d 秒</string>
+    <string name="viewer_date_grid">按日期查找</string>
+    <string name="viewer_date_grid_title">按保存日期浏览</string>
+    <string name="viewer_exif_title">EXIF / XMP</string>
+    <string name="viewer_exif_loading">正在读取图片信息…</string>
+    <string name="viewer_exif_empty">无 EXIF 信息</string>
     <string name="browser_candidate_image">图片 · %1$s</string>
     <string name="download_not_an_image">下载到的文件不是有效图片</string>
     <string name="download_invalid_archive">压缩包不完整或已损坏</string>

@@ -3,21 +3,25 @@ package com.videodown.douyin
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.exifinterface.media.ExifInterface
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.VaultAuthenticator
+import com.videodown.douyin.data.image.ImageMetadataReader
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.MediaKind
@@ -26,6 +30,7 @@ import com.videodown.douyin.presentation.theme.VideoDownTheme
 import com.videodown.douyin.presentation.viewer.ImageViewerScreen
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,6 +50,7 @@ class ImageViewerDeviceTest {
 
     @After fun cleanup() {
         originalAuthenticator?.let { ServiceLocator.vaultAuthenticator = it }
+        ServiceLocator.preferences.imageSlideshowIntervalSeconds = 5
         directory.deleteRecursively()
     }
 
@@ -63,6 +69,20 @@ class ImageViewerDeviceTest {
         InstrumentationRegistry.getInstrumentation().context.assets.open("landscape-fixture.mp4").use { input ->
             outputStream().use(input::copyTo)
         }
+    }
+
+    private fun jpegWithExif(): File {
+        val bitmap = Bitmap.createBitmap(96, 64, Bitmap.Config.ARGB_8888).apply { eraseColor(0xFF26A69A.toInt()) }
+        val file = File(directory, "exif-photo.jpg")
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+        bitmap.recycle()
+        ExifInterface(file).apply {
+            setAttribute(ExifInterface.TAG_MAKE, "Test Camera")
+            setAttribute(ExifInterface.TAG_MODEL, "Model 2026")
+            setLatLong(31.230416, 121.473701)
+            saveAttributes()
+        }
+        return file
     }
 
     /** 证据截图落在应用私有目录，测试后用 `adb run-as ... cat` 取回。 */
@@ -256,5 +276,55 @@ class ImageViewerDeviceTest {
         }
         compose.onNodeWithTag("live-photo-motion").assertIsDisplayed()
         compose.onNodeWithText("停止").assertIsDisplayed()
+    }
+
+    @Test fun slideshowLoopsAndDateGridJumpsToSelectedImage() {
+        ServiceLocator.preferences.imageSlideshowIntervalSeconds = 3
+        val first = record(pngFile("slide-first.png"), id = "slide-first", title = "幻灯第一张", updatedAt = 20L)
+        val second = record(pngFile("slide-second.png"), id = "slide-second", title = "幻灯第二张", updatedAt = 10L)
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(first, second),
+                    initialRecordId = first.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                    slideshowSecondMillis = 50L,
+                )
+            }
+        }
+
+        compose.onNodeWithTag("image-slideshow-toggle").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("2 / 2").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("image-slideshow-toggle").performClick()
+        compose.onNodeWithText("按日期查找").performClick()
+        compose.onNodeWithTag("image-date-grid").assertIsDisplayed()
+        compose.onNodeWithTag("date-grid-slide-first").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("1 / 2").fetchSemanticsNodes().isNotEmpty() }
+    }
+
+    @Test fun infoSheetReadsExifAndGpsFromTheRealImageFile() {
+        val file = jpegWithExif()
+        val metadata = ImageMetadataReader.read(file)
+        assertTrue(metadata.fields.any { it.label == "Make" && it.value == "Test Camera" })
+        assertTrue(metadata.fields.any { it.label == "GPS" && it.value == "31.230416, 121.473701" })
+        val item = record(file, title = "带 EXIF 的图片")
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(item),
+                    initialRecordId = item.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.onNodeWithContentDescription("图片信息").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("image-info-content").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("image-info-content").performScrollToIndex(1)
+        compose.onNodeWithText("EXIF / XMP").assertIsDisplayed()
     }
 }

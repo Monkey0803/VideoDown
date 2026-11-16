@@ -2,6 +2,36 @@ package com.videodown.douyin.presentation.viewer
 
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+
+internal val IMAGE_SLIDESHOW_INTERVALS_SECONDS = listOf(3, 5, 10)
+
+internal fun normalizedSlideshowIntervalSeconds(value: Int): Int =
+    value.takeIf(IMAGE_SLIDESHOW_INTERVALS_SECONDS::contains) ?: 5
+
+internal data class ImageDateGroup(
+    val date: LocalDate,
+    val records: List<DownloadRecord>,
+)
+
+/** 看图器始终以保存时间分组，避免缺失或错误的拍摄时间改变用户熟悉的库顺序。 */
+internal fun imageDateGroups(
+    records: List<DownloadRecord>,
+    zoneId: ZoneId = ZoneId.systemDefault(),
+): List<ImageDateGroup> = records
+    .groupBy { Instant.ofEpochMilli(it.updatedAt).atZone(zoneId).toLocalDate() }
+    .map { (date, items) -> ImageDateGroup(date, items) }
+    .sortedByDescending(ImageDateGroup::date)
+
+internal fun canRunSlideshowTimer(
+    running: Boolean,
+    recordCount: Int,
+    overlayOpen: Boolean,
+    appStarted: Boolean,
+    imageAtBaseScale: Boolean,
+): Boolean = running && recordCount > 1 && !overlayOpen && appStarted && imageAtBaseScale
 
 /**
  * 图片中心的候选规则。

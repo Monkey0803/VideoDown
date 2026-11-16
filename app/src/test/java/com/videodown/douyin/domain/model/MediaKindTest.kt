@@ -37,6 +37,7 @@ class MediaKindTest {
         val record = DownloadRecord(
             id = "id", awemeId = "post", title = "图文", mediaKind = MediaKind.ARCHIVE,
             archiveEntries = listOf(ArchiveEntry("https://cdn/a.jpg", "jpg", "https://page", 1234L)),
+            createdAt = 123L, updatedAt = 456L,
         )
         val decoded = json.decodeFromString(DownloadRecord.serializer(), json.encodeToString(DownloadRecord.serializer(), record))
         assertEquals(record, decoded)

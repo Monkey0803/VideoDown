@@ -130,7 +130,7 @@
 - [x] **D1 图片是一等媒体类型** — `domain/model/MediaKind.kt`（视频/音频/图片/压缩包）+ `VideoVariant.kind` + `DownloadRecord.mediaKind`；旧历史没有该字段时按视频读取。校验（`DownloadValidation`：图片看文件头、ZIP 看魔数与条目数）、扩展名（`extensionOrDefault`）、MIME（`videoMimeType`）与空间余量（图片 2 MiB）都按类型分派。
 - [x] **D2 直链图片** — `GenericVideoRepository.probeDirect` 用 `MediaSignature` 按文件头识别图片并在视频判定之前返回图片条目；新 `data/generic/ImageMedia.kt` 统一构造条目（稳定 `mediaId`、`pageUrl`、Referer）。
 - [x] **D3 平台图文** — 抖音 `images` / `image_post_info`（`/share/note/` 优先，修掉"图文帖 BFS 抓到推荐位视频"的隐患）；微博 `pic_infos`（original→largest→large→bmiddle；同一 GIF 条目可选 MP4 转码或 GIF 原图，不重复内容；`livephoto` 作为静帧 + 原始 `.mov` 成对媒体，只有两者均完成才完成任务）；X `photo`（`pbs.twimg.com` + `?name=orig`，`/photo/N` 选中第 N 张）；快手 `photo.atlas`（实测载荷确认字段后实现）。
-- [x] **D4 看图器（第三方库）** — `io.github.panpf.zoomimage:zoomimage-compose-coil3:1.4.0`（Apache-2.0，Maven Central，minSdk 21，无原生库）；`ImageViewerScreen` 提供普通库/保险箱分区的全量图片中心、横向翻页、缩略图、3 秒沉浸控制栏、保存/分享/详情/来源与确认删除，缩放/拖动/双击/子采样/Exif 仍由 `CoilZoomAsyncImage` 提供。删除后前进、末尾回退、最后一张退出；保险箱每次进入先走系统认证。锁 1.4.0 的原因（1.5+ 用 Kotlin 2.3/2.4 构建，元数据超出本仓库 Kotlin 2.2.21）写在 `libs.versions.toml` 注释里。
+- [x] **D4 看图器（第三方库）** — `io.github.panpf.zoomimage:zoomimage-compose-coil3:1.4.0`（Apache-2.0，Maven Central，minSdk 21，无原生库）；`ImageViewerScreen` 提供普通库/保险箱分区的全量图片中心、横向翻页、缩略图、3 秒沉浸控制栏、保存/分享/详情/来源与确认删除，缩放/拖动/双击/子采样/Exif 方向仍由 `CoilZoomAsyncImage` 提供。现已增加 3/5/10 秒循环幻灯片、按保存日期分组的三列定位网格，以及 AndroidX ExifInterface 按需读取的 EXIF/XMP 和 GPS 明细；删除后前进、末尾回退、最后一张退出；保险箱每次进入先走系统认证。锁 ZoomImage 1.4.0 的原因（1.5+ 用 Kotlin 2.3/2.4 构建，元数据超出本仓库 Kotlin 2.2.21）写在 `libs.versions.toml` 注释里。
 - [x] **D5 打包下载** — `MediaKind.ARCHIVE` + `DownloadRecord.archiveEntries` + `Downloader.startArchive/findArchiveDuplicate`；`DownloadEngine` 的归档分支逐张复用 `ResumableDownloader`（已完成的图跳过、半张图续传、403/410 整帖重解析），`ImageArchiveWriter` 先写 `.tmp` 再改名，`validateArchive` 校验条目数；`ArchivePublisher` 把 ZIP 写进 `Download/拾影`（Android 10+ 走 `MediaStore.Downloads`）。结果页「打包下载（N 张）」+ 重复确认框。
 - [x] **D6 网页抓图** — `BrowserMediaDetector` 放行图片扩展名并按魔数/尺寸识别，图片候选（宽高 ≥100px、≥10 KiB）在 `BrowserAssistScreen` 里直接构造条目，不经过 yt-dlp；扫描 JS 增加 `img.currentSrc/src`。
 - [x] **D7 文案、图标与路由** — 图片/压缩包在结果页、已存、任务、通知、分享与看图器各自有文案；`MainActivity` 按记录类型分流（图片→看图器、压缩包→系统打开方式、其余→播放器），完成通知深链复用同一条分流；文案资源中英各 **836** 条 string key、一一对应。图片没有单独开底部 tab：`LibraryQuery.mediaKind` + 顶部「类型」筛选（全部/视频/音频/图片/压缩包）复用同一套搜索、排序与批量操作；列表标题/副标题随之改为「已存内容 / N 项」。
@@ -141,7 +141,14 @@
 
 DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中画已具备）、内置站点浏览与信息流、桌面组件（widget，本轮只做快捷方式）、通知内删除。
 
-按站点登出、从外部浏览器导入 Cookie、其他站点的登录态自动复用也明确不做：`CookieManager` 没有可靠的按域删除接口，且「不读取其他浏览器账户」是本应用的既有承诺；X 之外的站点仍在网页辅助里手动使用登录态。
+按站点登出和从外部浏览器导入 Cookie 也明确不做：`CookieManager` 没有可靠的按域删除接口，且「不读取其他浏览器账户」是本应用的既有承诺。当前只有 X 登录态复用；计划中的 B 站登录只使用应用内网页产生的 Cookie，见 Phase E。
+
+## Phase E — 哔哩哔哩支持（后续）
+
+- [ ] **E1 链接与投稿解析** — 识别 `bilibili.com/video/BV…`、`/video/av…`、移动端链接及只跳转到可信 B 站视频页的 `b23.tv`；支持显式 `?p=N`。普通解析只取当前分 P，「解析合集」开启后最多枚举 20 P。第一版不含番剧、直播、课程、音频及空间/频道列表。
+- [ ] **E2 DASH 下载** — 复用现有 yt-dlp / FFmpeg 引擎和 `MediaKind`，把 B 站视频流与音频流作为同一画质选择合并下载；继续拒绝 DRM、直播录制、付费绕过和权限越权。
+- [ ] **E3 应用内网页登录态** — 设置页提供 B 站登录入口，以 `SESSDATA` 判断登录状态并向引擎导出 B 站网页/API 所需 Cookie；检测到登录态时优先登录解析，失败后匿名降级，仍失败时提供重新登录入口。只访问账号在正常网页中可播放的内容，不读取外部浏览器 Cookie。
+- [ ] **E4 字幕与验证** — 只暴露可下载/嵌入的文本字幕，过滤 `danmaku` XML；补齐 JVM、设备和默认跳过的 `live_bilibili` 在线验收，并在 `docs/validation/` 留证后才能勾选。
 
 ## 已具备（勿重复立项）
 
@@ -163,4 +170,4 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 
 > 通知相关设备用例需要系统已允许应用通知；`-Pandroid.testInstrumentationRunnerArguments.class` 一次只接受一个类。
 
-2026-11-16 起还具备：**图片、图文与打包下载** —— 图片直链、抖音图文、微博多图、X 多图、快手图集与网页抓图；看图器用 ZoomImage 缩放/子采样；「打包下载」一次任务产出一个 ZIP（暂停续传、条目校验、写入 `Download/拾影`）。证据见 [图片下载验证](validation/image-download-2026-11-16.md)。
+2026-11-16 起还具备：**图片、图文与打包下载** —— 图片直链、抖音图文、微博多图、X 多图、快手图集与网页抓图；看图器用 ZoomImage 缩放/子采样，并支持循环幻灯片、日期网格定位、EXIF/XMP 与 GPS 明细；「打包下载」一次任务产出一个 ZIP（暂停续传、条目校验、写入 `Download/拾影`）。证据见 [图片下载验证](validation/image-download-2026-11-16.md) 与 [图片浏览增强验证](validation/image-viewer-enhancements-2026-11-16.md)。

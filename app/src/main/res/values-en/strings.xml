@@ -927,6 +927,14 @@
     <string name="viewer_live_photo_play">Live</string>
     <string name="viewer_live_photo_stop">Stop</string>
     <string name="viewer_detail_live_photo">Motion clip</string>
+    <string name="viewer_slideshow_start">Slideshow</string>
+    <string name="viewer_slideshow_pause">Pause</string>
+    <string name="viewer_slideshow_interval">%1$d sec</string>
+    <string name="viewer_date_grid">Browse by date</string>
+    <string name="viewer_date_grid_title">Browse by saved date</string>
+    <string name="viewer_exif_title">EXIF / XMP</string>
+    <string name="viewer_exif_loading">Reading image details…</string>
+    <string name="viewer_exif_empty">No EXIF information</string>
     <string name="browser_candidate_image">Image · %1$s</string>
     <string name="download_not_an_image">The downloaded file is not a valid image</string>
     <string name="download_invalid_archive">The ZIP is incomplete or corrupt</string>

@@ -175,6 +175,16 @@ class AppPreferences(context: Context) {
             _autoSaveToGallery.value = value
         }
 
+    /** 看图器幻灯片间隔；只接受界面提供的三个档位，旧值或损坏值回退到 5 秒。 */
+    var imageSlideshowIntervalSeconds: Int
+        get() = store.getInt("image_slideshow_interval_seconds", 5).takeIf { it in setOf(3, 5, 10) } ?: 5
+        set(value) {
+            store.edit().putInt(
+                "image_slideshow_interval_seconds",
+                value.takeIf { it in setOf(3, 5, 10) } ?: 5,
+            ).apply()
+        }
+
     /**
      * Endpoint of the JSON version manifest used by 「我的 → 检查更新」.
      *

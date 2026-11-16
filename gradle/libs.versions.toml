@@ -17,6 +17,7 @@ coil = "3.3.0"
 zoomimage = "1.4.0"
 reorderable = "3.1.0"
 graphicsShapes = "1.1.0"
+exifinterface = "1.4.2"
 junit = "4.13.2"
 androidxJunit = "1.2.1"
 espresso = "3.7.0"
@@ -53,6 +54,7 @@ coil-network = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", versi
 zoomimage-compose-coil3 = { group = "io.github.panpf.zoomimage", name = "zoomimage-compose-coil3", version.ref = "zoomimage" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 graphics-shapes = { module = "androidx.graphics:graphics-shapes", version.ref = "graphicsShapes" }
+androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }

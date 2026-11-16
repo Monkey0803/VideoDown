@@ -198,6 +198,7 @@ dependencies {
     implementation(libs.zoomimage.compose.coil3)
     implementation(libs.reorderable)
     implementation(libs.graphics.shapes)
+    implementation(libs.androidx.exifinterface)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

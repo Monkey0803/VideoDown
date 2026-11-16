@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.os.Build
+import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,7 +30,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -94,6 +103,8 @@ import com.videodown.douyin.R
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.formatBytes
+import com.videodown.douyin.core.ImageMetadata
+import com.videodown.douyin.data.image.ImageMetadataReader
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.presentation.components.AppConfirmDialog
@@ -102,10 +113,15 @@ import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.galleryErrorMessage
 import com.videodown.douyin.presentation.videoPlatformLabelRes
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.DateFormat
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 private const val DEFAULT_AUTO_HIDE_MILLIS = 3_000L
 
@@ -124,10 +140,12 @@ fun ImageViewerScreen(
     onBack: () -> Unit,
     onDelete: (String, (Result<Unit>) -> Unit) -> Unit,
     autoHideMillis: Long = DEFAULT_AUTO_HIDE_MILLIS,
+    slideshowSecondMillis: Long = 1_000L,
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
     val activity = context.findActivity()
+    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     val initialRecord = records.firstOrNull { it.id == initialRecordId }
@@ -203,13 +221,21 @@ fun ImageViewerScreen(
     val pagerState = rememberPagerState(initialPage = initialPage) { availableRecords.size }
     val thumbnailState = rememberLazyListState()
     val zoomStates = remember { mutableStateMapOf<String, CoilZoomState>() }
+    val metadataCache = remember { mutableMapOf<ImageMetadataCacheKey, ImageMetadata>() }
     var controlsVisible by rememberSaveable { mutableStateOf(true) }
     var interactionTick by remember { mutableIntStateOf(0) }
     var saving by remember { mutableStateOf(false) }
     var showingInfo by remember { mutableStateOf(false) }
+    var showingDateGrid by remember { mutableStateOf(false) }
     var moreExpanded by remember { mutableStateOf(false) }
+    var intervalExpanded by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<DownloadRecord?>(null) }
     var playingLivePhotoId by remember { mutableStateOf<String?>(null) }
+    var slideshowRunning by rememberSaveable { mutableStateOf(false) }
+    var slideshowInterval by rememberSaveable {
+        mutableIntStateOf(normalizedSlideshowIntervalSeconds(ServiceLocator.preferences.imageSlideshowIntervalSeconds))
+    }
+    var appStarted by remember { mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) }
 
     val currentIndex = availableRecords.indexOfFirst { it.id == currentId }
         .takeIf { it >= 0 } ?: pagerState.currentPage.coerceIn(0, availableRecords.lastIndex)
@@ -219,7 +245,14 @@ fun ImageViewerScreen(
     val pagerEnabled = currentZoom?.zoomable?.userTransform?.let { transform ->
         transform.scaleX <= 1.01f && transform.scaleY <= 1.01f
     } ?: true
-    val overlayOpen = showingInfo || moreExpanded || pendingDelete != null || saving
+    val overlayOpen = showingInfo || showingDateGrid || moreExpanded || intervalExpanded || pendingDelete != null || saving
+    val slideshowTimerEnabled = canRunSlideshowTimer(
+        running = slideshowRunning,
+        recordCount = availableRecords.size,
+        overlayOpen = overlayOpen,
+        appStarted = appStarted,
+        imageAtBaseScale = pagerEnabled,
+    )
 
     // 进入或翻到 Live Photo 时立即播放；播放器自身 REPEAT_MODE_ONE 持续循环。
     // 用户手动停止后保持静帧，直到离开该页并再次回来才重新自动播放。
@@ -250,6 +283,37 @@ fun ImageViewerScreen(
         if (controlsVisible && !overlayOpen && autoHideMillis > 0L) {
             delay(autoHideMillis)
             controlsVisible = false
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, _ ->
+            appStarted = lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(slideshowTimerEnabled, slideshowInterval, currentId, availableRecords.map { it.id }) {
+        if (!slideshowTimerEnabled) return@LaunchedEffect
+        delay(slideshowInterval * slideshowSecondMillis)
+        // 不抢正在进行的手势；若用户滑回同一页（currentId 不变），也从稳定后重新计满一轮。
+        if (pagerState.isScrollInProgress) {
+            snapshotFlow { pagerState.isScrollInProgress }.first { scrolling -> !scrolling }
+            delay(slideshowInterval * slideshowSecondMillis)
+        }
+        if (pagerState.isScrollInProgress) return@LaunchedEffect
+        val next = (currentIndex + 1) % availableRecords.size
+        pagerState.animateScrollToPage(next)
+    }
+    LaunchedEffect(availableRecords.size) {
+        if (availableRecords.size < 2) slideshowRunning = false
+    }
+
+    DisposableEffect(activity, slideshowRunning) {
+        val window = activity?.window
+        if (slideshowRunning) window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        onDispose {
+            if (slideshowRunning) window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
@@ -414,6 +478,58 @@ fun ImageViewerScreen(
                     .padding(top = 28.dp, bottom = 8.dp),
             ) {
                 if (availableRecords.size > 1) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TextButton(
+                            onClick = {
+                                slideshowRunning = !slideshowRunning
+                                wakeControls()
+                            },
+                            modifier = Modifier.testTag("image-slideshow-toggle"),
+                        ) {
+                            AppIcon(
+                                if (slideshowRunning) AppIcons.Pause else AppIcons.Play,
+                                null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Text(
+                                stringResource(if (slideshowRunning) R.string.viewer_slideshow_pause else R.string.viewer_slideshow_start),
+                                color = Color.White,
+                                modifier = Modifier.padding(start = 6.dp),
+                            )
+                        }
+                        Box {
+                            TextButton(onClick = { intervalExpanded = true; wakeControls() }) {
+                                Text(stringResource(R.string.viewer_slideshow_interval, slideshowInterval), color = Color.White)
+                                AppIcon(AppIcons.ChevronDown, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            }
+                            DropdownMenu(expanded = intervalExpanded, onDismissRequest = { intervalExpanded = false }) {
+                                IMAGE_SLIDESHOW_INTERVALS_SECONDS.forEach { seconds ->
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.viewer_slideshow_interval, seconds)) },
+                                        onClick = {
+                                            slideshowInterval = seconds
+                                            ServiceLocator.preferences.imageSlideshowIntervalSeconds = seconds
+                                            intervalExpanded = false
+                                            wakeControls()
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                        TextButton(onClick = { showingDateGrid = true; wakeControls() }) {
+                            AppIcon(AppIcons.Grid, null, tint = Color.White, modifier = Modifier.size(18.dp))
+                            Text(
+                                stringResource(R.string.viewer_date_grid),
+                                color = Color.White,
+                                modifier = Modifier.padding(start = 6.dp),
+                            )
+                        }
+                    }
                     LazyRow(
                         state = thumbnailState,
                         contentPadding = PaddingValues(horizontal = 14.dp),
@@ -491,7 +607,21 @@ fun ImageViewerScreen(
         ImageInfoSheet(
             record = currentRecord,
             zoomState = currentZoom,
+            metadataCache = metadataCache,
             onDismiss = { showingInfo = false; wakeControls() },
+        )
+    }
+    if (showingDateGrid) {
+        ImageDateGridSheet(
+            records = availableRecords,
+            selectedId = currentRecord.id,
+            onSelect = { record ->
+                showingDateGrid = false
+                currentId = record.id
+                wakeControls()
+                scope.launch { pagerState.animateScrollToPage(availableRecords.indexOf(record)) }
+            },
+            onDismiss = { showingDateGrid = false; wakeControls() },
         )
     }
     pendingDelete?.let { record ->
@@ -556,10 +686,29 @@ private fun ViewerAction(
     }
 }
 
+private data class ImageMetadataCacheKey(val path: String, val modifiedAt: Long)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ImageInfoSheet(record: DownloadRecord, zoomState: CoilZoomState?, onDismiss: () -> Unit) {
+private fun ImageInfoSheet(
+    record: DownloadRecord,
+    zoomState: CoilZoomState?,
+    metadataCache: MutableMap<ImageMetadataCacheKey, ImageMetadata>,
+    onDismiss: () -> Unit,
+) {
     val file = File(record.filePath.orEmpty())
+    val cacheKey = remember(file.absolutePath, file.lastModified()) {
+        ImageMetadataCacheKey(file.absolutePath, file.lastModified())
+    }
+    var metadata by remember(cacheKey) { mutableStateOf(metadataCache[cacheKey]) }
+    var metadataLoading by remember(cacheKey) { mutableStateOf(metadata == null) }
+    LaunchedEffect(cacheKey) {
+        if (metadata == null) {
+            metadata = withContext(Dispatchers.IO) { ImageMetadataReader.read(file) }
+                .also { metadataCache[cacheKey] = it }
+        }
+        metadataLoading = false
+    }
     val origin = zoomState?.zoomable?.contentOriginSize
     val dimensions = origin?.takeIf { it.width > 0 && it.height > 0 }?.let { "${it.width} × ${it.height}" }
     val unknown = stringResource(R.string.viewer_detail_unknown)
@@ -568,19 +717,118 @@ private fun ImageInfoSheet(record: DownloadRecord, zoomState: CoilZoomState?, on
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.background,
     ) {
-        Column(Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, bottom = 28.dp)) {
-            Text(stringResource(R.string.viewer_info), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(record.title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp))
-            ImageDetailRow(stringResource(R.string.viewer_detail_author), record.displayAuthor.ifBlank { unknown })
-            ImageDetailRow(stringResource(R.string.viewer_detail_platform), stringResource(videoPlatformLabelRes(record.platform)))
-            ImageDetailRow(stringResource(R.string.viewer_detail_format), file.extension.uppercase().ifBlank { unknown })
-            ImageDetailRow(stringResource(R.string.viewer_detail_dimensions), dimensions ?: unknown)
-            ImageDetailRow(stringResource(R.string.viewer_detail_size), if (file.isFile) formatBytes(file.length()) else unknown)
-            record.livePhotoMotion?.filePath?.let(::File)?.takeIf(File::isFile)?.let { motion ->
-                ImageDetailRow(stringResource(R.string.viewer_detail_live_photo), formatBytes(motion.length()))
+        val metadataFields = metadata?.fields.orEmpty()
+        LazyColumn(
+            Modifier.fillMaxWidth().fillMaxHeight(.88f)
+                .testTag("image-info-content"),
+            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 28.dp),
+        ) {
+            item(key = "file-details") {
+                Text(stringResource(R.string.viewer_info), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(record.title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 16.dp))
+                ImageDetailRow(stringResource(R.string.viewer_detail_author), record.displayAuthor.ifBlank { unknown })
+                ImageDetailRow(stringResource(R.string.viewer_detail_platform), stringResource(videoPlatformLabelRes(record.platform)))
+                ImageDetailRow(stringResource(R.string.viewer_detail_format), file.extension.uppercase().ifBlank { unknown })
+                ImageDetailRow(stringResource(R.string.viewer_detail_dimensions), dimensions ?: unknown)
+                ImageDetailRow(stringResource(R.string.viewer_detail_size), if (file.isFile) formatBytes(file.length()) else unknown)
+                record.livePhotoMotion?.filePath?.let(::File)?.takeIf(File::isFile)?.let { motion ->
+                    ImageDetailRow(stringResource(R.string.viewer_detail_live_photo), formatBytes(motion.length()))
+                }
+                ImageDetailRow(stringResource(R.string.viewer_detail_saved_at), DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(record.updatedAt))
             }
-            ImageDetailRow(stringResource(R.string.viewer_detail_saved_at), DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(record.updatedAt))
+            item(key = "metadata-title") {
+                Text(
+                    stringResource(R.string.viewer_exif_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 22.dp, bottom = 6.dp),
+                )
+            }
+            when {
+                metadataLoading -> item(key = "metadata-loading") {
+                    Text(
+                        stringResource(R.string.viewer_exif_loading),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 10.dp),
+                    )
+                }
+                metadataFields.isEmpty() -> item(key = "metadata-empty") {
+                    Text(
+                        stringResource(R.string.viewer_exif_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 10.dp),
+                    )
+                }
+                else -> items(metadataFields, key = { "${it.label}\u0000${it.value}" }) { field ->
+                    ImageDetailRow(field.label, field.value)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ImageDateGridSheet(
+    records: List<DownloadRecord>,
+    selectedId: String,
+    onSelect: (DownloadRecord) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val groups = remember(records) { imageDateGroups(records) }
+    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG) }
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = MaterialTheme.colorScheme.background,
+    ) {
+        Column(Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
+            Text(
+                stringResource(R.string.viewer_date_grid_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 28.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.fillMaxSize().testTag("image-date-grid"),
+            ) {
+                groups.forEach { group ->
+                    item(span = { GridItemSpan(maxLineSpan) }, key = "date-${group.date}") {
+                        Text(
+                            group.date.format(dateFormatter),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 14.dp, bottom = 6.dp, start = 4.dp),
+                        )
+                    }
+                    gridItems(group.records, key = { it.id }) { record ->
+                        AsyncImage(
+                            model = File(record.filePath.orEmpty()),
+                            contentDescription = record.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxWidth().aspectRatio(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .border(
+                                    BorderStroke(
+                                        if (record.id == selectedId) 3.dp else 1.dp,
+                                        if (record.id == selectedId) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.outlineVariant,
+                                    ),
+                                    RoundedCornerShape(10.dp),
+                                )
+                                .clickable { onSelect(record) }
+                                .testTag("date-grid-${record.id}"),
+                        )
+                    }
+                }
+            }
         }
     }
 }
