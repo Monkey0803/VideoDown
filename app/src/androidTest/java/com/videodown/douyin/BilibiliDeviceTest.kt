@@ -250,6 +250,25 @@ class BilibiliDeviceTest {
         }
     }
 
+    /**
+     * E4 在线验收：真实 B 站页面的字幕表里不能出现 `danmaku`。
+     *
+     * `-Pandroid.testInstrumentationRunnerArguments.live_bilibili=<链接>` 时执行，默认跳过。
+     * 只做解析，不下载字幕，避免为一条断言花掉整段视频的流量。
+     */
+    @Test fun liveBilibiliSubtitlesExposeOnlyTextTracks() = runBlocking {
+        val url = InstrumentationRegistry.getArguments().getString("live_bilibili")
+        org.junit.Assume.assumeTrue("Pass live_bilibili to enable a real Bilibili subtitle check", !url.isNullOrBlank())
+        val result = com.videodown.douyin.core.ServiceLocator.videoRepository.parseVideos(url!!)
+        assertTrue("Bilibili parse failed: $result", result is AppResult.Success)
+        val video = (result as AppResult.Success).value.selectedVideo
+        assertTrue("danmaku must never be offered as a subtitle", video.subtitleLanguages.none { it.equals("danmaku", true) })
+        assertTrue("danmaku must never be offered as a caption", video.autoCaptionLanguages.none { it.equals("danmaku", true) })
+        val summary = "bilibili subtitles: ${video.subtitleLanguages} captions: ${video.autoCaptionLanguages}"
+        println(summary)
+        instrumentation.sendStatus(0, Bundle().apply { putString("stream", "$summary\n") })
+    }
+
     /** 在线验收：`-Pandroid.testInstrumentationRunnerArguments.live_bilibili=<公开视频链接>`。 */
     @Test fun liveBilibiliParseProducesDownloadableVariants() = runBlocking {
         val url = InstrumentationRegistry.getArguments().getString("live_bilibili")

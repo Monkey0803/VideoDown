@@ -25,6 +25,18 @@ internal fun languages(value: JsonElement?): List<String> = when (value) {
     else -> emptyList()
 }.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
 
+/**
+ * 只保留可以下载/内嵌的**文本**字幕语言。
+ *
+ * yt-dlp 会把 B 站的 `danmaku`（弹幕 XML）也列进字幕表；它不是文本字幕，内嵌进视频只会得到
+ * 一条无意义的轨，所以在这里统一过滤。直播聊天等同理。过滤放在解析层，界面与引擎都不会再看到它们。
+ */
+internal fun textSubtitleLanguages(value: JsonElement?): List<String> =
+    languages(value).filterNot { it.lowercase() in NON_TEXT_SUBTITLE_TRACKS }
+
+/** 已知的非文本字幕轨：弹幕、直播聊天、评论。 */
+private val NON_TEXT_SUBTITLE_TRACKS = setOf("danmaku", "live_chat", "comments")
+
 class GenericMetadataParser {
     fun parse(info: JsonObject, pageUrl: String, browserSession: Boolean = false, userAgent: String? = null): ParsedVideos {
         val entries = info["entries"] as? JsonArray
@@ -92,7 +104,8 @@ class GenericMetadataParser {
                 webUrl(item.text("thumbnail")), ((item.number("duration") ?: 0.0) * 1000).toLong(),
                 DouyinAuthor(nickname = item.text("uploader").orEmpty(), platform = VideoPlatform.GENERIC),
                 variants, page, VideoPlatform.GENERIC, audioVariants = audioVariants,
-                subtitleLanguages = languages(item["subtitles"]), autoCaptionLanguages = languages(item["automatic_captions"]))
+                subtitleLanguages = textSubtitleLanguages(item["subtitles"]),
+                autoCaptionLanguages = textSubtitleLanguages(item["automatic_captions"]))
         }.distinctBy { it.awemeId to it.shareUrl }
         require(videos.isNotEmpty()) { AppText.get(R.string.generic_parse_no_video) }
         return ParsedVideos(videos)

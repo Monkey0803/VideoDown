@@ -301,7 +301,14 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
   CookieManager 识别与导出、清除后立即未登录），`BilibiliDeviceTest` 7 条通过（新增 3 条会话顺序用例）
   加 3 条在线用例按前提跳过。**未覆盖**：真实账号登录、登录后画质差异、大会员/付费内容的否定性验证、
   `SESSDATA` 过期探测均未自动化；只访问正常网页可播放内容靠代码约束。
-- [ ] **E4 字幕与验证** — 只暴露可下载/嵌入的文本字幕，过滤 `danmaku` XML；补齐 JVM、设备和默认跳过的 `live_bilibili` 在线验收，并在 `docs/validation/` 留证后才能勾选。
+- [x] **E4 字幕与验证**（2026-11-17 完成，证据见 [验收记录](validation/bilibili-e4-2026-11-17.md)）—
+  `GenericMetadataParser.textSubtitleLanguages` 在解析层过滤 `danmaku` / `live_chat` / `comments`，
+  同时作用于真实字幕与机器字幕，界面和引擎请求都不再出现弹幕；文本字幕的下载/内嵌沿用 C2 路径。
+  JVM 661 例通过（新增过滤 3 例）；设备用例在真实公开视频（运行时参数，链接不入库）下断言
+  `subtitleLanguages` / `autoCaptionLanguages` 不含 `danmaku`（8.1 秒），连同 E1/E2 的在线解析与
+  真实下载验收一起留证；默认跳过的 `live_bilibili*` 入口齐全。
+  **未覆盖**：B 站真实字幕的下载与内嵌未实测；只过滤已知的非文本轨；多 P 合集与真实 `b23.tv`
+  仍缺链接；平板/折叠屏与 API 26/28 未验证。
 
 ## 已具备（勿重复立项）
 
