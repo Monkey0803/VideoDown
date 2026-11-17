@@ -131,6 +131,8 @@ class XLoginSessionDeviceTest {
         }
         compose.onNodeWithText(context.getString(R.string.settings_x_login_row)).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(signedInLabel).assertExists()
+        compose.onNodeWithText(context.getString(R.string.settings_x_login_note)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.settings_clear_session_scope)).performScrollTo().assertIsDisplayed()
     }
 
     @Test fun settingsRowReportsStoredSession() {
@@ -162,7 +164,7 @@ class XLoginSessionDeviceTest {
         compose.onNode(hasSetTextAction()).performScrollTo().performTextReplacement(TWEET)
         compose.onNodeWithText(context.getString(R.string.home_parse_now)).performClick()
         compose.waitUntil(20_000) { vm.state.value.error != null && !vm.state.value.isParsing }
-        compose.onNodeWithText(context.getString(R.string.x_login_action)).performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.x_relogin_action)).performScrollTo().performClick()
         compose.waitUntil(10_000) {
             compose.onAllNodes(hasTestTag(X_LOGIN_STATUS_TAG)).fetchSemanticsNodes().isNotEmpty()
         }
@@ -173,6 +175,25 @@ class XLoginSessionDeviceTest {
         compose.waitUntil(20_000) { vm.state.value.video != null }
         assertEquals("登录后应当用同一份输入重试一次", 2, parsed.size)
         compose.onNodeWithText(fixtureVideo.title).assertExists()
+    }
+
+    @Test fun accessDeniedKeepsLoginRecoveryWordingNeutral() {
+        val accessDeniedRepository = object : VideoRepository {
+            override suspend fun parseShareText(shareText: String) =
+                AppResult.Failure(AppError.Parse("", DownloadFailureKind.ACCESS_DENIED, platform = VideoPlatform.X))
+        }
+        val vm = HomeViewModel(accessDeniedRepository, downloader, { it.defaultVariant })
+        models.put("access-denied", vm)
+        compose.setContent {
+            VideoDownTheme {
+                HomeScreen(null, {}, {}, {}, {}, emptyList(), vm, xLoginStartUrl = "about:blank")
+            }
+        }
+        compose.onNode(hasSetTextAction()).performScrollTo().performTextReplacement(TWEET)
+        compose.onNodeWithText(context.getString(R.string.home_parse_now)).performClick()
+        compose.waitUntil(20_000) { vm.state.value.errorKind == DownloadFailureKind.ACCESS_DENIED }
+        compose.onNodeWithText(context.getString(R.string.x_check_login_access_action)).performScrollTo().assertIsDisplayed()
+        compose.onAllNodesWithText(context.getString(R.string.x_relogin_action)).assertCountEquals(0)
     }
 
     companion object {

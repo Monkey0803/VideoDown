@@ -679,7 +679,11 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             Text(engineVersion, modifier = Modifier.padding(horizontal = AppSpacing.md, vertical = AppSpacing.xs), style = MaterialTheme.typography.labelMedium)
             SettingsRow(icon = { AppIcon(AppIcons.Profile, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_x_login_row),
-                value = stringResource(if (xSignedIn == true) R.string.settings_x_login_signed_in else R.string.settings_x_login_signed_out),
+                value = stringResource(when (xSignedIn) {
+                    true -> R.string.settings_x_login_signed_in
+                    false -> R.string.settings_x_login_signed_out
+                    null -> R.string.settings_x_login_checking
+                }),
                 onClick = { showXLogin = true })
             Text(stringResource(R.string.settings_x_login_note), color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = AppSpacing.md, vertical = AppSpacing.xxs))
@@ -692,6 +696,8 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                         }
                     }
                 })
+            Text(stringResource(R.string.settings_clear_session_scope), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = AppSpacing.md, vertical = AppSpacing.xxs))
         }
         }
         SettingsPage.BACKUP_STORAGE -> {

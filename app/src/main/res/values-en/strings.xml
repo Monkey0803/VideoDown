@@ -146,7 +146,9 @@
     <string name="settings_x_login_row">X (Twitter) sign-in</string>
     <string name="settings_x_login_signed_in">Signed in</string>
     <string name="settings_x_login_signed_out">Not signed in</string>
-    <string name="settings_x_login_note">The session stays on this device and X decides how long it lasts; when it stops working, parsing asks you to sign in again.</string>
+    <string name="settings_x_login_checking">Checking…</string>
+    <string name="settings_x_login_note">Used for X (Twitter) parsing. The session stays inside Keepsake and X decides how long it lasts; accounts in external browsers such as Chrome are not read.</string>
+    <string name="settings_clear_session_scope">Clears web sign-ins for every site inside Keepsake; accounts in external browsers such as Chrome are not affected.</string>
     <string name="settings_concurrency_title">Simultaneous downloads</string>
     <string name="settings_concurrency_body">Running tasks continue; after lowering the number, new tasks wait for a free slot. Downloading, merging, verifying and retrying all take a slot.</string>
     <string name="settings_concurrency_count">%1$d tasks</string>
@@ -637,8 +639,10 @@
 
     <!-- X sign-in -->
     <string name="x_login_action">Sign in to X and retry</string>
+    <string name="x_relogin_action">Sign in to X again and retry</string>
+    <string name="x_check_login_access_action">Check sign-in and access</string>
     <string name="x_login_title">Sign in to X (Twitter)</string>
-    <string name="x_login_hint">Sign in on the page below; the session stays on this device and X decides how long it lasts.</string>
+    <string name="x_login_hint">This sign-in is used only for X (Twitter) parsing. It stays inside Keepsake and does not read accounts from external browsers; X decides how long it lasts.</string>
     <string name="x_login_checking">Checking the sign-in state…</string>
     <string name="x_login_signed_in">Signed in; you can finish</string>
     <string name="x_login_signed_out">Not signed in yet; complete the sign-in on the page below</string>

@@ -64,3 +64,26 @@
 证据：本轮截图和 UI hierarchy 保存在 `/tmp/videodown-talkback-*`、`/tmp/videodown-font200-*`、`/tmp/videodown-tablet-*`、`/tmp/videodown-fold-*` 与 `/tmp/videodown-debug-split-*`。模拟器结束后已恢复 1280×2856 / 480 dpi、字体倍率 1.0、TalkBack 关闭和单窗口状态。
 
 未覆盖边界：当前 AVD 只提供 `DEFAULT` device state，因此折叠屏验证覆盖展开/外屏窗口尺寸变化，不覆盖铰链角度与半折叠姿态；物理设备、OEM 差异仍未覆盖，但不阻塞 G5。按用户要求，不验证外接键盘按键和键盘焦点顺序。
+
+## G6 登录态表达与重新登录
+
+- 「网站与账号」页把 X 登录态明确分成检查中、已登录和未登录，并说明它只适用于 X 解析。
+- 登录页和设置页均说明 Cookie 只保存在拾影内，不读取 Chrome 等外部浏览器账号。
+- 清除入口明确说明会清除拾影内所有网站的网页登录态，但不影响外部浏览器；原有二次确认继续展示受影响任务数。
+- X 明确返回需要登录且本机已有 Cookie 时，解析页优先显示「重新登录 X 后重试」；没有 Cookie 时显示「登录 X 后重试」。
+- X 返回访问受限时，入口使用「检查登录与访问权限」，不把地址失效、Cookie 过期和账号无权访问误判成其中任一种。
+
+验证：
+
+```text
+./gradlew testDebugUnitTest --tests \
+  com.videodown.douyin.presentation.login.XLoginRecoveryPolicyTest \
+  compileDebugAndroidTestKotlin
+
+./gradlew connectedDebugAndroidTest -Pabi=universal \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.videodown.douyin.XLoginSessionDeviceTest
+```
+
+结果：JVM 策略测试通过；Pixel 10 Pro AVD、Android 17 / API 37 上 7 条离线设备用例通过。设备用例通过系统 `CookieManager` 注入测试 Cookie，并使用 `about:blank` 代替真实登录页，没有访问真实 X 账号或下载受保护内容。
+
+未覆盖边界：没有使用真实 X 账号验证登录页、Cookie 过期和受保护推文；App 只能检测关键 Cookie 是否存在，最终有效期和内容访问权限仍由 X 服务端决定，因此界面不会声称已确认账号有效。

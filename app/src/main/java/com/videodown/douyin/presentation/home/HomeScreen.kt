@@ -55,6 +55,8 @@ import com.videodown.douyin.domain.model.VideoPlatform
 import com.videodown.douyin.domain.model.failureActions
 import com.videodown.douyin.domain.model.DownloadFailureKind
 import com.videodown.douyin.presentation.login.XLoginScreen
+import com.videodown.douyin.presentation.login.XLoginRecoveryAction
+import com.videodown.douyin.presentation.login.xLoginRecoveryAction
 import com.videodown.douyin.presentation.appErrorText
 import com.videodown.douyin.presentation.failureDescription
 import com.videodown.douyin.presentation.failureTitle
@@ -176,6 +178,7 @@ fun HomeScreen(
     var inputFocused by remember { mutableStateOf(false) }
     var showBrowser by remember(state.parseRequestId) { mutableStateOf(false) }
     var showXLogin by remember(state.parseRequestId) { mutableStateOf(false) }
+    var xSessionDetected by remember(state.parseRequestId) { mutableStateOf<Boolean?>(null) }
     var showBatchImport by rememberSaveable { mutableStateOf(false) }
     if (showBatchImport) BatchImportDialog(batchImportModel, { showBatchImport = false }, onOpenHistory)
     LaunchedEffect(openBatchImport) {
@@ -192,6 +195,14 @@ fun HomeScreen(
         if (state.browserRequestUrl != null) { showBrowser = true; viewModel.onBrowserRequestConsumed() }
     }
     val browserUrl = com.videodown.douyin.data.remote.VideoLinkExtractor.extract(state.input)?.url
+    val inputPlatform = VideoLinkExtractor.extract(state.input)?.platform
+    LaunchedEffect(state.errorKind, inputPlatform) {
+        xSessionDetected = if (inputPlatform == VideoPlatform.X && state.errorKind == DownloadFailureKind.LOGIN_REQUIRED) {
+            runCatching { ServiceLocator.browserSessions.xSignedIn() }.getOrDefault(false)
+        } else {
+            null
+        }
+    }
     BackHandler(enabled = state.video != null && !showBrowser) {
         viewModel.clearResult()
     }
@@ -442,16 +453,15 @@ fun HomeScreen(
                                 }) { Text(if (action == RecoveryAction.RETRY) stringResource(R.string.home_retry_parse) else recoveryActionLabel(action)) }
                             }
                         }
-                        // X 的登录态是「登录一次、之后自动复用」的：失败时给一个直达登录网页的入口。
-                        val xLink = VideoLinkExtractor.extract(state.input)?.platform == VideoPlatform.X
-                        val xLoginHelps = state.errorKind.let {
-                            it == DownloadFailureKind.LOGIN_REQUIRED || it == DownloadFailureKind.ACCESS_DENIED ||
-                                it == DownloadFailureKind.UNKNOWN
-                        }
-                        if (xLink && xLoginHelps) {
+                        // Cookie 存在不代表仍有访问权限：明确缺少登录时优先重登，403 只给中性检查入口。
+                        xLoginRecoveryAction(inputPlatform, state.errorKind, xSessionDetected)?.let { action ->
                             TextButton(contentPadding = PaddingValues(vertical = 8.dp), enabled = !state.isParsing,
                                 onClick = { dismissKeyboard(); showXLogin = true }) {
-                                Text(stringResource(R.string.x_login_action))
+                                Text(stringResource(when (action) {
+                                    XLoginRecoveryAction.SIGN_IN_AND_RETRY -> R.string.x_login_action
+                                    XLoginRecoveryAction.REAUTHENTICATE_AND_RETRY -> R.string.x_relogin_action
+                                    XLoginRecoveryAction.CHECK_SIGN_IN_AND_ACCESS -> R.string.x_check_login_access_action
+                                }))
                             }
                         }
                         TextButton(contentPadding = PaddingValues(vertical = 8.dp), onClick = { dismissKeyboard(); showBatchImport = true }) {
