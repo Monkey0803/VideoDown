@@ -40,3 +40,38 @@ internal suspend fun applySettingsBackup(
     }
     return applied
 }
+
+/**
+ * 在真正写入前计算会发生的变化，供恢复确认框展示。
+ *
+ * 这里只比较备份实际携带且清洗后仍有效的字段；缺失或非法字段继续保持当前值。
+ */
+internal fun previewSettingsBackup(
+    incoming: SettingsSnapshot,
+    current: SettingsSnapshot,
+    libraryOrderChanges: Boolean,
+): List<SettingsChange> {
+    val next = incoming.sanitized()
+    val changes = mutableListOf<SettingsChange>()
+    fun <T> changed(value: T?, currentValue: T?, change: SettingsChange) {
+        if (value != null && value != currentValue) changes += change
+    }
+    changed(next.themeMode, current.themeMode, SettingsChange.THEME_MODE)
+    changed(next.preferredQuality, current.preferredQuality, SettingsChange.PREFERRED_QUALITY)
+    changed(next.libraryLayout, current.libraryLayout, SettingsChange.LIBRARY_LAYOUT)
+    changed(next.librarySort, current.librarySort, SettingsChange.LIBRARY_SORT)
+    changed(next.maxConcurrentDownloads, current.maxConcurrentDownloads, SettingsChange.CONCURRENCY)
+    changed(next.globalSpeedLimitKbps, current.globalSpeedLimitKbps, SettingsChange.SPEED_LIMIT)
+    changed(next.dynamicColor, current.dynamicColor, SettingsChange.DYNAMIC_COLOR)
+    changed(next.wifiOnly, current.wifiOnly, SettingsChange.WIFI_ONLY)
+    changed(next.autoResume, current.autoResume, SettingsChange.AUTO_RESUME)
+    changed(next.notifyOnCompletion, current.notifyOnCompletion, SettingsChange.NOTIFY_ON_COMPLETION)
+    changed(next.individualTaskNotifications, current.individualTaskNotifications, SettingsChange.INDIVIDUAL_NOTIFICATIONS)
+    changed(next.clipboardDetect, current.clipboardDetect, SettingsChange.CLIPBOARD_DETECT)
+    changed(next.autoSaveToGallery, current.autoSaveToGallery, SettingsChange.AUTO_SAVE_TO_GALLERY)
+    changed(next.subtitlesEnabled, current.subtitlesEnabled, SettingsChange.SUBTITLES)
+    changed(next.playlistParsing, current.playlistParsing, SettingsChange.PLAYLIST_PARSING)
+    changed(next.updateManifestUrl, current.updateManifestUrl, SettingsChange.UPDATE_SOURCE)
+    if (libraryOrderChanges) changes += SettingsChange.LIBRARY_ORDER
+    return changes
+}

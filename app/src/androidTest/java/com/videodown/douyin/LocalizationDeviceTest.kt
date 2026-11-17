@@ -75,7 +75,7 @@ class LocalizationDeviceTest {
         openSettings()
         val alreadyOpen = countOf("当前版本：") + countOf("Installed: ")
         if (alreadyOpen > 0) return
-        compose.onNodeWithTag("settings-open-storage").performClick()
+        compose.onNodeWithTag("settings-open-about").performScrollTo().performClick()
         // The settings row itself is migrated, so its label depends on the current language.
         val label = if (compose.onAllNodesWithText("Check for updates").fetchSemanticsNodes().isNotEmpty()) "Check for updates" else "检查更新"
         compose.onNodeWithText(label).performScrollTo().performClick()

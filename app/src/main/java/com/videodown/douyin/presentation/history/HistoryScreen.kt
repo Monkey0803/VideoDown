@@ -437,6 +437,7 @@ private fun TaskCard(
     val guidance = issue?.let(::failureActions)
     val position = state.queue.position(record.id)
     val hasSourcePage = record.sourcePageUrl.isNotBlank() || !record.media?.pageUrl.isNullOrBlank()
+    var moreExpanded by remember(record.id) { mutableStateOf(false) }
     fun canRecover(action: RecoveryAction): Boolean = action != RecoveryAction.NONE &&
         (action !in setOf(RecoveryAction.BROWSER, RecoveryAction.REPARSE) || hasSourcePage)
     Card(
@@ -520,9 +521,58 @@ private fun TaskCard(
                             else -> guidance?.primary?.let { recoveryActionLabel(it) } ?: stringResource(R.string.action_resume)
                         }, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(17.dp))
                 }
-                IconButton(onClick = onDelete, enabled = !state.batchBusy, modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.small)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
-                    AppIcon(AppIcons.Delete, stringResource(R.string.action_delete), tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(17.dp))
+                Box {
+                    IconButton(onClick = { moreExpanded = true }, enabled = !state.batchBusy,
+                        modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest).testTag("task-more-${record.id}")) {
+                        AppIcon(AppIcons.More, stringResource(R.string.history_more_actions),
+                            tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(18.dp))
+                    }
+                    DropdownMenu(expanded = moreExpanded, onDismissRequest = { moreExpanded = false }) {
+                        if (status != DownloadStatus.COMPLETED) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.history_set_limit)) },
+                                leadingIcon = { AppIcon(AppIcons.Speed, null, modifier = Modifier.size(18.dp)) },
+                                onClick = { moreExpanded = false; onSpeedLimit() },
+                            )
+                        }
+                        if (status == DownloadStatus.COMPLETED) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_share)) },
+                                leadingIcon = { AppIcon(AppIcons.Share, null, modifier = Modifier.size(18.dp)) },
+                                onClick = { moreExpanded = false; onShare() },
+                            )
+                        }
+                        if (status != DownloadStatus.RUNNING && status != DownloadStatus.PENDING && guidance?.primary != RecoveryAction.NONE) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_retry_download)) },
+                                leadingIcon = { AppIcon(AppIcons.Retry, null, modifier = Modifier.size(18.dp)) },
+                                onClick = { moreExpanded = false; onRestart() },
+                            )
+                        }
+                        position?.let { queuedPosition ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.history_move_up)) },
+                                enabled = queuedPosition > 1,
+                                onClick = { moreExpanded = false; onMove(-1) },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.history_move_down)) },
+                                enabled = queuedPosition < state.queue.pendingIds.size,
+                                onClick = { moreExpanded = false; onMove(1) },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.history_move_top)) },
+                                enabled = queuedPosition > 1,
+                                onClick = { moreExpanded = false; onMove(-Int.MAX_VALUE) },
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) },
+                            leadingIcon = { AppIcon(AppIcons.Delete, null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.error) },
+                            onClick = { moreExpanded = false; onDelete() },
+                        )
+                    }
                 }
                 }
             }
@@ -561,11 +611,6 @@ private fun TaskCard(
             }
             if (position != null) {
                 Text(stringResource(R.string.history_queued_position, position), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 8.dp))
-                if (!selecting) LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    item { TextButton(onClick = { onMove(-1) }, enabled = position > 1 && !state.batchBusy) { Text(stringResource(R.string.history_move_up)) } }
-                    item { TextButton(onClick = { onMove(1) }, enabled = position < state.queue.pendingIds.size && !state.batchBusy) { Text(stringResource(R.string.history_move_down)) } }
-                    item { TextButton(onClick = { onMove(-Int.MAX_VALUE) }, enabled = position > 1 && !state.batchBusy) { Text(stringResource(R.string.history_move_top)) } }
-                }
             }
             if (guidance != null) {
                 Text(failureTitle(issue), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 8.dp))
@@ -590,24 +635,6 @@ private fun TaskCard(
                     meta,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (!selecting && status != DownloadStatus.COMPLETED) {
-                    IconButton(onClick = onSpeedLimit, enabled = !state.batchBusy, modifier = Modifier.size(48.dp)) {
-                        AppIcon(AppIcons.Speed,
-                            record.speedLimitKbps.takeIf { it > 0 }
-                                ?.let { stringResource(R.string.history_limit_label, speedLimitText(it)) } ?: stringResource(R.string.history_set_limit),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(17.dp))
-                    }
-                }
-                if (!selecting && status == DownloadStatus.COMPLETED) {
-                    IconButton(onClick = onShare, enabled = !state.batchBusy, modifier = Modifier.size(48.dp)) {
-                        AppIcon(AppIcons.Share, stringResource(R.string.action_share), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(17.dp))
-                    }
-                }
-                if (!selecting && status != DownloadStatus.RUNNING && status != DownloadStatus.PENDING && guidance?.primary != RecoveryAction.NONE) {
-                    IconButton(onClick = onRestart, enabled = !state.batchBusy, modifier = Modifier.size(48.dp)) {
-                        AppIcon(AppIcons.Retry, stringResource(R.string.action_retry_download), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(17.dp))
-                    }
-                }
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -189,7 +190,8 @@ class SpeedLimitDeviceTest {
 
                 compose.onNodeWithText("任务").performClick()
                 compose.waitUntil(15_000) { compose.onAllNodesWithText(title).fetchSemanticsNodes().isNotEmpty() }
-                compose.onNodeWithContentDescription("设置限速").performClick()
+                compose.onNodeWithTag("task-more-$id").performClick()
+                compose.onNodeWithText("设置限速").performClick()
                 compose.waitForIdle()
                 compose.onNodeWithText("单任务限速").assertExists()
                 compose.onNodeWithText("5 MB/s").performClick()
@@ -201,10 +203,9 @@ class SpeedLimitDeviceTest {
 
                 // The cap is visible on the card and the action now reports the active limit.
                 compose.waitUntil(10_000) { compose.onAllNodesWithText("限速 5 MB/s", substring = true).fetchSemanticsNodes().isNotEmpty() }
-                compose.waitUntil(10_000) { compose.onAllNodesWithContentDescription("限速 5 MB/s").fetchSemanticsNodes().isNotEmpty() }
-
                 // Choosing 跟随全局 clears it again.
-                compose.onNodeWithContentDescription("限速 5 MB/s").performClick()
+                compose.onNodeWithTag("task-more-$id").performClick()
+                compose.onNodeWithText("设置限速").performClick()
                 compose.waitForIdle()
                 compose.onNodeWithText("跟随全局").performClick()
                 withTimeout(10_000) {

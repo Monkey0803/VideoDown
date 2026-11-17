@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import com.videodown.douyin.R
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.presentation.history.HistoryUiState
+import com.videodown.douyin.presentation.theme.AppSpacing
 
 /** 全局下载条当前最值得用户处理的状态；完成记录本身留在任务页和已存页。 */
 internal enum class DownloadCenterKind { ACTIVE, FAILED, PAUSED, COMPLETED }
@@ -32,6 +34,8 @@ internal data class DownloadCenterSummary(
     val kind: DownloadCenterKind,
     val count: Int,
     val progress: Float? = null,
+    val failedCount: Int = 0,
+    val pausedCount: Int = 0,
 )
 
 /**
@@ -41,41 +45,66 @@ internal data class DownloadCenterSummary(
  */
 internal fun downloadCenterSummary(
     records: List<DownloadRecord>,
+    failedCount: Int = 0,
+    pausedCount: Int = 0,
     completedCount: Int = 0,
     statusOf: (DownloadRecord) -> DownloadStatus = DownloadRecord::status,
-    fractionOf: (DownloadRecord) -> Float = DownloadRecord::progressFraction,
+    downloadedOf: (DownloadRecord) -> Long = DownloadRecord::downloadedBytes,
+    totalOf: (DownloadRecord) -> Long = DownloadRecord::totalBytes,
 ): DownloadCenterSummary? {
     val active = records.filter { statusOf(it) in setOf(DownloadStatus.RUNNING, DownloadStatus.PENDING) }
     if (active.isNotEmpty()) {
-        val measurable = active.mapNotNull { record ->
-            fractionOf(record).takeIf { record.totalBytes > 0L || it > 0f }
-        }
+        val measurable = active.all { totalOf(it) > 0L }
+        val total = if (measurable) active.sumOf(totalOf) else 0L
+        val downloaded = if (measurable) active.sumOf { downloadedOf(it).coerceIn(0L, totalOf(it)) } else 0L
         return DownloadCenterSummary(
             kind = DownloadCenterKind.ACTIVE,
             count = active.size,
-            progress = measurable.takeIf(List<Float>::isNotEmpty)?.average()?.toFloat()?.coerceIn(0f, 1f),
+            progress = total.takeIf { it > 0L }?.let { (downloaded.toDouble() / it).toFloat().coerceIn(0f, 1f) },
+            failedCount = failedCount,
+            pausedCount = pausedCount,
         )
     }
-    val failed = records.count { statusOf(it) == DownloadStatus.FAILED }
-    if (failed > 0) return DownloadCenterSummary(DownloadCenterKind.FAILED, failed)
-    val paused = records.count { statusOf(it) == DownloadStatus.PAUSED }
-    if (paused > 0) return DownloadCenterSummary(DownloadCenterKind.PAUSED, paused)
+    if (failedCount > 0) return DownloadCenterSummary(DownloadCenterKind.FAILED, failedCount, pausedCount = pausedCount)
+    if (pausedCount > 0) return DownloadCenterSummary(DownloadCenterKind.PAUSED, pausedCount)
     return completedCount.takeIf { it > 0 }?.let { DownloadCenterSummary(DownloadCenterKind.COMPLETED, it) }
 }
 
 @Composable
-internal fun DownloadCenterBar(state: HistoryUiState, completedCount: Int, onOpenTasks: () -> Unit) {
-    val summary = downloadCenterSummary(state.records, completedCount, state::statusFor, state::fractionFor) ?: return
+internal fun DownloadCenterBar(
+    state: HistoryUiState,
+    failedCount: Int,
+    pausedCount: Int,
+    completedCount: Int,
+    onOpenTasks: () -> Unit,
+    onOpenLibrary: () -> Unit,
+    onDismissResults: () -> Unit,
+) {
+    val summary = downloadCenterSummary(
+        records = state.records,
+        failedCount = failedCount,
+        pausedCount = pausedCount,
+        completedCount = completedCount,
+        statusOf = state::statusFor,
+        downloadedOf = state::downloadedFor,
+        totalOf = state::totalFor,
+    ) ?: return
     val title = when (summary.kind) {
         DownloadCenterKind.ACTIVE -> stringResource(R.string.download_center_active, summary.count)
         DownloadCenterKind.FAILED -> stringResource(R.string.download_center_failed, summary.count)
         DownloadCenterKind.PAUSED -> stringResource(R.string.download_center_paused, summary.count)
         DownloadCenterKind.COMPLETED -> stringResource(R.string.download_center_completed, summary.count)
     }
-    val subtitle = when (summary.kind) {
-        DownloadCenterKind.ACTIVE -> summary.progress?.let {
+    val activeStatus = summary.progress?.let {
             stringResource(R.string.download_center_progress, (it * 100).toInt())
         } ?: stringResource(R.string.download_center_preparing)
+    val attention = listOfNotNull(
+        summary.failedCount.takeIf { it > 0 }?.let { stringResource(R.string.download_center_failed_short, it) },
+        summary.pausedCount.takeIf { it > 0 }?.let { stringResource(R.string.download_center_paused_short, it) },
+    ).joinToString(stringResource(R.string.list_separator))
+    val subtitle = when (summary.kind) {
+        DownloadCenterKind.ACTIVE -> if (attention.isEmpty()) activeStatus
+            else stringResource(R.string.download_center_active_with_attention, activeStatus, attention)
         DownloadCenterKind.FAILED -> stringResource(R.string.download_center_failed_hint)
         DownloadCenterKind.PAUSED -> stringResource(R.string.download_center_paused_hint)
         DownloadCenterKind.COMPLETED -> stringResource(R.string.download_center_completed_hint)
@@ -86,25 +115,40 @@ internal fun DownloadCenterBar(state: HistoryUiState, completedCount: Int, onOpe
         DownloadCenterKind.PAUSED -> AppIcons.Pause
         DownloadCenterKind.COMPLETED -> AppIcons.Success
     }
+    val open = if (summary.kind == DownloadCenterKind.COMPLETED) onOpenLibrary else onOpenTasks
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         tonalElevation = 3.dp,
-        modifier = Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onOpenTasks)
-            .testTag("download-center"),
+        modifier = Modifier.fillMaxWidth().testTag("download-center"),
     ) {
         Column(Modifier.fillMaxWidth()) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp),
+                modifier = Modifier.fillMaxWidth().padding(
+                    start = AppSpacing.md,
+                    top = AppSpacing.xs,
+                    end = AppSpacing.xs,
+                    bottom = AppSpacing.xs,
+                ),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm),
             ) {
                 AppIcon(icon, null, Modifier.size(22.dp), tint = MaterialTheme.colorScheme.primary)
-                Column(Modifier.weight(1f)) {
+                Column(Modifier.weight(1f).clickable(role = Role.Button, onClick = open)
+                    .padding(vertical = AppSpacing.xxs)) {
                     Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
                     Text(subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                AppIcon(AppIcons.Forward, stringResource(R.string.home_view_tasks), Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (summary.kind == DownloadCenterKind.ACTIVE) {
+                    IconButton(onClick = open, modifier = Modifier.size(48.dp)) {
+                        AppIcon(AppIcons.Forward, stringResource(R.string.home_view_tasks), Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else {
+                    IconButton(onClick = onDismissResults, modifier = Modifier.size(48.dp).testTag("download-center-dismiss")) {
+                        AppIcon(AppIcons.Close, stringResource(R.string.action_close), Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             }
             if (summary.kind == DownloadCenterKind.ACTIVE && summary.progress != null) {
                 LinearProgressIndicator(

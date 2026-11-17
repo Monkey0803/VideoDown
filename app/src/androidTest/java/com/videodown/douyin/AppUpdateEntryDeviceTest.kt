@@ -110,7 +110,7 @@ class AppUpdateEntryDeviceTest {
     }
 
     private fun openUpdateEntry(label: String = "检查更新") {
-        compose.onNodeWithTag("settings-open-storage").performClick()
+        compose.onNodeWithTag("settings-open-about").performScrollTo().performClick()
         compose.onNodeWithText(label).performScrollTo().assertIsDisplayed().performClick()
     }
 

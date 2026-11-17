@@ -29,8 +29,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
@@ -42,6 +45,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
@@ -60,9 +67,13 @@ import com.videodown.douyin.domain.model.DownloadStatus
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavType
@@ -87,6 +98,7 @@ import com.videodown.douyin.core.DouyinIntents
 import java.io.File
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.ThemeMode
+import com.videodown.douyin.presentation.theme.NavigationRailBreakpoint
 
 class MainActivity : ComponentActivity() {
     private var sharedText by mutableStateOf<String?>(null)
@@ -330,6 +342,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     var requestedStorage by remember { mutableStateOf(false) }
     val historyState by historyViewModel.state.collectAsStateWithLifecycle()
     var completedInSession by rememberSaveable { mutableStateOf(0) }
+    var attentionStatuses by remember { mutableStateOf<Map<String, DownloadStatus>>(emptyMap()) }
     var statusBaselineReady by remember { mutableStateOf(false) }
     val observedStatuses = remember { mutableMapOf<String, DownloadStatus>() }
     val statusSnapshot = historyState.records.associate { it.id to historyState.statusFor(it) }
@@ -346,6 +359,17 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                     setOf(DownloadStatus.PENDING, DownloadStatus.RUNNING)
             }
             if (newCompletions > 0) completedInSession += newCompletions
+            val changedAttention = attentionStatuses.toMutableMap()
+            changedAttention.keys.retainAll(statusSnapshot.keys)
+            statusSnapshot.forEach { (id, status) ->
+                if (observedStatuses[id] != status) {
+                    when (status) {
+                        DownloadStatus.FAILED, DownloadStatus.PAUSED -> changedAttention[id] = status
+                        DownloadStatus.PENDING, DownloadStatus.RUNNING, DownloadStatus.COMPLETED -> changedAttention.remove(id)
+                    }
+                }
+            }
+            attentionStatuses = changedAttention
             observedStatuses.putAll(statusSnapshot)
         }
     }
@@ -376,11 +400,20 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     val tabTags = listOf("tab-parse", "tab-tasks", "tab-library", "tab-settings")
     val icons = listOf(AppIcons.Parse, AppIcons.Tasks, AppIcons.Library, AppIcons.Profile)
     val selectedIcons = listOf(AppIcons.ParseSelected, AppIcons.TasksSelected, AppIcons.LibrarySelected, AppIcons.ProfileSelected)
+    val failedAttentionCount = attentionStatuses.values.count { it == DownloadStatus.FAILED }
+    val pausedAttentionCount = attentionStatuses.values.count { it == DownloadStatus.PAUSED }
+    val unseenResultCount = attentionStatuses.size + completedInSession
+    val wideNavigation = LocalConfiguration.current.screenWidthDp.dp >= NavigationRailBreakpoint
+
+    fun clearDownloadResults() {
+        attentionStatuses = emptyMap()
+        completedInSession = 0
+    }
 
     fun navigateTab(destination: String) {
         focusManager.clearFocus(force = true)
         keyboard?.hide()
-        if (destination == Routes.TASKS) completedInSession = 0
+        if (destination == Routes.TASKS) clearDownloadResults()
         if (route != destination) {
             navController.navigate(destination) {
                 popUpTo(Routes.HOME) { saveState = true }
@@ -439,9 +472,17 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
             if (route in tabs && !keyboardVisible) {
                 Column {
                     if (route != Routes.TASKS) {
-                        DownloadCenterBar(historyState, completedInSession, onOpenTasks = { navigateTab(Routes.TASKS) })
+                        DownloadCenterBar(
+                            state = historyState,
+                            failedCount = failedAttentionCount,
+                            pausedCount = pausedAttentionCount,
+                            completedCount = completedInSession,
+                            onOpenTasks = { navigateTab(Routes.TASKS) },
+                            onOpenLibrary = { completedInSession = 0; navigateTab(Routes.LIBRARY) },
+                            onDismissResults = ::clearDownloadResults,
+                        )
                     }
-                    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    if (!wideNavigation) NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                     // Tags make the tab bar addressable by tests without depending on the copy,
                     // which now follows the app language.
                     modifier = Modifier.testTag("tab-bar")) {
@@ -450,7 +491,15 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                             selected = route == destination,
                             onClick = { navigateTab(destination) },
                             modifier = Modifier.testTag(tabTags[index]),
-                            icon = { AppIcon(if (route == destination) selectedIcons[index] else icons[index], contentDescription = null) },
+                            icon = {
+                                if (destination == Routes.TASKS && unseenResultCount > 0) {
+                                    val badgeLabel = stringResource(R.string.download_center_badge, unseenResultCount)
+                                    BadgedBox(
+                                        badge = { Badge { Text(unseenResultCount.coerceAtMost(99).toString()) } },
+                                        modifier = Modifier.semantics { contentDescription = badgeLabel },
+                                    ) { AppIcon(if (route == destination) selectedIcons[index] else icons[index], null) }
+                                } else AppIcon(if (route == destination) selectedIcons[index] else icons[index], contentDescription = null)
+                            },
                             label = { Text(labels[index]) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -472,13 +521,40 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
         // 共享元素（已存封面 → 播放器封面）需要 SharedTransitionLayout 作祖先，作用域逐屏显式传下去。
         SharedTransitionLayout {
             val sharedTransitionScope = this
+            Box(Modifier.fillMaxSize()) {
+            if (wideNavigation && route in tabs && !keyboardVisible) {
+                NavigationRail(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    modifier = Modifier.align(Alignment.CenterStart).fillMaxHeight().width(80.dp).testTag("navigation-rail"),
+                ) {
+                    tabs.forEachIndexed { index, destination ->
+                        NavigationRailItem(
+                            selected = route == destination,
+                            onClick = { navigateTab(destination) },
+                            modifier = Modifier.testTag("rail-${tabTags[index]}").padding(vertical = 4.dp),
+                            icon = {
+                                if (destination == Routes.TASKS && unseenResultCount > 0) {
+                                    val badgeLabel = stringResource(R.string.download_center_badge, unseenResultCount)
+                                    BadgedBox(
+                                        badge = { Badge { Text(unseenResultCount.coerceAtMost(99).toString()) } },
+                                        modifier = Modifier.semantics { contentDescription = badgeLabel },
+                                    ) { AppIcon(if (route == destination) selectedIcons[index] else icons[index], null) }
+                                } else AppIcon(if (route == destination) selectedIcons[index] else icons[index], null)
+                            },
+                            label = { Text(labels[index]) },
+                        )
+                    }
+                }
+            }
             NavHost(
                 navController = navController,
                 startDestination = Routes.HOME,
                 modifier = if (route == Routes.PLAYER || route == Routes.IMAGE || route == Routes.STREAM) {
                     Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
                 } else {
-                    Modifier.padding(padding).consumeWindowInsets(padding).background(MaterialTheme.colorScheme.background)
+                    Modifier.padding(padding).consumeWindowInsets(padding)
+                        .padding(start = if (wideNavigation && route in tabs && !keyboardVisible) 80.dp else 0.dp)
+                        .background(MaterialTheme.colorScheme.background)
                 },
                 enterTransition = { fadeIn(motion.fast()) },
                 exitTransition = { fadeOut(motion.fast()) },
@@ -604,6 +680,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         onBack = { navController.popBackStack() },
                     )
                 }
+            }
             }
         }
     }

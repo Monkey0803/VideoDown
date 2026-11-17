@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 // Fixed warm palette follows the approved 拾影 brand; darker orange keeps small text readable.
 internal val LightColors = lightColorScheme(
@@ -63,7 +64,20 @@ private val AppShapes = Shapes(
     medium = RoundedCornerShape(12.dp), large = RoundedCornerShape(16.dp),
     extraLarge = RoundedCornerShape(28.dp),
 )
-private val AppTypography = Typography()
+private val DefaultTypography = Typography()
+private val AppTypography = Typography(
+    headlineMedium = DefaultTypography.headlineMedium.copy(lineHeight = 36.sp),
+    headlineSmall = DefaultTypography.headlineSmall.copy(lineHeight = 32.sp),
+    titleLarge = DefaultTypography.titleLarge.copy(lineHeight = 28.sp),
+    titleMedium = DefaultTypography.titleMedium.copy(lineHeight = 24.sp),
+    titleSmall = DefaultTypography.titleSmall.copy(lineHeight = 20.sp),
+    bodyLarge = DefaultTypography.bodyLarge.copy(lineHeight = 24.sp),
+    bodyMedium = DefaultTypography.bodyMedium.copy(lineHeight = 20.sp),
+    bodySmall = DefaultTypography.bodySmall.copy(lineHeight = 18.sp),
+    labelLarge = DefaultTypography.labelLarge.copy(lineHeight = 20.sp),
+    labelMedium = DefaultTypography.labelMedium.copy(lineHeight = 18.sp),
+    labelSmall = DefaultTypography.labelSmall.copy(lineHeight = 16.sp),
+)
 
 @Composable
 fun VideoDownTheme(

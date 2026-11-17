@@ -82,8 +82,14 @@ import com.videodown.douyin.core.ThemeMode
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.presentation.login.XLoginScreen
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
+import com.videodown.douyin.core.SettingsChange
+import com.videodown.douyin.data.backup.SavedOrder
+import com.videodown.douyin.data.backup.SettingsSnapshot
+import com.videodown.douyin.presentation.theme.AppSpacing
 
-private enum class SettingsPage { ROOT, APPEARANCE, DOWNLOAD_NETWORK, WEBSITES_ACCOUNTS, BACKUP_STORAGE }
+private enum class SettingsPage { ROOT, APPEARANCE, DOWNLOAD_NETWORK, WEBSITES_ACCOUNTS, BACKUP_STORAGE, ABOUT_UPDATE }
+
+private data class PendingSettingsRestore(val snapshot: SettingsSnapshot, val changes: List<SettingsChange>)
 
 @Composable
 fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {},
@@ -149,6 +155,8 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     val sessionScope = rememberCoroutineScope()
     var sessionMessage by remember { mutableStateOf<String?>(null) }
     var backupMessage by remember { mutableStateOf<String?>(null) }
+    var clearSessionTaskCount by remember { mutableStateOf<Int?>(null) }
+    var pendingRestore by remember { mutableStateOf<PendingSettingsRestore?>(null) }
     // X 登录态由 WebView 持有；这里只显示「本机现在有没有」，有效期交给 X 决定，不存过期时间。
     var showXLogin by remember { mutableStateOf(false) }
     var xSignedIn by remember { mutableStateOf<Boolean?>(null) }
@@ -188,14 +196,14 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             )
             if (snapshot == null) backupMessage = resources.getString(R.string.settings_backup_invalid)
             else {
-                // 设置与已存顺序一起落实（顺序挂在记录上，不在偏好设置里）。
-                val applied = applySettingsBackup(snapshot, preferences, ServiceLocator.historyRepository)
-                backupMessage = if (applied.isEmpty()) resources.getString(R.string.settings_backup_same)
-                    else resources.getString(R.string.settings_restored,
-                        // Each entry is a key; the list is worded from the values that were applied.
-                        applied.joinToString(resources.getString(R.string.list_separator)) {
-                            settingsChangeText(context, it, preferences)
-                        })
+                val records = ServiceLocator.historyRepository.snapshot()
+                val changes = previewSettingsBackup(
+                    incoming = snapshot,
+                    current = preferences.snapshot(SavedOrder.of(records)),
+                    libraryOrderChanges = SavedOrder.restorableOrder(records, snapshot.savedOrder) != null,
+                )
+                if (changes.isEmpty()) backupMessage = resources.getString(R.string.settings_backup_same)
+                else pendingRestore = PendingSettingsRestore(snapshot, changes)
             }
         }
     }
@@ -437,10 +445,63 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             onConfirm = { showAbout = false },
         )
     }
+    clearSessionTaskCount?.let { taskCount ->
+        AppConfirmDialog(
+            onDismissRequest = { clearSessionTaskCount = null },
+            icon = AppIcons.ClearSession,
+            title = stringResource(R.string.settings_clear_session_confirm_title),
+            body = stringResource(R.string.settings_clear_session_confirm_body, taskCount),
+            confirmText = stringResource(R.string.settings_clear_session_confirm_action),
+            onConfirm = {
+                clearSessionTaskCount = null
+                sessionScope.launch {
+                    ServiceLocator.historyRepository.snapshot().filter { it.media?.useBrowserSession == true &&
+                        it.status in setOf(com.videodown.douyin.domain.model.DownloadStatus.RUNNING, com.videodown.douyin.domain.model.DownloadStatus.PENDING)
+                    }.forEach { ServiceLocator.downloader.pause(it.id) }
+                    ServiceLocator.browserSessions.clear()
+                    sessionMessage = resources.getString(R.string.settings_session_cleared)
+                    refreshXSession()
+                }
+            },
+            dismissText = stringResource(R.string.action_cancel),
+            destructive = true,
+        )
+    }
+    pendingRestore?.let { restore ->
+        AppDialog(
+            onDismissRequest = { pendingRestore = null },
+            icon = AppIcons.Storage,
+            title = stringResource(R.string.settings_restore_confirm_title),
+            content = {
+                Text(stringResource(R.string.settings_restore_confirm_body, restore.changes.size),
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                restore.changes.forEach { change ->
+                    Text("• ${settingsChangeLabel(change)}", style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface)
+                }
+            },
+            actions = {
+                AppDialogButtonRow {
+                    TextButton(onClick = { pendingRestore = null }) { Text(stringResource(R.string.action_cancel)) }
+                    Spacer(Modifier.weight(1f))
+                    Button(onClick = {
+                        pendingRestore = null
+                        sessionScope.launch {
+                            val applied = applySettingsBackup(restore.snapshot, preferences, ServiceLocator.historyRepository)
+                            backupMessage = resources.getString(R.string.settings_restored,
+                                applied.joinToString(resources.getString(R.string.list_separator)) {
+                                    settingsChangeText(context, it, preferences)
+                                })
+                        }
+                    }) { Text(stringResource(R.string.settings_restore_confirm_action)) }
+                }
+            },
+        )
+    }
 
     AdaptivePage(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     Column(Modifier.fillMaxWidth().fillMaxHeight().verticalScroll(rememberScrollState())
-        .padding(horizontal = 22.dp)) {
+        .padding(horizontal = AppSpacing.lg)) {
         when (page) {
         SettingsPage.ROOT -> {
         TabPageHeader(stringResource(R.string.settings_header_title), stringResource(R.string.settings_header_subtitle))
@@ -472,6 +533,13 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 subtitle = stringResource(R.string.settings_hub_storage_value),
                 onClick = { page = SettingsPage.BACKUP_STORAGE },
                 modifier = Modifier.testTag("settings-open-storage"),
+            )
+            SettingsHubRow(
+                icon = { AppIcon(AppIcons.Info, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_hub_about),
+                subtitle = stringResource(R.string.settings_hub_about_value),
+                onClick = { page = SettingsPage.ABOUT_UPDATE },
+                modifier = Modifier.testTag("settings-open-about"),
             )
         }
         }
@@ -599,7 +667,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             )
         }
         Text(stringResource(R.string.settings_quality_note), color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 3.dp, top = 8.dp))
+            style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = AppSpacing.xxs, top = AppSpacing.xs))
         }
         SettingsPage.WEBSITES_ACCOUNTS -> {
         SettingsSubpageHeader(stringResource(R.string.settings_hub_accounts)) { page = SettingsPage.ROOT }
@@ -608,22 +676,20 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             SettingsRow(icon = { AppIcon(AppIcons.Settings, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_engine_row), value = stringResource(R.string.settings_engine_value),
                 onClick = { showAbout = true })
-            Text(engineVersion, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium)
+            Text(engineVersion, modifier = Modifier.padding(horizontal = AppSpacing.md, vertical = AppSpacing.xs), style = MaterialTheme.typography.labelMedium)
             SettingsRow(icon = { AppIcon(AppIcons.Profile, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_x_login_row),
                 value = stringResource(if (xSignedIn == true) R.string.settings_x_login_signed_in else R.string.settings_x_login_signed_out),
                 onClick = { showXLogin = true })
             Text(stringResource(R.string.settings_x_login_note), color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = AppSpacing.md, vertical = AppSpacing.xxs))
             SettingsRow(icon = { AppIcon(AppIcons.ClearSession, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_clear_session), value = sessionMessage ?: stringResource(R.string.settings_session_local),
                 onClick = {
                     sessionScope.launch {
-                        ServiceLocator.historyRepository.snapshot().filter { it.media?.useBrowserSession == true &&
+                        clearSessionTaskCount = ServiceLocator.historyRepository.snapshot().count { it.media?.useBrowserSession == true &&
                             it.status in setOf(com.videodown.douyin.domain.model.DownloadStatus.RUNNING, com.videodown.douyin.domain.model.DownloadStatus.PENDING)
-                        }.forEach { ServiceLocator.downloader.pause(it.id) }
-                        ServiceLocator.browserSessions.clear(); sessionMessage = resources.getString(R.string.settings_session_cleared)
-                        refreshXSession()
+                        }
                     }
                 })
         }
@@ -647,19 +713,26 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         }
         backupMessage?.let {
             Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(start = 3.dp, top = 8.dp))
+                modifier = Modifier.padding(start = AppSpacing.xxs, top = AppSpacing.xs))
         }
         SectionLabel(stringResource(R.string.settings_section_storage))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_storage_row), value = stringResource(R.string.settings_storage_value),
                 onClick = { showStorage = true })
+        }
+        Spacer(Modifier.height(AppSpacing.lg))
+        }
+        SettingsPage.ABOUT_UPDATE -> {
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_about)) { page = SettingsPage.ROOT }
+        SectionLabel(stringResource(R.string.settings_section_about))
+        SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Download, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_update_row), value = "v$installedVersion", onClick = { showUpdate = true })
             SettingsRow(icon = { AppIcon(AppIcons.Info, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_about_row), value = "›", onClick = { showAbout = true })
         }
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(AppSpacing.lg))
         }
         }
     }
@@ -669,7 +742,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
 @Composable
 private fun SettingsSubpageHeader(title: String, onBack: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = AppSpacing.sm, bottom = AppSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBack, modifier = Modifier.testTag("settings-back")) {
@@ -680,7 +753,7 @@ private fun SettingsSubpageHeader(title: String, onBack: () -> Unit) {
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = AppSpacing.xs),
         )
     }
 }
@@ -688,7 +761,7 @@ private fun SettingsSubpageHeader(title: String, onBack: () -> Unit) {
 @Composable
 private fun SectionLabel(text: String) {
     Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        letterSpacing = 1.sp, modifier = Modifier.padding(top = 23.dp, bottom = 7.dp))
+        letterSpacing = 1.sp, modifier = Modifier.padding(top = AppSpacing.lg, bottom = AppSpacing.xs))
 }
 
 @Composable
@@ -703,9 +776,9 @@ private fun SettingsCard(content: @Composable () -> Unit) {
 private fun SettingsHubRow(icon: @Composable () -> Unit, title: String, subtitle: String, onClick: () -> Unit,
     modifier: Modifier = Modifier) {
     Row(
-        modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 13.dp),
+        modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = AppSpacing.md, vertical = AppSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm),
     ) {
         icon()
         Column(Modifier.weight(1f)) {
@@ -720,8 +793,8 @@ private fun SettingsHubRow(icon: @Composable () -> Unit, title: String, subtitle
 @Composable
 private fun SettingsRow(icon: @Composable () -> Unit, title: String, value: String, onClick: (() -> Unit)?,
     modifier: Modifier = Modifier) {
-    Row(modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(AppSpacing.md),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
         icon()
         Text(title, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f))
@@ -733,8 +806,8 @@ private fun SettingsRow(icon: @Composable () -> Unit, title: String, value: Stri
 private fun ToggleRow(icon: @Composable () -> Unit, title: String, subtitle: String,
     checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth().toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
-        .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        .padding(horizontal = AppSpacing.md, vertical = AppSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
         icon()
         Column(Modifier.weight(1f)) {
             Text(title, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
@@ -743,3 +816,24 @@ private fun ToggleRow(icon: @Composable () -> Unit, title: String, subtitle: Str
         Switch(checked = checked, onCheckedChange = null)
     }
 }
+
+@Composable
+private fun settingsChangeLabel(change: SettingsChange): String = stringResource(when (change) {
+    SettingsChange.THEME_MODE -> R.string.settings_theme_title
+    SettingsChange.PREFERRED_QUALITY -> R.string.settings_quality_title
+    SettingsChange.LIBRARY_LAYOUT -> R.string.settings_restore_change_layout
+    SettingsChange.LIBRARY_SORT -> R.string.settings_restore_change_sort
+    SettingsChange.CONCURRENCY -> R.string.settings_concurrency_title
+    SettingsChange.SPEED_LIMIT -> R.string.settings_speed_title
+    SettingsChange.DYNAMIC_COLOR -> R.string.settings_dynamic_color
+    SettingsChange.WIFI_ONLY -> R.string.settings_wifi
+    SettingsChange.AUTO_RESUME -> R.string.settings_auto_resume
+    SettingsChange.NOTIFY_ON_COMPLETION -> R.string.settings_notify_row
+    SettingsChange.INDIVIDUAL_NOTIFICATIONS -> R.string.settings_individual_row
+    SettingsChange.CLIPBOARD_DETECT -> R.string.settings_clipboard_row
+    SettingsChange.AUTO_SAVE_TO_GALLERY -> R.string.settings_gallery_row
+    SettingsChange.SUBTITLES -> R.string.home_subtitles
+    SettingsChange.PLAYLIST_PARSING -> R.string.settings_playlist_row
+    SettingsChange.UPDATE_SOURCE -> R.string.settings_restore_change_update_source
+    SettingsChange.LIBRARY_ORDER -> R.string.settings_change_library_order
+})
