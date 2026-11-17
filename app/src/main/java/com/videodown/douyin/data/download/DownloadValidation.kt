@@ -1,6 +1,8 @@
 package com.videodown.douyin.data.download
 
-import com.videodown.douyin.data.generic.validateVideo
+import com.videodown.douyin.data.generic.validateMediaFile
+import com.videodown.douyin.domain.model.ExpectedTrack
+import com.videodown.douyin.domain.model.MediaIntegrityPolicy
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.MediaSignature
@@ -22,13 +24,12 @@ class DownloadContentException(val reasonKey: String) : Exception(reasonKey)
  * 现在按 [DownloadRecord.mediaKind] 分派，视频校验保持不变。
  */
 fun validateDownloadedFile(file: File, record: DownloadRecord) {
-    when (record.mediaKind) {
-        MediaKind.IMAGE -> validateImage(file)
-        MediaKind.ARCHIVE -> validateArchive(
-            file,
-            record.archiveEntries,
-        )
-        else -> validateVideo(file)
+    when {
+        record.mediaKind == MediaKind.IMAGE -> validateImage(file)
+        record.mediaKind == MediaKind.ARCHIVE -> validateArchive(file, record.archiveEntries)
+        // 旧音频记录没有 AUDIO 这个 mediaKind，按 `audioOnly` 兜底，与播放器分流一致。
+        record.isAudio -> validateMediaFile(file, setOf(ExpectedTrack.AUDIO))
+        else -> validateMediaFile(file, MediaIntegrityPolicy.expectedTracks(record.media))
     }
 }
 

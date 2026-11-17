@@ -200,10 +200,19 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
   链接，引擎侧真实 `Retry-After` 只经代码评审与假引擎覆盖；多引擎进程之间的冷却协调留给 I5；
   一次全量复跑出现过 `retryNow` 用例超时与 `QueueReorderTest` 读空历史的偶发失败，
   `retryNow` 的信号登记顺序缺陷已修复、`QueueReorderTest` 根因未定位。
-- [ ] **I2 视频 / 音频尾部与轨道完整性校验** — 在现有「容器可打开、首样本存在、无 DRM」之外，
-  校验声明时长与接近结尾处的有效样本；分轨合并结果必须同时具备所选任务预期的视频轨和音频轨，
-  音频任务同样检查尾部数据。覆盖未知 `Content-Length`、服务器提前断流、截断 MP4/WebM 和合并后
-  缺音轨；失败时删除未发布成品，但保留仍可安全复用的分片，不做逐帧完整解码。
+- [x] **I2 视频 / 音频尾部与轨道完整性校验**（2026-11-17 完成，证据见 [验收记录](validation/media-integrity-tail-2026-11-17.md)）—
+  新增纯 Kotlin `MediaIntegrityPolicy`：按任务意图推导必须存在的轨道（音频任务只要音轨；
+  `+` 选择器 / 单独音频 URL、格式 / `SEPARATE` 要求两条都有；单一格式只要求视频轨），
+  声明时长的 90% 处为尾部阈值，容器无时长时明确报告未知。`EngineMediaDownloader` 的
+  `validateMediaFile` 在首样本之外做轨道与尾部检查（`MISSING_TRACK` / `TRUNCATED` /
+  `NO_VIDEO` / `NO_AUDIO`），尾部从 90% 处向后最多读 512 个样本；直链下载按记录类型分派，
+  未知 `Content-Length` 与提前断流的截断文件不再落成成功记录。校验失败删除未发布成品、
+  保留 `.part` / `.ytdl` 分片，不做逐帧解码。新增 `faststart-fixture.mp4`（`moov` 前移、
+  `stco` 同步修正）用于「截尾但仍可打开」的真实验证。JVM 615 例通过（新增策略 8 例），
+  `MediaIntegrityDeviceTest` 5/5 通过，`GenericVideoDeviceTest` / `P2AudioDeviceTest` /
+  `SubtitleDownloadDeviceTest` / `PlaylistCollectionDeviceTest` 复跑通过。**未覆盖**：
+  无声明时长的容器仍只做首样本校验；不检测中间空洞；缺音轨的重试收益、真实 CDN 断流、
+  API 26/28 与平板/折叠屏未验证。
 - [x] **I3 相册与公共目录导出幂等化**（2026-11-17 完成，证据见 [验收记录](validation/gallery-export-idempotency-2026-11-17.md)）—
   新增 `ExportReceipt` / `GalleryExportReceiptStore`：回执由「记录 id + 每个源文件的名称/大小/
   修改时间指纹 + 目标 URI 列表」组成，原子落盘 `filesDir/export-receipts.json`；

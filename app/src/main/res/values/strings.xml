@@ -894,6 +894,8 @@
     <string name="engine_audio_extract_incomplete">音频提取未完成</string>
     <string name="engine_download_unconfirmed">下载引擎未确认完成</string>
     <string name="engine_no_complete_video">未生成完整视频文件，请重新解析</string>
+    <string name="engine_missing_track">下载结果缺少任务要求的视频或音频轨道，合并可能没有完成</string>
+    <string name="engine_truncated_media">文件在接近结尾处缺少有效数据，可能被提前中断</string>
     <string name="engine_no_video_track">下载结果不包含有效的视频轨道</string>
     <string name="engine_incomplete_video_data">下载结果没有完整的视频数据</string>
     <string name="engine_no_valid_audio">未生成有效音频文件</string>

@@ -895,6 +895,8 @@
     <string name="engine_audio_extract_incomplete">The audio extraction did not finish</string>
     <string name="engine_download_unconfirmed">The download engine did not confirm completion</string>
     <string name="engine_no_complete_video">No complete video file was produced; parse again</string>
+    <string name="engine_missing_track">The result is missing a video or audio track the task asked for; the merge may not have finished</string>
+    <string name="engine_truncated_media">The file has no valid data near its end, so it was probably interrupted</string>
     <string name="engine_no_video_track">The download contains no usable video track</string>
     <string name="engine_incomplete_video_data">The download lacks complete video data</string>
     <string name="engine_no_valid_audio">No valid audio file was produced</string>

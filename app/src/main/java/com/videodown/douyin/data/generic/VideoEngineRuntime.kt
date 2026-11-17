@@ -43,6 +43,8 @@ class VideoEngineException(
         "STORAGE_ACCESS" -> DownloadFailureKind.STORAGE_ACCESS
         "NETWORK", "TIMEOUT" -> DownloadFailureKind.NETWORK
         "CHANGED" -> DownloadFailureKind.FORMAT_CHANGED
+        // 轨道缺失与截断多半是服务端/合并阶段的瞬时结果，按网络类给出「重试」而不是宣布不支持。
+        "MISSING_TRACK", "TRUNCATED" -> DownloadFailureKind.NETWORK
         "RUNTIME" -> DownloadFailureKind.RUNTIME
         else -> DownloadFailureKind.UNSUPPORTED
     }
