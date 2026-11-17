@@ -1,1 +1,0 @@
-Crash buffer scanned after validation: no FATAL EXCEPTION associated with com.videodown.douyin.debug during this test run. Existing earlier Blackshark/Google system crash entries excluded.

@@ -1,5 +1,0 @@
-    mDisplayHomeButtonHandlers=    mKeyguardOccluded=false mKeyguardOccludedChanged=false mPendingKeyguardOccluded=false
-    KeyguardServiceDelegate
-      deviceHasKeyguard=true
-      screenState=SCREEN_STATE_ON
-      KeyguardStateMonitor

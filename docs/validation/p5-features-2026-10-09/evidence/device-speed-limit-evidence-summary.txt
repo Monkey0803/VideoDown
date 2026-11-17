@@ -1,5 +1,0 @@
-bytes=10542
-unlimited=66ms
-globalLimit=8 KB/s
-limited=346ms
-both files byte-perfect=true
