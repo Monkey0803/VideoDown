@@ -185,6 +185,13 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     val allSaved = state.records.filter { state.statusFor(it) == DownloadStatus.COMPLETED &&
         it.filePath?.let { path -> File(path).isFile } == true &&
         (!it.isPrivate || state.libraryQuery.vaultUnlocked) }
+    val savedInventoryCount = state.records.count { state.statusFor(it) == DownloadStatus.COMPLETED &&
+        it.filePath?.let { path -> File(path).isFile } == true }
+    val showManagementControls = com.videodown.douyin.presentation.UiDensityPolicy.showManagementControls(
+        itemCount = savedInventoryCount,
+        // 单纯记住了排序方式不会把空库筛空；只有搜索/筛选需要保留控件让用户清除。
+        hasActiveQuery = state.libraryQuery.text.isNotBlank() || state.libraryQuery.activeFilterCount > 0,
+    )
     allSaved.firstOrNull { it.id == editingId }?.let { LibraryOrganizationDialog(it, organizationViewModel) { editingId = null } }
     allSaved.firstOrNull { it.id == extractingId }?.let { record ->
         AudioExtractionDialog(record, audioExtractionViewModel, onClose = { extractingId = null }, onQueued = {
@@ -366,6 +373,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                 subtitle = if (selecting) null else stringResource(R.string.library_subtitle, allSaved.size),
                 modifier = Modifier.padding(horizontal = 22.dp),
                 trailingContent = {
+                    if (allSaved.isNotEmpty()) {
                     IconButton(
                         onClick = { layout = nextLayout; ServiceLocator.preferences.libraryLayout = nextLayout },
                         modifier = Modifier.semantics { stateDescription = layoutDescription },
@@ -373,8 +381,10 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                         AppIcon(if (nextLayout == LibraryLayout.LIST) AppIcons.List else AppIcons.Grid,
                             contentDescription = stringResource(R.string.library_switch_layout, stringResource(libraryLayoutLabelRes(nextLayout))), tint = MaterialTheme.colorScheme.primary)
                     }
+                    }
                 },
             )
+            if (showManagementControls) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -410,6 +420,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = { focusManager.clearFocus(); selecting = !selecting; selectedIds = emptySet() },
                     enabled = !state.batchBusy && allSaved.isNotEmpty()) { Text(stringResource(if (selecting) R.string.action_exit_multi_select else R.string.action_multi_select)) }
+            }
             }
             if (selecting) SelectionToolbar(selectedIds.size, state.batchBusy, selectedIds == visibleIds && visibleIds.isNotEmpty(),
                 onSelectAll = { selectedIds = if (selectedIds == visibleIds) emptySet() else visibleIds },

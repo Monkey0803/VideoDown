@@ -137,6 +137,10 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     var pendingBatchDelete by remember { mutableStateOf<Set<String>?>(null) }
     fun queryChanged(query: TaskQuery) { selectedIds = emptySet(); viewModel.setTaskQuery(query) }
     val visibleIds = state.visibleRecords.map { it.id }.toSet()
+    val showManagementControls = UiDensityPolicy.showManagementControls(
+        itemCount = state.records.size,
+        hasActiveQuery = state.taskQuery.text.isNotBlank() || state.filter != HistoryFilter.ALL,
+    )
     LaunchedEffect(visibleIds) { selectedIds = selectedIds.intersect(visibleIds) }
     LaunchedEffect(state.batchResult) {
         val result = state.batchResult ?: return@LaunchedEffect
@@ -230,6 +234,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                     )
                 }
             }
+            if (showManagementControls) {
             OutlinedTextField(value = state.taskQuery.text,
                 onValueChange = { queryChanged(state.taskQuery.copy(text = it)) },
                 // 圆角与「解析」页的链接输入框（shapes.large）一致，而不是 M3 默认的 extraSmall。
@@ -292,6 +297,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                 TextButton(onClick = { selecting = !selecting; selectedIds = emptySet() }, enabled = !state.batchBusy && state.records.isNotEmpty()) {
                     Text(stringResource(if (selecting) R.string.action_exit_multi_select else R.string.history_multi_select))
                 }
+            }
             }
             if (selecting) SelectionToolbar(selectedIds.size, state.batchBusy, selectedIds == visibleIds && visibleIds.isNotEmpty(),
                 onSelectAll = { selectedIds = if (selectedIds == visibleIds) emptySet() else visibleIds },

@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -22,6 +24,7 @@ import com.videodown.douyin.domain.repository.Downloader
 import com.videodown.douyin.presentation.components.EMPTY_STATE_ILLUSTRATION_TAG
 import com.videodown.douyin.presentation.components.EmptyStateIllustration
 import com.videodown.douyin.presentation.history.HistoryViewModel
+import com.videodown.douyin.presentation.history.HistoryScreen
 import com.videodown.douyin.presentation.library.LibraryScreen
 import com.videodown.douyin.presentation.theme.VideoDownTheme
 import java.io.ByteArrayOutputStream
@@ -128,14 +131,34 @@ class EmptyStateIllustrationDeviceTest {
         compose.waitUntil(10_000) {
             compose.onAllNodesWithTag(EMPTY_STATE_ILLUSTRATION_TAG, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
         }
+        compose.onAllNodesWithTag("library-search").assertCountEquals(0)
+        compose.onAllNodesWithTag("library-filter").assertCountEquals(0)
+        compose.onAllNodesWithTag("vault-chip").assertCountEquals(0)
         // 入场动画有限：等它走完必须能 idle（无限动画在这里会表现不同）。
         compose.waitForIdle()
         Thread.sleep(700)
         compose.waitForIdle()
         save("empty-library", frame(EMPTY_STATE_ILLUSTRATION_TAG))
         assertTrue(File(directory, "empty-library.png").length() > 0)
-        compose.onNodeWithText("开始下载").performClick()
+        compose.onNodeWithText(context.getString(R.string.library_start_download)).performClick()
         assertTrue("空状态主操作应直接回到解析页", openedParse)
+    }
+
+    @Test fun anEmptyTaskPageHidesManagementToolsAndKeepsThePrimaryAction() {
+        lateinit var viewModel: HistoryViewModel
+        compose.runOnUiThread {
+            viewModel = HistoryViewModel(history, downloader())
+            store.put("empty-tasks", viewModel)
+        }
+        var openedParse = false
+        compose.setContent {
+            VideoDownTheme { HistoryScreen(onPlay = {}, viewModel = viewModel, onOpenParse = { openedParse = true }) }
+        }
+        compose.onNodeWithText(context.getString(R.string.history_empty)).assertIsDisplayed()
+        compose.onAllNodesWithTag("task-search").assertCountEquals(0)
+        compose.onAllNodesWithTag("task-sort").assertCountEquals(0)
+        compose.onNodeWithText(context.getString(R.string.action_go_parse)).assertIsDisplayed().performClick()
+        compose.runOnIdle { assertTrue(openedParse) }
     }
 
     @Test fun theSettledShapeIsTheRoundedSquare() {

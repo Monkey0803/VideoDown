@@ -1,9 +1,12 @@
 package com.videodown.douyin
 
 import androidx.activity.compose.setContent
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.presentation.MainActivity
@@ -35,8 +38,11 @@ class FirstUseGuideDeviceTest {
 
     @Test fun dismissingTheGuidePersistsAcrossRecomposition() {
         compose.onNodeWithTag("first-use-guide").assertIsDisplayed()
+        compose.onNodeWithTag("site-kubb-card").assertIsDisplayed()
+        compose.onAllNodesWithText("KUBB.TV").assertCountEquals(0)
         compose.onNodeWithTag("first-use-guide-dismiss").assertIsDisplayed().performClick()
         compose.onNodeWithTag("first-use-guide").assertDoesNotExist()
+        compose.onNodeWithText("KUBB.TV").assertIsDisplayed()
 
         showHome()
         compose.onNodeWithTag("first-use-guide").assertDoesNotExist()

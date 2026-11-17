@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -31,6 +32,7 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
     val state by model.state.collectAsStateWithLifecycle()
     val clipboard = LocalClipboard.current
     val context = LocalContext.current
+    val density = LocalDensity.current
     val focus = androidx.compose.ui.platform.LocalFocusManager.current
     val scope = rememberCoroutineScope()
     fun close() { if (!state.submitting) { model.stop(); onClose() } }
@@ -44,7 +46,8 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
             dismissOnClickOutside = false,
         ),
     ) {
-        AppDialogContainer(onDismissRequest = ::close) {
+        AppDialogContainer(onDismissRequest = ::close) { availableHeightPx ->
+            val useInlineInputHint = availableHeightPx < with(density) { 240.dp.roundToPx() }
             Surface(
                 Modifier.fillMaxWidth().fillMaxHeight(.94f).consumeTaps().testTag(APP_DIALOG_CARD_TAG),
                 shape = MaterialTheme.shapes.large,
@@ -55,7 +58,12 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
                     Text(stringResource(R.string.import_title), style = MaterialTheme.typography.titleLarge)
                     Text(stringResource(R.string.import_hint, 50), style = MaterialTheme.typography.bodySmall)
                     OutlinedTextField(value = state.input, onValueChange = model::input, enabled = !state.locked,
-                        modifier = Modifier.fillMaxWidth().heightIn(max = 130.dp), label = { Text(stringResource(R.string.import_input_label)) }, maxLines = 4)
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 130.dp),
+                        // 横屏软键盘会把焦点项滚到可见区域顶边，浮动标签会越出 LazyColumn
+                        // 的裁剪范围；极短高度改成框内提示，避免标签只剩半行。
+                        label = if (useInlineInputHint) null else { { Text(stringResource(R.string.import_input_label)) } },
+                        placeholder = if (useInlineInputHint) { { Text(stringResource(R.string.import_input_label)) } } else null,
+                        maxLines = 4)
                     LazyRow {
                         item { TextButton(enabled = !state.locked, onClick = { scope.launch { clipboard.getClipEntry()?.clipData?.getItemAt(0)?.coerceToText(context)?.let { model.input(it.toString()) } } }) { Text(stringResource(R.string.home_paste_link)) } }
                         item { TextButton(enabled = !state.locked && state.input.isNotBlank(), onClick = { focus.clearFocus(); model.prepareAndParse() }) { Text(stringResource(R.string.import_parse)) } }

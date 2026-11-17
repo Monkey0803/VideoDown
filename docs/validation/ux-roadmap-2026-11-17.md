@@ -87,3 +87,30 @@
 结果：JVM 策略测试通过；Pixel 10 Pro AVD、Android 17 / API 37 上 7 条离线设备用例通过。设备用例通过系统 `CookieManager` 注入测试 Cookie，并使用 `about:blank` 代替真实登录页，没有访问真实 X 账号或下载受保护内容。
 
 未覆盖边界：没有使用真实 X 账号验证登录页、Cookie 过期和受保护推文；App 只能检测关键 Cookie 是否存在，最终有效期和内容访问权限仍由 X 服务端决定，因此界面不会声称已确认账号有效。
+
+## G7 信息密度、动效与键盘手感人工收敛
+
+- 空任务页与空已存页只保留空状态说明和主操作；有内容或用户主动搜索/筛选后，搜索、筛选、排序、多选及保险箱等管理能力才渐进出现。
+- 首次使用引导显示时，首页站点专区收敛为一行 Site Hub 入口，并隐藏没有内容的「最近保存」；关闭引导后恢复完整站点卡片。
+- 横屏软键盘把弹窗压到极短高度时，批量导入输入框使用框内提示，避免浮动标签被滚动区上沿裁切；三个页脚操作仍位于键盘上方。
+- 动画缩放 1.0 下人工走查四个主页面切换、弹窗入场与空状态，未发现闪白、重叠、残影或明显拖沓，因此保留现有动效 token。
+- Pixel Launcher 长按菜单人工确认三个快捷方式名称和图标可辨，并逐个验证落地页面。
+
+验证：
+
+```text
+./gradlew testDebugUnitTest
+./gradlew testDebugUnitTest \
+  --tests com.videodown.douyin.presentation.UiDensityPolicyTest \
+  --tests com.videodown.douyin.presentation.components.AppDialogLayoutTest \
+  compileDebugAndroidTestKotlin
+
+./gradlew connectedDebugAndroidTest -Pabi=universal \
+  -Pandroid.testInstrumentationRunnerArguments.class=<以下设备测试类或方法>
+```
+
+结果：JVM 全量测试通过；`FirstUseGuideDeviceTest`、空任务/空已存新增用例、`P2BatchImportDeviceTest` 旋转用例与 `ResultSelectionDeviceTest` 通过。`LauncherShortcutsDeviceTest` 首轮 9 条中 8 条通过，冷启动携带剪贴板链接用例等待超时；同一构建单独重跑该条通过，记录为一次时序波动而非功能回归。人工验收环境为 Pixel 10 Pro AVD、Android 17 / API 37。
+
+证据：基线保存在 `/tmp/g7-debug-*`，修改后首页、任务、已存与横屏键盘截图/UI hierarchy 保存在 `/tmp/g7-post-*` 和 `/tmp/g7-final-*`；模拟器结束后已恢复 1280×2856、竖屏与自动旋转。
+
+取舍与未覆盖边界：极短横屏高度优先保证输入区与三个操作可达，标题和说明可随列表滚出可视区；未做帧时间量化，未覆盖真机、OEM 启动器/输入法差异以及用户手动固定后的桌面图标。按用户要求，不验证外接键盘按键和焦点顺序。

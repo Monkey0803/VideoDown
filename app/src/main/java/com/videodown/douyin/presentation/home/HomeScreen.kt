@@ -368,6 +368,16 @@ fun HomeScreen(
         contentWindowInsets = WindowInsets(0),
     ) { padding ->
         if (state.video == null) {
+            val showFirstUseGuide = UiDensityPolicy.showFirstUseGuide(
+                hasSavedMedia = recentRecords.isNotEmpty(),
+                input = state.input,
+                hasClipboardOffer = state.clipboardOffer != null,
+                dismissed = firstUseGuideDismissed,
+            )
+            val completed = recentRecords.filter {
+                it.status == com.videodown.douyin.domain.model.DownloadStatus.COMPLETED &&
+                    it.filePath?.let { path -> File(path).isFile } == true
+            }.take(2)
             // 输入页出现时淡入；返回解析页同样重放一次。
             val entrance = rememberEntranceAlpha()
             AdaptivePage(Modifier.fillMaxSize().padding(padding)) {
@@ -473,18 +483,18 @@ fun HomeScreen(
                             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 3.dp))
                     }
                 }
-                if (UiDensityPolicy.showFirstUseGuide(
-                        hasSavedMedia = recentRecords.isNotEmpty(),
-                        input = state.input,
-                        hasClipboardOffer = state.clipboardOffer != null,
-                        dismissed = firstUseGuideDismissed,
-                    )) {
+                if (showFirstUseGuide) {
                     FirstUseGuide(
                         onPasteAndParse = ::pasteAndParse,
                         onDismiss = { ServiceLocator.preferences.firstUseGuideDismissed = true },
                     )
                 }
-                SiteSection(onOpenSites)
+                if (UiDensityPolicy.showExpandedHomeSections(showFirstUseGuide)) {
+                    SiteSection(onOpenSites)
+                } else {
+                    CompactSiteEntry(onOpenSites)
+                }
+                if (UiDensityPolicy.showRecentSection(completed.size)) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 27.dp, bottom = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -495,15 +505,7 @@ fun HomeScreen(
                         Text(stringResource(R.string.home_view_all_arrow), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
                     }
                 }
-                val completed = recentRecords.filter {
-                    it.status == com.videodown.douyin.domain.model.DownloadStatus.COMPLETED &&
-                        it.filePath?.let { path -> File(path).isFile } == true
-                }.take(2)
-                if (completed.isEmpty()) {
-                    Text(stringResource(R.string.home_no_recent), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(bottom = 25.dp))
-                } else {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 25.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 25.dp)) {
                         completed.forEach { record ->
                             val watch = watchBadge(record, watchProgress)
                             Box(
@@ -569,6 +571,20 @@ fun HomeScreen(
             )
             }
         }
+    }
+}
+
+@Composable
+private fun CompactSiteEntry(onOpenSites: () -> Unit) {
+    TextButton(
+        onClick = onOpenSites,
+        modifier = Modifier.fillMaxWidth().padding(top = 10.dp).testTag("site-kubb-card"),
+    ) {
+        AppIcon(AppIcons.Browser, null, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(7.dp))
+        Text(stringResource(R.string.home_sites_title))
+        Spacer(Modifier.weight(1f))
+        Text(stringResource(R.string.home_view_all_arrow))
     }
 }
 

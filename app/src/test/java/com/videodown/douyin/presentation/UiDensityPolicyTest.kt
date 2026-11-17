@@ -18,4 +18,17 @@ class UiDensityPolicyTest {
         assertFalse(UiDensityPolicy.showFirstUseGuide(false, "", true, dismissed = false))
         assertFalse(UiDensityPolicy.showFirstUseGuide(false, "", false, dismissed = true))
     }
+
+    @Test fun emptyCollectionsHideManagementUntilAQueryNeedsClearing() {
+        assertFalse(UiDensityPolicy.showManagementControls(itemCount = 0, hasActiveQuery = false))
+        assertTrue(UiDensityPolicy.showManagementControls(itemCount = 1, hasActiveQuery = false))
+        assertTrue(UiDensityPolicy.showManagementControls(itemCount = 0, hasActiveQuery = true))
+    }
+
+    @Test fun firstUseAndEmptyRecentSectionsStayProgressive() {
+        assertFalse(UiDensityPolicy.showExpandedHomeSections(firstUseGuideVisible = true))
+        assertTrue(UiDensityPolicy.showExpandedHomeSections(firstUseGuideVisible = false))
+        assertFalse(UiDensityPolicy.showRecentSection(0))
+        assertTrue(UiDensityPolicy.showRecentSection(1))
+    }
 }
