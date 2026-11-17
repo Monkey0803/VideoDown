@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="3" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-17T08:46:15" hostname="localhost">
+  <testsuite name="com.videodown.douyin.DownloadRetryStatusDeviceTest" tests="3" failures="0" errors="0" skipped="0" time="4.359" timestamp="2026-11-17T08:46:15" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="runningTaskShowsRetryCountdownInsteadOfZeroSpeed" classname="com.videodown.douyin.DownloadRetryStatusDeviceTest" time="2.405" />
+    <testcase name="retryNowMenuOverridesCooldown" classname="com.videodown.douyin.DownloadRetryStatusDeviceTest" time="1.134" />
+    <testcase name="pausedTaskShowsPersistedCooldownAfterProcessRestart" classname="com.videodown.douyin.DownloadRetryStatusDeviceTest" time="0.820" />
+  </testsuite>
+</testsuites>

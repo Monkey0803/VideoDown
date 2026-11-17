@@ -58,6 +58,10 @@ I4 已完成实现与自动化验证：已存文件先用「路径 + 大小 + �
   - 删除文件后点「检查文件」→ 弹出「文件检查」对话框，点「重新下载」确实回调了下载器。
 - 既有 `LibraryActionsDeviceTest` 复跑通过（操作面板改动未影响长按菜单与删除确认）。
 
+- 结果 XML 归档在
+  [device-api37/LibraryFileHealthDeviceTest.xml](library-file-health-2026-11-17/device-api37/LibraryFileHealthDeviceTest.xml)
+  与 [device-api37/LibraryFileHealthUiDeviceTest.xml](library-file-health-2026-11-17/device-api37/LibraryFileHealthUiDeviceTest.xml)（6 + 2 条用例，0 失败）。
+
 ### 构建
 
 - `./gradlew compileDebugKotlin`、`compileDebugUnitTestKotlin`、`compileDebugAndroidTestKotlin`

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-17T08:46:46" hostname="localhost">
+  <testsuite name="com.videodown.douyin.LibraryFileHealthUiDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="2.500" timestamp="2026-11-17T08:46:46" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="aMissingFileOffersRedownloadFromTheLibrary" classname="com.videodown.douyin.LibraryFileHealthUiDeviceTest" time="1.718" />
+    <testcase name="checkingAHealthyFileReportsItIsIntact" classname="com.videodown.douyin.LibraryFileHealthUiDeviceTest" time="0.782" />
+  </testsuite>
+</testsuites>

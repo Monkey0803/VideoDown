@@ -68,6 +68,10 @@ I3 已完成实现与自动化验证：保存到相册（视频 / 音频 / 图�
 - `AutoGalleryDeviceTest`：因「系统通知未启用」前置断言失败，同样在基线复现，属模拟器环境前提，
   与本轮无关。
 
+- 结果 XML 归档在
+  [device-api37/GalleryExportReceiptDeviceTest.xml](gallery-export-idempotency-2026-11-17/device-api37/GalleryExportReceiptDeviceTest.xml)
+  （4 条用例，0 失败）。
+
 ### 构建
 
 - `./gradlew compileDebugKotlin`、`compileDebugUnitTestKotlin`、`compileDebugAndroidTestKotlin`

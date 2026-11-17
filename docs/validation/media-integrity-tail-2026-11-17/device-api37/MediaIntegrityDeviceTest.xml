@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="5" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-17T08:46:27" hostname="localhost">
+  <testsuite name="com.videodown.douyin.MediaIntegrityDeviceTest" tests="5" failures="0" errors="0" skipped="0" time="0.134" timestamp="2026-11-17T08:46:27" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="aTruncatedAudioFileIsRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.001" />
+    <testcase name="aTruncatedWebmIsRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.000" />
+    <testcase name="aMergedResultWithoutItsAudioTrackIsRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.000" />
+    <testcase name="completeFixturesPassWithTheTracksTheTaskAskedFor" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.127" />
+    <testcase name="aTruncatedMp4NearTheEndIsRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.006" />
+  </testsuite>
+</testsuites>

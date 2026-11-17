@@ -61,6 +61,10 @@ I2 已完成实现与自动化验证：在原有「容器可打开、首样本�
 `P2AudioDeviceTest`（6 条）、`SubtitleDownloadDeviceTest`（2 条）、
 `PlaylistCollectionDeviceTest`（2 条）。
 
+- 结果 XML 归档在
+  [device-api37/MediaIntegrityDeviceTest.xml](media-integrity-tail-2026-11-17/device-api37/MediaIntegrityDeviceTest.xml)
+  （5 条用例，0 失败）。
+
 ### 构建
 
 - `./gradlew compileDebugKotlin`、`compileDebugUnitTestKotlin`、`compileDebugAndroidTestKotlin`

@@ -62,7 +62,8 @@ I1 已完成实现与自动化验证：直链、归档、Live Photo 与 yt-dlp /
   - 进程重启后只剩记录的重试冷却时，暂停任务仍显示倒计时；
   - 冷却期间「更多任务操作 → 立即重试」确实调用下载器 `retryNow`。
 - 运行命令：`./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.videodown.douyin.DownloadRetryStatusDeviceTest`
-  （只跑了该类，未跑完整设备套件）。
+  （只跑了该类，未跑完整设备套件）。结果 XML 归档在
+  [device-api37/DownloadRetryStatusDeviceTest.xml](engine-retry-cooldown-2026-11-17/device-api37/DownloadRetryStatusDeviceTest.xml)。
 
 ### 构建
 

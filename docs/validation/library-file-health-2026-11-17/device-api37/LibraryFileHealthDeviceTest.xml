@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="6" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-17T08:46:33" hostname="localhost">
+  <testsuite name="com.videodown.douyin.LibraryFileHealthDeviceTest" tests="6" failures="0" errors="0" skipped="0" time="0.038" timestamp="2026-11-17T08:46:33" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="aTruncatedVideoIsCorrupt" classname="com.videodown.douyin.LibraryFileHealthDeviceTest" time="0.005" />
+    <testcase name="anOldRecordWithoutASnapshotIsKnownToExistButNotTrustedAsHealthy" classname="com.videodown.douyin.LibraryFileHealthDeviceTest" time="0.005" />
+    <testcase name="aFileWithoutACompletionSnapshotStillDetectsCorruption" classname="com.videodown.douyin.LibraryFileHealthDeviceTest" time="0.003" />
+    <testcase name="aDeletedFileIsReportedAsMissing" classname="com.videodown.douyin.LibraryFileHealthDeviceTest" time="0.002" />
+    <testcase name="aTruncatedImageIsCorruptEvenAfterAPassingCheapCheck" classname="com.videodown.douyin.LibraryFileHealthDeviceTest" time="0.003" />
+    <testcase name="aHealthyImageAndVideoPassTheDeepCheck" classname="com.videodown.douyin.LibraryFileHealthDeviceTest" time="0.020" />
+  </testsuite>
+</testsuites>

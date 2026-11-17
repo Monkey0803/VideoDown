@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="4" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-17T08:46:22" hostname="localhost">
+  <testsuite name="com.videodown.douyin.GalleryExportReceiptDeviceTest" tests="4" failures="0" errors="0" skipped="0" time="0.682" timestamp="2026-11-17T08:46:22" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="publishingTheSameArchiveTwiceKeepsOneDownloadCopy" classname="com.videodown.douyin.GalleryExportReceiptDeviceTest" time="0.358" />
+    <testcase name="aSecondSaveIsReportedAsAlreadySavedAndWritesNothing" classname="com.videodown.douyin.GalleryExportReceiptDeviceTest" time="0.182" />
+    <testcase name="aFailedMotionPublishLeavesNoStillAndNoReceipt" classname="com.videodown.douyin.GalleryExportReceiptDeviceTest" time="0.034" />
+    <testcase name="aLivePhotoReceiptCoversBothHalvesAndExpiresWithEither" classname="com.videodown.douyin.GalleryExportReceiptDeviceTest" time="0.108" />
+  </testsuite>
+</testsuites>
