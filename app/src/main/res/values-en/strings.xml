@@ -373,6 +373,7 @@
     <string name="history_move_down">Move down</string>
     <string name="history_move_top">Download first</string>
     <string name="history_no_source">The original address was not kept; paste the link again on the parse page.</string>
+    <string name="history_global_limit_label">Global limit %1$s</string>
     <string name="history_limit_label">Limit %1$s</string>
     <string name="history_set_limit">Set a limit</string>
     <string name="history_more_actions">More task actions</string>

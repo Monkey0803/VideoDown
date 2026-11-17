@@ -1053,7 +1053,13 @@ class DownloadEngine(
             try {
                 executor.download(record, paths,
                     if (record.media?.localRecordId != null) DownloadNetworkPolicy.Unrestricted else networkPolicy,
-                    engineRateLimit(record)) { downloaded, total, speed, phase ->
+                    engineRateLimit(record),
+                    // 两个 provider 每次进度都重新读，跑着改限速下一个事件就生效。
+                    EngineRateControl(
+                        sessionId = record.id,
+                        globalLimit = { speedLimitBytesPerSecond(globalSpeedLimitKbps()) },
+                        taskLimit = { speedLimitBytesPerSecond(record.speedLimitKbps) },
+                    )) { downloaded, total, speed, phase ->
                     if (total > 0) expected.updateAndGet { maxOf(it, total) }
                     checkEngineSpace()
                     updateProgress(record.id) { DownloadProgress(record.id, downloaded, total, DownloadStatus.RUNNING, speed, phase) }

@@ -372,6 +372,7 @@
     <string name="history_move_down">后移</string>
     <string name="history_move_top">优先下载</string>
     <string name="history_no_source">原始网址未保留，请在解析页重新粘贴视频链接。</string>
+    <string name="history_global_limit_label">全局限速 %1$s</string>
     <string name="history_limit_label">限速 %1$s</string>
     <string name="history_set_limit">设置限速</string>
     <string name="history_more_actions">更多任务操作</string>

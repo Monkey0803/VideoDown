@@ -51,7 +51,12 @@ class VideoEngineException(
 }
 
 /** Uses the pinned AAR's binaries, in a process group so cancelling also stops FFmpeg. */
-class VideoEngineRuntime(private val context: Context) {
+class VideoEngineRuntime(
+    private val context: Context,
+    /** 多个引擎进程共享的带宽预算；默认实例等价于「不限速」除非调用方给出上限。 */
+    private val bandwidth: com.videodown.douyin.data.download.EngineBandwidthGovernor =
+        com.videodown.douyin.data.download.EngineBandwidthGovernor(),
+) {
     private val _version = MutableStateFlow(context.getString(com.videodown.douyin.R.string.engine_not_initialised, ENGINE_COMPONENT_VERSION))
     val version = _version.asStateFlow()
     private var ready = false
@@ -104,9 +109,16 @@ class VideoEngineRuntime(private val context: Context) {
         } catch (_: Exception) { _version.value = context.getString(com.videodown.douyin.R.string.engine_reinstall) }
     }
 
+    /**
+     * 运行一次引擎请求。
+     *
+     * [rateControl] 非空时，下载进度会交给共享带宽预算；超出上限就暂停整个子进程组一小段时间再继续，
+     * 于是多个引擎任务的总速率被压回全局限速之内。上限每处理一个进度事件都重新读取，运行中改设置立即生效。
+     */
     suspend fun execute(
         request: JsonObject,
         policy: DownloadNetworkPolicy = DownloadNetworkPolicy.Unrestricted,
+        rateControl: com.videodown.douyin.data.download.EngineRateControl? = null,
         onEvent: suspend (JsonObject) -> Unit,
     ): Unit = withContext(Dispatchers.IO) {
         try { initialize() }
@@ -147,6 +159,28 @@ class VideoEngineRuntime(private val context: Context) {
                 awaitCancellation()
             } finally { terminate() }
         }
+        var reportedBytes = 0L
+        /** 按共享预算把整个进程组暂停一小段时间；进度事件只报累计值，所以先做差。 */
+        suspend fun throttle(
+            control: com.videodown.douyin.data.download.EngineRateControl,
+            cumulative: Long?,
+            groupPid: AtomicInteger,
+        ) {
+            val total = cumulative ?: return
+            val delta = (total - reportedBytes).coerceAtLeast(0L)
+            reportedBytes = total
+            if (delta <= 0L) return
+            val pause = bandwidth.session(control.sessionId)
+                .onBytes(delta, control.globalLimit(), control.taskLimit())
+            if (pause <= 0L) return
+            val pid = groupPid.get()
+            if (pid > 0) runCatching { Os.kill(-pid, OsConstants.SIGSTOP) }
+            try {
+                delay(pause)
+            } finally {
+                if (pid > 0) runCatching { Os.kill(-pid, OsConstants.SIGCONT) }
+            }
+        }
         try {
             var failure: VideoEngineException? = null
             process.inputStream.bufferedReader().use { reader ->
@@ -170,6 +204,10 @@ class VideoEngineRuntime(private val context: Context) {
                             httpStatus = event.number("status")?.toInt(),
                             retryAfter = event.text("retry_after"),
                         )
+                        "progress" -> {
+                            if (rateControl != null) throttle(rateControl, event.number("downloaded")?.toLong(), group)
+                            onEvent(event)
+                        }
                         else -> onEvent(event)
                     }
                 }
@@ -182,6 +220,7 @@ class VideoEngineRuntime(private val context: Context) {
             ensureActive()
             throw VideoEngineException("NETWORK")
         } finally {
+            rateControl?.let { bandwidth.release(it.sessionId) }
             watcher.cancel()
             terminate()
             withContext(NonCancellable) { watcher.join() }

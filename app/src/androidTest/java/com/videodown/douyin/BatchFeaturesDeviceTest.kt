@@ -101,7 +101,8 @@ class BatchFeaturesDeviceTest {
     }
     private fun showLibrary() {
         compose.runOnUiThread {
-            val model = HistoryViewModel(history, downloader) { ServiceLocator.galleryExporter.export(it).map { Unit } }
+            val model = HistoryViewModel(history, downloader,
+                exportRecord = { ServiceLocator.galleryExporter.export(it).map { Unit } })
             models.put("history", model)
             compose.activity.setContent { VideoDownTheme { LibraryScreen(model, onPlay = { played += it }) } }
         }

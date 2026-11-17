@@ -590,10 +590,13 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                     )
                 }
                 composable(Routes.TASKS) {
+                    val globalSpeedLimitKbps by ServiceLocator.preferences.globalSpeedLimitChanges
+                        .collectAsStateWithLifecycle()
                     HistoryScreen(
                         onPlay = { openRecord(it) },
                         viewModel = historyViewModel,
                         onOpenParse = { navigateTab(Routes.HOME) },
+                        globalSpeedLimitKbps = globalSpeedLimitKbps,
                         onRecovery = { record, action ->
                             val page = record.sourcePageUrl.ifBlank { record.media?.pageUrl.orEmpty() }
                             when (action) {

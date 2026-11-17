@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-17T09:00:39" hostname="localhost">
+  <testsuite name="com.videodown.douyin.EngineBandwidthDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="33.294" timestamp="2026-11-17T09:00:39" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="aSingleEngineDownloadIsPacedByTheSharedBudget" classname="com.videodown.douyin.EngineBandwidthDeviceTest" time="12.411" />
+    <testcase name="twoEngineDownloadsShareOneGlobalBudget" classname="com.videodown.douyin.EngineBandwidthDeviceTest" time="20.883" />
+  </testsuite>
+</testsuites>

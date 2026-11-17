@@ -77,7 +77,9 @@ object ServiceLocator {
 
     val douyinRepository: DouyinRepository by lazy { DouyinRepositoryImpl(douyinApiClient) }
     val browserSessions by lazy { BrowserSessionStore() }
-    val videoEngine by lazy { VideoEngineRuntime(appContext) }
+    /** 引擎任务的共享带宽预算：多个 yt-dlp 进程合起来不超过全局限速。 */
+    val engineBandwidth by lazy { com.videodown.douyin.data.download.EngineBandwidthGovernor() }
+    val videoEngine by lazy { VideoEngineRuntime(appContext, engineBandwidth) }
     private val sessionDirectory by lazy { File(appContext.noBackupFilesDir, "media-sessions") }
     val genericRepository by lazy {
         GenericVideoRepository(videoEngine, browserSessions, douyinApiClient.okHttpClient, sessionDirectory,

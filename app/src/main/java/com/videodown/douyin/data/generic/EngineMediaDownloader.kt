@@ -28,6 +28,7 @@ class EngineMediaDownloader(
 ) : EngineTransfer {
     override suspend fun download(record: DownloadRecord, paths: DownloadPaths, policy: DownloadNetworkPolicy,
                          rateLimitBytesPerSecond: Long?,
+                         rateControl: com.videodown.douyin.data.download.EngineRateControl?,
                          progress: suspend (Long, Long, Long, TransferPhase) -> Unit): File = withContext(Dispatchers.IO) {
         val media = requireNotNull(record.media)
         val directory = paths.engineDirectory(record.id).apply { mkdirs() }
@@ -108,6 +109,7 @@ class EngineMediaDownloader(
                     rateLimitBytesPerSecond = rateLimitBytesPerSecond,
                 ),
                 policy,
+                rateControl,
             ) { event ->
                 when (event.text("event")) {
                     "progress" -> {

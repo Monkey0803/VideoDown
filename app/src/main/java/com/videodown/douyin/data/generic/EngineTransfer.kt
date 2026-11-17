@@ -2,6 +2,7 @@ package com.videodown.douyin.data.generic
 
 import com.videodown.douyin.data.download.DownloadNetworkPolicy
 import com.videodown.douyin.data.download.DownloadPaths
+import com.videodown.douyin.data.download.EngineRateControl
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.TransferPhase
 import java.io.File
@@ -19,6 +20,8 @@ interface EngineTransfer {
         paths: DownloadPaths,
         policy: DownloadNetworkPolicy,
         rateLimitBytesPerSecond: Long? = null,
+        /** 共享带宽预算；多个任务同时下载时由它把总速率压回全局限速。 */
+        rateControl: EngineRateControl? = null,
         progress: suspend (downloaded: Long, total: Long, speed: Long, phase: TransferPhase) -> Unit,
     ): File
 }

@@ -111,6 +111,8 @@ import java.net.URI
 @Composable
 fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewModel(),
     onOpenParse: () -> Unit = {},
+    /** 当前全局限速（KB/s，`0` 表示不限速）；任务卡用它说明「跟随全局」时是谁在限制。 */
+    globalSpeedLimitKbps: Int = 0,
     onRecovery: (DownloadRecord, RecoveryAction) -> Unit = { _, _ -> }) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val motion = appMotion()
@@ -381,6 +383,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                                 onResume = { viewModel.resume(record.id) },
                                 onRestart = { viewModel.restart(record.id) },
                                 onRetryNow = { viewModel.retryNow(record.id) },
+                                globalSpeedLimitKbps = globalSpeedLimitKbps,
                                 onDelete = { pendingDelete = record },
                                 onSpeedLimit = { pendingSpeedLimit = record },
                                 onMove = { offset -> viewModel.moveInQueue(record.id, offset) },
@@ -434,6 +437,8 @@ private fun TaskCard(
     onRestart: () -> Unit,
     /** 用户明确要求跳过服务端冷却；只有卡片显示倒计时时才出现。 */
     onRetryNow: () -> Unit,
+    /** 全局上限；任务自己没有上限时用它说明是谁在限制。 */
+    globalSpeedLimitKbps: Int = 0,
     onDelete: () -> Unit,
     onSpeedLimit: () -> Unit,
     onShare: () -> Unit,
@@ -676,8 +681,11 @@ private fun TaskCard(
                 }
             }
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                // 任务卡要说清楚现在是谁在限制：任务自己的上限，还是「跟随全局」时的全局限速。
                 val limitLabel = record.speedLimitKbps.takeIf { it > 0 }
                     ?.let { stringResource(R.string.history_limit_label, speedLimitText(it)) }
+                    ?: globalSpeedLimitKbps.takeIf { it > 0 }
+                        ?.let { stringResource(R.string.history_global_limit_label, speedLimitText(it)) }
                 val meta = (listOf(downloadSourceText(record), relativeTimeText(relativeTime(record.updatedAt))) + listOfNotNull(limitLabel))
                     .joinToString(" · ")
                 Text(

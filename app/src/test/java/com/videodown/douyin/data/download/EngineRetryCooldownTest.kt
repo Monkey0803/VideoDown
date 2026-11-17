@@ -57,6 +57,7 @@ class EngineRetryCooldownTest {
             paths: DownloadPaths,
             policy: DownloadNetworkPolicy,
             rateLimitBytesPerSecond: Long?,
+            rateControl: com.videodown.douyin.data.download.EngineRateControl?,
             progress: suspend (Long, Long, Long, TransferPhase) -> Unit,
         ): File = handler(record, paths, calls.incrementAndGet())
     }
