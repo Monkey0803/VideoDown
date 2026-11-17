@@ -125,6 +125,7 @@ class XLoginSessionDeviceTest {
     @Test fun settingsRowWordsUnsignedState() {
         val signedInLabel = context.getString(R.string.settings_x_login_signed_out)
         compose.setContent { VideoDownTheme { SettingsScreen() } }
+        compose.onNodeWithTag("settings-open-accounts").performClick()
         compose.waitUntil(20_000) {
             compose.onAllNodesWithText(context.getString(R.string.settings_x_login_row)).fetchSemanticsNodes().isNotEmpty()
         }
@@ -138,6 +139,7 @@ class XLoginSessionDeviceTest {
             setCookie(X_ORIGIN, "ct0=csrf; Path=/; Secure; HttpOnly")
         }
         compose.setContent { VideoDownTheme { SettingsScreen() } }
+        compose.onNodeWithTag("settings-open-accounts").performClick()
         compose.waitUntil(20_000) {
             compose.onAllNodesWithText(context.getString(R.string.settings_x_login_signed_in)).fetchSemanticsNodes().isNotEmpty()
         }

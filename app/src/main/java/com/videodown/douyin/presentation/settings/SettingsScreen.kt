@@ -14,6 +14,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -36,6 +37,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
@@ -54,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.R
 import com.videodown.douyin.presentation.preferredQualityLabelRes
@@ -80,6 +83,8 @@ import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.presentation.login.XLoginScreen
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
 
+private enum class SettingsPage { ROOT, APPEARANCE, DOWNLOAD_NETWORK, WEBSITES_ACCOUNTS, BACKUP_STORAGE }
+
 @Composable
 fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {},
     onImportLinks: (String) -> Unit = {},
@@ -87,6 +92,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     updateViewModel: UpdateViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     preferences: com.videodown.douyin.core.AppPreferences = ServiceLocator.preferences) {
     val context = LocalContext.current
+    var page by rememberSaveable { mutableStateOf(SettingsPage.ROOT) }
     // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
     val resources = LocalResources.current
     val wifiOnly by preferences.wifiOnlyChanges.collectAsStateWithLifecycle()
@@ -200,7 +206,14 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     var showUpdate by rememberSaveable { mutableStateOf(false) }
     val installedVersion = remember { ServiceLocator.appVersion.versionName }
 
-    LaunchedEffect(openStorage) { if (openStorage) { showStorage = true; onStorageOpened() } }
+    LaunchedEffect(openStorage) {
+        if (openStorage) {
+            page = SettingsPage.BACKUP_STORAGE
+            showStorage = true
+            onStorageOpened()
+        }
+    }
+    BackHandler(enabled = page != SettingsPage.ROOT) { page = SettingsPage.ROOT }
     if (showXLogin) {
         XLoginScreen(onClose = { showXLogin = false },
             onFinished = { showXLogin = false; sessionScope.launch { refreshXSession() } })
@@ -428,7 +441,42 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     AdaptivePage(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     Column(Modifier.fillMaxWidth().fillMaxHeight().verticalScroll(rememberScrollState())
         .padding(horizontal = 22.dp)) {
+        when (page) {
+        SettingsPage.ROOT -> {
         TabPageHeader(stringResource(R.string.settings_header_title), stringResource(R.string.settings_header_subtitle))
+        SettingsCard {
+            SettingsHubRow(
+                icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_hub_appearance),
+                subtitle = stringResource(R.string.settings_hub_appearance_value),
+                onClick = { page = SettingsPage.APPEARANCE },
+                modifier = Modifier.testTag("settings-open-appearance"),
+            )
+            SettingsHubRow(
+                icon = { AppIcon(AppIcons.Download, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_hub_download),
+                subtitle = stringResource(R.string.settings_hub_download_value),
+                onClick = { page = SettingsPage.DOWNLOAD_NETWORK },
+                modifier = Modifier.testTag("settings-open-download"),
+            )
+            SettingsHubRow(
+                icon = { AppIcon(AppIcons.Browser, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_hub_accounts),
+                subtitle = stringResource(R.string.settings_hub_accounts_value),
+                onClick = { page = SettingsPage.WEBSITES_ACCOUNTS },
+                modifier = Modifier.testTag("settings-open-accounts"),
+            )
+            SettingsHubRow(
+                icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_hub_storage),
+                subtitle = stringResource(R.string.settings_hub_storage_value),
+                onClick = { page = SettingsPage.BACKUP_STORAGE },
+                modifier = Modifier.testTag("settings-open-storage"),
+            )
+        }
+        }
+        SettingsPage.APPEARANCE -> {
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_appearance)) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_appearance))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
@@ -446,6 +494,9 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 )
             }
         }
+        }
+        SettingsPage.DOWNLOAD_NETWORK -> {
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_download)) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_download))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Queue, null, tint = MaterialTheme.colorScheme.primary) },
@@ -549,6 +600,9 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         }
         Text(stringResource(R.string.settings_quality_note), color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 3.dp, top = 8.dp))
+        }
+        SettingsPage.WEBSITES_ACCOUNTS -> {
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_accounts)) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_engine))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Settings, null, tint = MaterialTheme.colorScheme.primary) },
@@ -573,6 +627,9 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                     }
                 })
         }
+        }
+        SettingsPage.BACKUP_STORAGE -> {
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_storage)) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_backup))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.ExportFolder, null, tint = MaterialTheme.colorScheme.primary) },
@@ -603,7 +660,28 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 title = stringResource(R.string.settings_about_row), value = "›", onClick = { showAbout = true })
         }
         Spacer(Modifier.height(28.dp))
+        }
+        }
     }
+    }
+}
+
+@Composable
+private fun SettingsSubpageHeader(title: String, onBack: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onBack, modifier = Modifier.testTag("settings-back")) {
+            AppIcon(AppIcons.Back, stringResource(R.string.action_back))
+        }
+        Text(
+            title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(start = 8.dp),
+        )
     }
 }
 
@@ -622,8 +700,27 @@ private fun SettingsCard(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun SettingsRow(icon: @Composable () -> Unit, title: String, value: String, onClick: (() -> Unit)?) {
-    Row(Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(16.dp),
+private fun SettingsHubRow(icon: @Composable () -> Unit, title: String, subtitle: String, onClick: () -> Unit,
+    modifier: Modifier = Modifier) {
+    Row(
+        modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 13.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        icon()
+        Column(Modifier.weight(1f)) {
+            Text(title, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold)
+            Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        }
+        AppIcon(AppIcons.Forward, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun SettingsRow(icon: @Composable () -> Unit, title: String, value: String, onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         icon()
         Text(title, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyLarge,

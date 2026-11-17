@@ -56,6 +56,11 @@ class LanguageSwitchDeviceTest {
         compose.waitUntil(20_000) { compose.onAllNodesWithTag("tab-bar").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("tab-settings").performClick()
         compose.waitForIdle()
+        if (compose.onAllNodesWithTag("settings-back").fetchSemanticsNodes().isNotEmpty()) {
+            compose.onNodeWithTag("settings-back").performClick()
+        }
+        compose.onNodeWithTag("settings-open-appearance").performClick()
+        compose.waitForIdle()
     }
 
     /** 系统里保存的按应用语言；Android 12 及以下没有这个概念。 */
@@ -75,7 +80,7 @@ class LanguageSwitchDeviceTest {
             compose.onNodeWithText("确定").performClick()
             // 切换语言会让系统重建 Activity；等底部标签回来后重新进设置页，断言整屏是英文。
             compose.waitUntil(20_000) { compose.onAllNodesWithTag("tab-bar").fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithTag("tab-settings").performClick()
+            openSettings()
             compose.waitUntil(20_000) { compose.onAllNodesWithText("Language").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("Appearance mode").assertIsDisplayed()
             compose.onNodeWithText("English").assertIsDisplayed()

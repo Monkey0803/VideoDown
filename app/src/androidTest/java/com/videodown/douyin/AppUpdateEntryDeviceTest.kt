@@ -13,6 +13,7 @@ import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -108,13 +109,18 @@ class AppUpdateEntryDeviceTest {
         }
     }
 
+    private fun openUpdateEntry(label: String = "检查更新") {
+        compose.onNodeWithTag("settings-open-storage").performClick()
+        compose.onNodeWithText(label).performScrollTo().assertIsDisplayed().performClick()
+    }
+
     @Test fun entryShowsInstalledVersionAndReportsANewerBuild() {
         preferences.updateManifestUrl = "https://updates.example.com/version.json"
         showSettings(
             """{"versionCode":99,"versionName":"9.9.9","downloadUrl":"https://example.com/app.apk",
                 "notes":"测试更新说明"}""",
         )
-        compose.onNodeWithText("检查更新").performScrollTo().assertIsDisplayed().performClick()
+        openUpdateEntry()
         // The label is built by the screen from resources now.
         val version = ServiceLocator.appVersion
         compose.onNodeWithText(
@@ -128,7 +134,7 @@ class AppUpdateEntryDeviceTest {
 
     @Test fun updateSourceCanBeConfiguredFromTheDialog() {
         showSettings("""{"versionCode":99,"versionName":"9.9.9"}""")
-        compose.onNodeWithText("检查更新").performScrollTo().performClick()
+        openUpdateEntry()
         compose.onNodeWithText("尚未配置更新源地址，请先设置版本清单地址").assertIsDisplayed()
         compose.onNodeWithText("更新源").performClick()
         compose.onNode(hasSetTextAction()).performTextInput("https://updates.example.com/version.json")
@@ -143,7 +149,7 @@ class AppUpdateEntryDeviceTest {
      */
     @Test fun actionsShareOneRowWhenWidthAllows() {
         showSettings("""{"versionCode":99,"versionName":"9.9.9"}""")
-        compose.onNodeWithText("检查更新").performScrollTo().performClick()
+        openUpdateEntry()
         compose.onNodeWithText("尚未配置更新源地址，请先设置版本清单地址").assertIsDisplayed()
         val bounds = listOf("更新源", "重新检查", "完成").map { compose.onNodeWithText(it).getUnclippedBoundsInRoot() }
         val tops = bounds.map { it.top.value }
@@ -162,7 +168,7 @@ class AppUpdateEntryDeviceTest {
     @Test fun notesFollowTheChineseInterface() {
         preferences.updateManifestUrl = "https://updates.example.com/version.json"
         showSettings(BOTH_LANGUAGE_NOTES, english = false)
-        compose.onNodeWithText("检查更新").performScrollTo().performClick()
+        openUpdateEntry()
         compose.onNodeWithText("发现新版本：9.9.9").assertIsDisplayed()
         compose.onNodeWithText("中文更新说明：新增合集解析").assertIsDisplayed()
         assertTrue("中文界面不该显示英文说明", compose.onAllNodesWithText("English note: adds collection parsing").fetchSemanticsNodes().isEmpty())
@@ -171,7 +177,7 @@ class AppUpdateEntryDeviceTest {
     @Test fun notesFollowTheEnglishInterface() {
         preferences.updateManifestUrl = "https://updates.example.com/version.json"
         showSettings(BOTH_LANGUAGE_NOTES, english = true)
-        compose.onNodeWithText("Check for updates").performScrollTo().performClick()
+        openUpdateEntry("Check for updates")
         compose.onNodeWithText("English note: adds collection parsing").assertIsDisplayed()
         assertTrue("英文界面不该显示中文说明", compose.onAllNodesWithText("中文更新说明：新增合集解析").fetchSemanticsNodes().isEmpty())
     }
@@ -179,7 +185,7 @@ class AppUpdateEntryDeviceTest {
     @Test fun reportsUpToDateForTheInstalledVersion() {
         preferences.updateManifestUrl = "https://updates.example.com/version.json"
         showSettings("""{"versionCode":${ServiceLocator.appVersion.versionCode},"versionName":"1.0.1"}""")
-        compose.onNodeWithText("检查更新").performScrollTo().performClick()
+        openUpdateEntry()
         compose.onNodeWithText("已是最新版本。").assertIsDisplayed()
     }
 }

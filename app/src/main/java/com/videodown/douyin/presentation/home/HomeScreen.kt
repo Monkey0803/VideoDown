@@ -206,7 +206,8 @@ fun HomeScreen(
             onFinished = { signedIn -> showXLogin = false; if (signedIn) viewModel.parse() })
     }
     LaunchedEffect(state.queuedCount) {
-        if (state.queuedCount != null) { viewModel.onQueuedConsumed(); onOpenHistory() }
+        // 入队成功后留在结果页，便于继续选择或返回解析；全局下载条持续提供任务入口。
+        if (state.queuedCount != null) viewModel.onQueuedConsumed()
     }
     state.duplicates?.let { pending ->
         val single = pending.requests.size == 1

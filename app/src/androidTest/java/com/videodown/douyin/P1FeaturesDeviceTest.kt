@@ -65,8 +65,13 @@ class P1FeaturesDeviceTest {
             compose.activity.setContent { VideoDownTheme { SettingsScreen(storageViewModel = model, preferences = preferences) } }
         }
     }
+    private fun openSettingsSection(tag: String) {
+        compose.onNodeWithTag(tag).performClick()
+        compose.waitForIdle()
+    }
     @Test fun concurrencySettingPersistsAndUpdatesTheActualEngine() {
         showSettings()
+        openSettingsSection("settings-open-download")
         compose.onNodeWithText("同时下载数量", substring = false).performScrollTo().performClick()
         compose.onNodeWithText("2 个任务", substring = false).performClick()
         compose.onNodeWithText("确定", substring = false).performClick()
@@ -90,6 +95,7 @@ class P1FeaturesDeviceTest {
             history.upsert(DownloadRecord("missing", "missing", "missing", filePath = directory.resolve("gone.mp4").path, status = DownloadStatus.COMPLETED))
         }
         showSettings()
+        openSettingsSection("settings-open-storage")
         compose.onNodeWithText("存储空间", substring = false).performScrollTo().performClick()
         compose.waitUntil(5000) { compose.onAllNodes(hasText("文件已丢失的记录：1 条")).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("清理残留与无效记录").performClick()
@@ -113,6 +119,7 @@ class P1FeaturesDeviceTest {
                 val model = StorageViewModel(budgeted); models.put("storage", model)
                 compose.activity.setContent { VideoDownTheme { SettingsScreen(storageViewModel = model, preferences = preferences) } }
             }
+            openSettingsSection("settings-open-storage")
             compose.onNodeWithText("存储空间", substring = false).performScrollTo().performClick()
             compose.waitUntil(5000) { compose.onAllNodes(hasText("运行任务尚需", substring = true)).fetchSemanticsNodes().isNotEmpty() }
             compose.onNode(hasText("预算任务", substring = true)).performScrollTo().assertIsDisplayed()

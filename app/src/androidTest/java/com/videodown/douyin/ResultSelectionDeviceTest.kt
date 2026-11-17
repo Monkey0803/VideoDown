@@ -20,12 +20,14 @@ import org.junit.*
 import org.junit.Assert.*
 import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
 
 class ResultSelectionDeviceTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val models = ViewModelStore()
     private val saved = CopyOnWriteArrayList<Pair<String, String>>()
+    private val historyOpens = AtomicInteger()
     private lateinit var model: HomeViewModel
     private val title = "这是一个很长的视频标题，用于检查小屏幕中标题是否能够完整展开，并且保持视频选择与批量下载相互独立。".repeat(3)
     private val videos = (1..12).map { index -> DouyinVideo("result-ui-$index", if (index == 1) title else "第 $index 个视频",
@@ -46,7 +48,9 @@ class ResultSelectionDeviceTest {
             model = HomeViewModel(repository, downloader, { it.defaultVariant }, { null })
             models.put("result", model)
             model.acceptBrowserResult(ParsedVideos(videos))
-            compose.activity.setContent { VideoDownTheme { HomeScreen(null, {}, {}, {}, {}, emptyList(), model) } }
+            compose.activity.setContent {
+                VideoDownTheme { HomeScreen(null, {}, { historyOpens.incrementAndGet() }, {}, {}, emptyList(), model) }
+            }
         }
     }
     @After fun close() {
@@ -86,6 +90,7 @@ class ResultSelectionDeviceTest {
         compose.onNodeWithText("保存所选 2 项").performClick()
         compose.waitUntil(5000) { saved.size == 2 }
         assertEquals(listOf("result-ui-1" to "720P", "result-ui-2" to "720P"), saved)
+        assertEquals("入队后应留在结果页，由全局下载条提供任务入口", 0, historyOpens.get())
     }
     @Test fun lastVideoPreviewPreservesQualityAndDoesNotSelectForBatch() {
         compose.onNodeWithTag("result-more-options").performClick()

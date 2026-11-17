@@ -3,6 +3,7 @@ package com.videodown.douyin.presentation
 import com.videodown.douyin.R
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.DownloadCenterBar
 
 import android.content.Context
 import android.content.Intent
@@ -27,6 +28,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -51,8 +53,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.videodown.douyin.domain.model.RecoveryAction
+import com.videodown.douyin.domain.model.DownloadStatus
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -325,6 +329,26 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     val route = entry?.destination?.route
     var requestedStorage by remember { mutableStateOf(false) }
     val historyState by historyViewModel.state.collectAsStateWithLifecycle()
+    var completedInSession by rememberSaveable { mutableStateOf(0) }
+    var statusBaselineReady by remember { mutableStateOf(false) }
+    val observedStatuses = remember { mutableMapOf<String, DownloadStatus>() }
+    val statusSnapshot = historyState.records.associate { it.id to historyState.statusFor(it) }
+    LaunchedEffect(statusSnapshot) {
+        if (!statusBaselineReady) {
+            // 首次从磁盘装载的完成记录不是“本次结果”，不能在每次启动时弹一遍。
+            if (statusSnapshot.isNotEmpty()) {
+                observedStatuses.putAll(statusSnapshot)
+                statusBaselineReady = true
+            }
+        } else {
+            val newCompletions = statusSnapshot.count { (id, status) ->
+                status == DownloadStatus.COMPLETED && observedStatuses[id] in
+                    setOf(DownloadStatus.PENDING, DownloadStatus.RUNNING)
+            }
+            if (newCompletions > 0) completedInSession += newCompletions
+            observedStatuses.putAll(statusSnapshot)
+        }
+    }
     // 列表数据本来就在内存里，取封面不需要再读一次库。
     /**
      * 列表点击与完成通知深链共用这一条分流：图片进看图器、压缩包交给系统「打开方式」、
@@ -356,6 +380,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     fun navigateTab(destination: String) {
         focusManager.clearFocus(force = true)
         keyboard?.hide()
+        if (destination == Routes.TASKS) completedInSession = 0
         if (route != destination) {
             navController.navigate(destination) {
                 popUpTo(Routes.HOME) { saveState = true }
@@ -412,7 +437,11 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             if (route in tabs && !keyboardVisible) {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                Column {
+                    if (route != Routes.TASKS) {
+                        DownloadCenterBar(historyState, completedInSession, onOpenTasks = { navigateTab(Routes.TASKS) })
+                    }
+                    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                     // Tags make the tab bar addressable by tests without depending on the copy,
                     // which now follows the app language.
                     modifier = Modifier.testTag("tab-bar")) {
@@ -433,6 +462,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                             alwaysShowLabel = true,
                         )
                     }
+                }
                 }
             }
         },

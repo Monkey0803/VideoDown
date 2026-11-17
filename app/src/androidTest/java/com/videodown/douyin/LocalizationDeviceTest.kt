@@ -66,12 +66,16 @@ class LocalizationDeviceTest {
     private fun openSettings() {
         compose.onNodeWithTag("tab-settings").performClick()
         compose.waitForIdle()
+        if (compose.onAllNodesWithTag("settings-back").fetchSemanticsNodes().isNotEmpty()) {
+            compose.onNodeWithTag("settings-back").performClick()
+        }
     }
 
     private fun openUpdateDialog() {
         openSettings()
         val alreadyOpen = countOf("当前版本：") + countOf("Installed: ")
         if (alreadyOpen > 0) return
+        compose.onNodeWithTag("settings-open-storage").performClick()
         // The settings row itself is migrated, so its label depends on the current language.
         val label = if (compose.onAllNodesWithText("Check for updates").fetchSemanticsNodes().isNotEmpty()) "Check for updates" else "检查更新"
         compose.onNodeWithText(label).performScrollTo().performClick()
@@ -93,7 +97,9 @@ class LocalizationDeviceTest {
         openSettings()
         compose.waitUntil(20_000) { countOf("My settings") > 0 }
         assertTrue(countOf("我的设置") == 0)
-        compose.onNodeWithText("Appearance").assertExists()
+        compose.onNodeWithText("Appearance & language").assertExists()
+        compose.onNodeWithText("Downloads & network").assertExists()
+        compose.onNodeWithTag("settings-open-download").performClick()
         compose.onNodeWithText("Wi-Fi only").assertExists()
         compose.onNodeWithText("Download speed limit").assertExists()
 
