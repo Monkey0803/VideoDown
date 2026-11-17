@@ -617,6 +617,14 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         historyViewModel = historyViewModel,
                         onPlay = { openRecord(it) },
                         onOpenParse = { navigateTab(Routes.HOME) },
+                        onRedownload = { historyViewModel.restart(it.id) },
+                        onReparse = { record ->
+                            val page = record.sourcePageUrl.ifBlank { record.media?.pageUrl.orEmpty() }
+                            if (page.isNotBlank()) {
+                                homeViewModel.parseSharedText(page)
+                                navigateTab(Routes.HOME)
+                            }
+                        },
                         watchProgress = watchProgress,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = animatedVisibilityScope,

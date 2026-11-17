@@ -88,6 +88,14 @@
     <string name="library_share_video">Share video</string>
     <string name="library_share_failed">Sharing failed; check the file and the available apps</string>
     <string name="library_saving">Saving…</string>
+    <string name="library_check_file">Check file</string>
+    <string name="library_checking">Checking…</string>
+    <string name="library_check_title">File check</string>
+    <string name="library_check_healthy">The file is intact and can still be opened.</string>
+    <string name="library_check_unknown">The file is still there, but this older record kept no completion snapshot.</string>
+    <string name="library_check_missing">The file is gone; a file manager or cleanup may have deleted it.</string>
+    <string name="library_check_changed">The file differs from its completion snapshot in size or modification time.</string>
+    <string name="library_check_corrupt">The file failed its structure check; it may be corrupt or truncated.</string>
     <string name="library_delete">Delete video</string>
     <string name="library_delete_title">Delete this video?</string>
     <string name="library_delete_body">This deletes the record and the local file for “%1$s”; it cannot be undone. Copies already saved to the system gallery are not affected.</string>

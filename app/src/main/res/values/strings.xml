@@ -88,6 +88,14 @@
     <string name="library_share_video">分享视频</string>
     <string name="library_share_failed">分享失败，请检查视频文件及可用应用</string>
     <string name="library_saving">正在保存…</string>
+    <string name="library_check_file">检查文件</string>
+    <string name="library_checking">检查中…</string>
+    <string name="library_check_title">文件检查</string>
+    <string name="library_check_healthy">文件完整，可以正常播放或查看。</string>
+    <string name="library_check_unknown">文件还在，但这条旧记录没有保存完成时的大小信息，只能确认它存在。</string>
+    <string name="library_check_missing">文件已经不在了，可能被文件管理器或系统清理删除。</string>
+    <string name="library_check_changed">文件与完成时的大小或修改时间不一致，可能被替换或没有写完。</string>
+    <string name="library_check_corrupt">文件结构校验失败：它可能已经损坏或被截断。</string>
     <string name="library_delete">删除视频</string>
     <string name="library_delete_title">删除视频？</string>
     <string name="library_delete_body">将删除“%1$s”的下载记录和本地文件，无法恢复。已保存到系统相册的副本不受影响。</string>

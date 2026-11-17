@@ -141,7 +141,10 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     // 此时封面不带共享修饰，行为与改造前一致。
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedVisibilityScope: AnimatedVisibilityScope? = null,
-    onOpenParse: () -> Unit = {}) {
+    onOpenParse: () -> Unit = {},
+    /** 文件缺失/损坏时：按原地址重新下载，或回到解析页重新解析。 */
+    onRedownload: (com.videodown.douyin.domain.model.DownloadRecord) -> Unit = {},
+    onReparse: (com.videodown.douyin.domain.model.DownloadRecord) -> Unit = {}) {
     val motion = appMotion()
     val context = LocalContext.current
     // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
@@ -579,6 +582,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             organizing = organization.busy || fileExport.busy,
             onFileExport = { fileExportViewModel.reset(); fileExportIds = listOf(it.id) },
             onExtractAudio = { audioExtractionViewModel.reset(); extractingId = it.id },
+            onRedownload = onRedownload,
+            onReparse = onReparse,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }

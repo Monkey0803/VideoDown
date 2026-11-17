@@ -50,7 +50,11 @@ import com.videodown.douyin.presentation.galleryErrorMessage
 import com.videodown.douyin.core.DouyinIntents
 import androidx.compose.ui.res.stringResource
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.data.download.LibraryFileInspector
 import com.videodown.douyin.data.gallery.GalleryExportOutcome
+import com.videodown.douyin.domain.model.StoredFileHealth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.videodown.douyin.R
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.VaultPolicy
@@ -76,6 +80,10 @@ internal fun LibraryActions(
     onToggleVault: (DownloadRecord) -> Unit = {},
     /** Whether the vault is open, which decides how the vault action reads. */
     vaultUnlocked: Boolean = false,
+    /** 文件缺失或损坏时的两个修复入口：按原地址重新下载，或回到解析页重新解析。 */
+    onRedownload: (DownloadRecord) -> Unit = {},
+    onReparse: (DownloadRecord) -> Unit = {},
+    inspector: LibraryFileInspector = ServiceLocator.fileInspector,
 ) {
     val context = LocalContext.current
     // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
@@ -87,6 +95,9 @@ internal fun LibraryActions(
     // 回执说「已经保存过」时进入这里，只有用户确认后才再写一份。
     // 保存记录本身而不是 id：底部弹窗关闭后列表参数可能已经不含这条记录。
     var pendingResave by remember { mutableStateOf<DownloadRecord?>(null) }
+    // 用户主动「检查文件」期间禁用入口；结论不健康时弹出修复对话框。
+    var checkingId by remember { mutableStateOf<String?>(null) }
+    var healthIssue by remember { mutableStateOf<Pair<DownloadRecord, StoredFileHealth>?>(null) }
     var pendingPermissionId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingDeleteId by rememberSaveable { mutableStateOf<String?>(null) }
     val selected = records.firstOrNull { it.id == selectedRecordId }
@@ -155,6 +166,27 @@ internal fun LibraryActions(
                 LibraryActionRow(stringResource(R.string.library_organize), AppIcons.Rename, enabled = !organizing) { onOrganize(selected); onDismiss() }
                 LibraryActionRow(stringResource(if (selected.isPrivate) R.string.vault_remove else R.string.vault_add), AppIcons.Storage, enabled = !organizing) {
                     onToggleVault(selected); onDismiss()
+                }
+                if (selected.status == com.videodown.douyin.domain.model.DownloadStatus.COMPLETED) {
+                    LibraryActionRow(
+                        stringResource(if (checkingId == selected.id) R.string.library_checking else R.string.library_check_file),
+                        AppIcons.Info,
+                        enabled = checkingId == null,
+                    ) {
+                        val record = selected
+                        checkingId = record.id
+                        onDismiss()
+                        scope.launch {
+                            // 结构校验会读文件头尾的样本，放到 IO 线程，不卡列表。
+                            val health = withContext(Dispatchers.IO) { inspector.inspect(record) }
+                            checkingId = null
+                            when (health) {
+                                StoredFileHealth.HEALTHY -> showMessage(resources.getString(R.string.library_check_healthy))
+                                StoredFileHealth.UNKNOWN -> showMessage(resources.getString(R.string.library_check_unknown))
+                                else -> healthIssue = record to health
+                            }
+                        }
+                    }
                 }
                 LibraryActionRow(stringResource(R.string.library_export_folder), AppIcons.ExportFolder, enabled = !organizing) { onFileExport(selected); onDismiss() }
                 if (selected.isVideo) LibraryActionRow(stringResource(R.string.library_extract_audio), AppIcons.ExtractAudio, enabled = !organizing) { onExtractAudio(selected); onDismiss() }
@@ -230,6 +262,33 @@ internal fun LibraryActions(
                 export(resave, replaceExisting = true)
             },
             dismissText = stringResource(R.string.action_cancel),
+        )
+    }
+
+    healthIssue?.let { (record, health) ->
+        AppConfirmDialog(
+            onDismissRequest = { healthIssue = null },
+            icon = AppIcons.Warning,
+            title = stringResource(R.string.library_check_title),
+            body = stringResource(
+                when (health) {
+                    StoredFileHealth.MISSING -> R.string.library_check_missing
+                    StoredFileHealth.CHANGED -> R.string.library_check_changed
+                    else -> R.string.library_check_corrupt
+                },
+            ),
+            confirmText = stringResource(R.string.action_retry_download),
+            onConfirm = {
+                healthIssue = null
+                onRedownload(record)
+            },
+            dismissText = stringResource(R.string.action_cancel),
+            extraActions = {
+                TextButton(onClick = {
+                    healthIssue = null
+                    onReparse(record)
+                }) { Text(stringResource(R.string.recovery_reparse)) }
+            },
         )
     }
 

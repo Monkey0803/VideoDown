@@ -125,6 +125,13 @@ data class DownloadRecord(
     val retryAttempt: Int = 0,
     /** 最近一次触发重试的 HTTP 状态码（引擎或直链给出的），冷却恢复后仍能判断该不该重试。 */
     val retryHttpStatus: Int? = null,
+    /**
+     * 完成时记录的文件大小与修改时间，用于「已存文件健康检查」的低成本比对。
+     *
+     * 旧记录没有这两个字段，读到 `null` 时只做「文件还在不在」的判断，不误报「已变化」。
+     */
+    val fileSizeBytes: Long? = null,
+    val fileModifiedAt: Long? = null,
 ) {
     val isAudio: Boolean get() = media?.audioOnly == true
 

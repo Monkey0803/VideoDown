@@ -104,6 +104,9 @@ object ServiceLocator {
             },
         )
     }
+    /** 已存文件健康检查：最低成本只 stat，用户主动检查时才做媒体结构校验。 */
+    val fileInspector by lazy { com.videodown.douyin.data.download.LibraryFileInspector() }
+
     val galleryExporter by lazy {
         com.videodown.douyin.data.gallery.GalleryExporter(appContext, exportReceipts)
     }

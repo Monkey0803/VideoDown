@@ -436,6 +436,8 @@ class DownloadEngine(
             pauseCause = null,
             etag = null,
             filePath = null,
+            fileSizeBytes = null,
+            fileModifiedAt = null,
             livePhotoMotion = record.livePhotoMotion?.copy(filePath = null),
             updatedAt = System.currentTimeMillis(),
         ).withRetryCleared()
@@ -871,7 +873,7 @@ class DownloadEngine(
             failureKind = null,
             pauseCause = null,
             updatedAt = System.currentTimeMillis(),
-        ).withRetryCleared()
+        ).withRetryCleared().withFileSnapshot(primaryFile)
         history.upsert(completed)
         runCatching { onCompleted(completed) }
             .onFailure { Log.w(TAG, AppText.get(R.string.log_completion_notify_failed), it) }
@@ -1112,7 +1114,7 @@ class DownloadEngine(
             val completed = record.copy(status = DownloadStatus.COMPLETED, filePath = output.absolutePath,
                 fileName = output.name, downloadedBytes = output.length(), totalBytes = output.length(), errorMessage = null, failureKind = null,
                 pauseCause = null,
-                updatedAt = System.currentTimeMillis()).withRetryCleared()
+                updatedAt = System.currentTimeMillis()).withRetryCleared().withFileSnapshot(output)
             history.upsert(completed)
             paths.engineDirectory(record.id).deleteRecursively()
             runCatching { onCompleted(completed) }
@@ -1384,7 +1386,7 @@ class DownloadEngine(
                     phase = TransferPhase.DOWNLOADING,
                     errorMessage = null, failureKind = null, pauseCause = null,
                     updatedAt = System.currentTimeMillis(),
-                ).withRetryCleared()
+                ).withRetryCleared().withFileSnapshot(output)
                 history.upsert(completed)
                 runCatching { onCompleted(completed) }
                 _progress.update { it - record.id }
@@ -1483,6 +1485,10 @@ class DownloadEngine(
         )
         _progress.update { it - record.id }
     }
+
+    /** 完成时把文件大小与修改时间写进记录，供已存页做低成本健康检查。 */
+    private fun DownloadRecord.withFileSnapshot(file: File): DownloadRecord =
+        copy(fileSizeBytes = file.length(), fileModifiedAt = file.lastModified())
 
     /** 普通图片的工作余量较小；Live Photo 还包含 MOV，必须按视频任务预留。 */
     private fun reserveFor(record: DownloadRecord): Long =
