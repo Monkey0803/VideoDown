@@ -22,6 +22,8 @@ object VideoLinkExtractor {
         "weibo.com", "www.weibo.com", "m.weibo.cn", "weibo.cn", "video.weibo.com", "t.cn" -> VideoPlatform.WEIBO
         "kuaishou.com", "www.kuaishou.com", "v.kuaishou.com", "v.m.chenzhongtech.com", "v.m.gifshow.com", "m.gifshow.com" -> VideoPlatform.KUAISHOU
         "x.com", "www.x.com", "m.x.com", "mobile.x.com", "twitter.com", "www.twitter.com", "m.twitter.com", "mobile.twitter.com", "t.co" -> VideoPlatform.X
+        "bilibili.com", "www.bilibili.com", "m.bilibili.com", "b23.tv", "www.b23.tv",
+        "live.bilibili.com", "space.bilibili.com", "audio.bilibili.com" -> VideoPlatform.BILIBILI
         else -> null
     }
 

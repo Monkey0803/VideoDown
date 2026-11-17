@@ -680,6 +680,7 @@
     <string name="platform_douyin">抖音</string>
     <string name="platform_weibo">微博</string>
     <string name="platform_kuaishou">快手</string>
+    <string name="platform_bilibili">哔哩哔哩</string>
     <string name="platform_x">X</string>
     <string name="platform_generic">网页</string>
     <string name="platform_network_failed">%1$s访问失败，请检查网络后重试</string>
@@ -688,6 +689,9 @@
     <string name="platform_http_error">%1$s返回 HTTP %2$d，可能需要登录或验证，请在原平台确认作品可访问后重试。</string>
 
     <!-- Input validation -->
+    <string name="bilibili_unsupported">只支持 B 站单个视频或分 P 页面；番剧、直播、课程、音频、空间和频道列表暂不支持。</string>
+    <string name="bilibili_short_unresolved">这个 b23.tv 短链没有指向可信的 B 站视频页。</string>
+    <string name="bilibili_missing_engine">内置引擎不可用，暂时无法解析 B 站页面。</string>
     <string name="input_needs_link">请粘贴 HTTP/HTTPS 视频网址、分享文案或抖音作品 ID</string>
     <string name="input_weibo_link">请复制微博正文的视频分享链接（weibo.com/用户ID/微博ID）</string>
     <string name="input_generic_only">请使用通用解析引擎打开此网址</string>

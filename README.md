@@ -2,7 +2,7 @@
 
 项目自有源码按 [GNU GPL 3.0 或更新版本](LICENSE)（`GPL-3.0-or-later`）发布。随包第三方代码、引擎和素材保留各自的许可证（看图器使用 [ZoomImage](https://github.com/panpf/zoomimage)，Apache-2.0）；引擎许可来源见[通用视频引擎说明](docs/research/universal-video-engine.md)。F-Droid 收录所需的第三方源码与素材权属核查仍在进行，见 [F-Droid 预检](docs/validation/fdroid-precheck-2026-10-15.md)。
 
-使用 Kotlin + Jetpack Compose 实现的 Android 应用，支持解析抖音、微博、快手、X（Twitter）分享链接及通用 HTTP/HTTPS 网址，选择分辨率下载视频、保存分享链接里的图片与图文作品（可打包成一个 ZIP）、
+使用 Kotlin + Jetpack Compose 实现的 Android 应用，支持解析抖音、微博、快手、X（Twitter）、哔哩哔哩分享链接及通用 HTTP/HTTPS 网址，选择分辨率下载视频、保存分享链接里的图片与图文作品（可打包成一个 ZIP）、
 记录下载历史、打开原视频与作者主页并播放已下载的视频。界面使用 Compose Material 3，在「我的 → 外观模式」中可选择跟随系统、浅色或深色，确认后立即生效并在重启后保留；Android 12 及以上还可在「我的 → 动态取色（Material You）」改用系统壁纸配色。默认采用奶白、暖橙与深褐品牌主题，深色模式使用暖褐背景与杏橙强调色。颜色、文字样式与圆角统一由 `MaterialTheme` 管理。
 
 主导航分为「解析」「任务」「已存」「我的」：解析页支持粘贴分享文案和选择画质；任务页显示实时进度及暂停、续传、删除操作；已存页展示文件仍存在的已完成视频；「我的」可设置默认画质、仅在 Wi-Fi 下下载、完成时通知、每条任务独立通知、识别剪贴板链接与动态取色，偏好在重启后保留。
@@ -183,7 +183,7 @@ MP4/WebM 直链继续断点下载；HLS、DASH 和分离音视频通过本地 Py
 
 | # | 需求 | 实现位置 |
 |---|------|----------|
-| 1 | 解析抖音、微博、快手、X 链接、下载视频、**支持选择分辨率** | `data/repository/MultiPlatformVideoRepository.kt`（平台路由）+ `data/remote/`（链接解析）+ `data/download/`（下载）+ `presentation/home/HomeScreen.kt`（分辨率选择 UI） |
+| 1 | 解析抖音、微博、快手、X、哔哩哔哩链接、下载视频、**支持选择分辨率** | `data/repository/MultiPlatformVideoRepository.kt`（平台路由）+ `data/remote/`（链接解析）+ `data/download/`（下载）+ `presentation/home/HomeScreen.kt`（分辨率选择 UI） |
 | 2 | 记录下载历史 | `data/local/DownloadHistoryStore.kt` + `presentation/history/` |
 | 3 | 打开原视频与对应作者主页 | `core/DouyinIntents.kt`（抖音优先唤起客户端，其余平台打开对应网页） |
 | 4 | 断点续传 | `data/download/ResumableDownloader.kt`（HTTP Range + `If-Range`）+ `DownloadEngine`（偏移量落盘） |
@@ -421,6 +421,14 @@ app/src/main/java/com/videodown/douyin/
 
 新增的 X 补全单元测试覆盖原生 MP4 与引擎 HLS 合并、视频卡片追加和指定媒体保留；真实 X 引擎结果以设备联网用例 `XVideoDeviceTest#liveUnifiedXAddsEngineFormats` 单独验收。网页登录态按实际请求主机查询 Cookie，额外覆盖 `api.x.com`；真实账号登录仍需单独验证。直播录制、纯音频 Spaces 与 DRM 不在点播下载范围内。
 
+## 哔哩哔哩（B 站，Phase F E1）
+
+- 识别 `bilibili.com/video/BV…`、`/video/av…`、移动端 `m.bilibili.com` 与分享文案；显式 `?p=N` 会保留，`spm_id_from`、`vd_source` 等跟踪参数丢弃。链接先归一化成 `https://www.bilibili.com/video/BV…` 再交给随包引擎解析。
+- `b23.tv` 短链逐跳展开：只跟随跳到 `bilibili.com` / `m.bilibili.com` / `b23.tv` 的 3xx，最终目标必须是单个视频页；跳到其它主机或 B 站的非视频页都按「无法展开」处理，不把开放重定向当成解析入口。
+- 第一版只做单个视频页与分 P：番剧、直播、课程、音频、空间和频道列表直接显示「不支持」，不交给引擎。解析结果按 BILIBILI 标注，画质列表、下载、续传、已存与播放沿用既有流程（下载/合并的 B 站专项验收属于 E2）。
+- 「解析合集」开启后由引擎枚举分 P，上限与其它站点一致为 20 条；关闭时只取链接指向的当前分 P。
+- 验证与未覆盖边界见 [E1 验收记录](docs/validation/bilibili-e1-2026-11-17.md)：真实公开视频的匿名解析已跑通（链接不入库），多 P 枚举与真实 `b23.tv` 展开仍需专门链接复验。
+
 ## 断点续传实现
 
 `ResumableDownloader` 的行为与 `curl -C -` 一致：
@@ -481,5 +489,6 @@ Android/data/com.videodown.douyin/files/Movies/Douyin/
 - **服务端拒绝登录态时无法区分成因**：登录已过期、账号没有查看权限都会表现为登录/授权要求，所以提示把两种可能都写出来，并指向重新登录，而不是断言「已过期」。
 - **网页解析面板扫完一定会给一句结论**：找到候选就说已检查资源，一个都没有就说「本页没有发现可下载的视频」；视频号页面换成上面那句说明。候选判定见 `BrowserMediaDetector`，面板的状态文案由纯函数 `browserStatusRes` 决定。
 - **完整性校验不逐帧解码**：只要求近结尾处仍有样本，不检测文件中间的空洞，也不核对声明时长与实际样本数的细微差异；容器没有声明时长（直播、未知时长流）时只做首样本校验。**缺音轨的重试收益未量化**：分轨合并少了音轨会按可重试的网络类失败处理，站点本身就只提供纯视频流时会在三轮重试后失败。
+- **B 站只支持单个视频页与分 P**：番剧、直播、课程、音频、空间/频道列表按链接形态直接拒绝；没有应用内 B 站登录，需要登录或高清晰度的内容可能只拿到匿名可用画质或失败（登录态属于 E3）。解析出来的下载走既有引擎与校验，但 B 站 DASH 分轨的专项下载验收尚未完成（E2）；`danmaku` 等非正片字幕也未做过滤（E4）。
 - **引擎的 `Retry-After` 依赖 yt-dlp 的异常对象**：能从 `HTTPError.response` 取到头时按服务端时间等待，取不到（例如失败被包装成纯文本错误）时只能回落指数退避；单个引擎进程内的重试由应用控制，多个引擎进程之间的带宽与冷却协调仍属后续项（I5）。
 - **不要用 `embedsubtitles` 参数**：它是 yt-dlp 的命令行专用开关，`YoutubeDL` 会直接忽略它（已实测：下载成功、无报错、文件里没有字幕轨）。引擎里必须显式添加 `FFmpegEmbedSubtitle` 后处理器。

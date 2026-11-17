@@ -273,7 +273,15 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
 
 ## Phase F — 哔哩哔哩支持（后续）
 
-- [ ] **E1 链接与投稿解析** — 识别 `bilibili.com/video/BV…`、`/video/av…`、移动端链接及只跳转到可信 B 站视频页的 `b23.tv`；支持显式 `?p=N`。普通解析只取当前分 P，「解析合集」开启后最多枚举 20 P。第一版不含番剧、直播、课程、音频及空间/频道列表。
+- [x] **E1 链接与投稿解析**（2026-11-17 完成，证据见 [验收记录](validation/bilibili-e1-2026-11-17.md)）—
+  新增 `VideoPlatform.BILIBILI`、纯 Kotlin `BilibiliLink`（只认 `/video/BV…` 与 `/video/av…`，
+  保留显式 `?p=N`，丢弃分享参数）与 `BilibiliShortLinkResolver`（逐跳校验，只跟随跳到可信 B 站视频页的
+  `b23.tv`）。番剧、直播、课程、音频、空间/频道列表与缺 ID 路径返回 `bilibili:unsupported`，
+  不交给引擎；仓库把引擎结果重标平台、写回归一化来源地址并补 Referer。合集枚举沿用「解析合集」开关
+  与 20 P 上限。JVM 652 例通过（新增链接归一化 8 例、短链展开 5 例），`BilibiliDeviceTest` 6 条
+  （4 条离线 + 1 条真实在线解析已通过 + 1 条多 P 合集按默认前提跳过）。
+  **未覆盖**：本轮没有多 P 链接，分 P 枚举未实测；`b23.tv` 只用本地 302 验证；番剧/直播按 URL 形态拒绝；
+  登录态、DASH 下载与字幕过滤分别属于 E3/E2/E4。
 - [ ] **E2 DASH 下载** — 复用现有 yt-dlp / FFmpeg 引擎和 `MediaKind`，把 B 站视频流与音频流作为同一画质选择合并下载；继续拒绝 DRM、直播录制、付费绕过和权限越权。
 - [ ] **E3 应用内网页登录态** — 设置页提供 B 站登录入口，以 `SESSDATA` 判断登录状态并向引擎导出 B 站网页/API 所需 Cookie；检测到登录态时优先登录解析，失败后匿名降级，仍失败时提供重新登录入口。只访问账号在正常网页中可播放的内容，不读取外部浏览器 Cookie。
 - [ ] **E4 字幕与验证** — 只暴露可下载/嵌入的文本字幕，过滤 `danmaku` XML；补齐 JVM、设备和默认跳过的 `live_bilibili` 在线验收，并在 `docs/validation/` 留证后才能勾选。

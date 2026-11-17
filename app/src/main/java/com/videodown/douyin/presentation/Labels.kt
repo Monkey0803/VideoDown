@@ -24,6 +24,7 @@ internal fun videoPlatformLabelRes(platform: com.videodown.douyin.domain.model.V
     com.videodown.douyin.domain.model.VideoPlatform.WEIBO -> R.string.platform_weibo
     com.videodown.douyin.domain.model.VideoPlatform.KUAISHOU -> R.string.platform_kuaishou
     com.videodown.douyin.domain.model.VideoPlatform.X -> R.string.platform_x
+    com.videodown.douyin.domain.model.VideoPlatform.BILIBILI -> R.string.platform_bilibili
     com.videodown.douyin.domain.model.VideoPlatform.GENERIC -> R.string.platform_generic
 }
 

@@ -78,6 +78,9 @@ fun reasonKeyRes(key: String?): Int? = when {
     key == "generic:no_video" -> R.string.generic_no_video
     key == "weibo:no_mp4" -> R.string.weibo_no_mp4
     key == "input:needs_link" -> R.string.input_needs_link
+    key == "bilibili:unsupported" -> R.string.bilibili_unsupported
+    key == "bilibili:short_unresolved" -> R.string.bilibili_short_unresolved
+    key == "bilibili:missing_engine" -> R.string.bilibili_missing_engine
     key == "input:douyin_link" -> R.string.input_douyin_link
     key == "input:douyin_unrecognised" -> R.string.input_douyin_unrecognised
     key == "douyin:id_unresolved" -> R.string.douyin_id_unresolved

@@ -681,6 +681,7 @@
     <string name="platform_douyin">Douyin</string>
     <string name="platform_weibo">Weibo</string>
     <string name="platform_kuaishou">Kuaishou</string>
+    <string name="platform_bilibili">Bilibili</string>
     <string name="platform_x">X</string>
     <string name="platform_generic">web page</string>
     <string name="platform_network_failed">Could not reach %1$s; check the network and try again</string>
@@ -689,6 +690,9 @@
     <string name="platform_http_error">%1$s returned HTTP %2$d; a sign-in or verification may be needed. Check that the post is viewable on the platform and try again.</string>
 
     <!-- Input validation -->
+    <string name="bilibili_unsupported">Only single Bilibili videos and video parts are supported for now; bangumi, live, courses, audio and space/channel lists are not.</string>
+    <string name="bilibili_short_unresolved">This b23.tv link does not lead to a trusted Bilibili video page.</string>
+    <string name="bilibili_missing_engine">The bundled engine is unavailable, so the Bilibili page cannot be parsed.</string>
     <string name="input_needs_link">Paste an HTTP/HTTPS video address, share text, or a Douyin post ID</string>
     <string name="input_weibo_link">Copy the video link from a Weibo post (weibo.com/user-id/post-id)</string>
     <string name="input_generic_only">Open this address with the generic engine instead</string>

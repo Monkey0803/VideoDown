@@ -25,6 +25,8 @@ data class DouyinAuthor(
             VideoPlatform.WEIBO -> uid?.takeIf(String::isNotBlank)?.let { "https://weibo.com/u/$it" }
             VideoPlatform.KUAISHOU -> (secUid ?: uid)?.takeIf(String::isNotBlank)?.let { "https://www.kuaishou.com/profile/$it" }
             VideoPlatform.X -> secUid?.takeIf { it.matches(Regex("[A-Za-z0-9_]{1,50}")) }?.let { "https://x.com/$it" }
+            // 第一版只做单个视频，不构造 up 主空间地址。
+            VideoPlatform.BILIBILI -> null
         }
 
     /**
@@ -146,5 +148,6 @@ data class DouyinVideo(
             VideoPlatform.WEIBO -> "https://m.weibo.cn/status/$awemeId"
             VideoPlatform.KUAISHOU -> "https://www.kuaishou.com/short-video/$awemeId"
             VideoPlatform.X -> "https://x.com/i/status/${awemeId.substringBefore('_')}"
+            VideoPlatform.BILIBILI -> "https://www.bilibili.com/video/$awemeId"
         }
 }

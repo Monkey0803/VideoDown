@@ -14,5 +14,6 @@ enum class VideoPlatform(val referer: String) {
     WEIBO("https://weibo.com/"),
     KUAISHOU("https://www.kuaishou.com/"),
     X("https://x.com/"),
+    BILIBILI("https://www.bilibili.com/"),
     GENERIC(""),
 }

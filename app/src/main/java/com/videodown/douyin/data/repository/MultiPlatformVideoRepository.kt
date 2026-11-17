@@ -23,6 +23,8 @@ class MultiPlatformVideoRepository(
     private val fallback: VideoRepository? = null,
     /** 用本机 WebView 登录态解析，仅当匿名路径都失败时才使用；null 表示该站点不参与。 */
     private val sessionFallback: SessionVideoParser? = null,
+    /** 展开 b23.tv 短链；null 时短链解析直接报告「无法展开」。返回 null 表示目标不可信。 */
+    private val resolveBilibiliShortLink: (suspend (String) -> BilibiliVideoLink?)? = null,
 ) : VideoRepository {
     override suspend fun parseShareText(shareText: String): AppResult<DouyinVideo> = parseVideos(shareText).map { it.selectedVideo }
 
@@ -41,6 +43,7 @@ class MultiPlatformVideoRepository(
                 VideoPlatform.WEIBO -> parseWeibo(link.url)
                 VideoPlatform.KUAISHOU -> parseKuaishou(link.url)
                 VideoPlatform.X -> return@withContext parseX(link.url)
+                VideoPlatform.BILIBILI -> return@withContext parseBilibili(link.url)
             }
             if (result is AppResult.Failure && fallback != null) fallback.parseVideos(link.url) else result
         } catch (e: CancellationException) {
@@ -139,6 +142,46 @@ class MultiPlatformVideoRepository(
     /** 引擎说「需要登录」时才会被判定为登录态被拒（403 访问受限不算过期）。 */
     private fun AppResult<ParsedVideos>.isAuthFailure(): Boolean =
         this is AppResult.Failure && error.failureKind == DownloadFailureKind.LOGIN_REQUIRED
+
+    /**
+     * B 站：先归一化链接（含 b23.tv 展开），再交给随包引擎解析。
+     *
+     * 第一版只支持单个视频页与分 P；番剧、直播、课程、音频、空间/频道列表返回「不支持」而不是
+     * 伪装成网络失败。合集枚举由 `GenericVideoRepository` 的「解析合集」开关决定（最多 20 P）。
+     */
+    private suspend fun parseBilibili(url: String): AppResult<ParsedVideos> {
+        val link = when (val parsed = BilibiliLink.parse(url)) {
+            is BilibiliLinkResult.Page -> parsed.link
+            is BilibiliLinkResult.ShortLink -> resolveBilibiliShortLink?.invoke(parsed.url)
+                ?: return AppResult.Failure(
+                    AppError.InvalidLink("", reasonKey = "bilibili:short_unresolved"),
+                )
+            BilibiliLinkResult.Unsupported -> return AppResult.Failure(
+                AppError.InvalidLink("", reasonKey = "bilibili:unsupported"),
+            )
+        }
+        val engine = fallback ?: return AppResult.Failure(
+            AppError.Parse("", reasonKey = "bilibili:missing_engine", platform = VideoPlatform.BILIBILI),
+        )
+        return when (val result = engine.parseVideos(link.url)) {
+            is AppResult.Success -> AppResult.Success(retagBilibili(result.value, link))
+            is AppResult.Failure -> result
+        }
+    }
+
+    /** 引擎不知道 B 站是哪个平台：在仓库边界统一标注，并保证来源地址是归一化后的视频页。 */
+    private fun retagBilibili(parsed: ParsedVideos, link: BilibiliVideoLink): ParsedVideos = ParsedVideos(
+        videos = parsed.videos.map { video ->
+            video.copy(
+                platform = VideoPlatform.BILIBILI,
+                shareUrl = link.url,
+                variants = video.variants.map { variant ->
+                    variant.copy(referer = variant.referer ?: VideoPlatform.BILIBILI.referer)
+                },
+            )
+        },
+        selectedIndex = parsed.selectedIndex,
+    )
 
     private suspend fun parseWeibo(url: String): AppResult<ParsedVideos> {
         val id = VideoLinkExtractor.weiboId(url) ?: VideoLinkExtractor.weiboId(social.page(url, mobile = false).url)
