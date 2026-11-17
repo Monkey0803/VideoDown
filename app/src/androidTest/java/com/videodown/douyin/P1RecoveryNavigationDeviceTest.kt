@@ -101,6 +101,28 @@ class P1RecoveryNavigationDeviceTest {
         assertEquals(listOf(original), parsed)
         compose.onNode(hasSetTextAction()).assertTextContains(original)
     }
+    @Test fun accessDeniedKeepsOnePrimaryActionAndMovesSecondaryIntoMoreMenu() {
+        addFailure(DownloadFailureKind.ACCESS_DENIED)
+        compose.onNodeWithTag("task-primary-recovery-failure").assertIsDisplayed()
+            .assertTextContains(actionText(RecoveryAction.REPARSE))
+        compose.onAllNodes(
+            hasText(actionText(RecoveryAction.BROWSER)) and hasAnyAncestor(hasTestTag("task-failure")),
+        ).assertCountEquals(0)
+
+        compose.onNodeWithTag("task-more-failure").performClick()
+        compose.onNodeWithText(actionText(RecoveryAction.BROWSER), substring = false).assertIsDisplayed()
+    }
+    @Test fun backgroundFailureOffersRetryBeforeContextualSystemSettings() {
+        addFailure(DownloadFailureKind.BACKGROUND_SERVICE)
+        compose.onNodeWithTag("task-primary-recovery-failure").assertIsDisplayed()
+            .assertTextContains(actionText(RecoveryAction.RETRY))
+        compose.onAllNodes(
+            hasText(actionText(RecoveryAction.SYSTEM_SETTINGS)) and hasAnyAncestor(hasTestTag("task-failure")),
+        ).assertCountEquals(0)
+
+        compose.onNodeWithTag("task-more-failure").performClick()
+        compose.onNodeWithText(actionText(RecoveryAction.SYSTEM_SETTINGS), substring = false).assertIsDisplayed()
+    }
     @Test fun rateLimitedParseOpensSettingsWithoutRepeatingRequest() {
         compose.runOnUiThread { home.onInputChange("http://127.0.0.1/source-page"); home.parse() }
         compose.waitUntil(5000) { home.state.value.errorKind == DownloadFailureKind.RATE_LIMITED }
@@ -108,6 +130,7 @@ class P1RecoveryNavigationDeviceTest {
         // The settings page hero copy was replaced by the current page title; assert what is
         // actually rendered, since the intent here is only that the settings page opened.
         compose.waitUntil(5000) { compose.onAllNodes(hasText("我的设置")).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("settings-open-download").performClick()
         compose.onNodeWithText("同时下载数量", substring = false).performScrollTo().assertIsDisplayed()
         assertEquals(1, parsed.size)
     }

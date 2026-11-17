@@ -532,6 +532,7 @@
     <string name="recovery_browser">Open the page to sign in</string>
     <string name="recovery_storage">Manage storage</string>
     <string name="recovery_settings">Check download settings</string>
+    <string name="recovery_system_settings">Open system settings</string>
     <string name="recovery_none">No action available</string>
 
     <!-- Shortcuts, selection and dialogs -->

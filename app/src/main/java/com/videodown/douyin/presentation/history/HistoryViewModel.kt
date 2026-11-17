@@ -60,6 +60,8 @@ data class HistoryUiState(
     val batchDone: Int = 0,
     val batchTotal: Int = 0,
     val batchResult: BatchResult? = null,
+    /** 已完成磁盘快照装载；空列表也可能是有效的已装载结果。 */
+    val hydrated: Boolean = false,
 ) {
     val visibleRecords: List<DownloadRecord>
         get() {
@@ -113,7 +115,7 @@ class HistoryViewModel(
             combine(history.observeAll(), downloader.progress, downloader.queue) { records, progress, queue ->
                 Triple(records, progress, queue)
             }.collect { (records, progress, queue) ->
-                _state.update { it.copy(records = records, progress = progress, queue = queue) }
+                _state.update { it.copy(records = records, progress = progress, queue = queue, hydrated = true) }
             }
         }
     }

@@ -4,6 +4,10 @@ package com.videodown.douyin.presentation
 object UiDensityPolicy {
     fun showQueueSummary(running: Int, pending: Int): Boolean = running > 0 || pending > 0
 
-    fun showFirstUseGuide(hasSavedMedia: Boolean, input: String, hasClipboardOffer: Boolean): Boolean =
-        !hasSavedMedia && input.isBlank() && !hasClipboardOffer
+    fun showFirstUseGuide(
+        hasSavedMedia: Boolean,
+        input: String,
+        hasClipboardOffer: Boolean,
+        dismissed: Boolean,
+    ): Boolean = !dismissed && !hasSavedMedia && input.isBlank() && !hasClipboardOffer
 }

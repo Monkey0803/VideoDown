@@ -310,6 +310,7 @@ fun HomeScreen(
     // both report nothing without input focus, and Android 12+ shows a system notice the first time
     // another app's clip is read. Checking the description first does not trigger that notice.
     val clipboardDetect by ServiceLocator.preferences.clipboardDetectChanges.collectAsStateWithLifecycle()
+    val firstUseGuideDismissed by ServiceLocator.preferences.firstUseGuideDismissedChanges.collectAsStateWithLifecycle()
     val rootView = LocalView.current
     fun offerCopiedLink() {
         if (!clipboardDetect) return
@@ -435,6 +436,7 @@ fun HomeScreen(
                                         RecoveryAction.BROWSER -> showBrowser = true
                                         RecoveryAction.STORAGE -> onOpenStorage()
                                         RecoveryAction.SETTINGS -> onOpenSettings()
+                                        RecoveryAction.SYSTEM_SETTINGS -> Unit
                                         else -> viewModel.parse()
                                     }
                                 }) { Text(if (action == RecoveryAction.RETRY) stringResource(R.string.home_retry_parse) else recoveryActionLabel(action)) }
@@ -465,8 +467,12 @@ fun HomeScreen(
                         hasSavedMedia = recentRecords.isNotEmpty(),
                         input = state.input,
                         hasClipboardOffer = state.clipboardOffer != null,
+                        dismissed = firstUseGuideDismissed,
                     )) {
-                    FirstUseGuide(onPasteAndParse = ::pasteAndParse)
+                    FirstUseGuide(
+                        onPasteAndParse = ::pasteAndParse,
+                        onDismiss = { ServiceLocator.preferences.firstUseGuideDismissed = true },
+                    )
                 }
                 SiteSection(onOpenSites)
                 Row(
@@ -588,7 +594,7 @@ private fun SiteSection(onOpenSites: () -> Unit) {
 }
 
 @Composable
-private fun FirstUseGuide(onPasteAndParse: () -> Unit) {
+private fun FirstUseGuide(onPasteAndParse: () -> Unit, onDismiss: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(top = 18.dp).testTag("first-use-guide"),
         shape = MaterialTheme.shapes.large,
@@ -620,6 +626,12 @@ private fun FirstUseGuide(onPasteAndParse: () -> Unit) {
                 AppIcon(AppIcons.Paste, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.home_paste_and_parse))
+            }
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.align(Alignment.End).heightIn(min = 48.dp).testTag("first-use-guide-dismiss"),
+            ) {
+                Text(stringResource(R.string.action_got_it))
             }
         }
     }

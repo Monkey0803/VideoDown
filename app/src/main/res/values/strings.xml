@@ -531,6 +531,7 @@
     <string name="recovery_browser">打开网页登录/验证</string>
     <string name="recovery_storage">管理存储空间</string>
     <string name="recovery_settings">检查下载设置</string>
+    <string name="recovery_system_settings">打开系统设置</string>
     <string name="recovery_none">暂无可用操作</string>
 
     <!-- Shortcuts, selection and dialogs -->

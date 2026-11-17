@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 enum class DownloadFailureKind { NETWORK, LOGIN_REQUIRED, ACCESS_DENIED, LINK_EXPIRED, STORAGE_FULL, STORAGE_ACCESS, FORMAT_CHANGED, UNSUPPORTED, RATE_LIMITED, WIFI_REQUIRED, BACKGROUND_SERVICE, RUNTIME, NO_AUDIO, UNKNOWN }
 
 /** What the user can do about a failure. The wording lives in the presentation layer. */
-enum class RecoveryAction { RETRY, REPARSE, BROWSER, STORAGE, SETTINGS, NONE }
+enum class RecoveryAction { RETRY, REPARSE, BROWSER, STORAGE, SETTINGS, SYSTEM_SETTINGS, NONE }
 
 /** Which recovery actions a failure offers, most useful first. No user-visible copy lives here. */
 data class FailureActions(val primary: RecoveryAction, val secondary: RecoveryAction? = null)
@@ -23,7 +23,7 @@ fun failureActions(kind: DownloadFailureKind): FailureActions = when (kind) {
     DownloadFailureKind.UNSUPPORTED -> FailureActions(RecoveryAction.NONE)
     DownloadFailureKind.RATE_LIMITED -> FailureActions(RecoveryAction.SETTINGS, RecoveryAction.RETRY)
     DownloadFailureKind.WIFI_REQUIRED -> FailureActions(RecoveryAction.SETTINGS, RecoveryAction.RETRY)
-    DownloadFailureKind.BACKGROUND_SERVICE -> FailureActions(RecoveryAction.RETRY)
+    DownloadFailureKind.BACKGROUND_SERVICE -> FailureActions(RecoveryAction.RETRY, RecoveryAction.SYSTEM_SETTINGS)
     DownloadFailureKind.RUNTIME -> FailureActions(RecoveryAction.STORAGE)
     DownloadFailureKind.UNKNOWN -> FailureActions(RecoveryAction.RETRY, RecoveryAction.REPARSE)
 }

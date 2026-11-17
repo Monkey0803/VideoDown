@@ -53,6 +53,7 @@ internal fun recoveryActionRes(action: RecoveryAction): Int = when (action) {
     RecoveryAction.BROWSER -> R.string.recovery_browser
     RecoveryAction.STORAGE -> R.string.recovery_storage
     RecoveryAction.SETTINGS -> R.string.recovery_settings
+    RecoveryAction.SYSTEM_SETTINGS -> R.string.recovery_system_settings
     RecoveryAction.NONE -> R.string.recovery_none
 }
 

@@ -85,6 +85,32 @@ class AppPreferences(context: Context) {
             editor.apply()
         }
 
+    /** 首次使用卡片被用户主动关闭后不再重复出现；升级不会重置这个选择。 */
+    private val _firstUseGuideDismissed = MutableStateFlow(store.getBoolean("first_use_guide_dismissed", false))
+    val firstUseGuideDismissedChanges = _firstUseGuideDismissed.asStateFlow()
+
+    var firstUseGuideDismissed: Boolean
+        get() = _firstUseGuideDismissed.value
+        set(value) {
+            store.edit().putBoolean("first_use_guide_dismissed", value).apply()
+            _firstUseGuideDismissed.value = value
+        }
+
+    /** 跨进程保留的最小下载结果集合；标题、网址和路径仍只存在下载历史中。 */
+    var downloadResultInbox: DownloadResultInbox
+        get() = DownloadResultInbox(
+            failedIds = store.getStringSet("download_result_failed_ids", emptySet()).orEmpty().toSet(),
+            pausedIds = store.getStringSet("download_result_paused_ids", emptySet()).orEmpty().toSet(),
+            completedIds = store.getStringSet("download_result_completed_ids", emptySet()).orEmpty().toSet(),
+        )
+        set(value) {
+            store.edit()
+                .putStringSet("download_result_failed_ids", value.failedIds)
+                .putStringSet("download_result_paused_ids", value.pausedIds)
+                .putStringSet("download_result_completed_ids", value.completedIds)
+                .apply()
+        }
+
     /**
      * Mirror each running task into its own notification so it can be paused on its own.
      *

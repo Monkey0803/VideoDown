@@ -10,6 +10,7 @@ import com.videodown.douyin.presentation.components.AppIcons
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.ComponentName
@@ -17,6 +18,7 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -61,6 +63,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -145,6 +148,8 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.roundToInt
 import java.io.File
+
+private const val ACTION_PICTURE_IN_PICTURE_SETTINGS = "android.settings.PICTURE_IN_PICTURE_SETTINGS"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -510,6 +515,24 @@ fun PlayerScreen(
         ) screenshotPermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         else captureFrame()
     }
+    fun openPipSettings() {
+        val packageUri = Uri.parse("package:${context.packageName}")
+        runCatching {
+            context.startActivity(Intent(ACTION_PICTURE_IN_PICTURE_SETTINGS, packageUri))
+        }.recoverCatching {
+            context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageUri))
+        }
+    }
+    fun requestPip() {
+        if (pipActivity?.enterVideoPip() == true) return
+        scope.launch {
+            val result = snackbar.showSnackbar(
+                message = resources.getString(R.string.player_pip_failed),
+                actionLabel = resources.getString(R.string.action_open_settings),
+            )
+            if (result == SnackbarResult.ActionPerformed) openPipSettings()
+        }
+    }
 
     val audioManager = remember(context) { context.getSystemService(android.media.AudioManager::class.java) }
     val maxVolume = remember(audioManager) { audioManager?.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC) ?: 1 }
@@ -678,9 +701,7 @@ fun PlayerScreen(
                                     onTracks = { choosingTracks = true; customControlsVisible = true; controlInteraction++ },
                                     onScaleMode = { choosingScale = true; customControlsVisible = true; controlInteraction++ },
                                     onScreenshot = ::requestScreenshot,
-                                    onPip = {
-                                        if (pipActivity?.enterVideoPip() != true) scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_pip_failed)) }
-                                    },
+                                    onPip = ::requestPip,
                                     onFullscreen = { fullscreen = !fullscreen; controlInteraction++ },
                                 )
                             }
@@ -810,7 +831,7 @@ fun PlayerScreen(
                             }
                             if (!record.isAudio) PlayerIconAction(stringResource(R.string.player_pip), AppIcons.Pip,
                                 enabled = state.fileExists && pipActivity?.supportsPip == true) {
-                                if (pipActivity?.enterVideoPip() != true) scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_pip_failed)) }
+                                requestPip()
                             }
                             PlayerIconAction(stringResource(R.string.player_external), AppIcons.Play, enabled = state.fileExists) {
                                 val file = File(record.filePath.orEmpty())

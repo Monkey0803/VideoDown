@@ -12,9 +12,10 @@ class UiDensityPolicyTest {
     }
 
     @Test fun firstUseGuideDoesNotCompeteWithInputOrClipboardOffer() {
-        assertTrue(UiDensityPolicy.showFirstUseGuide(false, "", false))
-        assertFalse(UiDensityPolicy.showFirstUseGuide(true, "", false))
-        assertFalse(UiDensityPolicy.showFirstUseGuide(false, "https://example.com", false))
-        assertFalse(UiDensityPolicy.showFirstUseGuide(false, "", true))
+        assertTrue(UiDensityPolicy.showFirstUseGuide(false, "", false, dismissed = false))
+        assertFalse(UiDensityPolicy.showFirstUseGuide(true, "", false, dismissed = false))
+        assertFalse(UiDensityPolicy.showFirstUseGuide(false, "https://example.com", false, dismissed = false))
+        assertFalse(UiDensityPolicy.showFirstUseGuide(false, "", true, dismissed = false))
+        assertFalse(UiDensityPolicy.showFirstUseGuide(false, "", false, dismissed = true))
     }
 }

@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -438,6 +439,7 @@ private fun TaskCard(
     val guidance = issue?.let(::failureActions)
     val position = state.queue.position(record.id)
     val hasSourcePage = record.sourcePageUrl.isNotBlank() || !record.media?.pageUrl.isNullOrBlank()
+    val guidedRecovery = status in setOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) && guidance != null
     var moreExpanded by remember(record.id) { mutableStateOf(false) }
     var retrySeconds by remember(progress?.retryAtMillis) { mutableStateOf(0L) }
     LaunchedEffect(progress?.retryAtMillis) {
@@ -502,7 +504,7 @@ private fun TaskCard(
                     }
                 }
                 onDragHandle?.invoke()
-                if (!selecting) {
+                if (!selecting && !guidedRecovery) {
                 IconButton(onClick = when (status) {
                     DownloadStatus.COMPLETED -> onPlay
                     DownloadStatus.RUNNING, DownloadStatus.PENDING -> onPause
@@ -532,6 +534,8 @@ private fun TaskCard(
                             else -> guidance?.primary?.let { recoveryActionLabel(it) } ?: stringResource(R.string.action_resume)
                         }, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(17.dp))
                 }
+                }
+                if (!selecting) {
                 Box {
                     IconButton(onClick = { moreExpanded = true }, enabled = !state.batchBusy,
                         modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.small)
@@ -561,6 +565,15 @@ private fun TaskCard(
                                 onClick = { moreExpanded = false; onRestart() },
                             )
                         }
+                        guidance?.secondary
+                            ?.takeIf { it != RecoveryAction.NONE && it != guidance.primary }
+                            ?.let { secondary ->
+                                DropdownMenuItem(
+                                    text = { Text(recoveryActionLabel(secondary)) },
+                                    enabled = canRecover(secondary),
+                                    onClick = { moreExpanded = false; onRecover(secondary) },
+                                )
+                            }
                         position?.let { queuedPosition ->
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.history_move_up)) },
@@ -585,7 +598,7 @@ private fun TaskCard(
                         )
                     }
                 }
-                }
+            }
             }
             if (status != DownloadStatus.COMPLETED) {
                 // 进度条补间到新比例；百分比文字仍用原始值，断言与读数都不受影响。
@@ -633,9 +646,14 @@ private fun TaskCard(
                 Text(failureDescription(issue), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
                 if (!hasSourcePage && (guidance.primary in setOf(RecoveryAction.BROWSER, RecoveryAction.REPARSE) || guidance.secondary in setOf(RecoveryAction.BROWSER, RecoveryAction.REPARSE)))
                     Text(stringResource(R.string.history_no_source), style = MaterialTheme.typography.labelSmall)
-                if (!selecting) LazyRow {
-                    listOfNotNull(guidance.primary.takeUnless { it == RecoveryAction.NONE }, guidance.secondary).forEach { action ->
-                        item { TextButton(onClick = { onRecover(action) }, enabled = !state.batchBusy && canRecover(action)) { Text(recoveryActionLabel(action)) } }
+                if (!selecting && guidance.primary != RecoveryAction.NONE) {
+                    FilledTonalButton(
+                        onClick = { onRecover(guidance.primary) },
+                        enabled = !state.batchBusy && canRecover(guidance.primary),
+                        modifier = Modifier.padding(top = 8.dp).heightIn(min = 48.dp)
+                            .testTag("task-primary-recovery-${record.id}"),
+                    ) {
+                        Text(recoveryActionLabel(guidance.primary))
                     }
                 }
             }

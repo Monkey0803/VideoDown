@@ -15,6 +15,7 @@ class DownloadFailureGuidanceTest {
         assertEquals(RecoveryAction.REPARSE, failureActions(VideoEngineException("CHANGED").failureKind).primary)
         assertEquals(RecoveryAction.NONE, failureActions(VideoEngineException("DRM").failureKind).primary)
         assertEquals(RecoveryAction.RETRY, failureActions(AppError.Network("no details", failureKind = DownloadFailureKind.NETWORK).downloadFailureKind()).primary)
+        assertEquals(RecoveryAction.SYSTEM_SETTINGS, failureActions(DownloadFailureKind.BACKGROUND_SERVICE).secondary)
     }
     @Test fun `legacy HTTP 403 remains ambiguous while expired and auth codes are distinguished`() {
         assertEquals(DownloadFailureKind.ACCESS_DENIED, legacyFailureKind("服务器返回 HTTP 403"))
@@ -36,5 +37,8 @@ class DownloadFailureGuidanceTest {
         assertTrue(bodies.none { it == 0 })
         DownloadFailureKind.entries.forEach { assertNotNull(failureActions(it).primary) }
         assertEquals(RecoveryAction.entries.size, RecoveryAction.entries.map { com.videodown.douyin.presentation.recoveryActionRes(it) }.distinct().size)
+        DownloadFailureKind.entries.map(::failureActions).forEach { actions ->
+            assertNotEquals("secondary recovery must not duplicate the primary action", actions.primary, actions.secondary)
+        }
     }
 }

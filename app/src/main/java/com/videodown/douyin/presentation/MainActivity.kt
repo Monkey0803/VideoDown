@@ -10,6 +10,8 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Build
+import android.net.Uri
+import android.provider.Settings
 import android.app.PictureInPictureParams
 import android.app.RemoteAction
 import android.app.PendingIntent
@@ -95,6 +97,7 @@ import com.videodown.douyin.presentation.theme.VideoDownTheme
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
 import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.core.DouyinIntents
+import com.videodown.douyin.core.DownloadResultInbox
 import java.io.File
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.ThemeMode
@@ -341,35 +344,32 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     val route = entry?.destination?.route
     var requestedStorage by remember { mutableStateOf(false) }
     val historyState by historyViewModel.state.collectAsStateWithLifecycle()
-    var completedInSession by rememberSaveable { mutableStateOf(0) }
-    var attentionStatuses by remember { mutableStateOf<Map<String, DownloadStatus>>(emptyMap()) }
+    var resultInbox by remember { mutableStateOf(ServiceLocator.preferences.downloadResultInbox) }
     var statusBaselineReady by remember { mutableStateOf(false) }
     val observedStatuses = remember { mutableMapOf<String, DownloadStatus>() }
     val statusSnapshot = historyState.records.associate { it.id to historyState.statusFor(it) }
-    LaunchedEffect(statusSnapshot) {
+    LaunchedEffect(statusSnapshot, historyState.hydrated) {
+        if (!historyState.hydrated) return@LaunchedEffect
         if (!statusBaselineReady) {
-            // 首次从磁盘装载的完成记录不是“本次结果”，不能在每次启动时弹一遍。
-            if (statusSnapshot.isNotEmpty()) {
-                observedStatuses.putAll(statusSnapshot)
-                statusBaselineReady = true
+            // 首次从磁盘装载的历史不是新结果；只恢复之前确实落盘且仍匹配当前终态的 id。
+            observedStatuses.putAll(statusSnapshot)
+            val restored = resultInbox.reconciled(statusSnapshot)
+            if (restored != resultInbox) {
+                resultInbox = restored
+                ServiceLocator.preferences.downloadResultInbox = restored
             }
+            statusBaselineReady = true
         } else {
-            val newCompletions = statusSnapshot.count { (id, status) ->
-                status == DownloadStatus.COMPLETED && observedStatuses[id] in
-                    setOf(DownloadStatus.PENDING, DownloadStatus.RUNNING)
-            }
-            if (newCompletions > 0) completedInSession += newCompletions
-            val changedAttention = attentionStatuses.toMutableMap()
-            changedAttention.keys.retainAll(statusSnapshot.keys)
+            var updated = resultInbox
             statusSnapshot.forEach { (id, status) ->
-                if (observedStatuses[id] != status) {
-                    when (status) {
-                        DownloadStatus.FAILED, DownloadStatus.PAUSED -> changedAttention[id] = status
-                        DownloadStatus.PENDING, DownloadStatus.RUNNING, DownloadStatus.COMPLETED -> changedAttention.remove(id)
-                    }
-                }
+                updated = updated.recordTransition(id, observedStatuses[id], status)
             }
-            attentionStatuses = changedAttention
+            updated = updated.reconciled(statusSnapshot)
+            if (updated != resultInbox) {
+                resultInbox = updated
+                ServiceLocator.preferences.downloadResultInbox = updated
+            }
+            observedStatuses.clear()
             observedStatuses.putAll(statusSnapshot)
         }
     }
@@ -400,20 +400,28 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     val tabTags = listOf("tab-parse", "tab-tasks", "tab-library", "tab-settings")
     val icons = listOf(AppIcons.Parse, AppIcons.Tasks, AppIcons.Library, AppIcons.Profile)
     val selectedIcons = listOf(AppIcons.ParseSelected, AppIcons.TasksSelected, AppIcons.LibrarySelected, AppIcons.ProfileSelected)
-    val failedAttentionCount = attentionStatuses.values.count { it == DownloadStatus.FAILED }
-    val pausedAttentionCount = attentionStatuses.values.count { it == DownloadStatus.PAUSED }
-    val unseenResultCount = attentionStatuses.size + completedInSession
+    val failedAttentionCount = resultInbox.failedIds.size
+    val pausedAttentionCount = resultInbox.pausedIds.size
+    val completedResultCount = resultInbox.completedIds.size
+    val unseenResultCount = resultInbox.count
     val wideNavigation = LocalConfiguration.current.screenWidthDp.dp >= NavigationRailBreakpoint
 
+    fun updateDownloadResults(value: DownloadResultInbox) {
+        resultInbox = value
+        ServiceLocator.preferences.downloadResultInbox = value
+    }
+
     fun clearDownloadResults() {
-        attentionStatuses = emptyMap()
-        completedInSession = 0
+        updateDownloadResults(DownloadResultInbox())
     }
 
     fun navigateTab(destination: String) {
         focusManager.clearFocus(force = true)
         keyboard?.hide()
-        if (destination == Routes.TASKS) clearDownloadResults()
+        when (destination) {
+            Routes.TASKS -> clearDownloadResults()
+            Routes.LIBRARY -> updateDownloadResults(resultInbox.clearCompleted())
+        }
         if (route != destination) {
             navController.navigate(destination) {
                 popUpTo(Routes.HOME) { saveState = true }
@@ -476,9 +484,9 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                             state = historyState,
                             failedCount = failedAttentionCount,
                             pausedCount = pausedAttentionCount,
-                            completedCount = completedInSession,
+                            completedCount = completedResultCount,
                             onOpenTasks = { navigateTab(Routes.TASKS) },
-                            onOpenLibrary = { completedInSession = 0; navigateTab(Routes.LIBRARY) },
+                            onOpenLibrary = { navigateTab(Routes.LIBRARY) },
                             onDismissResults = ::clearDownloadResults,
                         )
                     }
@@ -591,6 +599,11 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                             when (action) {
                                 RecoveryAction.STORAGE -> { requestedStorage = true; navigateTab(Routes.SETTINGS) }
                                 RecoveryAction.SETTINGS -> navigateTab(Routes.SETTINGS)
+                                RecoveryAction.SYSTEM_SETTINGS -> runCatching {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")),
+                                    )
+                                }
                                 RecoveryAction.BROWSER -> if (page.isNotBlank()) { homeViewModel.requestBrowserAssistance(page); navigateTab(Routes.HOME) }
                                 RecoveryAction.REPARSE -> if (page.isNotBlank()) { homeViewModel.parseSharedText(page); navigateTab(Routes.HOME) }
                                 else -> Unit
