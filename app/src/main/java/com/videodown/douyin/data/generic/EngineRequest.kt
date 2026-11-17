@@ -36,6 +36,7 @@ object EngineRequest {
         cookieFile: String?,
         subtitles: List<String> = emptyList(),
         automaticCaptions: Boolean = false,
+        rateLimitBytesPerSecond: Long? = null,
     ): JsonObject = buildJsonObject {
         put("mode", "download")
         put("url", url)
@@ -48,6 +49,7 @@ object EngineRequest {
             userAgent?.let { put("User-Agent", it) }
         }
         if (browserSession) cookieFile?.let { put("cookies", it) }
+        rateLimitBytesPerSecond?.takeIf { it > 0L }?.let { put("rate_limit", it) }
         // Nothing to embed into an extracted audio track, so the pair never travels together.
         if (subtitles.isNotEmpty() && !audioOnly) {
             put("subtitles", true)

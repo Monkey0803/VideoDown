@@ -26,7 +26,7 @@ fun validateDownloadedFile(file: File, record: DownloadRecord) {
         MediaKind.IMAGE -> validateImage(file)
         MediaKind.ARCHIVE -> validateArchive(
             file,
-            record.archiveEntries.sumOf { 1 + if (it.livePhotoMotion != null) 1 else 0 },
+            record.archiveEntries,
         )
         else -> validateVideo(file)
     }
@@ -36,16 +36,40 @@ fun validateDownloadedFile(file: File, record: DownloadRecord) {
 internal fun validateImage(file: File) {
     if (!file.isFile || file.length() <= 0L) throw DownloadContentException(DOWNLOAD_NOT_AN_IMAGE)
     val head = file.readPrefix(MediaSignature.HEAD_BYTES)
-    if (MediaSignature.imageExtension(head) == null) throw DownloadContentException(DOWNLOAD_NOT_AN_IMAGE)
+    val extension = MediaSignature.imageExtension(head) ?: throw DownloadContentException(DOWNLOAD_NOT_AN_IMAGE)
+    if (!hasCompleteImageStructure(file, extension)) throw DownloadContentException(DOWNLOAD_NOT_AN_IMAGE)
 }
 
 /** 压缩包校验：ZIP 魔数 + 条目数必须与任务清单一致。 */
-internal fun validateArchive(file: File, expectedEntries: Int) {
+internal fun validateArchive(file: File, expectedEntries: List<com.videodown.douyin.domain.model.ArchiveEntry>) {
     if (!file.isFile || file.length() <= 0L) throw DownloadContentException(DOWNLOAD_INVALID_ARCHIVE)
     if (!MediaSignature.isZip(file.readPrefix(4))) throw DownloadContentException(DOWNLOAD_INVALID_ARCHIVE)
-    val count = runCatching { ZipFile(file).use { zip -> java.util.Collections.list(zip.entries()).size } }.getOrNull()
-    if (count != expectedEntries) throw DownloadContentException(DOWNLOAD_INVALID_ARCHIVE)
+    val valid = runCatching {
+        ZipFile(file).use { zip ->
+            val expectedNames = buildList {
+                expectedEntries.forEachIndexed { index, entry ->
+                    add(ImageArchiveWriter.entryName(index, entry.extension))
+                    entry.livePhotoMotion?.let { add(ImageArchiveWriter.livePhotoMotionEntryName(index, it.extension)) }
+                }
+            }
+            val entries = java.util.Collections.list(zip.entries())
+            if (entries.map { it.name } != expectedNames) return@use false
+            entries.all { entry ->
+                val head = zip.getInputStream(entry).use { it.readPrefix(MediaSignature.HEAD_BYTES) }
+                when {
+                    entry.name.startsWith("${ImageArchiveWriter.ENTRY_DIRECTORY}/") ->
+                        MediaSignature.imageExtension(head) != null
+                    entry.name.startsWith("livephotos/") -> isIsoMedia(head)
+                    else -> false
+                }
+            }
+        }
+    }.getOrDefault(false)
+    if (!valid) throw DownloadContentException(DOWNLOAD_INVALID_ARCHIVE)
 }
+
+internal fun isIsoMedia(head: ByteArray): Boolean =
+    head.size >= 12 && head.copyOfRange(4, 8).contentEquals("ftyp".toByteArray(Charsets.US_ASCII))
 
 private fun File.readPrefix(max: Int): ByteArray = inputStream().use { it.readPrefix(max) }
 

@@ -349,6 +349,7 @@
     <string name="history_phase_extracting">正在提取音频</string>
     <string name="history_phase_merging">正在合并音视频</string>
     <string name="history_phase_verifying">正在校验文件</string>
+    <string name="history_waiting_retry">等待重试 · %1$d 秒</string>
     <string name="history_range_supported">支持断点续传</string>
     <string name="history_queued_position">排队第 %1$d 个 · 等待空闲下载名额</string>
     <string name="history_move_up">前移</string>

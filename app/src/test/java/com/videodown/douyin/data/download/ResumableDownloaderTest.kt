@@ -52,13 +52,15 @@ class ResumableDownloaderTest {
         final: java.io.File,
         alreadyDownloaded: Long = 0L,
         etag: String? = null,
-        onProgress: suspend (Long, Long, Long, Boolean, String?) -> Unit = { _, _, _, _, _ -> },
+        lastModified: String? = null,
+        onProgress: suspend (Long, Long, Long, Boolean, String?, String?) -> Unit = { _, _, _, _, _, _ -> },
     ) = ResumableDownloader.DownloadRequest(
         url = "http://127.0.0.1:${server.port}/video.mp4",
         partialFile = partial,
         finalFile = final,
         alreadyDownloaded = alreadyDownloaded,
         etag = etag,
+        lastModified = lastModified,
         onProgress = onProgress,
     )
 
@@ -66,7 +68,7 @@ class ResumableDownloaderTest {
         val srv = server()
         val partial = tempFolder.newFile("space.part")
         val final = java.io.File(tempFolder.root, "space.mp4")
-        val outcome = downloader.download(request(srv, partial, final, onProgress = { _, _, _, _, _ ->
+        val outcome = downloader.download(request(srv, partial, final, onProgress = { _, _, _, _, _, _ ->
             throw java.io.IOException("write failed: ENOSPC (No space left on device)")
         }))
         assertTrue(outcome is ResumableDownloader.Outcome.Failed)
@@ -79,7 +81,7 @@ class ResumableDownloaderTest {
         val srv = server(statusCode = 416)
         val partial = tempFolder.newFile("invalid.part").apply { writeBytes(payload.copyOf(1024)) }
         val final = java.io.File(tempFolder.root, "invalid.mp4")
-        val outcome = downloader.download(request(srv, partial, final, 1024))
+        val outcome = downloader.download(request(srv, partial, final, 1024, etag = "\"fixture-etag\""))
         assertTrue(outcome is ResumableDownloader.Outcome.Failed)
         assertFalse(final.exists())
         assertEquals(1024, partial.length())
@@ -92,7 +94,7 @@ class ResumableDownloaderTest {
         val final = tempFolder.newFolder("complete.mp4")
         java.io.File(final, "keep").writeText("keep")
         val checked = mutableListOf<Long>()
-        val outcome = downloader.download(request(srv, partial, final, payload.size.toLong()).copy(
+        val outcome = downloader.download(request(srv, partial, final, payload.size.toLong(), etag = "\"fixture-etag\"").copy(
             checkStorage = { _, through ->
                 checked.add(through)
                 if (through > payload.size) throw InsufficientStorageException(spaceFailure(0, 1)!!)
@@ -136,6 +138,33 @@ class ResumableDownloaderTest {
         assertTrue(outcome is ResumableDownloader.Outcome.Completed)
         assertArrayEquals(payload, final.readBytes())
         assertEquals("bytes=$alreadyOnDisk-", srv.rangeHeadersSeen.single())
+    }
+
+    @Test fun `last modified protects a resume when etag is absent`() = runBlocking {
+        val modified = "Wed, 21 Oct 2015 07:28:00 GMT"
+        val srv = RangeAwareTestServer(payload, etag = null, lastModified = modified).also { servers.add(it) }
+        val partial = tempFolder.newFile("modified.part")
+        val final = java.io.File(tempFolder.root, "modified.mp4")
+        partial.writeBytes(payload.copyOfRange(0, 80_000))
+
+        val outcome = downloader.download(request(srv, partial, final,
+            alreadyDownloaded = partial.length(), lastModified = modified))
+
+        assertTrue(outcome is ResumableDownloader.Outcome.Completed)
+        assertEquals(modified, srv.ifRangeHeadersSeen.single())
+        assertArrayEquals(payload, final.readBytes())
+    }
+
+    @Test fun `a partial file without a validator restarts instead of sending an unsafe range`() = runBlocking {
+        val srv = RangeAwareTestServer(payload, etag = null, lastModified = null).also { servers.add(it) }
+        val partial = tempFolder.newFile("unsafe.part").apply { writeBytes(ByteArray(5000) { 0x7f }) }
+        val final = java.io.File(tempFolder.root, "unsafe.mp4")
+
+        val outcome = downloader.download(request(srv, partial, final, alreadyDownloaded = partial.length()))
+
+        assertTrue(outcome is ResumableDownloader.Outcome.Completed)
+        assertEquals("", srv.rangeHeadersSeen.single())
+        assertArrayEquals(payload, final.readBytes())
     }
 
     @Test
@@ -199,7 +228,7 @@ class ResumableDownloaderTest {
         var etag: String? = null
 
         val outcome = downloader.download(
-            request(srv, partial, final) { downloaded, _, _, ranges, tag ->
+            request(srv, partial, final) { downloaded, _, _, ranges, tag, _ ->
                 samples.add(downloaded)
                 rangeSupported = ranges
                 etag = tag
@@ -224,5 +253,16 @@ class ResumableDownloaderTest {
 
         assertTrue("expected a failure, got $outcome", outcome is ResumableDownloader.Outcome.Failed)
         assertFalse(final.exists())
+    }
+
+    @Test fun `a rate limited response carries retry after to the engine`() = runBlocking {
+        val srv = RangeAwareTestServer(payload, statusCode = 429, retryAfter = "7").also { servers.add(it) }
+        val partial = tempFolder.newFile("limited.part")
+        val final = java.io.File(tempFolder.root, "limited.mp4")
+
+        val outcome = downloader.download(request(srv, partial, final)) as ResumableDownloader.Outcome.Failed
+
+        assertEquals(7_000L, outcome.retryAfterMillis)
+        assertEquals(com.videodown.douyin.domain.model.DownloadFailureKind.RATE_LIMITED, outcome.error.failureKind)
     }
 }

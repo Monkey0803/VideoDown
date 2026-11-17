@@ -25,6 +25,10 @@ class RangeAwareTestServer(
     private val chunkSize: Int = Int.MAX_VALUE,
     private val chunkDelayMs: Long = 0,
     private val sendContentLength: Boolean = true,
+    private val etag: String? = "\"fixture-etag\"",
+    private val lastModified: String? = null,
+    private val failFirstStatusCode: Int? = null,
+    private val retryAfter: String? = null,
 ) : Closeable {
 
     private val serverSocket = ServerSocket(0)
@@ -33,6 +37,7 @@ class RangeAwareTestServer(
 
     /** Raw `Range` header of every request, in arrival order (`""` when absent). */
     val rangeHeadersSeen = CopyOnWriteArrayList<String>()
+    val ifRangeHeadersSeen = CopyOnWriteArrayList<String>()
 
     var requestCount: Int = 0
         private set
@@ -63,14 +68,19 @@ class RangeAwareTestServer(
 
         val rangeHeader = headers["range"].orEmpty()
         rangeHeadersSeen.add(rangeHeader)
+        val ifRange = headers["if-range"].orEmpty()
+        ifRangeHeadersSeen.add(ifRange)
 
-        if (statusCode != 200) {
-            val range = if (statusCode == 416) "Content-Range: bytes */${payload.size}\r\n" else ""
-            writeAscii(socket, "HTTP/1.1 $statusCode Error\r\n${range}Content-Length: 0\r\nConnection: close\r\n\r\n")
+        val responseStatus = failFirstStatusCode?.takeIf { requestCount == 1 } ?: statusCode
+        if (responseStatus != 200) {
+            val range = if (responseStatus == 416) "Content-Range: bytes */${payload.size}\r\n" else ""
+            val retry = retryAfter?.let { "Retry-After: $it\r\n" }.orEmpty()
+            writeAscii(socket, "HTTP/1.1 $responseStatus Error\r\n${range}${retry}Content-Length: 0\r\nConnection: close\r\n\r\n")
             return
         }
 
-        val start = if (supportRanges) {
+        val validatorMatches = ifRange.isBlank() || ifRange == etag || ifRange == lastModified
+        val start = if (supportRanges && validatorMatches) {
             rangeHeader.removePrefix("bytes=").substringBefore('-').toIntOrNull() ?: 0
         } else {
             0
@@ -85,7 +95,8 @@ class RangeAwareTestServer(
                 append("HTTP/1.1 200 OK\r\n")
             }
             append("Accept-Ranges: bytes\r\n")
-            append("ETag: \"fixture-etag\"\r\n")
+            etag?.let { append("ETag: $it\r\n") }
+            lastModified?.let { append("Last-Modified: $it\r\n") }
             append("Content-Type: video/mp4\r\n")
             if (sendContentLength) append("Content-Length: ${slice.size}\r\n")
             append("Connection: close\r\n\r\n")

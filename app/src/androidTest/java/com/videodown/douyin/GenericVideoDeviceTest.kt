@@ -26,6 +26,29 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @RunWith(AndroidJUnit4::class)
 class GenericVideoDeviceTest {
+    @Test fun engineAcceptsANativeRateLimitDuringARealSegmentDownload() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val directory = File(context.cacheDir, "engine-rate-${UUID.randomUUID()}").apply { mkdirs() }
+        try {
+            createMediaFixtures(context, directory)
+            FixtureServer(directory).use { server ->
+                val parsed = ServiceLocator.genericRepository.parseVideos(server.baseUrl + "/sample.m3u8") as AppResult.Success
+                val video = parsed.value.selectedVideo
+                val variant = video.defaultVariant!!
+                val record = DownloadRecord(
+                    id = "engine-rate", awemeId = video.awemeId, title = video.title,
+                    sourceUrl = variant.url, fileName = "engine-rate.mp4", media = variant.media,
+                )
+                val output = withTimeout(90_000) {
+                    EngineMediaDownloader(ServiceLocator.videoEngine, ServiceLocator.browserSessions,
+                        File(directory, "sessions")).download(record, DownloadPaths(directory),
+                        DownloadNetworkPolicy.Unrestricted, 10L * 1024L * 1024L) { _, _, _, _ -> }
+                }
+                assertMedia(output)
+            }
+        } finally { directory.deleteRecursively() }
+    }
+
     @Test fun optionalPublicPageParse() = runBlocking {
         val url = InstrumentationRegistry.getArguments().getString("generic_live_url")
         org.junit.Assume.assumeTrue("Pass generic_live_url to enable a public site check", !url.isNullOrBlank())

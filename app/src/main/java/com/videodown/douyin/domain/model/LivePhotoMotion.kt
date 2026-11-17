@@ -15,6 +15,8 @@ data class LivePhotoMotion(
     val referer: String? = null,
     val extension: String = "mov",
     val expectedBytes: Long? = null,
+    val etag: String? = null,
+    val lastModified: String? = null,
     val fileName: String = "",
     val filePath: String? = null,
 )

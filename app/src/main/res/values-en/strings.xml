@@ -350,6 +350,7 @@
     <string name="history_phase_extracting">Extracting audio</string>
     <string name="history_phase_merging">Merging audio and video</string>
     <string name="history_phase_verifying">Verifying the file</string>
+    <string name="history_waiting_retry">Retrying in %1$d s</string>
     <string name="history_range_supported">Resumes from where it stopped</string>
     <string name="history_queued_position">Queued at %1$d · waiting for a free slot</string>
     <string name="history_move_up">Move up</string>

@@ -104,7 +104,7 @@ class AutoResumeDownloadTest {
         assertNull(done.pauseCause)
     }
 
-    @Test fun `a task that failed with a network error is retried from its saved offset`() = runBlocking {
+    @Test fun `a failed task without a validator restarts safely instead of appending`() = runBlocking {
         val server = server()
         val partial = File(paths.downloadDir, "net.mp4.part").apply { writeBytes(payload.copyOf(4096)) }
         history.upsert(orphan("net", server, "net.mp4").copy(
@@ -119,8 +119,7 @@ class AutoResumeDownloadTest {
         engine.autoResume()
         val done = awaitStatus("net", DownloadStatus.COMPLETED)
         assertArrayEquals(payload, File(done.filePath!!).readBytes())
-        // A retry continues from the saved offset instead of starting over.
-        assertEquals("bytes=4096-", server.rangeHeadersSeen.last())
+        assertEquals("", server.rangeHeadersSeen.last())
     }
 
     @Test fun `a pause the user asked for is never continued by the policy`() = runBlocking {

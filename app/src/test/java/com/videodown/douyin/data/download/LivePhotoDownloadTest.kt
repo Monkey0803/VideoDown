@@ -76,8 +76,11 @@ class LivePhotoDownloadTest {
     }
 
     @Test fun `archive keeps matching still and motion entries`() = runBlocking {
-        val stillBytes = ByteArray(1024) { 1 }
-        val motionBytes = ByteArray(2048) { 2 }
+        val stillBytes = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte()) +
+            ByteArray(1019) { 1 } + byteArrayOf(0xFF.toByte(), 0xD9.toByte())
+        val motionBytes = byteArrayOf(0, 0, 0, 24, 'f'.code.toByte(), 't'.code.toByte(),
+            'y'.code.toByte(), 'p'.code.toByte(), 'q'.code.toByte(), 't'.code.toByte(),
+            ' '.code.toByte(), ' '.code.toByte()) + ByteArray(2036) { 2 }
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
             RangeAwareTestServer(stillBytes).use { stillServer ->

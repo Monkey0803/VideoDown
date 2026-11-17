@@ -163,6 +163,26 @@ class ImageDownloadDeviceTest {
         // 解析失败是允许的结果；这里只确认没有把网页当成图片落盘。
         assertTrue(vm.state.value.video == null)
     }
+
+    @Test fun lastModifiedIsSentAsIfRangeForADeviceResume() = runBlocking {
+        val bytes = png()
+        ImageFixtureServer(bytes).use { server ->
+            val partial = File(directory, "resume.png.part").apply { writeBytes(bytes.copyOf(bytes.size / 2)) }
+            val final = File(directory, "resume.png")
+            val result = ResumableDownloader(ServiceLocator.douyinApiClient.okHttpClient).download(
+                ResumableDownloader.DownloadRequest(
+                    url = server.baseUrl + "/resume.png",
+                    partialFile = partial,
+                    finalFile = final,
+                    alreadyDownloaded = partial.length(),
+                    lastModified = server.lastModified,
+                ),
+            )
+            assertTrue(result is ResumableDownloader.Outcome.Completed)
+            assertEquals(server.lastModified, server.ifRange)
+            assertTrue(final.readBytes().contentEquals(bytes))
+        }
+    }
 }
 
 /** 为本地图片服务 HTTP；HEAD 只回头，GET 回完整 PNG（忽略 Range 也能被下载器正确重写）。 */
@@ -170,6 +190,8 @@ internal class ImageFixtureServer(private val body: ByteArray) : Closeable {
     private val socket = ServerSocket(0)
     val port: Int get() = socket.localPort
     val baseUrl: String get() = "http://127.0.0.1:$port"
+    val lastModified = "Wed, 21 Oct 2015 07:28:00 GMT"
+    @Volatile var ifRange: String? = null
 
     private val thread = Thread({
         while (!socket.isClosed) {
@@ -178,11 +200,15 @@ internal class ImageFixtureServer(private val body: ByteArray) : Closeable {
                     val reader = client.getInputStream().bufferedReader()
                     val requestLine = reader.readLine() ?: return@use
                     var line = reader.readLine()
-                    while (!line.isNullOrEmpty()) line = reader.readLine()
+                    while (!line.isNullOrEmpty()) {
+                        if (line.startsWith("If-Range:", ignoreCase = true)) ifRange = line.substringAfter(':').trim()
+                        line = reader.readLine()
+                    }
                     val head = "HTTP/1.1 200 OK\r\n" +
                         "Content-Type: image/png\r\n" +
                         "Content-Length: ${body.size}\r\n" +
                         "Accept-Ranges: bytes\r\n" +
+                        "Last-Modified: $lastModified\r\n" +
                         "Connection: close\r\n\r\n"
                     client.getOutputStream().apply {
                         write(head.toByteArray())

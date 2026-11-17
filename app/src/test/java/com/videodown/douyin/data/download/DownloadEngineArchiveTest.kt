@@ -31,7 +31,8 @@ import java.util.zip.ZipFile
 class DownloadEngineArchiveTest {
     @get:Rule val temp = TemporaryFolder()
 
-    private val payload = ByteArray(20_000) { (it % 241).toByte() }
+    private val payload = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte()) +
+        ByteArray(19_995) { (it % 241).toByte() } + byteArrayOf(0xFF.toByte(), 0xD9.toByte())
     private val history by lazy {
         DownloadHistoryRepositoryImpl(DownloadHistoryStore(File(temp.root, "history.json")))
     }
@@ -122,6 +123,24 @@ class DownloadEngineArchiveTest {
                 }
                 assertNull(failed.filePath)
                 assertTrue(File(temp.root, "Douyin").listFiles().orEmpty().none { it.name.endsWith(".zip") })
+            }
+        } finally {
+            scope.coroutineContext.job.cancelAndJoin()
+        }
+    }
+
+    @Test fun `a successful html response is rejected instead of being packed as an image`() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            RangeAwareTestServer("<html>expired</html>".toByteArray()).use { server ->
+                val engine = DownloadEngine(history, ResumableDownloader(OkHttpClient()),
+                    DownloadPaths(temp.root), scope, "", "test")
+                val id = engine.startArchive(request(server.port, count = 1))
+                val failed = withTimeout(10_000) {
+                    history.observeRecord(id).first { it?.status == DownloadStatus.FAILED }!!
+                }
+                assertNull(failed.filePath)
+                assertEquals(com.videodown.douyin.domain.model.DownloadFailureKind.FORMAT_CHANGED, failed.failureKind)
             }
         } finally {
             scope.coroutineContext.job.cancelAndJoin()

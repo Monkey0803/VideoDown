@@ -48,6 +48,7 @@ class ResumableDownloader(
             val totalBytes: Long,
             val rangeSupported: Boolean,
             val etag: String?,
+            val lastModified: String?,
         ) : Outcome
 
         data class Failed(
@@ -56,6 +57,8 @@ class ResumableDownloader(
             val totalBytes: Long,
             val rangeSupported: Boolean,
             val etag: String?,
+            val lastModified: String?,
+            val retryAfterMillis: Long? = null,
         ) : Outcome
     }
 
@@ -69,6 +72,7 @@ class ResumableDownloader(
         val finalFile: File,
         val alreadyDownloaded: Long = 0L,
         val etag: String? = null,
+        val lastModified: String? = null,
         val referer: String? = null,
         val userAgent: String? = null,
         val cookieForUrl: ((String) -> String?)? = null,
@@ -80,7 +84,7 @@ class ResumableDownloader(
          * transfer still fails fast on a full disk instead of sleeping first.
          */
         val throttle: suspend (bytes: Int) -> Unit = {},
-        val onProgress: suspend (downloaded: Long, total: Long, bytesPerSecond: Long, rangeSupported: Boolean, etag: String?) -> Unit = { _, _, _, _, _ -> },
+        val onProgress: suspend (downloaded: Long, total: Long, bytesPerSecond: Long, rangeSupported: Boolean, etag: String?, lastModified: String?) -> Unit = { _, _, _, _, _, _ -> },
     )
 
     suspend fun download(request: DownloadRequest): Outcome = withContext(Dispatchers.IO) {
@@ -88,8 +92,10 @@ class ResumableDownloader(
         request.partialFile.parentFile?.mkdirs()
 
         val existing = if (request.partialFile.exists()) request.partialFile.length() else 0L
+        val unsafeToResume = request.etag.isNullOrBlank() && request.lastModified.isNullOrBlank()
         val startOffset = when {
             existing <= 0L -> 0L
+            unsafeToResume -> 0L
             request.alreadyDownloaded in 1..existing -> request.alreadyDownloaded
             else -> existing
         }
@@ -102,7 +108,8 @@ class ResumableDownloader(
 
         if (startOffset > 0L) {
             builder.header("Range", "bytes=$startOffset-")
-            request.etag?.takeIf { it.isNotBlank() }?.let { builder.header("If-Range", it) }
+            (request.etag?.takeIf { it.isNotBlank() } ?: request.lastModified?.takeIf { it.isNotBlank() })
+                ?.let { builder.header("If-Range", it) }
         }
 
         val networkBlocked = AtomicBoolean(false)
@@ -145,6 +152,7 @@ class ResumableDownloader(
         var totalBytes = -1L
         var rangeSupported = startOffset > 0L
         var etag: String? = request.etag
+        var lastModified: String? = request.lastModified
         var lastEmitAt = 0L
         var speed = 0L
         var writingStorage = false
@@ -188,6 +196,8 @@ class ResumableDownloader(
                             totalBytes,
                             rangeSupported,
                             etag,
+                            lastModified,
+                            retryAfterDelayMillis(response.header("Retry-After")),
                         )
                     }
                 }
@@ -195,11 +205,12 @@ class ResumableDownloader(
                 rangeSupported = response.header("Accept-Ranges")?.contains("bytes", ignoreCase = true) == true ||
                     response.code == 206
                 response.header("ETag")?.let { etag = it }
+                response.header("Last-Modified")?.let { lastModified = it }
 
                 val body = response.body
                 val isPartial = response.code == 206
                 if (isPartial && response.header("Content-Range")?.substringAfter("bytes ")?.substringBefore('-')?.toLongOrNull() != startOffset) {
-                    return@use Outcome.Failed(AppError.Network("", failureKind = DownloadFailureKind.FORMAT_CHANGED, reasonKey = "download:resume_mismatch"), downloaded, totalBytes, false, etag)
+                    return@use Outcome.Failed(AppError.Network("", failureKind = DownloadFailureKind.FORMAT_CHANGED, reasonKey = "download:resume_mismatch"), downloaded, totalBytes, false, etag, lastModified)
                 }
 
                 if (startOffset > 0L && !isPartial) {
@@ -233,6 +244,7 @@ class ResumableDownloader(
                         totalBytes,
                         rangeSupported,
                         etag,
+                        lastModified,
                     )
                 }
 
@@ -270,17 +282,17 @@ class ResumableDownloader(
                         if (firstEmit || now - lastEmitAt >= PROGRESS_INTERVAL_MS) {
                             firstEmit = false
                             lastEmitAt = now
-                            request.onProgress(downloaded, totalBytes, speed, rangeSupported, etag)
+                            request.onProgress(downloaded, totalBytes, speed, rangeSupported, etag, lastModified)
                         }
                     }
                 }
 
-                request.onProgress(downloaded, totalBytes, speed, rangeSupported, etag)
+                request.onProgress(downloaded, totalBytes, speed, rangeSupported, etag, lastModified)
                 checkNetwork()
 
                 if (totalBytes > 0L && downloaded < totalBytes) {
                     // Connection closed early: keep the partial file so the next attempt resumes.
-                    return@use Outcome.Paused(downloaded, totalBytes, rangeSupported, etag)
+                    return@use Outcome.Paused(downloaded, totalBytes, rangeSupported, etag, lastModified)
                 }
 
                 writingStorage = true
@@ -295,16 +307,16 @@ class ResumableDownloader(
                 Outcome.Completed(request.finalFile, if (totalBytes > 0L) totalBytes else downloaded)
             }
         } catch (error: InsufficientStorageException) {
-            Outcome.Failed(error.error, downloaded, totalBytes, rangeSupported, etag)
+            Outcome.Failed(error.error, downloaded, totalBytes, rangeSupported, etag, lastModified)
         } catch (e: CancellationException) {
             withContext(NonCancellable) {
-                request.onProgress(downloaded, totalBytes, 0L, rangeSupported, etag)
+                request.onProgress(downloaded, totalBytes, 0L, rangeSupported, etag, lastModified)
             }
             throw e
         } catch (e: IOException) {
             if (networkBlocked.get() || !request.networkPolicy.isAllowed()) {
                 withContext(NonCancellable) {
-                    request.onProgress(downloaded, totalBytes, 0L, rangeSupported, etag)
+                    request.onProgress(downloaded, totalBytes, 0L, rangeSupported, etag, lastModified)
                 }
                 throw WifiRequiredException()
             }
@@ -318,10 +330,10 @@ class ResumableDownloader(
             val error = if (outOfSpace) AppError.Storage("", failureKind = DownloadFailureKind.STORAGE_FULL, reasonKey = "download:out_of_space")
                 else if (writingStorage || e is java.io.FileNotFoundException) AppError.Storage("", failureKind = DownloadFailureKind.STORAGE_ACCESS, reasonKey = "download:storage_write")
                 else AppError.Network("", failureKind = DownloadFailureKind.NETWORK, reasonKey = "download:network")
-            Outcome.Failed(error, downloaded, totalBytes, rangeSupported, etag)
+            Outcome.Failed(error, downloaded, totalBytes, rangeSupported, etag, lastModified)
         } catch (e: Exception) {
             Outcome.Failed(if (writingStorage || e is SecurityException) AppError.Storage("", failureKind = DownloadFailureKind.STORAGE_ACCESS, reasonKey = "download:storage_write")
-                else AppError.Network("", failureKind = DownloadFailureKind.NETWORK, reasonKey = "download:network"), downloaded, totalBytes, rangeSupported, etag)
+                else AppError.Network("", failureKind = DownloadFailureKind.NETWORK, reasonKey = "download:network"), downloaded, totalBytes, rangeSupported, etag, lastModified)
         } finally {
             cancellationWatcher.cancel()
             transferPool.evictAll()

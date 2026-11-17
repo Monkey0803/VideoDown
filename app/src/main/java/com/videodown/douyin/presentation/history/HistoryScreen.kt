@@ -64,6 +64,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -438,6 +439,16 @@ private fun TaskCard(
     val position = state.queue.position(record.id)
     val hasSourcePage = record.sourcePageUrl.isNotBlank() || !record.media?.pageUrl.isNullOrBlank()
     var moreExpanded by remember(record.id) { mutableStateOf(false) }
+    var retrySeconds by remember(progress?.retryAtMillis) { mutableStateOf(0L) }
+    LaunchedEffect(progress?.retryAtMillis) {
+        val deadline = progress?.retryAtMillis ?: run { retrySeconds = 0L; return@LaunchedEffect }
+        while (true) {
+            val remaining = (deadline - System.currentTimeMillis()).coerceAtLeast(0L)
+            retrySeconds = (remaining + 999L) / 1000L
+            if (remaining <= 0L) break
+            delay(minOf(remaining, 1000L))
+        }
+    }
     fun canRecover(action: RecoveryAction): Boolean = action != RecoveryAction.NONE &&
         (action !in setOf(RecoveryAction.BROWSER, RecoveryAction.REPARSE) || hasSourcePage)
     Card(
@@ -591,7 +602,9 @@ private fun TaskCard(
                 )
                 Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("${(state.fractionFor(record) * 100).toInt()}% · " +
-                        if (status == DownloadStatus.RUNNING) when (progress?.phase ?: record.phase) {
+                        if (status == DownloadStatus.RUNNING && progress?.retryAtMillis != null) {
+                            stringResource(R.string.history_waiting_retry, retrySeconds)
+                        } else if (status == DownloadStatus.RUNNING) when (progress?.phase ?: record.phase) {
                             com.videodown.douyin.domain.model.TransferPhase.EXTRACTING -> stringResource(R.string.history_phase_extracting)
                             com.videodown.douyin.domain.model.TransferPhase.MERGING -> stringResource(R.string.history_phase_merging)
                             com.videodown.douyin.domain.model.TransferPhase.VERIFYING -> stringResource(R.string.history_phase_verifying)

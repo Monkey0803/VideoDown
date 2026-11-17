@@ -74,6 +74,8 @@ data class DownloadRecord(
     val rangeSupported: Boolean = false,
     /** ETag captured from the origin server, used as `If-Range` when resuming. */
     val etag: String? = null,
+    /** Last-Modified fallback for origins that do not provide an ETag. */
+    val lastModified: String? = null,
     // Defaults preserve old download history and its existing Douyin resume behavior.
     val platform: VideoPlatform = VideoPlatform.DOUYIN,
     val sourcePageUrl: String = "",
@@ -159,6 +161,8 @@ data class DownloadProgress(
     val phase: TransferPhase = TransferPhase.DOWNLOADING,
     val failureKind: DownloadFailureKind? = null,
     val errorMessage: String? = null,
+    /** Absolute wall-clock deadline for an in-process retry; never persisted. */
+    val retryAtMillis: Long? = null,
 ) {
     val fraction: Float
         get() = when {

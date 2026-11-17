@@ -552,7 +552,7 @@ class DownloadEngine(
                         is DownloadServiceException -> e.message
                         else -> null
                     },
-                    failureKind = when (e) { is VideoEngineException -> e.failureKind; is InsufficientStorageException -> DownloadFailureKind.STORAGE_FULL; is DownloadServiceException -> DownloadFailureKind.BACKGROUND_SERVICE; else -> DownloadFailureKind.UNKNOWN },
+                    failureKind = when (e) { is DownloadContentException -> DownloadFailureKind.FORMAT_CHANGED; is VideoEngineException -> e.failureKind; is InsufficientStorageException -> DownloadFailureKind.STORAGE_FULL; is DownloadServiceException -> DownloadFailureKind.BACKGROUND_SERVICE; else -> DownloadFailureKind.UNKNOWN },
                     pauseCause = null,
                     updatedAt = System.currentTimeMillis()))
                 _progress.update { it - record.id }
@@ -649,6 +649,7 @@ class DownloadEngine(
                         finalFile = finalFile,
                         alreadyDownloaded = startBytes,
                         etag = record.etag,
+                        lastModified = record.lastModified,
                         referer = record.downloadReferer ?: if (record.platform == VideoPlatform.DOUYIN) referer else record.platform.referer,
                         userAgent = record.media?.userAgent ?: userAgent,
                         cookieForUrl = if (record.media?.useBrowserSession == true) browserCookie else null,
@@ -658,7 +659,7 @@ class DownloadEngine(
                             storage.updatePeak(requiredStorageBytes(maxOf(total, writingThrough), reserveBytes = reserveFor(record)))
                         },
                         throttle = { bytes -> throttle(record, bytes) },
-                        onProgress = { downloaded, total, speed, rangeSupported, etag ->
+                        onProgress = { downloaded, total, speed, rangeSupported, etag, lastModified ->
                             updateProgress(record.id) {
                                 DownloadProgress(
                                     id = record.id,
@@ -677,6 +678,7 @@ class DownloadEngine(
                                         totalBytes = total,
                                         rangeSupported = rangeSupported,
                                         etag = etag,
+                                        lastModified = lastModified,
                                         updatedAt = tick,
                                     ),
                                 )
@@ -700,6 +702,7 @@ class DownloadEngine(
                             totalBytes = outcome.totalBytes,
                             rangeSupported = outcome.rangeSupported,
                             etag = outcome.etag,
+                            lastModified = outcome.lastModified,
                             // The connection closed before the last byte; the policy may retry it.
                             pauseCause = DownloadPauseCause.NETWORK,
                             updatedAt = System.currentTimeMillis(),
@@ -716,34 +719,41 @@ class DownloadEngine(
                             totalBytes = outcome.totalBytes,
                             rangeSupported = outcome.rangeSupported,
                             etag = outcome.etag,
+                            lastModified = outcome.lastModified,
                             updatedAt = System.currentTimeMillis(),
                         ),
                     )
                     // Judged by status, not by the text of the message: an expired or forbidden
                     // address is worth re-resolving, and a rewritten message must not change that.
                     val httpStatus = (outcome.error as? com.videodown.douyin.core.AppError.Http)?.code
-                    if (!refreshed && httpStatus in setOf(401, 403, 410)) {
+                    if (!refreshed && httpStatus in setOf(401, 403, 404, 410)) {
                         refreshed = true
                         val fresh = refreshSource?.invoke(record)
                         if (fresh != null && fresh.media?.usesEngine != true) {
                             val identical = record.media?.let { old -> fresh.media?.let(old::sameMedia) } == true
                             // If-Range is essential even for an unchanged logical media ID.
-                            val reuse = identical && record.etag != null
+                            val reuse = identical && (record.etag != null || record.lastModified != null)
                             if (!reuse) partial.delete()
                             record = record.copy(sourceUrl = fresh.url, media = fresh.media,
                                 downloadReferer = fresh.referer, downloadedBytes = if (reuse) outcome.downloadedBytes else 0,
-                                etag = if (reuse) record.etag else null)
+                                etag = if (reuse) record.etag else null,
+                                lastModified = if (reuse) record.lastModified else null)
                             history.upsert(record)
                             continue
                         }
                     }
                     attempt++
-                    val retryableStatus = httpStatus == null || httpStatus !in 400..499
+                    val retryableStatus = httpStatus == null || httpStatus !in 400..499 || httpStatus == 429
                     if (attempt <= MAX_RETRIES && outcome.error !is com.videodown.douyin.core.AppError.Storage && retryableStatus) {
-                        val backoff = RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
+                        val backoff = outcome.retryAfterMillis ?: RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
 
                         Log.w(TAG, AppText.get(R.string.log_retry_scheduled, backoff, attempt, outcome.error.message))
+                        updateProgress(record.id) { DownloadProgress(record.id,
+                            outcome.downloadedBytes, outcome.totalBytes,
+                            DownloadStatus.RUNNING, retryAtMillis = System.currentTimeMillis() + backoff) }
                         delay(backoff)
+                        updateProgress(record.id) { DownloadProgress(record.id,
+                            outcome.downloadedBytes, outcome.totalBytes, DownloadStatus.RUNNING) }
                         record = history.getById(record.id) ?: record
                         continue
                     }
@@ -757,6 +767,7 @@ class DownloadEngine(
                             totalBytes = outcome.totalBytes,
                             rangeSupported = outcome.rangeSupported,
                             etag = outcome.etag,
+                            lastModified = outcome.lastModified,
                             updatedAt = System.currentTimeMillis(),
                         ),
                     )
@@ -835,6 +846,8 @@ class DownloadEngine(
                     partialFile = partial,
                     finalFile = finalFile,
                     alreadyDownloaded = startBytes,
+                    etag = motion.etag,
+                    lastModified = motion.lastModified,
                     referer = motion.referer ?: record.downloadReferer ?: record.platform.referer,
                     userAgent = record.media?.userAgent ?: userAgent,
                     networkPolicy = networkPolicy,
@@ -846,7 +859,8 @@ class DownloadEngine(
                         ))
                     },
                     throttle = { bytes -> throttle(record, bytes) },
-                    onProgress = { downloaded, total, speed, _, _ ->
+                    onProgress = { downloaded, total, speed, _, etag, lastModified ->
+                        motion = motion.copy(etag = etag, lastModified = lastModified)
                         val aggregateDownloaded = saturatingStorageAdd(primaryBytes, downloaded)
                         val aggregateTotal = saturatingStorageAdd(primaryBytes, total.coerceAtLeast(0L))
                         updateProgress(record.id) {
@@ -858,6 +872,7 @@ class DownloadEngine(
                             record = record.copy(
                                 downloadedBytes = aggregateDownloaded,
                                 totalBytes = aggregateTotal,
+                                livePhotoMotion = motion,
                                 updatedAt = now,
                             )
                             history.upsert(record)
@@ -881,6 +896,8 @@ class DownloadEngine(
                     )
                 }
                 is ResumableDownloader.Outcome.Paused -> {
+                    motion = motion.copy(etag = outcome.etag, lastModified = outcome.lastModified)
+                    record = record.copy(livePhotoMotion = motion)
                     history.upsert(record.copy(
                         status = DownloadStatus.PAUSED,
                         downloadedBytes = saturatingStorageAdd(primaryBytes, outcome.downloadedBytes),
@@ -892,8 +909,10 @@ class DownloadEngine(
                     return null
                 }
                 is ResumableDownloader.Outcome.Failed -> {
+                    motion = motion.copy(etag = outcome.etag, lastModified = outcome.lastModified)
+                    record = record.copy(livePhotoMotion = motion)
                     val httpStatus = (outcome.error as? com.videodown.douyin.core.AppError.Http)?.code
-                    if (!refreshed && httpStatus in setOf(401, 403, 410)) {
+                    if (!refreshed && httpStatus in setOf(401, 403, 404, 410)) {
                         refreshed = true
                         val fresh = refreshSource?.invoke(record)?.livePhotoMotion
                         if (fresh != null) {
@@ -904,9 +923,18 @@ class DownloadEngine(
                         }
                     }
                     attempt++
-                    val retryableStatus = httpStatus == null || httpStatus !in 400..499
+                    val retryableStatus = httpStatus == null || httpStatus !in 400..499 || httpStatus == 429
                     if (attempt <= MAX_RETRIES && outcome.error !is com.videodown.douyin.core.AppError.Storage && retryableStatus) {
-                        delay(RETRY_BASE_DELAY_MS * (1L shl (attempt - 1)))
+                        val backoff = outcome.retryAfterMillis ?: RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
+                        updateProgress(record.id) { DownloadProgress(record.id,
+                            saturatingStorageAdd(primaryBytes, outcome.downloadedBytes),
+                            saturatingStorageAdd(primaryBytes, outcome.totalBytes.coerceAtLeast(0L)),
+                            DownloadStatus.RUNNING, retryAtMillis = System.currentTimeMillis() + backoff) }
+                        delay(backoff)
+                        updateProgress(record.id) { DownloadProgress(record.id,
+                            saturatingStorageAdd(primaryBytes, outcome.downloadedBytes),
+                            saturatingStorageAdd(primaryBytes, outcome.totalBytes.coerceAtLeast(0L)),
+                            DownloadStatus.RUNNING) }
                         continue
                     }
                     history.upsert(record.copy(
@@ -945,7 +973,9 @@ class DownloadEngine(
                 while (true) { checkEngineSpace(); delay(250) }
             }
             try {
-                executor.download(record, paths, if (record.media?.localRecordId != null) DownloadNetworkPolicy.Unrestricted else networkPolicy) { downloaded, total, speed, phase ->
+                executor.download(record, paths,
+                    if (record.media?.localRecordId != null) DownloadNetworkPolicy.Unrestricted else networkPolicy,
+                    engineRateLimit(record)) { downloaded, total, speed, phase ->
                     if (total > 0) expected.updateAndGet { maxOf(it, total) }
                     checkEngineSpace()
                     updateProgress(record.id) { DownloadProgress(record.id, downloaded, total, DownloadStatus.RUNNING, speed, phase) }
@@ -986,6 +1016,12 @@ class DownloadEngine(
             _progress.update { it - record.id }
         }
     }
+
+    /** yt-dlp 只能接受每进程上限；取当前全局/单任务中更严的非零值。 */
+    private fun engineRateLimit(record: DownloadRecord): Long? = listOf(
+        speedLimitBytesPerSecond(globalSpeedLimitKbps()),
+        speedLimitBytesPerSecond(record.speedLimitKbps),
+    ).filter { it > 0L }.minOrNull()
 
     private suspend fun markPaused(id: String, reason: String? = null,
         cause: DownloadPauseCause = DownloadPauseCause.USER) {
@@ -1045,8 +1081,11 @@ class DownloadEngine(
             for (entry in archiveAssets(record.archiveEntries)) {
                 val target = File(directory, entry.name)
                 if (target.isFile && target.length() > 0L) {
-                    completedBytes += target.length()
-                    continue
+                    if (archiveAssetIsValid(target, entry, record)) {
+                        completedBytes += target.length()
+                        continue
+                    }
+                    target.delete()
                 }
                 if (!networkPolicy.isAllowed()) throw WifiRequiredException()
                 val partial = File(target.parentFile, target.name + ".part")
@@ -1059,6 +1098,8 @@ class DownloadEngine(
                         partialFile = partial,
                         finalFile = target,
                         alreadyDownloaded = alreadyDownloaded,
+                        etag = entry.etag,
+                        lastModified = entry.lastModified,
                         referer = entry.referer ?: record.downloadReferer,
                         userAgent = userAgent,
                         networkPolicy = networkPolicy,
@@ -1070,7 +1111,8 @@ class DownloadEngine(
                             ))
                         },
                         throttle = { bytes -> throttle(record, bytes) },
-                        onProgress = { downloaded, _, speed, _, _ ->
+                        onProgress = { downloaded, _, speed, _, etag, lastModified ->
+                            record = record.withArchiveValidator(entry, etag, lastModified)
                             val written = completedBytes + downloaded
                             updateProgress(record.id) {
                                 DownloadProgress(record.id, written, knownTotal ?: -1L, DownloadStatus.RUNNING, speed)
@@ -1085,14 +1127,29 @@ class DownloadEngine(
                     ),
                 )
                 when (outcome) {
-                    is ResumableDownloader.Outcome.Completed -> completedBytes += outcome.file.length()
+                    is ResumableDownloader.Outcome.Completed -> {
+                        if (!archiveAssetIsValid(outcome.file, entry, record)) {
+                            outcome.file.delete()
+                            if (!refreshed) {
+                                val fresh = refreshArchive?.invoke(record)
+                                if (fresh != null && fresh.size == record.archiveEntries.size) {
+                                    refreshed = true
+                                    record = record.copy(archiveEntries = fresh)
+                                    history.upsert(record)
+                                    break
+                                }
+                            }
+                            throw DownloadContentException(if (entry.kind == MediaKind.IMAGE) DOWNLOAD_NOT_AN_IMAGE else "download:invalid_video")
+                        }
+                        completedBytes += outcome.file.length()
+                    }
                     is ResumableDownloader.Outcome.Paused -> {
                         markArchivePaused(record, completedBytes + outcome.downloadedBytes, outcome.totalBytes)
                         return
                     }
                     is ResumableDownloader.Outcome.Failed -> {
                         val httpStatus = (outcome.error as? com.videodown.douyin.core.AppError.Http)?.code
-                        if (!refreshed && httpStatus in setOf(401, 403, 410)) {
+                        if (!refreshed && httpStatus in setOf(401, 403, 404, 410)) {
                             val fresh = refreshArchive?.invoke(record)
                             if (fresh != null && fresh.size == record.archiveEntries.size) {
                                 refreshed = true
@@ -1102,9 +1159,16 @@ class DownloadEngine(
                             }
                         }
                         attempt++
-                        val retryable = httpStatus == null || httpStatus !in 400..499
+                        val retryable = httpStatus == null || httpStatus !in 400..499 || httpStatus == 429
                         if (attempt <= MAX_RETRIES && retryable) {
-                            delay(RETRY_BASE_DELAY_MS * (1L shl (attempt - 1)))
+                            val backoff = outcome.retryAfterMillis ?: RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
+                            updateProgress(record.id) { DownloadProgress(record.id,
+                                completedBytes + outcome.downloadedBytes, knownTotal ?: outcome.totalBytes,
+                                DownloadStatus.RUNNING, retryAtMillis = System.currentTimeMillis() + backoff) }
+                            delay(backoff)
+                            updateProgress(record.id) { DownloadProgress(record.id,
+                                completedBytes + outcome.downloadedBytes, knownTotal ?: outcome.totalBytes,
+                                DownloadStatus.RUNNING) }
                             break
                         }
                         markArchiveFailed(record, outcome.error, completedBytes + outcome.downloadedBytes, knownTotal)
@@ -1113,7 +1177,7 @@ class DownloadEngine(
                 }
             }
             val allDone = archiveAssets(record.archiveEntries).all { entry ->
-                File(directory, entry.name).let { it.isFile && it.length() > 0L }
+                File(directory, entry.name).let { it.isFile && it.length() > 0L && archiveAssetIsValid(it, entry, record) }
             }
             if (!allDone) continue
             publishArchive(record, directory, knownTotal, storage)
@@ -1170,6 +1234,11 @@ class DownloadEngine(
         val url: String,
         val referer: String?,
         val sizeBytes: Long?,
+        val kind: MediaKind,
+        val entryIndex: Int,
+        val isMotion: Boolean,
+        val etag: String?,
+        val lastModified: String?,
     )
 
     private fun archiveAssets(entries: List<ArchiveEntry>): List<ArchiveAsset> = buildList {
@@ -1179,6 +1248,11 @@ class DownloadEngine(
                 entry.url,
                 entry.referer,
                 entry.sizeBytes,
+                MediaKind.IMAGE,
+                index,
+                false,
+                entry.etag,
+                entry.lastModified,
             ))
             entry.livePhotoMotion?.let { motion ->
                 add(ArchiveAsset(
@@ -1186,10 +1260,35 @@ class DownloadEngine(
                     motion.sourceUrl,
                     motion.referer ?: entry.referer,
                     motion.expectedBytes,
+                    MediaKind.VIDEO,
+                    index,
+                    true,
+                    motion.etag,
+                    motion.lastModified,
                 ))
             }
         }
     }
+
+    private fun DownloadRecord.withArchiveValidator(asset: ArchiveAsset, etag: String?, lastModified: String?): DownloadRecord {
+        val updated = archiveEntries.mapIndexed { index, entry ->
+            if (index != asset.entryIndex) entry
+            else if (asset.isMotion) entry.copy(livePhotoMotion = entry.livePhotoMotion?.copy(
+                etag = etag, lastModified = lastModified))
+            else entry.copy(etag = etag, lastModified = lastModified)
+        }
+        return copy(archiveEntries = updated)
+    }
+
+    private fun archiveAssetIsValid(file: File, asset: ArchiveAsset, record: DownloadRecord): Boolean = runCatching {
+        if (asset.kind == MediaKind.IMAGE) validateImage(file)
+        else if (validateFile != null) validateFile.invoke(file, record.copy(mediaKind = MediaKind.VIDEO, livePhotoMotion = null))
+        else if (!isIsoMedia(file.inputStream().use { input ->
+                val bytes = ByteArray(com.videodown.douyin.domain.model.MediaSignature.HEAD_BYTES)
+                val count = input.read(bytes)
+                if (count <= 0) ByteArray(0) else bytes.copyOf(count)
+            })) throw DownloadContentException("download:invalid_video")
+    }.isSuccess
 
     private suspend fun markArchivePaused(record: DownloadRecord, downloaded: Long, total: Long) {
         history.upsert(

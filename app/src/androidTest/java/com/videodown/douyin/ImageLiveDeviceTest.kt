@@ -42,6 +42,7 @@ import java.util.zip.ZipFile
  * -Pandroid.testInstrumentationRunnerArguments.live_images=true \
  * -Pandroid.testInstrumentationRunnerArguments.image_live_douyin=<note link> \
  * -Pandroid.testInstrumentationRunnerArguments.image_live_weibo=<multi image link> \
+ * -Pandroid.testInstrumentationRunnerArguments.image_live_kuaishou=<atlas link> \
  * -Pandroid.testInstrumentationRunnerArguments.image_live_x=<photo link>
  * ```
  */
@@ -83,9 +84,10 @@ class ImageLiveDeviceTest {
         val links = listOfNotNull(
             arguments.getString("image_live_douyin")?.let { "douyin" to it },
             arguments.getString("image_live_weibo")?.let { "weibo" to it },
+            arguments.getString("image_live_kuaishou")?.let { "kuaishou" to it },
             arguments.getString("image_live_x")?.let { "x" to it },
         )
-        assumeTrue("Pass image_live_douyin / image_live_weibo / image_live_x", links.isNotEmpty())
+        assumeTrue("Pass image_live_douyin / image_live_weibo / image_live_kuaishou / image_live_x", links.isNotEmpty())
         links.forEach { (name, link) ->
             val parsed = ServiceLocator.videoRepository.parseVideos(link)
             val videos = (parsed as? AppResult.Success)?.value?.videos
@@ -107,7 +109,15 @@ class ImageLiveDeviceTest {
             }
             assertEquals("$name: ${completed.errorMessage}", DownloadStatus.COMPLETED, completed.status)
             ZipFile(File(completed.filePath!!)).use { zip ->
-                assertEquals("$name: entry count", request.entries.size, zip.entries().toList().size)
+                val entries = zip.entries().toList()
+                val expected = request.entries.sumOf { 1 + if (it.livePhotoMotion != null) 1 else 0 }
+                assertEquals("$name: entry count", expected, entries.size)
+                entries.filter { it.name.startsWith("images/") }.forEach { entry ->
+                    val head = zip.getInputStream(entry).use { input -> ByteArray(64).let { bytes ->
+                        val count = input.read(bytes); if (count <= 0) ByteArray(0) else bytes.copyOf(count)
+                    } }
+                    assertNotNull("$name: ${entry.name} is not an image", com.videodown.douyin.domain.model.MediaSignature.imageExtension(head))
+                }
             }
             report("$name images: ${images.size} entries -> ${completed.fileName}")
         }

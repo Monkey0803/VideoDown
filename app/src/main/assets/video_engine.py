@@ -206,6 +206,8 @@ try:
         }
         if request.get("cookies"):
             options["cookiefile"] = request["cookies"]
+        if request.get("rate_limit", 0) > 0:
+            options["ratelimit"] = int(request["rate_limit"])
         if request["mode"] == "download":
             options.update({"outtmpl": request["output"], "format": request.get("format") or "bv*+ba/b",
                             "merge_output_format": "mp4/mkv", "continuedl": True,

@@ -60,7 +60,8 @@ class EngineRequestTest {
         assertFalse(json.containsKey("media_id"))
     }
 
-    private fun download(subtitles: List<String> = emptyList(), automatic: Boolean = false, audioOnly: Boolean = false) =
+    private fun download(subtitles: List<String> = emptyList(), automatic: Boolean = false, audioOnly: Boolean = false,
+                         rateLimit: Long? = null) =
         EngineRequest.download(
             url = "https://example.com/watch",
             output = "/tmp/media.%(ext)s",
@@ -73,6 +74,7 @@ class EngineRequestTest {
             cookieFile = null,
             subtitles = subtitles,
             automaticCaptions = automatic,
+            rateLimitBytesPerSecond = rateLimit,
         )
 
     @Test fun `a plain download asks for no subtitles`() {
@@ -81,6 +83,12 @@ class EngineRequestTest {
         assertNull(json["subtitles"])
         assertNull(json["subtitle_langs"])
         assertNull(json["auto_captions"])
+    }
+
+    @Test fun `a positive native rate limit is sent to the engine`() {
+        val json = download(rateLimit = 512_000L)
+        assertEquals(512_000L, (json["rate_limit"] as JsonPrimitive).content.toLong())
+        assertNull(download(rateLimit = 0L)["rate_limit"])
     }
 
     @Test fun `the chosen languages travel as a list`() {

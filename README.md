@@ -76,7 +76,7 @@
 - 视频播放页支持左右半屏双击快退 / 快进 10 秒、横向拖动预览并跳转、左半屏竖滑亮度、右半屏竖滑音量，以及长按临时 2× 加速（松手恢复）。横竖方向越过阈值后锁定，控制按钮所在区域优先响应按钮；离开页面时把屏幕亮度交还系统。
 - 拖动进度时按需抽取附近关键帧，失败时退化为仅显示时间而不影响 seek。截图按当前时间点保存原始视频帧到 `Pictures/拾影`，不包含控制按钮和字幕。
 - 与视频同名的 `.srt` / `.vtt` / `.ass` / `.ssa` 字幕文件会作为独立字幕轨道加载，视频内嵌字幕同样渲染。存在字幕轨道时播放页出现「字幕」开关，选择会保留。只有真的存在字幕轨道时才显示该开关。
-- 「我的 → 下载限速」限制**所有直链下载的总速度**（不限速 / 512 KB/s / 1 MB/s / 2 MB/s / 5 MB/s）。任务卡可为单个任务设置上限，或选择「跟随全局」；卡片上显示当前上限。限速在**每次写入前**生效且位于空间检查之后，因此磁盘写满仍然立即失败。**分片引擎下载（yt-dlp / FFmpeg）由独立进程完成，不受该限制。**
+- 「我的 → 下载限速」限制**所有直链下载的总速度**（不限速 / 512 KB/s / 1 MB/s / 2 MB/s / 5 MB/s）。任务卡可为单个任务设置上限，或选择「跟随全局」；卡片上显示当前上限。限速在**每次写入前**生效且位于空间检查之后，因此磁盘写满仍然立即失败。yt-dlp 引擎任务会把全局/单任务非零上限的较小值传给原生 `ratelimit`；该限制按引擎进程生效，不合并多个进程的总速度，也不覆盖 FFmpeg 自行拉流阶段。
 - 「我的 → 下载后自动存入相册」开启后，完成的视频复制到 `Movies/拾影`、音频复制到 `Music/拾影`；完成通知会说明是否已存入。Android 9 及以下需要存储权限，未授权时不复制并在通知中说明原因；保存失败不影响下载本身。
 - 「已存」卡片与首页「最近保存」显示播放进度（进度条 + 「已看 N%」）。只有进度与当前文件的大小和修改时间都一致时才显示，重新下载或转码后不会沿用旧进度。
 - 音频播放页可设「15 / 30 / 60 分钟后暂停」，按钮显示剩余时间。计时按绝对时间保存在本地，关闭页面后仍在后台生效；到点暂停播放并清除定时。
@@ -262,7 +262,7 @@ adb shell "am instrument -w -e class com.videodown.douyin.XSpecifiedPostDeviceTe
   com.videodown.douyin.debug.test/com.videodown.douyin.LocaleTestRunner"
 
 # 图片/图文真实联网测试：直链图片 + 平台图文解析并打包（约数 MiB）
-# 真实作品链接会过期，仓库不内置；平台图文另传 image_live_douyin / image_live_weibo / image_live_x
+# 真实作品链接会过期，仓库不内置；平台图文另传 image_live_douyin / image_live_weibo / image_live_kuaishou / image_live_x
 ./gradlew connectedDebugAndroidTest \
   -Pandroid.testInstrumentationRunnerArguments.class=com.videodown.douyin.ImageLiveDeviceTest \
   -Pandroid.testInstrumentationRunnerArguments.live_images=true

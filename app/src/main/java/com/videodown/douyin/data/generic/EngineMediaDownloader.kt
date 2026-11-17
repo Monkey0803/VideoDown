@@ -24,6 +24,7 @@ class EngineMediaDownloader(
     private val maintenanceMutex: Mutex = Mutex(),
 ) {
     suspend fun download(record: DownloadRecord, paths: DownloadPaths, policy: DownloadNetworkPolicy,
+                         rateLimitBytesPerSecond: Long? = null,
                          progress: suspend (Long, Long, Long, TransferPhase) -> Unit): File = withContext(Dispatchers.IO) {
         val media = requireNotNull(record.media)
         val directory = paths.engineDirectory(record.id).apply { mkdirs() }
@@ -95,6 +96,7 @@ class EngineMediaDownloader(
                     cookieFile = cookies.absolutePath,
                     subtitles = record.subtitleLanguages,
                     automaticCaptions = record.subtitleAutomatic,
+                    rateLimitBytesPerSecond = rateLimitBytesPerSecond,
                 ),
                 policy,
             ) { event ->
