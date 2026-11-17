@@ -1,11 +1,20 @@
 package com.videodown.douyin
 
+import android.media.MediaExtractor
+import android.media.MediaFormat
 import android.os.Bundle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.core.AppError
 import com.videodown.douyin.core.AppResult
+import com.videodown.douyin.data.download.DownloadEngine
+import com.videodown.douyin.data.download.DownloadPaths
+import com.videodown.douyin.data.download.ResumableDownloader
+import com.videodown.douyin.data.download.validateDownloadedFile
+import com.videodown.douyin.data.generic.EngineMediaDownloader
+import com.videodown.douyin.data.local.DownloadHistoryStore
 import com.videodown.douyin.data.remote.BilibiliShortLinkResolver
+import com.videodown.douyin.data.repository.DownloadHistoryRepositoryImpl
 import com.videodown.douyin.data.repository.MultiPlatformVideoRepository
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.ParsedVideos
@@ -13,8 +22,15 @@ import com.videodown.douyin.domain.model.VideoPlatform
 import com.videodown.douyin.domain.model.VideoVariant
 import com.videodown.douyin.domain.repository.DouyinRepository
 import com.videodown.douyin.domain.repository.VideoRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
+import com.videodown.douyin.domain.model.DownloadStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -23,6 +39,7 @@ import org.junit.runner.RunWith
 import java.io.Closeable
 import java.net.ServerSocket
 import java.net.Socket
+import java.io.File
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -191,5 +208,76 @@ class BilibiliDeviceTest {
         val summary = "bilibili: ${video.title.take(40)} | ${video.variants.size} formats | ${video.variants.first().label}"
         println(summary)
         instrumentation.sendStatus(0, Bundle().apply { putString("stream", "$summary\n") })
+    }
+
+    /**
+     * E2 在线验收：真实下载一个 B 站分轨结果，合并后必须同时有视频轨与音轨。
+     *
+     * `-Pandroid.testInstrumentationRunnerArguments.live_bilibili=<链接>` 且
+     * `-Pandroid.testInstrumentationRunnerArguments.live_bilibili_download=true` 时执行，默认跳过。
+     * 选可用画质里最低的一档带独立音轨的结果，尽量少花流量；下载完成后用 I2 的校验函数
+     * 与 MediaExtractor 双重确认合并成功。
+     */
+    @Test fun liveBilibiliDownloadMergesVideoAndAudio() = runBlocking {
+        val arguments = InstrumentationRegistry.getArguments()
+        val url = arguments.getString("live_bilibili")
+        val enabled = arguments.getString("live_bilibili_download") == "true"
+        org.junit.Assume.assumeTrue(
+            "Pass live_bilibili and live_bilibili_download=true to enable a real Bilibili download",
+            !url.isNullOrBlank() && enabled,
+        )
+        val parsed = com.videodown.douyin.core.ServiceLocator.videoRepository.parseVideos(url!!)
+        assertTrue("Bilibili parse failed: $parsed", parsed is AppResult.Success)
+        val video = (parsed as AppResult.Success).value.selectedVideo
+        // 优先选「必须合并」的低画质：DASH 分轨结果才真正走 E2 的合并路径。
+        val variant = video.variants.filter { it.media?.audioFormatId != null }.minByOrNull { it.qualityRank }
+            ?: video.variants.minByOrNull { it.qualityRank }!!
+        assertNotNull("chosen variant must carry a media request", variant.media)
+        if (variant.media?.audioFormatId != null) {
+            assertTrue("a merged request must name both streams: ${variant.media?.formatSelector}",
+                variant.media?.formatSelector?.contains('+') == true)
+        }
+
+        val directory = File(context.cacheDir, "bilibili-download-${UUID.randomUUID()}").apply { mkdirs() }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            val history = DownloadHistoryRepositoryImpl(DownloadHistoryStore(File(directory, "history.json")))
+            val engine = DownloadEngine(
+                history,
+                ResumableDownloader(com.videodown.douyin.core.ServiceLocator.douyinApiClient.okHttpClient),
+                DownloadPaths(directory), scope, "", "VideoDown-Test",
+                engineDownloader = EngineMediaDownloader(
+                    com.videodown.douyin.core.ServiceLocator.videoEngine,
+                    com.videodown.douyin.core.ServiceLocator.browserSessions,
+                    File(directory, "sessions"),
+                ),
+                validateFile = { file, record -> validateDownloadedFile(file, record) },
+            )
+            val id = engine.start(video, variant)
+            val done = withTimeout(300_000) {
+                history.observeRecord(id).first { it?.status in setOf(DownloadStatus.COMPLETED, DownloadStatus.FAILED) }!!
+            }
+            assertEquals(done.errorMessage, DownloadStatus.COMPLETED, done.status)
+            val file = File(done.filePath!!)
+            assertTrue("downloaded file must exist", file.isFile && file.length() > 0)
+            val tracks = MediaExtractor().let { extractor ->
+                try {
+                    extractor.setDataSource(file.absolutePath)
+                    (0 until extractor.trackCount).map {
+                        extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME).orEmpty()
+                    }
+                } finally { extractor.release() }
+            }
+            assertTrue("merged output must contain a video track: $tracks", tracks.any { it.startsWith("video/") })
+            if (variant.media?.audioFormatId != null) {
+                assertTrue("merged output must contain the requested audio track: $tracks", tracks.any { it.startsWith("audio/") })
+            }
+            val summary = "bilibili download: ${variant.media?.formatSelector} ${file.length()} bytes tracks=$tracks"
+            println(summary)
+            instrumentation.sendStatus(0, Bundle().apply { putString("stream", "$summary\n") })
+        } finally {
+            scope.coroutineContext[kotlinx.coroutines.Job]?.cancelAndJoin()
+            directory.deleteRecursively()
+        }
     }
 }
