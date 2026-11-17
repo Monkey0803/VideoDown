@@ -291,7 +291,16 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
   视频（链接按运行参数传入，不入库）完成下载、合并与双轨校验并通过（27.9 秒）。
   **未覆盖**：大会员/4K/HDR/杜比画质与需要登录的内容未验证（E3）；真实付费内容与地区限制未构造；
   多 P 合集仍缺真实链接；本轮只跑了一次在线下载。
-- [ ] **E3 应用内网页登录态** — 设置页提供 B 站登录入口，以 `SESSDATA` 判断登录状态并向引擎导出 B 站网页/API 所需 Cookie；检测到登录态时优先登录解析，失败后匿名降级，仍失败时提供重新登录入口。只访问账号在正常网页中可播放的内容，不读取外部浏览器 Cookie。
+- [x] **E3 应用内网页登录态**（2026-11-17 完成，证据见 [验收记录](validation/bilibili-e3-2026-11-17.md)）—
+  设置 → 账号页新增「哔哩哔哩登录」，复用网页登录容器在应用内登录；登录态由系统 WebView 的
+  `CookieManager` 持有，以非空 `SESSDATA` 判断，`BrowserSessionStore.bilibiliSignedIn()` 每次现查、
+  不缓存过期时间。`extractorCookieUrls` 对 B 站页面追加 `www.bilibili.com` / `api.bilibili.com`
+  两个 Cookie 来源；仓库先试登录态、登录被拒再退回匿名、两条路都要求授权时返回
+  `bilibili:session_auth_failed`（`LOGIN_REQUIRED`）。清除网页登录态会同时刷新两个站点的状态。
+  JVM 658 例通过（新增登录态判断 4 例）；设备 `BilibiliLoginDeviceTest` 2/2 通过（真实
+  CookieManager 识别与导出、清除后立即未登录），`BilibiliDeviceTest` 7 条通过（新增 3 条会话顺序用例）
+  加 3 条在线用例按前提跳过。**未覆盖**：真实账号登录、登录后画质差异、大会员/付费内容的否定性验证、
+  `SESSDATA` 过期探测均未自动化；只访问正常网页可播放内容靠代码约束。
 - [ ] **E4 字幕与验证** — 只暴露可下载/嵌入的文本字幕，过滤 `danmaku` XML；补齐 JVM、设备和默认跳过的 `live_bilibili` 在线验收，并在 `docs/validation/` 留证后才能勾选。
 
 ## 已具备（勿重复立项）

@@ -25,6 +25,8 @@ class MultiPlatformVideoRepository(
     private val sessionFallback: SessionVideoParser? = null,
     /** 展开 b23.tv 短链；null 时短链解析直接报告「无法展开」。返回 null 表示目标不可信。 */
     private val resolveBilibiliShortLink: (suspend (String) -> BilibiliVideoLink?)? = null,
+    /** 用应用内 B 站登录态解析；null 表示当前没有登录态。 */
+    private val bilibiliSession: SessionVideoParser? = null,
 ) : VideoRepository {
     override suspend fun parseShareText(shareText: String): AppResult<DouyinVideo> = parseVideos(shareText).map { it.selectedVideo }
 
@@ -163,6 +165,34 @@ class MultiPlatformVideoRepository(
         val engine = fallback ?: return AppResult.Failure(
             AppError.Parse("", reasonKey = "bilibili:missing_engine", platform = VideoPlatform.BILIBILI),
         )
+        // 有登录态时先试登录态，失败再退回匿名：匿名通常仍能拿到低清结果，不能因为登录态坏了就整次失败。
+        val session = bilibiliSession
+        if (session != null) {
+            val withSession = try {
+                session.parseWithSession(link.url)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                null
+            }
+            when {
+                withSession is AppResult.Success -> return AppResult.Success(retagBilibili(withSession.value, link))
+                withSession is AppResult.Failure && withSession.isAuthFailure() -> {
+                    val anonymous = engine.parseVideos(link.url)
+                    return if (anonymous is AppResult.Success) AppResult.Success(retagBilibili(anonymous.value, link))
+                    else AppResult.Failure(
+                        AppError.Parse(
+                            "",
+                            com.videodown.douyin.domain.model.DownloadFailureKind.LOGIN_REQUIRED,
+                            reasonKey = com.videodown.douyin.data.remote.BilibiliSession.SESSION_AUTH_FAILED,
+                            platform = VideoPlatform.BILIBILI,
+                        ),
+                    )
+                }
+                // 其它失败照常上报（引擎已经给了具体原因），不再多跑一次匿名。
+                withSession is AppResult.Failure -> return withSession
+            }
+        }
         return when (val result = engine.parseVideos(link.url)) {
             is AppResult.Success -> AppResult.Success(retagBilibili(result.value, link))
             is AppResult.Failure -> result

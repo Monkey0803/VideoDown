@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-17T09:22:17" hostname="localhost">
+  <testsuite name="com.videodown.douyin.BilibiliLoginDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="0.329" timestamp="2026-11-17T09:22:17" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="aWebCookieMakesTheSessionVisibleAndIsExportedForTheEngine" classname="com.videodown.douyin.BilibiliLoginDeviceTest" time="0.277" />
+    <testcase name="clearingTheWebSessionSignsBilibiliOut" classname="com.videodown.douyin.BilibiliLoginDeviceTest" time="0.052" />
+  </testsuite>
+</testsuites>

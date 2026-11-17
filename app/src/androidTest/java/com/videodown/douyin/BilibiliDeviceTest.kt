@@ -12,6 +12,7 @@ import com.videodown.douyin.data.download.DownloadPaths
 import com.videodown.douyin.data.download.ResumableDownloader
 import com.videodown.douyin.data.download.validateDownloadedFile
 import com.videodown.douyin.data.generic.EngineMediaDownloader
+import com.videodown.douyin.data.generic.SessionVideoParser
 import com.videodown.douyin.data.local.DownloadHistoryStore
 import com.videodown.douyin.data.remote.BilibiliShortLinkResolver
 import com.videodown.douyin.data.repository.DownloadHistoryRepositoryImpl
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
+import com.videodown.douyin.domain.model.DownloadFailureKind
 import com.videodown.douyin.domain.model.DownloadStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -57,8 +59,10 @@ class BilibiliDeviceTest {
 
     private class FakeEngine : VideoRepository {
         val requested = mutableListOf<String>()
+        var failure: AppResult<ParsedVideos>? = null
         override suspend fun parseShareText(shareText: String): AppResult<DouyinVideo> {
             requested += shareText
+            failure?.let { return it as AppResult<DouyinVideo> }
             return AppResult.Success(
                 DouyinVideo(
                     awemeId = "BV1GJ411x7h7",
@@ -69,8 +73,19 @@ class BilibiliDeviceTest {
                 ),
             )
         }
-        override suspend fun parseVideos(shareText: String): AppResult<ParsedVideos> =
-            (parseShareText(shareText) as AppResult.Success).let { AppResult.Success(ParsedVideos(listOf(it.value))) }
+        override suspend fun parseVideos(shareText: String): AppResult<ParsedVideos> {
+            requested += shareText
+            failure?.let { return it }
+            return AppResult.Success(
+                ParsedVideos(listOf(DouyinVideo(
+                    awemeId = "BV1GJ411x7h7",
+                    title = "假引擎结果",
+                    platform = VideoPlatform.GENERIC,
+                    shareUrl = shareText,
+                    variants = listOf(VideoVariant("https://example.test/v.mp4", "720P")),
+                ))),
+            )
+        }
     }
 
     private class UnusedDouyin : DouyinRepository {
@@ -171,6 +186,47 @@ class BilibiliDeviceTest {
         RedirectServer("https://evil.example/video/BV1GJ411x7h7").use { evil ->
             org.junit.Assert.assertNull(resolver.resolve("${evil.baseUrl}/s/evil"))
         }
+    }
+
+    /** E3：有登录态先试登录态，登录态被拒后退回匿名；两条路都要求授权才提示重新登录。 */
+    @Test fun aSessionFailureFallsBackToTheAnonymousEngine() = runBlocking {
+        val engine = FakeEngine()
+        val session = SessionVideoParser {
+            AppResult.Failure(AppError.Http(403, failureKind = DownloadFailureKind.LOGIN_REQUIRED))
+        }
+        val repository = MultiPlatformVideoRepository(
+            douyin = UnusedDouyin(), fallback = engine, bilibiliSession = session,
+        )
+        val result = repository.parseVideos("https://www.bilibili.com/video/BV1GJ411x7h7")
+        assertTrue("anonymous fallback must succeed: $result", result is AppResult.Success)
+        assertEquals(VideoPlatform.BILIBILI, (result as AppResult.Success).value.selectedVideo.platform)
+        assertEquals(listOf("https://www.bilibili.com/video/BV1GJ411x7h7"), engine.requested)
+    }
+
+    @Test fun whenBothPathsNeedAuthenticationTheUserIsAskedToSignInAgain() = runBlocking {
+        val engine = FakeEngine().apply {
+            failure = AppResult.Failure(AppError.Parse("", DownloadFailureKind.LOGIN_REQUIRED, reasonKey = "engine:AUTH"))
+        }
+        val session = SessionVideoParser {
+            AppResult.Failure(AppError.Http(403, failureKind = DownloadFailureKind.LOGIN_REQUIRED))
+        }
+        val repository = MultiPlatformVideoRepository(
+            douyin = UnusedDouyin(), fallback = engine, bilibiliSession = session,
+        )
+        val result = repository.parseVideos("https://www.bilibili.com/video/BV1GJ411x7h7")
+        assertTrue("both paths failed: $result", result is AppResult.Failure)
+        assertEquals("bilibili:session_auth_failed", (result as AppResult.Failure).error.let { (it as AppError.Parse).reasonKey })
+        assertEquals("the anonymous path must still have been tried", 1, engine.requested.size)
+    }
+
+    @Test fun withoutASessionOnlyTheAnonymousEngineRuns() = runBlocking {
+        val engine = FakeEngine()
+        val repository = MultiPlatformVideoRepository(
+            douyin = UnusedDouyin(), fallback = engine, bilibiliSession = SessionVideoParser { null },
+        )
+        val result = repository.parseVideos("https://www.bilibili.com/video/BV1GJ411x7h7")
+        assertTrue("anonymous parse must succeed: $result", result is AppResult.Success)
+        assertEquals(1, engine.requested.size)
     }
 
     /**

@@ -91,6 +91,10 @@ object ServiceLocator {
             sessionFallback = SessionVideoParser { url ->
                 if (browserSessions.xSignedIn()) genericRepository.parse(url, browserSession = true) else null
             },
+            // 有 B 站登录态时先用登录态解析，失败再退回匿名（仓库内部处理顺序）。
+            bilibiliSession = SessionVideoParser { url ->
+                if (browserSessions.bilibiliSignedIn()) genericRepository.parse(url, browserSession = true) else null
+            },
             // b23.tv 只在跳到可信 B 站视频页时才继续，其它跳转一律当作不可信短链。
             resolveBilibiliShortLink = { url ->
                 com.videodown.douyin.data.remote.BilibiliShortLinkResolver(douyinApiClient.okHttpClient).resolve(url)

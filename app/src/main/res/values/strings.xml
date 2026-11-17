@@ -160,6 +160,14 @@
     <string name="settings_x_login_signed_in">已登录</string>
     <string name="settings_x_login_signed_out">未登录</string>
     <string name="settings_x_login_checking">正在检查…</string>
+    <string name="bilibili_session_auth_failed">B 站登录态可能已过期或没有权限，请重新登录后再解析。</string>
+    <string name="bilibili_login_title">哔哩哔哩登录</string>
+    <string name="bilibili_login_hint">在本页登录后点关闭即可。登录态只保存在拾影内，有效期由哔哩哔哩决定；需要时会提示重新登录。</string>
+    <string name="settings_bilibili_login_row">哔哩哔哩登录</string>
+    <string name="settings_bilibili_login_signed_in">已登录</string>
+    <string name="settings_bilibili_login_signed_out">未登录</string>
+    <string name="settings_bilibili_login_checking">检查中…</string>
+    <string name="settings_bilibili_login_note">适用于 B 站解析与下载。只访问账号在正常网页中能播放的内容，不绕过大会员、付费或权限限制；不读取外部浏览器 Cookie。</string>
     <string name="settings_x_login_note">适用于 X（Twitter）解析。登录态只保存在拾影内，有效期由 X 决定；不会读取 Chrome 等外部浏览器账号。</string>
     <string name="settings_clear_session_scope">清除范围：拾影内所有网站的网页登录态；不会影响 Chrome 等外部浏览器账号。</string>
     <string name="settings_concurrency_title">同时下载数量</string>

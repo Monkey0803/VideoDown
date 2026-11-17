@@ -40,6 +40,9 @@ fun XLoginScreen(
     /** 用户在弹窗里点了「完成」；true 表示当前确实检测到登录态。关窗由调用方负责。 */
     onFinished: (Boolean) -> Unit,
     signedIn: suspend () -> Boolean = { ServiceLocator.browserSessions.xSignedIn() },
+    /** 弹窗标题与说明：X 与 B 站复用同一个网页登录容器。 */
+    titleRes: Int = R.string.x_login_title,
+    hintRes: Int = R.string.x_login_hint,
 ) {
     val scope = rememberCoroutineScope()
     val resources = LocalResources.current
@@ -66,13 +69,13 @@ fun XLoginScreen(
             Column(Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onClose) { AppIcon(AppIcons.Close, contentDescription = stringResource(R.string.action_close)) }
-                    Text(stringResource(R.string.x_login_title), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = { browser?.reload() }) { AppIcon(AppIcons.Retry, contentDescription = stringResource(R.string.action_refresh)) }
                 }
                 Text(android.net.Uri.parse(page).host.orEmpty(),
                     modifier = Modifier.padding(horizontal = 12.dp), style = MaterialTheme.typography.labelSmall)
-                Text(stringResource(R.string.x_login_hint), modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                Text(stringResource(hintRes), modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     style = MaterialTheme.typography.bodySmall)
                 AndroidView(modifier = Modifier.weight(1f).fillMaxWidth(), factory = { context ->
                     WebView(context).apply {

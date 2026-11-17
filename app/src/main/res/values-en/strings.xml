@@ -160,6 +160,14 @@
     <string name="settings_x_login_signed_in">Signed in</string>
     <string name="settings_x_login_signed_out">Not signed in</string>
     <string name="settings_x_login_checking">Checking…</string>
+    <string name="bilibili_session_auth_failed">Your Bilibili session may have expired or lacks permission; sign in again and retry.</string>
+    <string name="bilibili_login_title">Bilibili sign-in</string>
+    <string name="bilibili_login_hint">Sign in on this page, then close it. The session stays inside Keepsake; Bilibili decides how long it lasts, and you will be asked to sign in again when needed.</string>
+    <string name="settings_bilibili_login_row">Bilibili sign-in</string>
+    <string name="settings_bilibili_login_signed_in">Signed in</string>
+    <string name="settings_bilibili_login_signed_out">Not signed in</string>
+    <string name="settings_bilibili_login_checking">Checking…</string>
+    <string name="settings_bilibili_login_note">Applies to Bilibili parsing and downloads. Only content your account can play on the normal website is accessed; no membership, paid or permission bypass, and no cookies from other browsers.</string>
     <string name="settings_x_login_note">Used for X (Twitter) parsing. The session stays inside Keepsake and X decides how long it lasts; accounts in external browsers such as Chrome are not read.</string>
     <string name="settings_clear_session_scope">Clears web sign-ins for every site inside Keepsake; accounts in external browsers such as Chrome are not affected.</string>
     <string name="settings_concurrency_title">Simultaneous downloads</string>

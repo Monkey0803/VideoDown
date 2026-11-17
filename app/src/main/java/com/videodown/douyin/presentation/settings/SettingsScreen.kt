@@ -161,7 +161,11 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     var showXLogin by remember { mutableStateOf(false) }
     var xSignedIn by remember { mutableStateOf<Boolean?>(null) }
     suspend fun refreshXSession() { xSignedIn = ServiceLocator.browserSessions.xSignedIn() }
-    LaunchedEffect(Unit) { refreshXSession() }
+    // B 站登录态同样由 WebView 持有；这里只显示「本机现在有没有」。
+    var showBilibiliLogin by remember { mutableStateOf(false) }
+    var bilibiliSignedIn by remember { mutableStateOf<Boolean?>(null) }
+    suspend fun refreshBilibiliSession() { bilibiliSignedIn = ServiceLocator.browserSessions.bilibiliSignedIn() }
+    LaunchedEffect(Unit) { refreshXSession(); refreshBilibiliSession() }
     val exportLinksFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         if (uri != null) sessionScope.launch {
             val records = ServiceLocator.historyRepository.snapshot()
@@ -225,6 +229,16 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     if (showXLogin) {
         XLoginScreen(onClose = { showXLogin = false },
             onFinished = { showXLogin = false; sessionScope.launch { refreshXSession() } })
+    }
+    if (showBilibiliLogin) {
+        XLoginScreen(
+            startUrl = com.videodown.douyin.data.remote.BilibiliSession.LOGIN_URL,
+            onClose = { showBilibiliLogin = false },
+            onFinished = { showBilibiliLogin = false; sessionScope.launch { refreshBilibiliSession() } },
+            signedIn = { ServiceLocator.browserSessions.bilibiliSignedIn() },
+            titleRes = R.string.bilibili_login_title,
+            hintRes = R.string.bilibili_login_hint,
+        )
     }
     if (showConcurrency) {
         var chosen by remember(maxConcurrent) { mutableStateOf(maxConcurrent) }
@@ -461,6 +475,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                     ServiceLocator.browserSessions.clear()
                     sessionMessage = resources.getString(R.string.settings_session_cleared)
                     refreshXSession()
+                    refreshBilibiliSession()
                 }
             },
             dismissText = stringResource(R.string.action_cancel),
@@ -686,6 +701,16 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 }),
                 onClick = { showXLogin = true })
             Text(stringResource(R.string.settings_x_login_note), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = AppSpacing.md, vertical = AppSpacing.xxs))
+            SettingsRow(icon = { AppIcon(AppIcons.Profile, null, tint = MaterialTheme.colorScheme.primary) },
+                title = stringResource(R.string.settings_bilibili_login_row),
+                value = stringResource(when (bilibiliSignedIn) {
+                    true -> R.string.settings_bilibili_login_signed_in
+                    false -> R.string.settings_bilibili_login_signed_out
+                    null -> R.string.settings_bilibili_login_checking
+                }),
+                onClick = { showBilibiliLogin = true })
+            Text(stringResource(R.string.settings_bilibili_login_note), color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = AppSpacing.md, vertical = AppSpacing.xxs))
             SettingsRow(icon = { AppIcon(AppIcons.ClearSession, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_clear_session), value = sessionMessage ?: stringResource(R.string.settings_session_local),

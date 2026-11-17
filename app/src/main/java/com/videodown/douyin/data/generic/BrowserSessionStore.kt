@@ -20,7 +20,10 @@ class BrowserSessionStore {
             val x = twitter || hosts.any { it == "x.com" || it.endsWith(".x.com") }
             val xOrigins = if (x) listOf("https://x.com/", "https://api.x.com/1.1/") else emptyList()
             val twitterOrigins = if (twitter) listOf("https://twitter.com/", "https://api.twitter.com/1.1/") else emptyList()
-            return (urls + xOrigins + twitterOrigins).distinct()
+            // B 站：页面地址与 api.bilibili.com 都查一遍，引擎的网页/API 请求各自带对应主机的 Cookie。
+            val bilibili = urls.any { com.videodown.douyin.data.remote.BilibiliSession.appliesTo(it) }
+            val bilibiliOrigins = if (bilibili) com.videodown.douyin.data.remote.BilibiliSession.cookieOrigins else emptyList()
+            return (urls + xOrigins + twitterOrigins + bilibiliOrigins).distinct()
         }
     }
 
@@ -36,6 +39,15 @@ class BrowserSessionStore {
      */
     suspend fun xSignedIn(): Boolean = XSession.origins.any { url ->
         XSession.signedIn(cookie(url))
+    }
+
+    /**
+     * B 站的登录态是否还在本机。
+     *
+     * 与 X 一样每次现查 CookieManager、绝不缓存：有效期由 B 站决定，`SESSDATA` 消失自然变成未登录。
+     */
+    suspend fun bilibiliSignedIn(): Boolean = com.videodown.douyin.data.remote.BilibiliSession.cookieOrigins.any { url ->
+        com.videodown.douyin.data.remote.BilibiliSession.signedIn(cookie(url))
     }
 
     suspend fun export(urls: List<String>, file: File) {
