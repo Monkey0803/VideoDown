@@ -380,6 +380,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                                 onPause = { viewModel.pause(record.id) },
                                 onResume = { viewModel.resume(record.id) },
                                 onRestart = { viewModel.restart(record.id) },
+                                onRetryNow = { viewModel.retryNow(record.id) },
                                 onDelete = { pendingDelete = record },
                                 onSpeedLimit = { pendingSpeedLimit = record },
                                 onMove = { offset -> viewModel.moveInQueue(record.id, offset) },
@@ -431,6 +432,8 @@ private fun TaskCard(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onRestart: () -> Unit,
+    /** 用户明确要求跳过服务端冷却；只有卡片显示倒计时时才出现。 */
+    onRetryNow: () -> Unit,
     onDelete: () -> Unit,
     onSpeedLimit: () -> Unit,
     onShare: () -> Unit,
@@ -447,9 +450,11 @@ private fun TaskCard(
     val hasSourcePage = record.sourcePageUrl.isNotBlank() || !record.media?.pageUrl.isNullOrBlank()
     val guidedRecovery = status in setOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) && guidance != null
     var moreExpanded by remember(record.id) { mutableStateOf(false) }
-    var retrySeconds by remember(progress?.retryAtMillis) { mutableStateOf(0L) }
-    LaunchedEffect(progress?.retryAtMillis) {
-        val deadline = progress?.retryAtMillis ?: run { retrySeconds = 0L; return@LaunchedEffect }
+    // 运行中的倒计时来自进度事件；重启后进度没了，回落到记录上落库的冷却。
+    val retryDeadline = progress?.retryAtMillis ?: record.nextRetryAtMillis
+    var retrySeconds by remember(retryDeadline) { mutableStateOf(0L) }
+    LaunchedEffect(retryDeadline) {
+        val deadline = retryDeadline ?: run { retrySeconds = 0L; return@LaunchedEffect }
         while (true) {
             val remaining = (deadline - System.currentTimeMillis()).coerceAtLeast(0L)
             retrySeconds = (remaining + 999L) / 1000L
@@ -564,6 +569,13 @@ private fun TaskCard(
                                 onClick = { moreExpanded = false; onShare() },
                             )
                         }
+                        if (retryDeadline != null && status != DownloadStatus.COMPLETED) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_retry_now)) },
+                                leadingIcon = { AppIcon(AppIcons.Retry, null, modifier = Modifier.size(18.dp)) },
+                                onClick = { moreExpanded = false; onRetryNow() },
+                            )
+                        }
                         if (status != DownloadStatus.RUNNING && status != DownloadStatus.PENDING && guidance?.primary != RecoveryAction.NONE) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_retry_download)) },
@@ -621,7 +633,7 @@ private fun TaskCard(
                 )
                 Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("${(state.fractionFor(record) * 100).toInt()}% · " +
-                        if (status == DownloadStatus.RUNNING && progress?.retryAtMillis != null) {
+                        if (status in setOf(DownloadStatus.RUNNING, DownloadStatus.PAUSED) && retryDeadline != null) {
                             stringResource(R.string.history_waiting_retry, retrySeconds)
                         } else if (status == DownloadStatus.RUNNING) when (progress?.phase ?: record.phase) {
                             com.videodown.douyin.domain.model.TransferPhase.EXTRACTING -> stringResource(R.string.history_phase_extracting)

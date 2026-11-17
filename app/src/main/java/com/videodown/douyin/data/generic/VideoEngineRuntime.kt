@@ -23,7 +23,16 @@ import java.util.concurrent.atomic.AtomicInteger
  * Carries only the kind: the wording lives in resources (see `core/ErrorResources.kt`), because the
  * same failure is shown on the parse page, on a task card and in a notification.
  */
-class VideoEngineException(val kind: String) : Exception(kind) {
+class VideoEngineException(
+    val kind: String,
+    /** 引擎观察到的 HTTP 状态码；没有经过 HTTP 响应时为 null。 */
+    val httpStatus: Int? = null,
+    /** 原始 `Retry-After` 头（秒数或 RFC 1123 日期），由直链下载器同一套解析器归一。 */
+    val retryAfter: String? = null,
+) : Exception(kind) {
+    /** 服务端要求的冷却时间，已经截断到有上限的范围；没有就返回 null。 */
+    val retryAfterMillis: Long? get() = com.videodown.douyin.data.download.retryAfterDelayMillis(retryAfter)
+
     val failureKind: DownloadFailureKind get() = when (kind) {
         "NO_AUDIO" -> DownloadFailureKind.NO_AUDIO
         "ACCESS" -> DownloadFailureKind.ACCESS_DENIED
@@ -154,7 +163,11 @@ class VideoEngineRuntime(private val context: Context) {
                     val event = runCatching { Json.parseToJsonElement(line) as? JsonObject }.getOrNull() ?: continue
                     when (event.text("event")) {
                         "pid" -> group.set(event.number("pid")?.toInt() ?: 0)
-                        "error" -> failure = VideoEngineException(event.text("kind") ?: "UNSUPPORTED")
+                        "error" -> failure = VideoEngineException(
+                            kind = event.text("kind") ?: "UNSUPPORTED",
+                            httpStatus = event.number("status")?.toInt(),
+                            retryAfter = event.text("retry_after"),
+                        )
                         else -> onEvent(event)
                     }
                 }

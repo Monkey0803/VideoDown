@@ -72,9 +72,9 @@ def classify_failure(error, mode=None):
         return "RUNTIME"
     if any(value in message for value in ("login", "sign in", "cookies", "captcha", "confirm you")):
         return "AUTH"
-    status = re.search(r"\b(?:http(?: error)?|status(?: code)?)\s*[:=]?\s*(401|403|404|410|429)\b", message)
+    status = re.search(r"\b(?:http(?: error)?|status(?: code)?)\s*[:=]?\s*(401|403|404|410|429|503)\b", message)
     if status:
-        return {"401": "AUTH", "403": "ACCESS", "404": "EXPIRED", "410": "EXPIRED", "429": "RATE"}[status.group(1)]
+        return {"401": "AUTH", "403": "ACCESS", "404": "EXPIRED", "410": "EXPIRED", "429": "RATE", "503": "NETWORK"}[status.group(1)]
     if any(value in message for value in ("timed out", "network", "resolve", "connection")):
         return "NETWORK"
     return "UNSUPPORTED"
@@ -82,6 +82,44 @@ def classify_failure(error, mode=None):
 
 os.setsid()
 owner_pid = os.getppid()
+
+
+def _http_error_details(error):
+    """Return (status, retry_after) from a yt-dlp HTTP failure without logging anything.
+
+    yt-dlp wraps the transport failure as `HTTPError` with an attached response object; the
+    exception may also arrive wrapped (DownloadError -> TransportError -> HTTPError), so the
+    whole cause chain is inspected. Only the status code and the Retry-After header travel:
+    URLs, cookies and raw extractor messages stay on the device side of the bridge.
+    """
+    seen = set()
+    current = error
+    while current is not None and id(current) not in seen and len(seen) < 8:
+        seen.add(id(current))
+        response = getattr(current, "response", None)
+        status = getattr(response, "status", None) or getattr(current, "status_code", None) or getattr(current, "status", None)
+        retry_after = None
+        if response is not None:
+            getter = getattr(response, "get_header", None)
+            if callable(getter):
+                try:
+                    retry_after = getter("Retry-After")
+                except Exception:
+                    retry_after = None
+            if retry_after is None:
+                headers = getattr(response, "headers", None)
+                if headers is not None:
+                    try:
+                        retry_after = headers.get("retry-after") or headers.get("Retry-After")
+                    except Exception:
+                        retry_after = None
+        if isinstance(status, int) and 100 <= status <= 599:
+            return status, (str(retry_after).strip() if retry_after else None)
+        current = getattr(current, "__cause__", None) or getattr(current, "__context__", None)
+    match = re.search(r"\b(?:http(?: error)?|status(?: code)?)\s*[:=]?\s*([1-5]\d\d)\b", str(error).lower())
+    if match:
+        return int(match.group(1)), None
+    return None, None
 
 
 def watch_owner():
@@ -271,5 +309,11 @@ try:
 except Exception as error:
     # The private protocol never returns URLs, cookie values, or raw extractor logs.
     kind = classify_failure(error, mode)
-    emit("error", kind=kind)
+    status, retry_after = _http_error_details(error)
+    payload = {"kind": kind}
+    if status is not None:
+        payload["status"] = status
+    if retry_after:
+        payload["retry_after"] = retry_after
+    emit("error", **payload)
     sys.exit(1)

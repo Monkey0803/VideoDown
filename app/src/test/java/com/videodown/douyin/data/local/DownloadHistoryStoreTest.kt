@@ -17,6 +17,9 @@ class DownloadHistoryStoreTest {
     @get:Rule
     val tempFolder = TemporaryFolder()
 
+    /** 只给「旧版本 JSON」用例用：不要写出默认值，模拟缺少新字段的历史文件。 */
+    private val leanJson = kotlinx.serialization.json.Json { encodeDefaults = false }
+
     private fun newStore(): DownloadHistoryStore =
         DownloadHistoryStore(File(tempFolder.root, "download_history.json"))
 
@@ -147,6 +150,36 @@ class DownloadHistoryStoreTest {
 
         val quarantined = File(tempFolder.root, "download_history.json.corrupt")
         assertTrue("corrupt file should be kept for the user", quarantined.exists())
+    }
+
+    @Test
+    fun `retry cooldown survives a store instance restart`() = runBlocking {
+        val cooling = record("cooling", status = DownloadStatus.PAUSED).copy(
+            nextRetryAtMillis = 1_700_000_123_000L,
+            retryAttempt = 2,
+            retryHttpStatus = 503,
+        )
+        newStore().upsert(cooling)
+
+        // 新进程：自动继续必须能读到同一个冷却时间，而不是当成没有冷却立刻请求。
+        val reopened = newStore().load().single { it.id == "cooling" }
+        assertEquals(1_700_000_123_000L, reopened.nextRetryAtMillis)
+        assertEquals(2, reopened.retryAttempt)
+        assertEquals(503, reopened.retryHttpStatus)
+    }
+
+    @Test
+    fun `legacy history without retry fields loads as no cooldown`() = runBlocking {
+        val legacy = record("legacy")
+        // 旧版本写下的 JSON 没有这三个字段：encodedDefaults=true 会补齐默认值。
+        val json = leanJson.encodeToString(DownloadRecord.serializer(), legacy)
+        assertFalse("fixture must not carry the new fields", json.contains("nextRetryAtMillis"))
+        File(tempFolder.root, "download_history.json").writeText("[$json]")
+
+        val restored = newStore().load().single()
+        assertEquals(null, restored.nextRetryAtMillis)
+        assertEquals(0, restored.retryAttempt)
+        assertEquals(null, restored.retryHttpStatus)
     }
 
     @Test

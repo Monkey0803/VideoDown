@@ -229,6 +229,12 @@ class HistoryViewModel(
         viewModelScope.launch { downloader.restart(id) }
     }
 
+    /** 跳过服务端冷却立即重试；卡片只在倒计时期间提供这个入口。 */
+    fun retryNow(id: String) {
+        if (_state.value.batchBusy) return
+        viewModelScope.launch { downloader.retryNow(id) }
+    }
+
     fun delete(id: String, onComplete: (Result<Unit>) -> Unit = {}) {
         if (_state.value.batchBusy) {
             onComplete(Result.failure(IllegalStateException("Batch operation is in progress")))

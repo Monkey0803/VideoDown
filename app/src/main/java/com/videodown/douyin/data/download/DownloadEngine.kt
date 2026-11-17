@@ -3,7 +3,7 @@ package com.videodown.douyin.data.download
 import com.videodown.douyin.R
 import com.videodown.douyin.core.AppText
 import android.util.Log
-import com.videodown.douyin.data.generic.EngineMediaDownloader
+import com.videodown.douyin.data.generic.EngineTransfer
 import com.videodown.douyin.data.generic.VideoEngineException
 import com.videodown.douyin.domain.model.TransferPhase
 import com.videodown.douyin.domain.model.ArchiveEntry
@@ -25,7 +25,9 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +46,9 @@ import com.videodown.douyin.domain.model.DownloadFailureKind
 import com.videodown.douyin.domain.model.DownloadPauseCause
 import com.videodown.douyin.domain.model.StorageBudget
 import com.videodown.douyin.domain.model.speedLimitBytesPerSecond
+import com.videodown.douyin.domain.model.DownloadRetryPolicy
+import com.videodown.douyin.domain.model.RetrySchedule
+import com.videodown.douyin.domain.model.withRetryCleared
 import com.videodown.douyin.domain.model.StorageBudgetEntry
 import com.videodown.douyin.core.downloadFailureKind
 import kotlinx.coroutines.withContext
@@ -72,7 +77,7 @@ class DownloadEngine(
     private val networkPolicy: DownloadNetworkPolicy = DownloadNetworkPolicy.Unrestricted,
     private val onCompleted: (DownloadRecord) -> Unit = {},
     private val onTaskScheduled: suspend () -> Unit = {},
-    private val engineDownloader: EngineMediaDownloader? = null,
+    private val engineDownloader: EngineTransfer? = null,
     private val browserCookie: ((String) -> String?)? = null,
     private val validateFile: ((File, DownloadRecord) -> Unit)? = null,
     private val refreshSource: (suspend (DownloadRecord) -> VideoVariant?)? = null,
@@ -104,6 +109,19 @@ class DownloadEngine(
     private val globalLimiter = BandwidthLimiter()
     /** One limiter per task, created on demand and dropped when its transfer ends. */
     private val taskLimiters = java.util.concurrent.ConcurrentHashMap<String, BandwidthLimiter>()
+    /**
+     * 正在等待冷却的任务：用户点「立即重试」时用它立刻放行。
+     *
+     * 只在冷却期间存在；任务结束、暂停或等待到时都会移除。
+     */
+    private val retrySignals = java.util.concurrent.ConcurrentHashMap<String, CompletableDeferred<Unit>>()
+    /**
+     * 用户已经要求「立即重试」但还没走到等待点的任务。
+     *
+     * 与 [retrySignals] 互补：信号只覆盖「正在等待」，这个标记覆盖「冷却刚写下、信号还没用上」的
+     * 间隙，两种顺序都不会多等一个 `Retry-After`。
+     */
+    private val manualRetryRequests = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private val storageReservations = StorageReservations(availableBytes)
     private val autoResumeMutex = Mutex()
     private val autoResumeBudget = AutoResumeBudget(autoResumeAttemptsLimit)
@@ -339,10 +357,25 @@ class DownloadEngine(
         markPaused(id)
     }
 
-    override suspend fun resume(id: String) = maintenanceMutex.withLock {
-        val record = history.getById(id) ?: return@withLock
-        if (record.status == DownloadStatus.COMPLETED || !record.canRetryDownload) return@withLock
+    /**
+     * 用户主动继续（按钮、批量「继续」、深链恢复）：清零冷却与重试预算后立刻排队。
+     *
+     * 只有这里会清预算：自动恢复必须沿用落库的冷却，否则一次重启或一次轮询就能绕过
+     * 服务端要求的等待时间。
+     */
+    override suspend fun resume(id: String) = enqueueResume(id, resetRetryBudget = true)
+
+    /**
+     * 排队一次恢复。[resetRetryBudget] 为 false 时保留 [DownloadRecord.nextRetryAtMillis] 与
+     * [DownloadRecord.retryAttempt]，供自动策略在冷却结束后接着用原来的预算。
+     */
+    private suspend fun enqueueResume(id: String, resetRetryBudget: Boolean) = maintenanceMutex.withLock {
+        val latest = history.getById(id) ?: return@withLock
+        if (latest.status == DownloadStatus.COMPLETED || !latest.canRetryDownload) return@withLock
         if (activeJobs[id]?.isActive == true) return@withLock
+        // 自动恢复在这里再确认一次冷却：调度期间用户可能暂停或手动改过记录。
+        if (!resetRetryBudget && !retryAllowedNow(latest)) return@withLock
+        val record = if (resetRetryBudget) latest.withRetryCleared() else latest
 
         val partial = File(record.partialPath)
         val existing = if (partial.exists()) partial.length() else 0L
@@ -354,6 +387,26 @@ class DownloadEngine(
             DownloadProgress(id = id, downloadedBytes = existing, totalBytes = record.totalBytes, status = DownloadStatus.PENDING)
         }
         launch(queued)
+    }
+
+    /**
+     * 「立即重试」：用户明确要求跳过冷却。
+     *
+     * 正在冷却的传输由等待点放行（不重建任务，已下载的字节和引擎目录都保留）；
+     * 不在运行中的任务等同于一次手动继续。
+     */
+    override suspend fun retryNow(id: String) {
+        manualRetryRequests.add(id)
+        val signal = retrySignals[id]
+        val active = activeJobs[id]?.isActive == true
+        history.getById(id)?.takeIf { it.status != DownloadStatus.COMPLETED }?.let { latest ->
+            history.upsert(latest.withRetryCleared().copy(updatedAt = System.currentTimeMillis()))
+        }
+        if (signal != null) { signal.complete(Unit); return }
+        if (!active) {
+            manualRetryRequests.remove(id)
+            enqueueResume(id, resetRetryBudget = true)
+        }
     }
 
     override suspend fun restart(id: String) = maintenanceMutex.withLock {
@@ -385,7 +438,7 @@ class DownloadEngine(
             filePath = null,
             livePhotoMotion = record.livePhotoMotion?.copy(filePath = null),
             updatedAt = System.currentTimeMillis(),
-        )
+        ).withRetryCleared()
         history.upsert(reset)
         updateProgress(id) {
             DownloadProgress(id = id, downloadedBytes = 0L, totalBytes = -1L, status = DownloadStatus.PENDING)
@@ -439,12 +492,18 @@ class DownloadEngine(
             .sortedWith(compareBy<DownloadRecord> { it.queueOrder }.thenBy { it.createdAt })
         for (record in candidates) {
             if (autoResumeBudget.isExhausted(record.id)) continue
+            // 落库的冷却（429/503 的 Retry-After）优先于自动策略：到点之前不发请求。
+            if (!retryAllowedNow(record)) continue
             if (record.media?.localRecordId == null && !networkPolicy.isAllowed()) continue
             if (!storageAllowsAutoResume(record)) continue
             autoResumeBudget.recordAttempt(record.id)
-            resume(record.id)
+            enqueueResume(record.id, resetRetryBudget = false)
         }
     }
+
+    /** 冷却是否已经结束；用户手动「立即重试」不走这条判断。 */
+    private fun retryAllowedNow(record: DownloadRecord, now: Long = System.currentTimeMillis()): Boolean =
+        DownloadRetryPolicy.cooldownRemaining(record.nextRetryAtMillis, now) == 0L
 
     /**
      * Mirrors the space check performed right before a transfer starts, so an automatic resume
@@ -560,6 +619,8 @@ class DownloadEngine(
                 storage?.close()
                 withContext(NonCancellable) { scheduler.finish(record.id) }
                 taskLimiters.remove(record.id)
+                retrySignals.remove(record.id)
+                manualRetryRequests.remove(record.id)
             }
         }
         if (activeJobs.putIfAbsent(record.id, job) != null) {
@@ -607,7 +668,7 @@ class DownloadEngine(
             runEngineTransfer(initial, storage)
             return
         }
-        var attempt = 0
+        var attemptsUsed = initial.retryAttempt
         var record = initial
         var refreshed = false
 
@@ -742,19 +803,26 @@ class DownloadEngine(
                             continue
                         }
                     }
-                    attempt++
-                    val retryableStatus = httpStatus == null || httpStatus !in 400..499 || httpStatus == 429
-                    if (attempt <= MAX_RETRIES && outcome.error !is com.videodown.douyin.core.AppError.Storage && retryableStatus) {
-                        val backoff = outcome.retryAfterMillis ?: RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
-
-                        Log.w(TAG, AppText.get(R.string.log_retry_scheduled, backoff, attempt, outcome.error.message))
-                        updateProgress(record.id) { DownloadProgress(record.id,
-                            outcome.downloadedBytes, outcome.totalBytes,
-                            DownloadStatus.RUNNING, retryAtMillis = System.currentTimeMillis() + backoff) }
-                        delay(backoff)
-                        updateProgress(record.id) { DownloadProgress(record.id,
-                            outcome.downloadedBytes, outcome.totalBytes, DownloadStatus.RUNNING) }
-                        record = history.getById(record.id) ?: record
+                    val schedule = DownloadRetryPolicy.schedule(
+                        attemptsUsed, outcome.error.downloadFailureKind(), httpStatus,
+                        outcome.retryAfterMillis, System.currentTimeMillis(),
+                    )
+                    val cooling = record.copy(
+                        downloadedBytes = outcome.downloadedBytes,
+                        totalBytes = outcome.totalBytes,
+                        rangeSupported = outcome.rangeSupported,
+                        etag = outcome.etag,
+                        lastModified = outcome.lastModified,
+                    )
+                    if (schedule != null) {
+                        Log.w(TAG, AppText.get(R.string.log_retry_scheduled,
+                            schedule.atMillis - System.currentTimeMillis(), schedule.attempt, outcome.error.message))
+                        val fresh = scheduleRetryAndWait(cooling, schedule, httpStatus,
+                            outcome.downloadedBytes, outcome.totalBytes)
+                        if (fresh == null) { _progress.update { it - record.id }; return }
+                        // 用户「立即重试」会把落库预算清零，之后从零开始计数。
+                        attemptsUsed = fresh.retryAttempt
+                        record = fresh
                         continue
                     }
                     history.upsert(
@@ -803,7 +871,7 @@ class DownloadEngine(
             failureKind = null,
             pauseCause = null,
             updatedAt = System.currentTimeMillis(),
-        )
+        ).withRetryCleared()
         history.upsert(completed)
         runCatching { onCompleted(completed) }
             .onFailure { Log.w(TAG, AppText.get(R.string.log_completion_notify_failed), it) }
@@ -827,7 +895,7 @@ class DownloadEngine(
                 totalBytes = saturatingStorageAdd(primaryBytes, finalFile.length()),
             )
         }
-        var attempt = 0
+        var attemptsUsed = initial.retryAttempt
         var refreshed = false
         while (true) {
             if (!networkPolicy.isAllowed()) throw WifiRequiredException()
@@ -922,19 +990,18 @@ class DownloadEngine(
                             continue
                         }
                     }
-                    attempt++
-                    val retryableStatus = httpStatus == null || httpStatus !in 400..499 || httpStatus == 429
-                    if (attempt <= MAX_RETRIES && outcome.error !is com.videodown.douyin.core.AppError.Storage && retryableStatus) {
-                        val backoff = outcome.retryAfterMillis ?: RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
-                        updateProgress(record.id) { DownloadProgress(record.id,
-                            saturatingStorageAdd(primaryBytes, outcome.downloadedBytes),
-                            saturatingStorageAdd(primaryBytes, outcome.totalBytes.coerceAtLeast(0L)),
-                            DownloadStatus.RUNNING, retryAtMillis = System.currentTimeMillis() + backoff) }
-                        delay(backoff)
-                        updateProgress(record.id) { DownloadProgress(record.id,
-                            saturatingStorageAdd(primaryBytes, outcome.downloadedBytes),
-                            saturatingStorageAdd(primaryBytes, outcome.totalBytes.coerceAtLeast(0L)),
-                            DownloadStatus.RUNNING) }
+                    val aggregateDownloaded = saturatingStorageAdd(primaryBytes, outcome.downloadedBytes)
+                    val aggregateTotal = saturatingStorageAdd(primaryBytes, outcome.totalBytes.coerceAtLeast(0L))
+                    val schedule = DownloadRetryPolicy.schedule(
+                        attemptsUsed, outcome.error.downloadFailureKind(), httpStatus,
+                        outcome.retryAfterMillis, System.currentTimeMillis(),
+                    )
+                    if (schedule != null) {
+                        val fresh = scheduleRetryAndWait(record, schedule, httpStatus,
+                            aggregateDownloaded, aggregateTotal)
+                        if (fresh == null) { _progress.update { it - record.id }; return null }
+                        attemptsUsed = fresh.retryAttempt
+                        record = fresh
                         continue
                     }
                     history.upsert(record.copy(
@@ -953,10 +1020,19 @@ class DownloadEngine(
         }
     }
 
+    /**
+     * 引擎任务（yt-dlp / HLS / DASH / 分轨 / 提取音频）。
+     *
+     * 失败分类与直链下载共用 [DownloadRetryPolicy]：NETWORK 与 429/503 有界重试并按
+     * `Retry-After` 冷却，登录、权限、链接过期先尝试一次重新解析，存储类失败直接终止。
+     * 冷却是落库的，所以进程被杀后自动继续也不会提前请求。
+     */
     private suspend fun runEngineTransfer(initial: DownloadRecord, storage: StorageReservations.Lease) {
         val executor = requireNotNull(engineDownloader) { AppText.get(R.string.diag_engine_downloader_absent) }
+        var attemptsUsed = initial.retryAttempt
+        var refreshed = false
         var record = initial.copy(status = DownloadStatus.RUNNING, errorMessage = null, failureKind = null,
-            pauseCause = null, phase = TransferPhase.DOWNLOADING)
+            pauseCause = null, phase = TransferPhase.DOWNLOADING, nextRetryAtMillis = null)
         history.upsert(record)
         var persistedAt = 0L
         val expected = java.util.concurrent.atomic.AtomicLong(record.expectedBytes ?: record.totalBytes.takeIf { it > 0 } ?: 0)
@@ -987,14 +1063,41 @@ class DownloadEngine(
             } finally { monitor.cancel(); monitor.join() }
         }
 
-        val stagedOutput = try { transfer() } catch (error: VideoEngineException) {
-            if (error.kind !in setOf("AUTH", "ACCESS", "EXPIRED")) throw error
-            val fresh = refreshSource?.invoke(record) ?: throw error
-            if (fresh.media?.usesEngine != true) throw error
-            record = record.copy(sourceUrl = fresh.url, media = fresh.media, downloadReferer = fresh.referer)
-            history.upsert(record)
-            transfer()
+        var staged: File? = null
+        while (staged == null) {
+            try {
+                staged = transfer()
+            } catch (error: VideoEngineException) {
+                if (error.kind in setOf("AUTH", "ACCESS", "EXPIRED") && !refreshed) {
+                    refreshed = true
+                    val fresh = refreshSource?.invoke(record)
+                    if (fresh != null && fresh.media?.usesEngine == true) {
+                        record = record.copy(sourceUrl = fresh.url, media = fresh.media, downloadReferer = fresh.referer)
+                        history.upsert(record)
+                        continue
+                    }
+                }
+                val schedule = DownloadRetryPolicy.schedule(
+                    attemptsUsed, error.failureKind, error.httpStatus, error.retryAfterMillis,
+                    System.currentTimeMillis(),
+                )
+                if (schedule == null) {
+                    markEngineFailed(record, error, attemptsUsed)
+                    return
+                }
+                Log.w(TAG, AppText.get(R.string.log_retry_scheduled,
+                    schedule.atMillis - System.currentTimeMillis(), schedule.attempt, error.kind))
+                val fresh = scheduleRetryAndWait(record, schedule, error.httpStatus,
+                    record.downloadedBytes, record.totalBytes)
+                if (fresh == null) { _progress.update { it - record.id }; return }
+                // 用户「立即重试」会把落库预算清零，之后从零开始计数。
+                attemptsUsed = fresh.retryAttempt
+                record = fresh.copy(status = DownloadStatus.RUNNING, errorMessage = null,
+                    failureKind = null, pauseCause = null)
+                history.upsert(record)
+            }
         }
+        val stagedOutput = staged
         kotlinx.coroutines.currentCoroutineContext().ensureActive()
         withContext(NonCancellable + kotlinx.coroutines.Dispatchers.IO) {
             val output = File(paths.downloadDir, record.fileName.substringBeforeLast('.') + "." + stagedOutput.extension)
@@ -1009,12 +1112,74 @@ class DownloadEngine(
             val completed = record.copy(status = DownloadStatus.COMPLETED, filePath = output.absolutePath,
                 fileName = output.name, downloadedBytes = output.length(), totalBytes = output.length(), errorMessage = null, failureKind = null,
                 pauseCause = null,
-                updatedAt = System.currentTimeMillis())
+                updatedAt = System.currentTimeMillis()).withRetryCleared()
             history.upsert(completed)
             paths.engineDirectory(record.id).deleteRecursively()
             runCatching { onCompleted(completed) }
             _progress.update { it - record.id }
         }
+    }
+
+    /**
+     * 把冷却写进记录，然后等到允许重试的时刻。
+     *
+     * 等待用可提前完成的信号实现：用户点「立即重试」时 [retryNow] 放行，不重建任务。
+     * 返回放行后的最新记录（`nextRetryAtMillis` 已清空）；记录被删掉时返回 null。
+     */
+    private suspend fun scheduleRetryAndWait(
+        record: DownloadRecord,
+        schedule: RetrySchedule,
+        httpStatus: Int?,
+        downloaded: Long,
+        total: Long,
+    ): DownloadRecord? {
+        val now = System.currentTimeMillis()
+        val cooling = record.copy(
+            nextRetryAtMillis = schedule.atMillis,
+            retryAttempt = schedule.attempt,
+            retryHttpStatus = httpStatus,
+            updatedAt = now,
+        )
+        // 先登记信号再落库：观察到冷却的调用方（界面或「立即重试」）一定能找到放行点。
+        val signal = CompletableDeferred<Unit>()
+        retrySignals[record.id] = signal
+        var manualOverride = false
+        try {
+            history.upsert(cooling)
+            updateProgress(record.id) {
+                DownloadProgress(record.id, downloaded, total, DownloadStatus.RUNNING, retryAtMillis = schedule.atMillis)
+            }
+            manualOverride = manualRetryRequests.remove(record.id)
+            val waitMillis = (schedule.atMillis - System.currentTimeMillis()).coerceAtLeast(0L)
+            if (!manualOverride && waitMillis > 0L) {
+                withTimeoutOrNull(waitMillis) { signal.await() }
+            }
+        } finally {
+            retrySignals.remove(record.id, signal)
+        }
+        updateProgress(record.id) {
+            DownloadProgress(record.id, downloaded, total, DownloadStatus.RUNNING)
+        }
+        val latest = history.getById(record.id) ?: return null
+        val cleared = if (manualOverride) latest.withRetryCleared().copy(updatedAt = System.currentTimeMillis())
+            else latest.copy(nextRetryAtMillis = null, updatedAt = System.currentTimeMillis())
+        history.upsert(cleared)
+        return cleared
+    }
+
+    /** 引擎任务的终态失败：只存 key 与分类，冷却清掉，重试预算留给「立即重试」清零。 */
+    private suspend fun markEngineFailed(record: DownloadRecord, error: VideoEngineException, attemptsUsed: Int) {
+        history.upsert(record.copy(
+            status = DownloadStatus.FAILED,
+            errorMessage = com.videodown.douyin.core.engineErrorKey(error.kind),
+            failureKind = error.failureKind,
+            pauseCause = null,
+            nextRetryAtMillis = null,
+            retryAttempt = attemptsUsed,
+            retryHttpStatus = error.httpStatus,
+            updatedAt = System.currentTimeMillis(),
+        ))
+        _progress.update { it - record.id }
     }
 
     /** yt-dlp 只能接受每进程上限；取当前全局/单任务中更严的非零值。 */
@@ -1044,6 +1209,8 @@ class DownloadEngine(
                 errorMessage = reason,
                 failureKind = if (reason == WIFI_PAUSE_REASON) DownloadFailureKind.WIFI_REQUIRED else null,
                 pauseCause = cause,
+                // 用户/网络原因的中断不需要再等服务器冷却；下次恢复重新计时。
+                nextRetryAtMillis = null,
                 updatedAt = System.currentTimeMillis(),
             ),
         )
@@ -1074,7 +1241,7 @@ class DownloadEngine(
         val knownTotal = record.expectedBytes
             ?: archiveAssets(record.archiveEntries).sumOf { it.sizeBytes?.coerceAtLeast(0L) ?: 0L }.takeIf { it > 0L }
         var refreshed = false
-        var attempt = 0
+        var attemptsUsed = initial.retryAttempt
 
         while (true) {
             var completedBytes = 0L
@@ -1158,17 +1325,16 @@ class DownloadEngine(
                                 break
                             }
                         }
-                        attempt++
-                        val retryable = httpStatus == null || httpStatus !in 400..499 || httpStatus == 429
-                        if (attempt <= MAX_RETRIES && retryable) {
-                            val backoff = outcome.retryAfterMillis ?: RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
-                            updateProgress(record.id) { DownloadProgress(record.id,
-                                completedBytes + outcome.downloadedBytes, knownTotal ?: outcome.totalBytes,
-                                DownloadStatus.RUNNING, retryAtMillis = System.currentTimeMillis() + backoff) }
-                            delay(backoff)
-                            updateProgress(record.id) { DownloadProgress(record.id,
-                                completedBytes + outcome.downloadedBytes, knownTotal ?: outcome.totalBytes,
-                                DownloadStatus.RUNNING) }
+                        val schedule = DownloadRetryPolicy.schedule(
+                            attemptsUsed, outcome.error.downloadFailureKind(), httpStatus,
+                            outcome.retryAfterMillis, System.currentTimeMillis(),
+                        )
+                        if (schedule != null) {
+                            val fresh = scheduleRetryAndWait(record, schedule, httpStatus,
+                                completedBytes + outcome.downloadedBytes, knownTotal ?: outcome.totalBytes)
+                            if (fresh == null) { _progress.update { it - record.id }; return }
+                            attemptsUsed = fresh.retryAttempt
+                            record = fresh
                             break
                         }
                         markArchiveFailed(record, outcome.error, completedBytes + outcome.downloadedBytes, knownTotal)
@@ -1218,7 +1384,7 @@ class DownloadEngine(
                     phase = TransferPhase.DOWNLOADING,
                     errorMessage = null, failureKind = null, pauseCause = null,
                     updatedAt = System.currentTimeMillis(),
-                )
+                ).withRetryCleared()
                 history.upsert(completed)
                 runCatching { onCompleted(completed) }
                 _progress.update { it - record.id }
@@ -1325,8 +1491,6 @@ class DownloadEngine(
     private companion object {
         const val TAG = "DownloadEngine"
         const val DEFAULT_CONCURRENCY = 3
-        const val MAX_RETRIES = 3
-        const val RETRY_BASE_DELAY_MS = 1_500L
         const val PERSIST_INTERVAL_MS = 2_000L
         const val DEFAULT_AUTO_RESUME_INTERVAL_MS = 15_000L
         const val MAX_AUTO_RESUME_ATTEMPTS = 3

@@ -318,6 +318,7 @@
     <string name="action_resume">继续</string>
     <string name="action_share">分享</string>
     <string name="action_retry_download">重新下载</string>
+    <string name="action_retry_now">立即重试</string>
     <string name="action_confirm_delete">确认删除</string>
     <string name="action_exit_multi_select">取消多选</string>
     <string name="history_delete_selected_title">删除所选任务？</string>

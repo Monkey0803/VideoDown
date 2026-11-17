@@ -22,9 +22,9 @@ class EngineMediaDownloader(
     private val privateDirectory: File,
     private val history: DownloadHistoryRepository? = null,
     private val maintenanceMutex: Mutex = Mutex(),
-) {
-    suspend fun download(record: DownloadRecord, paths: DownloadPaths, policy: DownloadNetworkPolicy,
-                         rateLimitBytesPerSecond: Long? = null,
+) : EngineTransfer {
+    override suspend fun download(record: DownloadRecord, paths: DownloadPaths, policy: DownloadNetworkPolicy,
+                         rateLimitBytesPerSecond: Long?,
                          progress: suspend (Long, Long, Long, TransferPhase) -> Unit): File = withContext(Dispatchers.IO) {
         val media = requireNotNull(record.media)
         val directory = paths.engineDirectory(record.id).apply { mkdirs() }

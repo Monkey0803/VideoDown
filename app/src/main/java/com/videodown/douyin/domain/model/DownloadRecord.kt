@@ -114,6 +114,17 @@ data class DownloadRecord(
     val archiveEntries: List<ArchiveEntry> = emptyList(),
     /** Live Photo 静帧对应的 MOV；与本记录共同下载、移动和删除。 */
     val livePhotoMotion: LivePhotoMotion? = null,
+    /**
+     * 下一次允许重试的绝对时间（毫秒）；`null` 表示当前没有冷却。
+     *
+     * 落库而不是只留在内存里：进程被杀或应用重启后，自动继续必须等到这个时间之后才发请求，
+     * 否则服务端的 429/503 冷却会被一次重启绕过。用户手动点「立即重试」时清空。
+     */
+    val nextRetryAtMillis: Long? = null,
+    /** 当前这串失败已经用掉的有界重试次数；成功、手动重试和重新下载都会清零。 */
+    val retryAttempt: Int = 0,
+    /** 最近一次触发重试的 HTTP 状态码（引擎或直链给出的），冷却恢复后仍能判断该不该重试。 */
+    val retryHttpStatus: Int? = null,
 ) {
     val isAudio: Boolean get() = media?.audioOnly == true
 
@@ -148,6 +159,15 @@ data class DownloadRecord(
      */
     val displayAuthor: String get() = authorNickname
 }
+
+/**
+ * 清空冷却与重试预算。
+ *
+ * 成功、用户手动继续、「立即重试」和重新下载都走这一处，避免某个路径漏清字段后
+ * 恢复出一次提前请求。
+ */
+fun DownloadRecord.withRetryCleared(): DownloadRecord =
+    copy(nextRetryAtMillis = null, retryAttempt = 0, retryHttpStatus = null)
 
 /**
  * Live, transient progress for one download. Not persisted.

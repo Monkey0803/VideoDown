@@ -68,6 +68,14 @@ interface Downloader {
     /** Continues a paused/failed transfer from its stored byte offset. */
     suspend fun resume(id: String)
 
+    /**
+     * 跳过服务端冷却，立刻重试一次（用户明确点击「立即重试」）。
+     *
+     * 与 [resume] 的区别只在意图：冷却中的任务仍然算「自动」恢复，必须等 `Retry-After`；
+     * 用户主动要求才允许提前请求，并清零已经用掉的重试预算。
+     */
+    suspend fun retryNow(id: String) { resume(id) }
+
     /** Stops a transfer and deletes the partial file plus its history record. */
     suspend fun cancel(id: String, removeRecord: Boolean = true)
 
