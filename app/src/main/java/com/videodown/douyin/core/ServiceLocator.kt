@@ -91,7 +91,22 @@ object ServiceLocator {
             })
     }
 
-    val galleryExporter by lazy { com.videodown.douyin.data.gallery.GalleryExporter(appContext) }
+    /**
+     * 导出回执：让「保存到相册 / 公共下载目录」按记录 id + 源文件指纹 + 目标 URI 判重。
+     *
+     * 失效判定要查 MediaStore，所以把查询能力注入进来；存储本身是纯 Kotlin，JVM 用例可覆盖。
+     */
+    val exportReceipts by lazy {
+        com.videodown.douyin.data.gallery.GalleryExportReceiptStore(
+            file = java.io.File(appContext.filesDir, "export-receipts.json"),
+            targetExists = { target ->
+                com.videodown.douyin.data.gallery.exportTargetExists(appContext.contentResolver, target)
+            },
+        )
+    }
+    val galleryExporter by lazy {
+        com.videodown.douyin.data.gallery.GalleryExporter(appContext, exportReceipts)
+    }
 
     val preferences: AppPreferences by lazy { AppPreferences(appContext) }
 
@@ -129,7 +144,9 @@ object ServiceLocator {
      * completion notification is posted afterwards, so one card can report both facts.
      */
     /** 压缩包不去相册，固定写入公共下载目录；其余记录仍走「自动存入相册」开关。 */
-    private val archivePublisher by lazy { com.videodown.douyin.data.download.ArchivePublisher(appContext) }
+    private val archivePublisher by lazy {
+        com.videodown.douyin.data.download.ArchivePublisher(appContext, exportReceipts)
+    }
 
     private fun completeDownload(record: DownloadRecord) {
         appScope.launch {

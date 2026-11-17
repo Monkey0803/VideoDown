@@ -8,7 +8,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.core.*
 import com.videodown.douyin.data.download.*
 import com.videodown.douyin.data.generic.*
-import com.videodown.douyin.data.gallery.GalleryExporter
 import com.videodown.douyin.data.local.DownloadHistoryStore
 import com.videodown.douyin.data.repository.DownloadHistoryRepositoryImpl
 import com.videodown.douyin.domain.model.*
@@ -103,7 +102,7 @@ class P2AudioDeviceTest {
         assertTrue(reopened.isAudio)
         val (video, variant) = source.audioExtractionSelection()
         assertEquals(result.id, engine.findDuplicate(video, variant)?.id)
-        val exported = GalleryExporter(context).export(result).getOrThrow()
+        val exported = ServiceLocator.galleryExporter.export(result).getOrThrow().uri
         try {
             context.contentResolver.query(exported, arrayOf(MediaStore.MediaColumns.MIME_TYPE, MediaStore.MediaColumns.RELATIVE_PATH), null, null, null)!!.use {
                 assertTrue(it.moveToFirst()); assertEquals("audio/mp4", it.getString(0)); assertTrue(it.getString(1).startsWith("Music/"))

@@ -105,6 +105,7 @@ import com.github.panpf.zoomimage.rememberCoilZoomState
 import com.videodown.douyin.R
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.data.gallery.GalleryExportOutcome
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.ImageMetadata
 import com.videodown.douyin.data.image.ImageMetadataReader
@@ -342,14 +343,27 @@ fun ImageViewerScreen(
         scope.launch { snackbar.showSnackbar(message) }
     }
 
-    fun save(record: DownloadRecord) {
+    fun save(record: DownloadRecord, replaceExisting: Boolean = false) {
         if (saving) return
         saving = true
         scope.launch {
-            val result = runCatching { ServiceLocator.galleryExporter.export(record) }
+            val result = runCatching { ServiceLocator.galleryExporter.export(record, replaceExisting) }
             saving = false
             result.fold(
-                onSuccess = { show(resources.getString(R.string.library_saved_to_gallery)) },
+                onSuccess = { outcome ->
+                    if (outcome is GalleryExportOutcome.AlreadySaved) {
+                        // 相册里已有同一份：让用户自己决定要不要再存一份。
+                        val choice = snackbar.showSnackbar(
+                            message = resources.getString(R.string.library_already_saved),
+                            actionLabel = resources.getString(R.string.library_resave_action),
+                        )
+                        if (choice == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                            save(record, replaceExisting = true)
+                        }
+                    } else {
+                        show(resources.getString(R.string.library_saved_to_gallery))
+                    }
+                },
                 onFailure = { show(resources.getString(R.string.library_save_failed, galleryErrorMessage(context, it))) },
             )
         }

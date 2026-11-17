@@ -128,7 +128,7 @@ import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.relativeTime
 import com.videodown.douyin.presentation.relativeTimeText
-import com.videodown.douyin.data.gallery.GalleryExporter
+import com.videodown.douyin.data.gallery.GalleryExportOutcome
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
@@ -173,7 +173,8 @@ fun PlayerScreen(
     val inPip = pipActivity?.inPictureInPicture == true
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
-    val exporter = remember(context) { GalleryExporter(context.applicationContext) }
+    // 共享 ServiceLocator 的导出回执：重复保存时先提示，而不是默默写第二份。
+    val exporter = ServiceLocator.galleryExporter
     var fullscreen by rememberSaveable(recordId) { mutableStateOf(false) }
     var choosingSpeed by remember { mutableStateOf(false) }
     var choosingScale by remember { mutableStateOf(false) }
@@ -473,17 +474,31 @@ fun PlayerScreen(
     }
     BackHandler(fullscreen) { fullscreen = false }
 
-    fun exportToGallery() {
+    fun exportToGallery(replaceExisting: Boolean = false) {
         val record = state.record ?: return
         if (exporting) return
         exporting = true
         scope.launch {
-            val result = exporter.export(record)
+            val result = exporter.export(record, replaceExisting)
             exporting = false
-            snackbar.showSnackbar(result.fold(
-                onSuccess = { resources.getString(if (record.isAudio) R.string.player_transfer_audio_done else R.string.player_transfer_video_done) },
-                onFailure = { resources.getString(R.string.player_transfer_failed, galleryErrorMessage(context, it)) },
-            ))
+            result.fold(
+                onSuccess = { outcome ->
+                    when (outcome) {
+                        is GalleryExportOutcome.AlreadySaved -> {
+                            // 已经存过：给一次明确的「再存一份」，不替用户做决定。
+                            val choice = snackbar.showSnackbar(
+                                message = resources.getString(R.string.library_already_saved),
+                                actionLabel = resources.getString(R.string.library_resave_action),
+                            )
+                            if (choice == androidx.compose.material3.SnackbarResult.ActionPerformed) exportToGallery(replaceExisting = true)
+                        }
+                        is GalleryExportOutcome.Saved -> snackbar.showSnackbar(
+                            resources.getString(if (record.isAudio) R.string.player_transfer_audio_done else R.string.player_transfer_video_done),
+                        )
+                    }
+                },
+                onFailure = { snackbar.showSnackbar(resources.getString(R.string.player_transfer_failed, galleryErrorMessage(context, it))) },
+            )
         }
     }
     val storagePermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->

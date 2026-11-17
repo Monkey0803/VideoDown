@@ -65,6 +65,11 @@
     <string name="vault_add">Move to vault</string>
     <string name="vault_remove">Move out of vault</string>
     <string name="library_saved_to_music">Saved to music</string>
+    <string name="library_already_saved">Already saved; nothing new written</string>
+    <string name="library_resave_action">Save another copy</string>
+    <string name="library_resave_title">Already saved</string>
+    <string name="library_resave_body">This item is already in your gallery. Save another copy only if you really need one.</string>
+    <string name="library_resave_confirm">Save another copy</string>
     <string name="library_saved_to_gallery">Saved to gallery</string>
     <string name="library_save_failed">Save failed: %1$s</string>
     <string name="library_need_storage_permission">Storage permission is needed to save to the gallery</string>

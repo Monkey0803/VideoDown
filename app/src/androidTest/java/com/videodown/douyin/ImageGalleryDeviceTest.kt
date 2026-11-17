@@ -53,7 +53,7 @@ class ImageGalleryDeviceTest {
         )
         val result = ServiceLocator.galleryExporter.export(record)
         assertTrue(result.exceptionOrNull()?.toString().orEmpty(), result.isSuccess)
-        val uri = result.getOrThrow()
+        val uri = result.getOrThrow().uri
         context.contentResolver.query(
             uri,
             arrayOf(MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.MIME_TYPE, MediaStore.MediaColumns.RELATIVE_PATH),
@@ -86,7 +86,7 @@ class ImageGalleryDeviceTest {
             ),
         )
 
-        val stillUri = ServiceLocator.galleryExporter.export(record).getOrThrow()
+        val stillUri = ServiceLocator.galleryExporter.export(record).getOrThrow().uri
         val motionUri = context.contentResolver.query(
             MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
             arrayOf(MediaStore.Video.Media._ID),

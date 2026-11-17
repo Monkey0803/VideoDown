@@ -8,9 +8,11 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.ContextCompat
+import com.videodown.douyin.data.gallery.ExportReceipts
 import com.videodown.douyin.data.gallery.GalleryAutoSave
 import com.videodown.douyin.data.gallery.GalleryExportException
 import com.videodown.douyin.data.gallery.GalleryExportFailure
+import com.videodown.douyin.data.gallery.GalleryExportReceiptStore
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.videoMimeType
 import kotlinx.coroutines.Dispatchers
@@ -23,15 +25,25 @@ import java.io.File
  * 与相册导出分开：ZIP 不是相册条目，用户点「打包下载」就是要一个能拿到电脑上的压缩包，
  * 所以它固定去 `Download/拾影`，不经过「下载后自动存入相册」开关。
  */
-class ArchivePublisher(private val context: Context) {
+class ArchivePublisher(
+    private val context: Context,
+    /** 与相册导出共用同一份回执存储：ZIP 落到下载目录后也按记录 id + 指纹 + 目标判重。 */
+    private val receipts: GalleryExportReceiptStore,
+) {
 
-    suspend fun publish(record: DownloadRecord): GalleryAutoSave = withContext(Dispatchers.IO) {
+    suspend fun publish(record: DownloadRecord, replaceExisting: Boolean = false): GalleryAutoSave = withContext(Dispatchers.IO) {
         val source = record.filePath?.let(::File)
         if (source == null || !source.isFile) {
             return@withContext GalleryAutoSave.Failed(GalleryExportFailure.FILE_MISSING.storageKey)
         }
+        val fingerprint = ExportReceipts.fingerprint(listOf(source))
+        if (!replaceExisting && receipts.find(record.id, fingerprint) != null) {
+            // 目标仍在：这次不重复写一份，但仍按「已保存」报告。
+            return@withContext GalleryAutoSave.Saved
+        }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) publishToDownloads(source) else publishLegacy(source)
+            val target = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) publishToDownloads(source) else publishLegacy(source)
+            receipts.save(record.id, fingerprint, listOf(target))
             GalleryAutoSave.Saved
         } catch (error: Throwable) {
             val failure = (error as? GalleryExportException)?.failure ?: GalleryExportFailure.WRITE_FAILED
@@ -39,7 +51,7 @@ class ArchivePublisher(private val context: Context) {
         }
     }
 
-    private fun publishToDownloads(source: File) {
+    private fun publishToDownloads(source: File): String {
         val resolver = context.contentResolver
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, source.name)
@@ -57,6 +69,7 @@ class ArchivePublisher(private val context: Context) {
             if (resolver.update(target, ready, null, null) <= 0) {
                 throw GalleryExportException(GalleryExportFailure.FINISH_FAILED)
             }
+            return target.toString()
         } catch (error: Throwable) {
             resolver.delete(target, null, null)
             throw error
@@ -64,7 +77,7 @@ class ArchivePublisher(private val context: Context) {
     }
 
     /** Android 9 及以下写公共目录需要存储权限；没有授权就只保留应用内副本并说明原因。 */
-    private fun publishLegacy(source: File) {
+    private fun publishLegacy(source: File): String {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -72,7 +85,9 @@ class ArchivePublisher(private val context: Context) {
         }
         val directory = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), DIRECTORY_NAME)
         if (!directory.exists() && !directory.mkdirs()) throw GalleryExportException(GalleryExportFailure.WRITE_FAILED)
-        source.copyTo(File(directory, source.name), overwrite = true)
+        val target = File(directory, source.name)
+        source.copyTo(target, overwrite = true)
+        return target.absolutePath
     }
 
     private companion object {

@@ -94,7 +94,7 @@ class ImageArchiveDeviceTest {
             assertEquals("same post and count is a duplicate", id, engine.findArchiveDuplicate(request(server.port))?.id)
 
             // 发布到 Download/拾影：API 29+ 走 MediaStore.Downloads。
-            val landing = ArchivePublisher(context).publish(completed)
+            val landing = ArchivePublisher(context, ServiceLocator.exportReceipts).publish(completed)
             assertEquals(GalleryAutoSave.Saved, landing)
             val row = context.contentResolver.query(
                 MediaStore.Downloads.EXTERNAL_CONTENT_URI,

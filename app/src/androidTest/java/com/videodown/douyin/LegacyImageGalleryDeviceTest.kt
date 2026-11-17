@@ -5,7 +5,9 @@ import android.graphics.Bitmap
 import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.videodown.douyin.data.gallery.GalleryExportReceiptStore
 import com.videodown.douyin.data.gallery.GalleryExporter
+import com.videodown.douyin.data.gallery.exportTargetExists
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.MediaKind
@@ -32,12 +34,19 @@ class LegacyImageGalleryDeviceTest {
             filePath = source.absolutePath, status = DownloadStatus.COMPLETED, mediaKind = MediaKind.IMAGE)
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         instrumentation.uiAutomation.revokeRuntimePermission(context.packageName, permission)
-        assertTrue(GalleryExporter(context).export(record).isFailure)
+        val exporter = GalleryExporter(
+            context,
+            GalleryExportReceiptStore(
+                File(context.cacheDir, "legacy-receipts-${java.util.UUID.randomUUID()}.json"),
+                targetExists = { target -> exportTargetExists(context.contentResolver, target) },
+            ),
+        )
+        assertTrue(exporter.export(record).isFailure)
         assertTrue(source.isFile)
         instrumentation.uiAutomation.grantRuntimePermission(context.packageName, permission)
-        val result = GalleryExporter(context).export(record)
+        val result = exporter.export(record)
         assertTrue(result.exceptionOrNull()?.toString().orEmpty(), result.isSuccess)
-        result.getOrNull()?.let { context.contentResolver.delete(it, null, null) }
+        result.getOrNull()?.uri?.let { context.contentResolver.delete(it, null, null) }
         source.delete()
         Unit
     }

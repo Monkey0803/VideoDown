@@ -77,6 +77,13 @@
 - [ ] **`P3PictureInPictureDeviceTest#pipScreenOffThenReturnKeepsActivityAndPlayer` 在 API 37 模拟器上失败**（操作真实熄屏与 PiP）。已用两种独立实验证明与本轮无关：把 `PlayerScreen.kt` 还原到 HEAD 后同样失败；只关闭新增手势覆盖层后同样失败。**在 API 30 真机（SHARK PRS-A0）上已实测通过**：传 `manual_unlock=true` 并由人工在两轮各 120 秒窗口内解锁，四条 PiP 用例 4/4 通过（该条 26.1 秒），XML 存于 `device-api30/P3PictureInPictureDeviceTest.manual-unlock.xml`，两轮解锁后的播放器截图存于 `evidence/pip-manual-unlock-cycle-{1,2}.png`；**默认参数**的真机运行会因设备有锁屏而跳过该条（3 通过 + 1 跳过，XML 存于 `device-api30/P3PictureInPictureDeviceTest.xml`）。因此「模拟器失败、真机通过」这一差异已成立，剩下的只是模拟器差异本身未修复。
   - **2026-10-12 补充：把三项动画缩放设为 0 后该条通过（`P3PictureInPictureDeviceTest` 4/4）**，说明它是动画时序敏感，而不是模拟器能力缺失；Espresso 本来就要求关闭动画，CI 应固定这一档。见 `validation/motion-batch2-2026-10-12.md`。
 
+- [ ] **`BatchFeaturesDeviceTest` 两条在 API 37 模拟器上失败**（2026-11-17 发现）：
+  `batchDownloadKeepsIndividualQualityAndSkipsDuplicates` 点击「360P」时 `performScrollTo` 找不到节点；
+  `sortingPickerAppliesSelectionAndDismissKeepsCurrentQuery` 断言「文件最大」chip 可见时失败。
+  已在改动前基线 `615c104`（仅补上缺失的 `libs.versions.toml` 条目以便构建）上复现完全相同的结果，
+  与本轮 I1/I3 无关；批量导出与其余 5 条用例通过。
+- [ ] **`AutoGalleryDeviceTest` 在 API 37 模拟器上因「系统通知未启用」前置断言失败**（2026-11-17 发现）：
+  同一环境在基线上同样失败，属于设备通知状态而非代码；需要重新允许应用通知后再跑。
 - [ ] **`P3PlaybackDeviceTest#retainedViewModelSurvivesActualActivityRecreationWithCurrentPosition` 在 SHARK PRS-A0 / API 30 真机上 10s 超时**（2026-10-12 真机复跑，7 条中 1 条失败；同批在 API 37 模拟器通过）。未进一步定位，疑似真机 Activity 重建更慢或 OEM 行为差异。见 `validation/real-device-2026-10-12.md`。
 - [ ] **`P3PictureInPictureDeviceTest#systemPipDismissReleasesVideo` 在 SHARK PRS-A0 / API 30 真机上失败**（`PiP state did not reach expected condition`，2026-10-12；模拟器通过，差异未定位）。同批 `pipScreenOffThenReturnKeepsActivityAndPlayer` 因真机有锁屏而按环境前提跳过（默认参数），与代码无关。见 `validation/real-device-2026-10-12.md`。
 
@@ -197,10 +204,18 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
   校验声明时长与接近结尾处的有效样本；分轨合并结果必须同时具备所选任务预期的视频轨和音频轨，
   音频任务同样检查尾部数据。覆盖未知 `Content-Length`、服务器提前断流、截断 MP4/WebM 和合并后
   缺音轨；失败时删除未发布成品，但保留仍可安全复用的分片，不做逐帧完整解码。
-- [ ] **I3 相册与公共目录导出幂等化** — 用「记录 id + 源文件指纹 + MediaStore URI」保存独立
-  导出回执；再次导出前验证目标仍存在，存在时显示「已保存」并仅在用户明确选择后再保存一份。
-  Live Photo 的静帧/MOV 与 ZIP 公共下载按事务记录，任一项失败不留下半套回执；用户从系统相册
-  或下载目录删除目标后回执自动失效。不得只按文件名判重，避免同名不同内容被误判。
+- [x] **I3 相册与公共目录导出幂等化**（2026-11-17 完成，证据见 [验收记录](validation/gallery-export-idempotency-2026-11-17.md)）—
+  新增 `ExportReceipt` / `GalleryExportReceiptStore`：回执由「记录 id + 每个源文件的名称/大小/
+  修改时间指纹 + 目标 URI 列表」组成，原子落盘 `filesDir/export-receipts.json`；
+  `find` 在目标被删或指纹已变时失效并清掉条目，90 天不用的回执自动清理。
+  `GalleryExporter` 返回 `Saved` / `AlreadySaved`，`replaceExisting = true` 才再写一份；
+  Live Photo 静帧/MOV 一起写、一起记，任一步失败删除本次创建的条目。`ArchivePublisher`
+  对 ZIP 公共下载同样判重。已存操作面板弹「已经保存过 / 再保存一份」确认框，播放页与看图器的
+  提示条提供「再存一份」动作。JVM 607 例通过（新增回执判定 9 例、存储状态机 7 例），
+  `GalleryExportReceiptDeviceTest` 4/4 通过（真实 MediaStore：重复保存、删目标失效、同名不同内容、
+  Live Photo 成对失效、半套回滚、ZIP 重复发布）。**未覆盖**：升级前没有回执，升级后第一次保存
+  会再写一份；批量保存把「已保存」计为成功、不逐项弹确认；Android 9 及以下与 OEM 相册回收站、
+  平板/折叠屏未验证。
 - [ ] **I4 已完成文件健康检查与修复** — 对已存文件先用路径、大小和修改时间做低成本检查，
   打开失败或用户主动检查时再执行媒体结构校验；文件缺失或损坏时提供重新解析/重新下载，并保持
   原有收藏、分类、隐私和排序元数据。大文件不得在前台无条件计算全量哈希。

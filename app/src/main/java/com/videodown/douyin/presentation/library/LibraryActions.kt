@@ -48,8 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.videodown.douyin.presentation.galleryErrorMessage
 import com.videodown.douyin.core.DouyinIntents
-import com.videodown.douyin.data.gallery.GalleryExporter
 import androidx.compose.ui.res.stringResource
+import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.data.gallery.GalleryExportOutcome
 import com.videodown.douyin.R
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.VaultPolicy
@@ -80,8 +81,12 @@ internal fun LibraryActions(
     // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
     val resources = LocalResources.current
     val scope = rememberCoroutineScope()
-    val exporter = remember(context) { GalleryExporter(context.applicationContext) }
+    // 与「我的 → 自动存入相册」共用同一份导出回执，重复保存才能被认出来。
+    val exporter = ServiceLocator.galleryExporter
     var exportingId by remember { mutableStateOf<String?>(null) }
+    // 回执说「已经保存过」时进入这里，只有用户确认后才再写一份。
+    // 保存记录本身而不是 id：底部弹窗关闭后列表参数可能已经不含这条记录。
+    var pendingResave by remember { mutableStateOf<DownloadRecord?>(null) }
     var pendingPermissionId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingDeleteId by rememberSaveable { mutableStateOf<String?>(null) }
     val selected = records.firstOrNull { it.id == selectedRecordId }
@@ -91,20 +96,27 @@ internal fun LibraryActions(
         scope.launch { snackbar.showSnackbar(message) }
     }
 
-    fun export(record: DownloadRecord) {
+    fun export(record: DownloadRecord, replaceExisting: Boolean = false) {
         if (exportingId != null) return
         exportingId = record.id
         onDismiss()
         scope.launch {
             val result = try {
-                exporter.export(record)
+                exporter.export(record, replaceExisting)
             } finally {
                 exportingId = null
             }
-            snackbar.showSnackbar(result.fold(
-                onSuccess = { resources.getString(if (record.isAudio) R.string.library_saved_to_music else R.string.library_saved_to_gallery) },
-                onFailure = { resources.getString(R.string.library_save_failed, galleryErrorMessage(context, it)) },
-            ))
+            result.fold(
+                onSuccess = { outcome ->
+                    when (outcome) {
+                        is GalleryExportOutcome.AlreadySaved -> pendingResave = record
+                        is GalleryExportOutcome.Saved -> snackbar.showSnackbar(resources.getString(
+                            if (record.isAudio) R.string.library_saved_to_music else R.string.library_saved_to_gallery,
+                        ))
+                    }
+                },
+                onFailure = { snackbar.showSnackbar(resources.getString(R.string.library_save_failed, galleryErrorMessage(context, it))) },
+            )
         }
     }
 
@@ -204,6 +216,21 @@ internal fun LibraryActions(
                 }
             }
         }
+    }
+
+    pendingResave?.let { resave ->
+        AppConfirmDialog(
+            onDismissRequest = { pendingResave = null },
+            icon = AppIcons.SaveAlbum,
+            title = stringResource(R.string.library_resave_title),
+            body = stringResource(R.string.library_resave_body),
+            confirmText = stringResource(R.string.library_resave_confirm),
+            onConfirm = {
+                pendingResave = null
+                export(resave, replaceExisting = true)
+            },
+            dismissText = stringResource(R.string.action_cancel),
+        )
     }
 
     if (pendingDelete != null) {

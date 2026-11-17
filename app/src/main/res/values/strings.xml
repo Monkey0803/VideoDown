@@ -65,6 +65,11 @@
     <string name="vault_add">移入保险箱</string>
     <string name="vault_remove">移出保险箱</string>
     <string name="library_saved_to_music">已保存到音乐</string>
+    <string name="library_already_saved">已保存，未重复写入</string>
+    <string name="library_resave_action">再存一份</string>
+    <string name="library_resave_title">已经保存过</string>
+    <string name="library_resave_body">系统相册里已有这份内容。只在确实需要另一份副本时再保存。</string>
+    <string name="library_resave_confirm">再保存一份</string>
     <string name="library_saved_to_gallery">已保存到相册</string>
     <string name="library_save_failed">保存失败：%1$s</string>
     <string name="library_need_storage_permission">需要存储权限才能保存到相册</string>
