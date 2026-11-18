@@ -67,7 +67,7 @@ import java.util.UUID
  *  - retrying transient network failures with backoff before giving up.
  */
 class DownloadEngine(
-    private val history: DownloadHistoryRepository,
+    history: DownloadHistoryRepository,
     private val downloader: ResumableDownloader,
     private val paths: DownloadPaths,
     private val scope: CoroutineScope,
@@ -99,6 +99,30 @@ class DownloadEngine(
     /** Current global rate cap in KB/s, read once before the change flow starts. */
     private val globalSpeedLimitKbps: () -> Int = { 0 },
 ) : Downloader {
+
+    private val rawHistory = history
+    /**
+     * 运行中任务的当前单任务限速。它既区分“跟随全局”的 0，也避免进度回写用启动时的旧记录
+     * 覆盖用户刚刚修改的值。
+     */
+    private val taskSpeedLimits = java.util.concurrent.ConcurrentHashMap<String, Int>()
+    /**
+     * 下载协程会频繁用自己的局部记录回写进度；统一在仓储边界合入当前限速，防止旧快照回滚设置。
+     */
+    private val history = object : DownloadHistoryRepository by rawHistory {
+        override suspend fun upsert(record: DownloadRecord) {
+            rawHistory.upsert(record.withCurrentTaskSpeedLimit())
+        }
+
+        override suspend fun upsertDurably(record: DownloadRecord) {
+            rawHistory.upsertDurably(record.withCurrentTaskSpeedLimit())
+        }
+    }
+
+    private fun DownloadRecord.withCurrentTaskSpeedLimit(): DownloadRecord {
+        val current = taskSpeedLimits[id] ?: return this
+        return if (speedLimitKbps == current) this else copy(speedLimitKbps = current)
+    }
 
     private val scheduler = DownloadQueueScheduler(maxConcurrent)
     override val queue = scheduler.state
@@ -167,16 +191,20 @@ class DownloadEngine(
 
     /** Seeds the per-task limiter from the persisted cap; called once per transfer. */
     private fun seedTaskLimiter(record: DownloadRecord) {
-        if (record.speedLimitKbps <= 0) {
+        // 调度器读完记录、传输尚未走到这里时，setSpeedLimit 可能已经写入新值；旧快照不能覆盖它。
+        val current = taskSpeedLimits.putIfAbsent(record.id, record.speedLimitKbps.coerceAtLeast(0))
+            ?: record.speedLimitKbps.coerceAtLeast(0)
+        if (current <= 0) {
             taskLimiters.remove(record.id)
             return
         }
         taskLimiters.computeIfAbsent(record.id) { BandwidthLimiter() }
-            .setRate(speedLimitBytesPerSecond(record.speedLimitKbps))
+            .setRate(speedLimitBytesPerSecond(current))
     }
 
     override suspend fun setSpeedLimit(id: String, kbps: Int) = maintenanceMutex.withLock {
         val safe = kbps.coerceAtLeast(0)
+        if (activeJobs[id]?.isActive == true) taskSpeedLimits[id] = safe
         history.getById(id)?.let { history.upsert(it.copy(speedLimitKbps = safe, updatedAt = System.currentTimeMillis())) }
         if (safe > 0) {
             taskLimiters.computeIfAbsent(id) { BandwidthLimiter() }.setRate(speedLimitBytesPerSecond(safe))
@@ -621,6 +649,7 @@ class DownloadEngine(
                 storage?.close()
                 withContext(NonCancellable) { scheduler.finish(record.id) }
                 taskLimiters.remove(record.id)
+                taskSpeedLimits.remove(record.id)
                 retrySignals.remove(record.id)
                 manualRetryRequests.remove(record.id)
             }
@@ -1058,7 +1087,7 @@ class DownloadEngine(
                     EngineRateControl(
                         sessionId = record.id,
                         globalLimit = { speedLimitBytesPerSecond(globalSpeedLimitKbps()) },
-                        taskLimit = { speedLimitBytesPerSecond(record.speedLimitKbps) },
+                        taskLimit = { speedLimitBytesPerSecond(taskSpeedLimits[record.id] ?: record.speedLimitKbps) },
                     )) { downloaded, total, speed, phase ->
                     if (total > 0) expected.updateAndGet { maxOf(it, total) }
                     checkEngineSpace()

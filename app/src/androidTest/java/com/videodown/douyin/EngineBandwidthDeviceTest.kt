@@ -23,6 +23,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * I5：引擎进程真的被共享带宽预算压住了。
@@ -147,6 +148,45 @@ class EngineBandwidthDeviceTest {
                     elapsedMs >= totalBytes * 1000L / cap * 6 / 10,
                 )
                 outputs.forEach { assertTrue("every engine output must exist", it.isFile && it.length() > 0) }
+            }
+        } finally { directory.deleteRecursively() }
+    }
+
+    @Test fun changingTaskLimitWhileEngineIsRunningPacesTheRemainingBytes() = runBlocking {
+        val directory = File(context.cacheDir, "engine-bandwidth-${UUID.randomUUID()}").apply { mkdirs() }
+        try {
+            createLargeFixture(directory)
+            val bytes = File(directory, "big.mp4").length()
+            FixtureServer(directory).use { server ->
+                val downloader = EngineMediaDownloader(
+                    ServiceLocator.videoEngine, ServiceLocator.browserSessions, File(directory, "sessions"),
+                )
+                val taskCap = AtomicLong(0L)
+                val limitedAtBytes = AtomicLong(-1L)
+                val limitedAtMillis = AtomicLong(0L)
+                val id = "running-${UUID.randomUUID()}"
+                val output = withTimeout(120_000) {
+                    downloader.download(
+                        record(id, server.baseUrl), DownloadPaths(directory),
+                        DownloadNetworkPolicy.Unrestricted, null,
+                        EngineRateControl(id, globalLimit = { 0L }, taskLimit = taskCap::get),
+                    ) { downloaded, _, _, _ ->
+                        if (downloaded > 0L && limitedAtBytes.compareAndSet(-1L, downloaded)) {
+                            limitedAtMillis.set(System.currentTimeMillis())
+                            taskCap.set(cap)
+                        }
+                    }
+                }
+                val changedAt = limitedAtBytes.get()
+                val remaining = (bytes - changedAt).coerceAtLeast(0L)
+                val limitedElapsed = System.currentTimeMillis() - limitedAtMillis.get()
+                assertTrue("the fixture must report progress before completion", changedAt in 1 until bytes)
+                assertTrue("enough bytes must remain to observe the new cap: $remaining", remaining > 256 * 1024)
+                assertTrue(
+                    "remaining $remaining bytes must be paced after the live task cap change; elapsed=${limitedElapsed}ms",
+                    limitedElapsed >= remaining * 1_000L / cap / 2,
+                )
+                assertTrue("engine output must validate", output.isFile && output.length() > 0)
             }
         } finally { directory.deleteRecursively() }
     }
