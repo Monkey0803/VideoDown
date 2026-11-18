@@ -11,6 +11,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -72,6 +74,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,7 +84,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -90,11 +92,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.ViewCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -113,7 +115,9 @@ import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.presentation.components.AppConfirmDialog
 import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppPlayerView
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.presentation.galleryErrorMessage
 import com.videodown.douyin.presentation.videoPlatformLabelRes
 import kotlinx.coroutines.delay
@@ -145,6 +149,8 @@ fun ImageViewerScreen(
     onDelete: (String, (Result<Unit>) -> Unit) -> Unit,
     autoHideMillis: Long = DEFAULT_AUTO_HIDE_MILLIS,
     slideshowSecondMillis: Long = 1_000L,
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -163,6 +169,7 @@ fun ImageViewerScreen(
         } == true
     }
     var vaultAttempt by rememberSaveable(initialRecordId) { mutableIntStateOf(0) }
+    var closing by remember(initialRecordId) { mutableStateOf(false) }
     var vaultState by remember(initialRecordId) {
         mutableStateOf(if (collectionPrivate == true) VaultViewState.CHECKING else VaultViewState.GRANTED)
     }
@@ -185,9 +192,34 @@ fun ImageViewerScreen(
         if (!started) vaultState = VaultViewState.UNAVAILABLE
     }
 
-    BackHandler(onBack = onBack)
+    fun closeViewer() {
+        if (closing) return
+        closing = true
+        activity?.window?.let { window ->
+            WindowCompat.getInsetsController(window, window.decorView)
+                .hide(WindowInsetsCompat.Type.systemBars())
+            scope.launch {
+                // hide() 异步提交；等 root insets 确认隐藏后再 pop，避免浅色底页先从系统栏穿出。
+                repeat(9) {
+                    withFrameNanos { }
+                    val hidden = ViewCompat.getRootWindowInsets(window.decorView)
+                        ?.isVisible(WindowInsetsCompat.Type.systemBars()) == false
+                    if (hidden) {
+                        onBack()
+                        return@launch
+                    }
+                }
+                // 厂商实现若始终不回报状态，也不能把用户困在看图器里。
+                onBack()
+            }
+            return
+        }
+        onBack()
+    }
+
+    BackHandler(onBack = ::closeViewer)
     if (vaultState != VaultViewState.GRANTED) {
-        VaultLockedViewer(vaultState, onBack = onBack, onRetry = { vaultAttempt++ })
+        VaultLockedViewer(vaultState, onBack = ::closeViewer, onRetry = { vaultAttempt++ })
         return
     }
 
@@ -202,7 +234,7 @@ fun ImageViewerScreen(
     if (availableRecords.isEmpty()) {
         MissingImageViewer(
             record = initialRecord,
-            onBack = onBack,
+            onBack = ::closeViewer,
             onOpenSource = {
                 if (initialRecord == null || !DouyinIntents.openVideo(context, initialRecord)) {
                     scope.launch { snackbar.showSnackbar(resources.getString(R.string.viewer_source_failed)) }
@@ -211,7 +243,7 @@ fun ImageViewerScreen(
             onDelete = {
                 val record = initialRecord ?: return@MissingImageViewer
                 onDelete(record.id) { result ->
-                    if (result.isSuccess) onBack()
+                    if (result.isSuccess) closeViewer()
                     else scope.launch { snackbar.showSnackbar(resources.getString(R.string.viewer_delete_failed)) }
                 }
             },
@@ -325,7 +357,6 @@ fun ImageViewerScreen(
         val controller = activity?.window?.let { WindowCompat.getInsetsController(it, it.decorView) }
         val previousBehavior = controller?.systemBarsBehavior
         onDispose {
-            controller?.show(WindowInsetsCompat.Type.systemBars())
             if (previousBehavior != null) controller?.systemBarsBehavior = previousBehavior
         }
     }
@@ -414,7 +445,9 @@ fun ImageViewerScreen(
                     controlsVisible = !controlsVisible
                     interactionTick++
                 },
-                modifier = Modifier.fillMaxSize().testTag("image-viewer-${record.id}"),
+                modifier = Modifier.fillMaxSize()
+                    .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope)
+                    .testTag("image-viewer-${record.id}"),
             )
         }
 
@@ -422,6 +455,7 @@ fun ImageViewerScreen(
             currentRecord.livePhotoMotion?.filePath?.let(::File)?.takeIf(File::isFile)?.let { motion ->
                 LivePhotoMotionPlayer(
                     file = motion,
+                    posterFile = currentRecord.filePath?.let(::File)?.takeIf(File::isFile),
                     onStop = { playingLivePhotoId = null; wakeControls() },
                 )
             }
@@ -441,7 +475,7 @@ fun ImageViewerScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(
-                    onClick = onBack,
+                    onClick = ::closeViewer,
                     modifier = Modifier.clip(CircleShape).background(Color.White.copy(alpha = .16f)),
                 ) {
                     AppIcon(AppIcons.Back, stringResource(R.string.action_back), tint = Color.White)
@@ -655,7 +689,7 @@ fun ImageViewerScreen(
                 pendingDelete = null
                 onDelete(record.id) { result ->
                     if (result.isSuccess) {
-                        if (nextId == null) onBack() else { currentId = nextId; wakeControls() }
+                        if (nextId == null) closeViewer() else { currentId = nextId; wakeControls() }
                     } else {
                         show(resources.getString(R.string.viewer_delete_failed))
                     }
@@ -854,7 +888,7 @@ private fun ImageDateGridSheet(
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
-private fun LivePhotoMotionPlayer(file: File, onStop: () -> Unit) {
+private fun LivePhotoMotionPlayer(file: File, posterFile: File?, onStop: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val player = remember(file.absolutePath) {
@@ -865,7 +899,17 @@ private fun LivePhotoMotionPlayer(file: File, onStop: () -> Unit) {
             playWhenReady = true
         }
     }
-    DisposableEffect(player) { onDispose { player.release() } }
+    var firstFrameRendered by remember(player) { mutableStateOf(false) }
+    DisposableEffect(player) {
+        val listener = object : Player.Listener {
+            override fun onRenderedFirstFrame() { firstFrameRendered = true }
+        }
+        player.addListener(listener)
+        onDispose {
+            player.removeListener(listener)
+            player.release()
+        }
+    }
     DisposableEffect(lifecycleOwner, player) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -878,16 +922,20 @@ private fun LivePhotoMotionPlayer(file: File, onStop: () -> Unit) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     Box(Modifier.fillMaxSize().background(Color.Black).testTag("live-photo-motion")) {
-        AndroidView(
-            factory = { target ->
-                PlayerView(target).apply {
-                    useController = false
-                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                    this.player = player
-                }
-            },
+        AppPlayerView(
+            player = player,
+            useController = false,
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT,
             modifier = Modifier.fillMaxSize(),
         )
+        if (!firstFrameRendered && posterFile != null) {
+            AsyncImage(
+                model = posterFile,
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize().testTag("live-photo-poster"),
+            )
+        }
         Box(Modifier.fillMaxSize().clickable(onClick = onStop))
     }
 }

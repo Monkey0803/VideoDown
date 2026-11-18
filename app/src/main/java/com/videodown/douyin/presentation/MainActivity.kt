@@ -13,6 +13,7 @@ import android.os.Build
 import android.net.Uri
 import android.provider.Settings
 import android.app.PictureInPictureParams
+import android.app.Activity
 import android.app.RemoteAction
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -38,6 +39,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
@@ -76,6 +78,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -90,6 +93,7 @@ import com.videodown.douyin.presentation.home.HomeViewModel
 import com.videodown.douyin.presentation.library.LibraryScreen
 import com.videodown.douyin.presentation.player.PlayerScreen
 import com.videodown.douyin.presentation.viewer.ImageViewerScreen
+import com.videodown.douyin.presentation.viewer.imageViewerSystemBarsRestoreDelayMillis
 import com.videodown.douyin.presentation.settings.SettingsScreen
 import com.videodown.douyin.presentation.theme.VideoDownTheme
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
@@ -101,6 +105,7 @@ import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.readClipboardText
 import com.videodown.douyin.core.ThemeMode
 import com.videodown.douyin.presentation.theme.NavigationRailBreakpoint
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private var sharedText by mutableStateOf<String?>(null)
@@ -338,6 +343,8 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     val keyboardVisible = WindowInsets.isImeVisible
     val entry by navController.currentBackStackEntryAsState()
     val route = entry?.destination?.route
+    var previousRoute by remember { mutableStateOf<String?>(null) }
+    var imageViewerBackdropRetained by remember { mutableStateOf(false) }
     var requestedStorage by remember { mutableStateOf(false) }
     val historyState by historyViewModel.state.collectAsStateWithLifecycle()
     var resultInbox by remember { mutableStateOf(ServiceLocator.preferences.downloadResultInbox) }
@@ -469,11 +476,15 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
 
     Scaffold(
         modifier = Modifier.imePadding(),
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = if (route == Routes.IMAGE || imageViewerBackdropRetained) {
+            Color.Black
+        } else {
+            MaterialTheme.colorScheme.background
+        },
         // 单一入口负责主页面的状态栏、刘海与手势导航安全区；全屏播放器/看图器自行处理。
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            if (route in tabs && !keyboardVisible) {
+            if (route in tabs && !keyboardVisible && !imageViewerBackdropRetained) {
                 Column {
                     if (route != Routes.TASKS) {
                         DownloadCenterBar(
@@ -522,11 +533,28 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     ) { padding ->
         // 页面切换统一走一次淡入淡出：只动透明度，不做位移/缩放，避免依赖坐标的断言读到中间值。
         val motion = appMotion()
+        LaunchedEffect(route, motion.enabled) {
+            val restoreDelay = imageViewerSystemBarsRestoreDelayMillis(
+                wasImageViewer = previousRoute == Routes.IMAGE,
+                isImageViewer = route == Routes.IMAGE,
+                animationsEnabled = motion.enabled,
+            )
+            previousRoute = route
+            if (route == Routes.IMAGE) imageViewerBackdropRetained = true
+            if (restoreDelay != null) {
+                // pop 开始时浏览页仍在退场；根背景与系统栏都等共享图片收回后再恢复。
+                if (restoreDelay > 0L) delay(restoreDelay)
+                imageViewerBackdropRetained = false
+                val window = (context as? Activity)?.window ?: return@LaunchedEffect
+                WindowCompat.getInsetsController(window, window.decorView)
+                    .show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
         // 共享元素（已存封面 → 播放器封面）需要 SharedTransitionLayout 作祖先，作用域逐屏显式传下去。
         SharedTransitionLayout {
             val sharedTransitionScope = this
             Box(Modifier.fillMaxSize()) {
-            if (wideNavigation && route in tabs && !keyboardVisible) {
+            if (wideNavigation && route in tabs && !keyboardVisible && !imageViewerBackdropRetained) {
                 NavigationRail(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                     modifier = Modifier.align(Alignment.CenterStart).fillMaxHeight().width(80.dp).testTag("navigation-rail"),
@@ -554,7 +582,10 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                 navController = navController,
                 startDestination = Routes.HOME,
                 modifier = if (route == Routes.PLAYER || route == Routes.IMAGE || route == Routes.STREAM) {
-                    Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+                    Modifier.fillMaxSize().background(
+                        if (route == Routes.IMAGE || imageViewerBackdropRetained) Color.Black
+                        else MaterialTheme.colorScheme.background,
+                    )
                 } else {
                     Modifier.padding(padding).consumeWindowInsets(padding)
                         .padding(start = if (wideNavigation && route in tabs && !keyboardVisible) 80.dp else 0.dp)
@@ -583,6 +614,8 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         batchImportSeed = batchImportSeed,
                         onBatchImportSeedConsumed = onBatchImportSeedConsumed,
                         onOpenSites = { navController.navigate(Routes.SITES) },
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = this,
                     )
                 }
                 composable(Routes.TASKS) {
@@ -593,6 +626,8 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         viewModel = historyViewModel,
                         onOpenParse = { navigateTab(Routes.HOME) },
                         globalSpeedLimitKbps = globalSpeedLimitKbps,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = this,
                         onRecovery = { record, action ->
                             val page = record.sourcePageUrl.ifBlank { record.media?.pageUrl.orEmpty() }
                             when (action) {
@@ -646,6 +681,8 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         initialRecordId = recordId,
                         onBack = { navController.popBackStack() },
                         onDelete = { id, done -> historyViewModel.delete(id, done) },
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = this,
                     )
                 }
                 composable(

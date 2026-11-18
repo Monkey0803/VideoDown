@@ -19,6 +19,10 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.VaultAuthenticator
 import com.videodown.douyin.data.image.ImageMetadataReader
@@ -276,6 +280,7 @@ class ImageViewerDeviceTest {
         }
         compose.onNodeWithTag("live-photo-motion").assertIsDisplayed()
         compose.onNodeWithText("停止").assertIsDisplayed()
+        onView(isAssignableFrom(android.view.TextureView::class.java)).check(matches(isDisplayed()))
     }
 
     @Test fun slideshowLoopsAndDateGridJumpsToSelectedImage() {

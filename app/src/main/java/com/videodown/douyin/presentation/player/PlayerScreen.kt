@@ -1,6 +1,7 @@
 package com.videodown.douyin.presentation.player
 
 import com.videodown.douyin.presentation.components.AppDialog
+import com.videodown.douyin.presentation.components.AppPlayerView
 import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.presentation.components.shimmer
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
@@ -94,7 +95,6 @@ import com.videodown.douyin.presentation.platformName
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -661,19 +661,20 @@ fun PlayerScreen(
                 (if (fullscreen || inPip) Modifier.fillMaxSize() else Modifier.fillMaxWidth().aspectRatio(videoAspectRatio))
                     .background(Color.Black),
             ) {
-                    // 封面海报：从「已存」封面共享元素放大过来；视频就绪后由视频盖住。
-                    // 全屏与 PiP 下不参与共享——那时容器尺寸/窗口都变了，不应再做形变。
-                    // 留到视频真正出画（或确认是纯音频）为止；全屏与 PiP 下不参与共享。
-                    val showCoverPoster = !fullscreen && !inPip && !coverUrl.isNullOrBlank() &&
-                        (state.loading || !(state.record?.isAudio == true || firstFrameRendered))
-                    if (showCoverPoster) {
-                        AsyncImage(
-                            model = coverUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().testTag("player-cover-poster")
-                                .sharedCover(recordId, sharedTransitionScope, animatedVisibilityScope)
-                                .shimmer(),
+                    val showCoverPoster = shouldShowPlayerPoster(
+                        posterAvailable = !coverUrl.isNullOrBlank(),
+                        firstFrameRendered = firstFrameRendered,
+                        isAudio = state.record?.isAudio == true,
+                        fullscreen = fullscreen,
+                        inPictureInPicture = inPip,
+                    )
+                    // 加载和文件错误阶段还没有 PlayerView，海报先铺底，状态提示继续画在它上面。
+                    if (showCoverPoster && (state.loading || !state.fileExists || connectionError)) {
+                        PlayerCoverPoster(
+                            coverUrl = coverUrl,
+                            recordId = recordId,
+                            sharedTransitionScope = sharedTransitionScope,
+                            animatedVisibilityScope = animatedVisibilityScope,
                         )
                     }
                     when {
@@ -694,6 +695,16 @@ fun PlayerScreen(
                                 modifier = Modifier.fillMaxSize()
                                     .then(if (fullscreen) Modifier.safeDrawingPadding() else Modifier),
                             )
+                            // 必须排在 PlayerView 后面：TextureView 与 Compose 同层后，海报才能真正盖住
+                            // 首帧前的黑色 shutter；控制层继续排在海报之后，保持可操作。
+                            if (showCoverPoster) {
+                                PlayerCoverPoster(
+                                    coverUrl = coverUrl,
+                                    recordId = recordId,
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                )
+                            }
                             // A sibling overlay rather than an ancestor: PlayerView consumes touches
                             // itself, so an ancestor would never see an unconsumed down.
                             if (gestureModifier !== Modifier) {
@@ -863,6 +874,23 @@ fun PlayerScreen(
     }
 }
 
+@Composable
+private fun PlayerCoverPoster(
+    coverUrl: String?,
+    recordId: String,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
+) {
+    AsyncImage(
+        model = coverUrl,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.fillMaxSize().testTag("player-cover-poster")
+            .sharedCover(recordId, sharedTransitionScope, animatedVisibilityScope)
+            .shimmer(),
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlayerActionTooltip(label: String, content: @Composable () -> Unit) {
@@ -896,25 +924,14 @@ private fun VideoSurface(
     onControllerVisibilityChange: (Boolean) -> Unit,
     modifier: Modifier,
 ) {
-    AndroidView(
-        factory = { ctx ->
-            PlayerView(ctx).apply {
-                this.player = player
-                useController = true
-                controllerAutoShow = controlsEnabled
-                if (!controlsEnabled) hideController()
-                this.resizeMode = resizeMode.media3Mode()
-                setEnableComposeSurfaceSyncWorkaround(true)
-                onViewCreated(this)
-            }
-        },
-        onReset = { view -> onViewCreated(view) },
-        update = { view ->
-            view.player = player
-            view.useController = true
-            view.controllerAutoShow = controlsEnabled
-            if (!controlsEnabled) view.hideController()
-            view.resizeMode = resizeMode.media3Mode()
+    AppPlayerView(
+        player = player,
+        useController = true,
+        controllerAutoShow = controlsEnabled,
+        resizeMode = resizeMode.media3Mode(),
+        onViewCreated = onViewCreated,
+        configure = { view ->
+            view.setEnableComposeSurfaceSyncWorkaround(true)
             view.setFullscreenButtonClickListener(onFullscreenChange)
             view.setFullscreenButtonState(fullscreen)
             view.setControllerVisibilityListener(object : PlayerView.ControllerVisibilityListener {
@@ -926,7 +943,6 @@ private fun VideoSurface(
         onRelease = { view ->
             view.setFullscreenButtonClickListener(null)
             view.setControllerVisibilityListener(null as PlayerView.ControllerVisibilityListener?)
-            view.player = null
         },
         modifier = modifier,
     )

@@ -1,6 +1,7 @@
 package com.videodown.douyin
 
 import android.webkit.WebView
+import android.view.TextureView
 import androidx.activity.compose.setContent
 import androidx.compose.material3.Text
 import androidx.compose.ui.test.assertIsDisplayed
@@ -166,6 +167,12 @@ class SiteHubDeviceTest {
                             player.currentTracks.groups.any { it.type == C.TRACK_TYPE_VIDEO }
                     }
                     ready
+                }
+                compose.runOnUiThread {
+                    assertTrue(
+                        "在线播放器必须使用 TextureView，避免首帧前独立黑色 surface 盖住海报",
+                        findPlayer(compose.activity.window.decorView)?.videoSurfaceView is TextureView,
+                    )
                 }
                 compose.waitUntil(8_000) { history.records.value.isNotEmpty() }
                 val downloadLabel = context.getString(R.string.sites_download)

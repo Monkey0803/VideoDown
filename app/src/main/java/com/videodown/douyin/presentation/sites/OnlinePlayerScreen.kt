@@ -38,11 +38,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
+import coil3.compose.AsyncImage
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -57,7 +58,6 @@ import androidx.media3.common.VideoSize
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.ui.PlayerView
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -74,9 +74,11 @@ import com.videodown.douyin.presentation.components.AppDialog
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.AppPlayerView
 import com.videodown.douyin.presentation.player.VideoControlsOverlay
 import com.videodown.douyin.presentation.player.VideoTrackDialog
 import com.videodown.douyin.presentation.player.playerGestures
+import com.videodown.douyin.presentation.player.shouldShowPlayerPoster
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.CookieJar
@@ -177,6 +179,7 @@ fun OnlinePlayerScreen(
                 playWhenReady = true
             }
     }
+    var firstFrameRendered by remember(player) { mutableStateOf(false) }
     if (choosingSpeed) AppDialog(
         onDismissRequest = { choosingSpeed = false },
         icon = AppIcons.Speed,
@@ -233,6 +236,7 @@ fun OnlinePlayerScreen(
     }
     DisposableEffect(player) {
         val listener = object : Player.Listener {
+            override fun onRenderedFirstFrame() { firstFrameRendered = true }
             override fun onPlaybackStateChanged(playbackState: Int) {
                 buffering = playbackState == Player.STATE_BUFFERING
                 if (playbackState == Player.STATE_READY) playbackError = null
@@ -348,18 +352,27 @@ fun OnlinePlayerScreen(
     BackHandler(enabled = !fullscreen, onBack = onBack)
 
     Box(Modifier.fillMaxSize().background(Color.Black)) {
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { PlayerView(it).apply { useController = false; this.player = player } },
-            update = {
-                it.player = player
-                it.resizeMode = when (scaleMode) {
-                    VideoScaleMode.FIT -> AspectRatioFrameLayout.RESIZE_MODE_FIT
-                    VideoScaleMode.CROP -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                    VideoScaleMode.STRETCH -> AspectRatioFrameLayout.RESIZE_MODE_FILL
-                }
+        AppPlayerView(
+            player = player,
+            useController = false,
+            resizeMode = when (scaleMode) {
+                VideoScaleMode.FIT -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+                VideoScaleMode.CROP -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                VideoScaleMode.STRETCH -> AspectRatioFrameLayout.RESIZE_MODE_FILL
             },
+            modifier = Modifier.fillMaxSize(),
         )
+        if (shouldShowPlayerPoster(
+                posterAvailable = !session.video.coverUrl.isNullOrBlank(),
+                firstFrameRendered = firstFrameRendered,
+            )) {
+            AsyncImage(
+                model = session.video.coverUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().testTag("online-player-poster"),
+            )
+        }
         Box(Modifier.fillMaxSize().then(gestureModifier).testTag("online-player-surface"))
         VideoControlsOverlay(
             player = player,

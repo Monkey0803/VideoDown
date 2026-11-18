@@ -1,5 +1,7 @@
 package com.videodown.douyin.presentation.history
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppConfirmDialog
 import com.videodown.douyin.presentation.components.AppDialog
@@ -102,6 +104,7 @@ import com.videodown.douyin.presentation.theme.appMotion
 import com.videodown.douyin.presentation.failureTitle
 import com.videodown.douyin.presentation.recoveryActionLabel
 import com.videodown.douyin.presentation.UiDensityPolicy
+import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.domain.model.legacyFailureKind
 import com.videodown.douyin.domain.model.isGenericSiteMediaTitle
 import java.net.URI
@@ -111,6 +114,8 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     onOpenParse: () -> Unit = {},
     /** 当前全局限速（KB/s，`0` 表示不限速）；任务卡用它说明「跟随全局」时是谁在限制。 */
     globalSpeedLimitKbps: Int = 0,
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
     onRecovery: (DownloadRecord, RecoveryAction) -> Unit = { _, _ -> }) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val motion = appMotion()
@@ -368,6 +373,8 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                                 onRestart = { viewModel.restart(record.id) },
                                 onRetryNow = { viewModel.retryNow(record.id) },
                                 globalSpeedLimitKbps = globalSpeedLimitKbps,
+                                sharedTransitionScope = sharedTransitionScope,
+                                animatedVisibilityScope = animatedVisibilityScope,
                                 onDelete = { pendingDelete = record },
                                 onSpeedLimit = { pendingSpeedLimit = record },
                                 onMove = { offset -> viewModel.moveInQueue(record.id, offset) },
@@ -423,6 +430,8 @@ private fun TaskCard(
     onRetryNow: () -> Unit,
     /** 全局上限；任务自己没有上限时用它说明是谁在限制。 */
     globalSpeedLimitKbps: Int = 0,
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
     onDelete: () -> Unit,
     onSpeedLimit: () -> Unit,
     onShare: () -> Unit,
@@ -466,7 +475,20 @@ private fun TaskCard(
                     modifier = Modifier.semantics { stateDescription = lockedTitle })
                 MediaCover(
                     model = record.coverUrl,
-                    modifier = Modifier.size(width = 84.dp, height = 52.dp).testTag("task-cover-${record.id}"),
+                    modifier = Modifier.size(width = 84.dp, height = 52.dp)
+                        .then(
+                            if (status == DownloadStatus.COMPLETED && !record.isAudio && !record.isArchive) {
+                                Modifier.sharedCover(
+                                    record.id,
+                                    sharedTransitionScope,
+                                    animatedVisibilityScope,
+                                    inOverlay = true,
+                                )
+                            } else {
+                                Modifier
+                            },
+                        )
+                        .testTag("task-cover-${record.id}"),
                     shape = MaterialTheme.shapes.medium,
                     placeholderIcon = AppIcons.Play,
                 )

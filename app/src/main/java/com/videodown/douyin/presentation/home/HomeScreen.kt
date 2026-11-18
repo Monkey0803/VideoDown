@@ -1,5 +1,7 @@
 package com.videodown.douyin.presentation.home
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppDialog
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
@@ -8,6 +10,7 @@ import com.videodown.douyin.presentation.components.AppPrimaryButton
 import com.videodown.douyin.presentation.components.InlineNotice
 import com.videodown.douyin.presentation.components.NoticeTone
 import com.videodown.douyin.presentation.components.MediaCover
+import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.presentation.components.SelectAllToggle
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.AdaptivePage
@@ -167,6 +170,8 @@ fun HomeScreen(
     xLoginStartUrl: String = com.videodown.douyin.data.generic.XSession.LOGIN_URL,
     /** 可扩展站点专区入口；追加参数保持既有设备测试的调用兼容。 */
     onOpenSites: () -> Unit = {},
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -505,6 +510,7 @@ fun HomeScreen(
                             MediaCover(
                                 model = record.coverUrl,
                                 modifier = Modifier.weight(1f).height(150.dp).clip(MaterialTheme.shapes.large)
+                                    .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope, inOverlay = true)
                                     .clickable { dismissKeyboard(); onPlayDownloaded(record.id) },
                                 shape = RectangleShape,
                                 backgroundColor = Color.Transparent,
