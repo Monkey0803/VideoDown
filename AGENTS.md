@@ -72,6 +72,18 @@ WebView 登录态、设置与下载历史会随之清空。`gradle.properties` �
   notification copy all branch on it. Do not infer the kind from a file extension or a converted
   URL, and keep new record fields defaulted so older `download_history.json` files still load.
 
+## UI 组件复用
+
+- 新 UI 先查 `presentation/components/` 与所属 feature 的既有实现；能用现有组件就不新写。
+- 同一视觉结构出现第二处时，提取到 `presentation/components/` 并由两处共同使用，禁止复制粘贴：
+  弹窗窗口（`AppDialogWindow` / `AppFullScreenDialog`）、媒体封面（`MediaCover`）、
+  全选控件（`SelectAllToggle`）、主按钮（`AppPrimaryButton`）、内联提示（`InlineNotice`）、
+  空状态（`EmptyState`）。
+- `DialogProperties` 与 `AppDialogContainer` 只出现在 `components/AppDialog.kt`；新弹窗不要自己再写一套。
+- 剪贴板读取统一走 `core/ClipboardText.kt` 的 `readClipboardText`，页面里不要直接 `getSystemService(CLIPBOARD_SERVICE)`。
+- 提取时保留既有 testTag 与语义名，复用 `AppSpacing` / `AppIcons` / strings；页面私有组件只留给语义专属的单处使用
+  （例如结果页 hero 封面、播放器视频面、看图器内容）。
+
 ## Tests & device verification
 
 Two suites run in parallel and neither replaces the other:

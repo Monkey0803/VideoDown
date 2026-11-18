@@ -7,14 +7,16 @@ import com.videodown.douyin.presentation.librarySortLabelRes
 import com.videodown.douyin.presentation.history.BatchOperation
 import com.videodown.douyin.presentation.history.contextOperationLabel
 import com.videodown.douyin.presentation.components.TabPageHeader
+import com.videodown.douyin.presentation.components.SelectionToolbar
 import com.videodown.douyin.presentation.components.AppConfirmDialog
 import com.videodown.douyin.core.LibrarySort
-import com.videodown.douyin.presentation.components.EmptyStateIllustration
+import com.videodown.douyin.presentation.components.EmptyState
 import com.videodown.douyin.presentation.components.sharedCover
-import com.videodown.douyin.presentation.components.shimmer
+import com.videodown.douyin.presentation.history.BatchFailureDetails
 import com.videodown.douyin.presentation.theme.appMotion
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.MediaCover
 import com.videodown.douyin.presentation.components.AdaptivePage
 
 import android.Manifest
@@ -32,7 +34,6 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -106,7 +107,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -116,7 +116,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.videodown.douyin.core.LibraryLayout
 import com.videodown.douyin.core.WatchBadge
 import com.videodown.douyin.core.ServiceLocator
@@ -439,27 +438,14 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             BatchFailureDetails(state.batchResult)
             if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = 22.dp))
             if (saved.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
-                        // 只在「整个已存是空的」时候插画：被搜索/过滤筛空是另一回事，配图会让人困惑。
-                        if (allSaved.isEmpty()) {
-                            EmptyStateIllustration(Modifier.padding(bottom = 20.dp))
-                        }
-                        Text(stringResource(if (allSaved.isEmpty()) R.string.library_empty else R.string.library_empty_filtered),
-                            color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                        if (allSaved.isEmpty()) {
-                            Text(stringResource(R.string.library_empty_hint), color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
-                            FilledTonalButton(onClick = onOpenParse, modifier = Modifier.padding(top = 16.dp)) {
-                                Text(stringResource(R.string.library_start_download))
-                            }
-                        } else {
-                            FilledTonalButton(onClick = { controlsChanged(state.libraryQuery.clearFilters()) }, modifier = Modifier.padding(top = 16.dp)) {
-                                Text(stringResource(R.string.library_clear_filters))
-                            }
-                        }
-                    }
-                }
+                // 只在「整个已存是空的」时候插画：被搜索/过滤筛空是另一回事，配图会让人困惑。
+                EmptyState(
+                    title = stringResource(if (allSaved.isEmpty()) R.string.library_empty else R.string.library_empty_filtered),
+                    body = if (allSaved.isEmpty()) stringResource(R.string.library_empty_hint) else null,
+                    showIllustration = allSaved.isEmpty(),
+                    actionLabel = stringResource(if (allSaved.isEmpty()) R.string.library_start_download else R.string.library_clear_filters),
+                    onAction = if (allSaved.isEmpty()) onOpenParse else ({ controlsChanged(state.libraryQuery.clearFilters()) }),
+                )
             } else if (layout == LibraryLayout.WATERFALL) {
                 LazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Fixed(2),
@@ -595,40 +581,25 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
     watch: WatchBadge? = null,
     selected: Boolean? = null, selectionEnabled: Boolean = true, onSelect: () -> Unit = {}) {
     var coverAspectRatio by rememberSaveable(record.coverUrl) { mutableFloatStateOf(3f / 4f) }
-    // 封面解码出来之前显示骨架屏扫光；加载完成后停止，避免常驻的无限动画。
-    var coverLoaded by remember(record.coverUrl) { mutableStateOf(false) }
-    val showShimmer = !record.coverUrl.isNullOrBlank() && !coverLoaded
-    Box(
-        modifier.aspectRatio(if (adaptToCover) coverAspectRatio else 4f / 3f)
-            .clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .then(if (showShimmer) Modifier.shimmer() else Modifier),
-        contentAlignment = Alignment.Center,
+    MediaCover(
+        // 图片记录直接显示本地文件：CDN 链接会过期，已下载的内容不该因此变成灰底。
+        model = if (record.isImage) record.filePath?.let(::File)?.takeIf(File::isFile) ?: record.coverUrl else record.coverUrl,
+        modifier = modifier.aspectRatio(if (adaptToCover) coverAspectRatio else 4f / 3f),
+        shape = MaterialTheme.shapes.medium,
+        placeholderIcon = when {
+            record.isAudio -> AppIcons.Audio
+            record.isImage -> AppIcons.Grid
+            record.isArchive -> AppIcons.ExportFolder
+            else -> AppIcons.Play
+        },
+        // 封面解码出来之前骨架屏扫光；加载完成后由 MediaCover 内部停止。
+        shimmer = true,
+        onImageSize = { width, height ->
+            if (adaptToCover && width > 0 && height > 0) {
+                coverAspectRatio = (width.toFloat() / height).coerceIn(.5f, 2f)
+            }
+        },
     ) {
-        AppIcon(
-            when {
-                record.isAudio -> AppIcons.Audio
-                record.isImage -> AppIcons.Grid
-                record.isArchive -> AppIcons.ExportFolder
-                else -> AppIcons.Play
-            },
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        AsyncImage(
-            // 图片记录直接显示本地文件：CDN 链接会过期，已下载的内容不该因此变成灰底。
-            model = if (record.isImage) record.filePath?.let(::File)?.takeIf(File::isFile) ?: record.coverUrl else record.coverUrl,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-            onSuccess = { result ->
-                coverLoaded = true
-                // Coil 3：State.Success.result 是 SuccessResult，图片本体在它的 image 上。
-                val image = result.result.image
-                if (adaptToCover && image.width > 0 && image.height > 0) {
-                    coverAspectRatio = (image.width.toFloat() / image.height).coerceIn(.5f, 2f)
-                }
-            },
-        )
         if (selected != null) {
             Box(Modifier.align(Alignment.TopStart).padding(2.dp).size(48.dp)
                 .clip(CircleShape)

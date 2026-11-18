@@ -34,7 +34,17 @@ data class ImportRow(val url: String, val status: ImportStatus = ImportStatus.PE
 data class BatchImportState(val input: String = "", val rows: List<ImportRow> = emptyList(), val parsing: Boolean = false,
     val submitting: Boolean = false, val duplicateCount: Int = 0, val notice: ImportNotice? = null) {
     val selectedCount get() = rows.sumOf { row -> row.media.count { it.selected && it.choice != null } }
+    /** 可选条目总数（有画质/音轨的媒体），用于三态全选与「已选 x/y」。 */
+    val selectableCount get() = rows.sumOf { row -> row.media.count { it.choice != null } }
+    val allSelected get() = selectableCount > 0 && selectedCount == selectableCount
+    /** 输入与解析的锁：解析中不允许改输入、不允许再起一轮解析。 */
     val locked get() = parsing || submitting || duplicateCount > 0
+    /**
+     * 勾选与画质的锁：只受提交、重复确认影响。
+     *
+     * 解析 50 条是顺序进行的，已经就绪的行没必要跟着一起锁住——否则用户只能干等。
+     */
+    val selectionLocked get() = submitting || duplicateCount > 0
 }
 
 class BatchImportViewModel(
@@ -57,8 +67,17 @@ class BatchImportViewModel(
     }
     fun parseRemaining() {
         if (mutable.value.locked) return
-        val urls = mutable.value.rows.filter { it.status != ImportStatus.READY }.map { it.url }
-        if (urls.isEmpty()) return
+        parseLinks(mutable.value.rows.filter { it.status != ImportStatus.READY }.map { it.url })
+    }
+    /** 只重试一行：其它已就绪行的画质与勾选不受影响。 */
+    fun retry(url: String) {
+        if (mutable.value.locked) return
+        val row = mutable.value.rows.firstOrNull { it.url == url } ?: return
+        if (row.status == ImportStatus.READY) return
+        parseLinks(listOf(url))
+    }
+    private fun parseLinks(urls: List<String>) {
+        if (mutable.value.locked || urls.isEmpty()) return
         mutable.update { it.copy(parsing = true, notice = null) }
         parseJob = viewModelScope.launch {
             try {
@@ -92,8 +111,15 @@ class BatchImportViewModel(
         if (variant in (it.video.variants + it.video.audioVariants)) it.copy(choice = variant) else it
     }
     fun selectAll(value: Boolean) {
-        if (!mutable.value.locked) mutable.update { it.copy(rows = it.rows.map { row ->
+        if (!mutable.value.selectionLocked) mutable.update { it.copy(rows = it.rows.map { row ->
             row.copy(media = row.media.map { item -> item.copy(selected = value && item.choice != null) }) }) }
+    }
+    /** 行级勾选：只动这一行的媒体，用于「一行解析出多个视频」时一次选中。 */
+    fun selectRow(url: String, value: Boolean) {
+        if (mutable.value.selectionLocked) return
+        mutable.update { it.copy(rows = it.rows.map { row ->
+            if (row.url == url) row.copy(media = row.media.map { item -> item.copy(selected = value && item.choice != null) })
+            else row }) }
     }
     fun dismissDuplicates() { if (!mutable.value.submitting) mutable.update { it.copy(duplicateCount = 0) } }
     fun submit(downloadAgain: Boolean? = null) {
@@ -128,7 +154,7 @@ class BatchImportViewModel(
         mutable.update { it.copy(rows = it.rows.map { row -> if (row.url == url) transform(row) else row }) }
     }
     private fun editMedia(key: String, transform: (ImportMedia) -> ImportMedia) {
-        if (!mutable.value.locked) mutateMedia(key, transform)
+        if (!mutable.value.selectionLocked) mutateMedia(key, transform)
     }
     private fun mutateMedia(key: String, transform: (ImportMedia) -> ImportMedia) {
         mutable.update { it.copy(rows = it.rows.map { row -> row.copy(media = row.media.map { item ->

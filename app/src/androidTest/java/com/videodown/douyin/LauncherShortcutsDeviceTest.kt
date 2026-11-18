@@ -7,6 +7,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -147,7 +148,7 @@ class LauncherShortcutsDeviceTest {
         compose.waitUntil(15_000) { compose.onAllNodesWithText("批量链接导入").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("批量链接导入").assertIsDisplayed()
         // 收拾干净，别把弹窗留给下一条用例。
-        runCatching { compose.onNodeWithText("关闭").performClick() }
+        runCatching { compose.onNodeWithTag("batch-import-close").performClick() }
     }
 
     /**
@@ -213,7 +214,7 @@ class LauncherShortcutsDeviceTest {
             compose.waitUntil(15_000) { compose.onAllNodesWithText("批量链接导入").fetchSemanticsNodes().isNotEmpty() }
             compose.waitUntil(15_000) { compose.onAllNodesWithText("one-$slug", substring = true).fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("two-$slug", substring = true).assertIsDisplayed()
-            runCatching { compose.onNodeWithText("关闭").performClick() }
+            runCatching { compose.onNodeWithTag("batch-import-close").performClick() }
         }
     }
 }

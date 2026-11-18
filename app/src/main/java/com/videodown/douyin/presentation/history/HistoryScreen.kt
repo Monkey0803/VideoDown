@@ -7,6 +7,7 @@ import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppDialogRadioRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.MediaCover
 import com.videodown.douyin.presentation.components.AdaptivePage
 
 import androidx.activity.compose.BackHandler
@@ -14,8 +15,8 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import com.videodown.douyin.presentation.library.SelectionToolbar
-import com.videodown.douyin.presentation.library.BatchFailureDetails
+import com.videodown.douyin.presentation.components.EmptyState
+import com.videodown.douyin.presentation.components.SelectionToolbar
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -69,7 +70,6 @@ import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalFocusManager
@@ -80,7 +80,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.relativeTime
@@ -92,7 +91,6 @@ import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.R
 import com.videodown.douyin.domain.model.VaultPolicy
 import com.videodown.douyin.domain.model.DownloadStatus
-import java.io.File
 import com.videodown.douyin.domain.model.RecoveryAction
 import com.videodown.douyin.domain.model.failureActions
 import com.videodown.douyin.presentation.speedLimitText
@@ -312,30 +310,16 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
             BatchFailureDetails(state.batchResult)
             if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = 22.dp))
             if (state.visibleRecords.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
-                        Text(
-                            stringResource(if (state.records.isEmpty()) R.string.history_empty else R.string.history_empty_filtered),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        if (state.records.isEmpty()) {
-                            Text(stringResource(R.string.history_empty_hint), color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
-                            FilledTonalButton(onClick = onOpenParse, modifier = Modifier.padding(top = 16.dp)) {
-                                Text(stringResource(R.string.action_go_parse))
-                            }
-                        } else {
-                            FilledTonalButton(onClick = {
-                                viewModel.setFilter(HistoryFilter.ALL)
-                                queryChanged(TaskQuery())
-                            }, modifier = Modifier.padding(top = 16.dp)) {
-                                Text(stringResource(R.string.history_clear_query))
-                            }
-                        }
-                    }
-                }
+                EmptyState(
+                    title = stringResource(if (state.records.isEmpty()) R.string.history_empty else R.string.history_empty_filtered),
+                    body = if (state.records.isEmpty()) stringResource(R.string.history_empty_hint) else null,
+                    actionLabel = stringResource(if (state.records.isEmpty()) R.string.action_go_parse else R.string.history_clear_query),
+                    onAction = if (state.records.isEmpty()) {
+                        onOpenParse
+                    } else {
+                        ({ viewModel.setFilter(HistoryFilter.ALL); queryChanged(TaskQuery()) })
+                    },
+                )
             } else {
                 // 拖拽只对待下载任务开放：队列顺序对正在下载和已结束的任务没有意义。
                 val canReorder = state.taskQuery.sort == TaskSort.STATUS && state.taskQuery.text.isBlank() && !state.batchBusy
@@ -480,20 +464,12 @@ private fun TaskCard(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (selecting) Checkbox(checked = selected, onCheckedChange = { onToggle() }, enabled = !state.batchBusy,
                     modifier = Modifier.semantics { stateDescription = lockedTitle })
-                Box(
-                    modifier = Modifier.size(width = 84.dp, height = 52.dp).clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .testTag("task-cover-${record.id}"),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    AppIcon(AppIcons.Play, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    AsyncImage(
-                        model = record.coverUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
+                MediaCover(
+                    model = record.coverUrl,
+                    modifier = Modifier.size(width = 84.dp, height = 52.dp).testTag("task-cover-${record.id}"),
+                    shape = MaterialTheme.shapes.medium,
+                    placeholderIcon = AppIcons.Play,
+                )
                 Column(Modifier.weight(1f)) {
                     // The task list has no vault gate, so a private task never names itself here.
                     Text(lockedTitle, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,

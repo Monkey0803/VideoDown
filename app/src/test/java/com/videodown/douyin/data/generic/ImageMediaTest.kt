@@ -31,6 +31,17 @@ class ImageMediaTest {
         assertFalse(ImageMedia.isNoise(null, null, null))
     }
 
+    @Test fun `profile pictures and emoji paths are noise but real media is not`() {
+        assertTrue(ImageMedia.isNoiseUrl("https://pbs.twimg.com/profile_images/123/abc_400x400.jpg"))
+        assertTrue(ImageMedia.isNoiseUrl("https://cdn.example/avatar/u/42.png"))
+        assertTrue(ImageMedia.isNoiseUrl("https://i0.hdslb.com/bfs/face/abc.jpg"))
+        assertTrue(ImageMedia.isNoiseUrl("https://cdn.example/emoji/party.png"))
+        assertFalse(ImageMedia.isNoiseUrl("https://pbs.twimg.com/media/ABC123?format=jpg&name=large"))
+        assertFalse(ImageMedia.isNoiseUrl("https://cdn.example/large/photo.jpg"))
+        // 查询参数里出现 avatar 不算路径命中。
+        assertFalse(ImageMedia.isNoiseUrl("https://cdn.example/download?avatar=1"))
+    }
+
     @Test fun `entry carries a stable identity and a direct image download`() {
         val entry = ImageMedia.entry(
             url = "https://wx1.sinaimg.cn/large/a.jpg",

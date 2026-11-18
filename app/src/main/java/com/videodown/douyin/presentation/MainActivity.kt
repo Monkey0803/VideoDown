@@ -16,8 +16,6 @@ import android.app.PictureInPictureParams
 import android.app.RemoteAction
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
-import android.content.ClipDescription
-import android.content.ClipboardManager
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.drawable.Icon as AndroidIcon
@@ -100,6 +98,7 @@ import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.DownloadResultInbox
 import java.io.File
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.core.readClipboardText
 import com.videodown.douyin.core.ThemeMode
 import com.videodown.douyin.presentation.theme.NavigationRailBreakpoint
 
@@ -285,10 +284,7 @@ class MainActivity : ComponentActivity() {
      * 与被动提示的区别：用户按快捷键就是确认，所以普通网页链接也接受；被动检测器仍只认已知平台。
      */
     private fun copiedClipboardText(): String? {
-        val clipboard = getSystemService(ClipboardManager::class.java) ?: return null
-        if (!clipboard.hasPrimaryClip()) return null
-        if (clipboard.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) != true) return null
-        val text = clipboard.primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()?.trim() ?: return null
+        val text = readClipboardText(this, plainTextOnly = true)?.trim() ?: return null
         // 只要里面有 http(s) 链接就交给解析，**普通网页也算**：用户按下这个快捷方式就是明确要求解析它。
         // 被动提示仍旧只认已知平台（ClipboardLinkPolicy），避免拿浏览器地址乱弹窗；
         // 此前两条路径共用同一策略，普通链接被静默丢掉——真机上表现为"页面对了但输入框是空的"。

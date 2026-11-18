@@ -239,7 +239,6 @@
     <!-- Home screen -->
     <string name="action_paste">粘贴</string>
     <string name="action_select_all">全选</string>
-    <string name="action_deselect_all">取消全选</string>
     <string name="action_back">返回</string>
     <string name="action_ignore">忽略</string>
     <string name="action_parse">解析</string>
@@ -492,17 +491,27 @@
 
     <!-- Batch import and browser assist -->
     <string name="import_title">批量链接导入</string>
-    <string name="import_hint">一次最多 %1$d 个网址；相同网址自动合并，每个视频可独立选择画质。</string>
+    <string name="import_hint">一次最多 %1$d 个网址；相同网址自动合并，每个条目可独立选择画质。</string>
     <string name="import_input_label">粘贴多条分享文案或网址</string>
+    <string name="import_links_detected">已识别 %1$d 条链接</string>
     <string name="import_parse">开始批量解析</string>
     <string name="import_stop">停止解析</string>
-    <string name="import_retry">重试未完成链接</string>
-    <string name="import_progress">解析完成 %1$d/%2$d · 已选择 %3$d 项</string>
-    <string name="import_select_all">全选视频</string>
+    <string name="import_retry">继续解析（%1$d）</string>
+    <string name="import_summary">已解析 %1$d/%2$d · 已选 %3$d/%4$d</string>
+    <string name="import_summary_parsing">正在解析 %1$d/%2$d · 已选 %3$d/%4$d</string>
+    <string name="import_summary_links">%1$d 条链接</string>
+    <string name="import_edit_links">编辑链接</string>
+    <string name="import_collapse_input">收起</string>
+    <string name="import_reparse">重新解析</string>
+    <string name="import_reparse_title">重新解析会清空当前选择</string>
+    <string name="import_reparse_body">已解析的结果和勾选会被替换，确定继续吗？</string>
     <string name="import_row_pending">等待解析</string>
     <string name="import_row_parsing">正在解析…</string>
     <string name="import_row_ready">找到 %1$d 个视频</string>
+    <string name="import_row_ready_images">找到 %1$d 张图片</string>
+    <string name="import_row_retry">重试</string>
     <string name="import_row_failed">解析失败</string>
+    <string name="import_clear_input">清空输入</string>
     <string name="import_download_selected">下载所选</string>
     <string name="import_duplicate_title">发现 %1$d 个重复任务</string>
     <string name="import_duplicate_body">可跳过已有任务，或明确再次下载。</string>
@@ -519,8 +528,31 @@
     <string name="browser_cancelled">已取消解析</string>
     <string name="browser_cancel_parse">取消解析</string>
     <string name="browser_reparse_with_session">使用网页登录态重新解析</string>
-    <string name="browser_candidate">%1$s · %2$s · 选择画质</string>
     <string name="browser_initial_hint">可在网页中登录并播放视频，然后点击顶部的搜索图标查找视频。部分网站可能限制内置网页登录。</string>
+    <string name="browser_loading_page">正在加载网页…</string>
+    <string name="browser_scanning">正在查找本页的媒体…</string>
+    <string name="browser_found">已找到可下载的媒体</string>
+    <string name="browser_videos_count">视频 %1$d</string>
+    <string name="browser_images_count">图片 %1$d</string>
+    <string name="browser_section_videos">视频</string>
+    <string name="browser_section_images">图片</string>
+    <string name="browser_image_label">图片</string>
+    <string name="browser_image_dimensions">%1$d × %2$d</string>
+    <string name="browser_image_meta">%1$s · %2$s</string>
+    <string name="browser_video_row">%1$s · %2$s</string>
+    <string name="browser_video_hint">选择画质</string>
+    <string name="browser_download_candidate">下载</string>
+    <string name="browser_choose_format">选择格式</string>
+    <string name="browser_expand_panel">展开媒体列表</string>
+    <string name="browser_collapse_panel">收起媒体列表</string>
+    <string name="browser_note">说明</string>
+    <string name="browser_note_title">为什么有时找不到</string>
+    <string name="browser_note_tips">若内容被网页自己的「打开 App」弹窗挡住，可开启「桌面版网页」或「隐藏 App 推广弹窗」。</string>
+    <string name="browser_more">更多</string>
+    <string name="browser_desktop_site">桌面版网页</string>
+    <string name="browser_open_external">在浏览器中打开</string>
+    <string name="browser_open_external_failed">没有可打开该链接的浏览器</string>
+    <string name="browser_hide_prompts">隐藏 App 推广弹窗</string>
 
     <!-- Failure guidance -->
     <string name="failure_network_title">网络连接失败</string>
@@ -1027,7 +1059,6 @@
     <string name="viewer_exif_title">EXIF / XMP</string>
     <string name="viewer_exif_loading">正在读取图片信息…</string>
     <string name="viewer_exif_empty">无 EXIF 信息</string>
-    <string name="browser_candidate_image">图片 · %1$s</string>
     <string name="download_not_an_image">下载到的文件不是有效图片</string>
     <string name="download_invalid_archive">压缩包不完整或已损坏</string>
     <string name="archive_saved_downloads">已存入 下载/拾影</string>

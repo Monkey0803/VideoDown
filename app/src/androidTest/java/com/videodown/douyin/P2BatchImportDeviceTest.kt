@@ -1,10 +1,18 @@
 package com.videodown.douyin
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.res.Configuration
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.unit.Density
 import androidx.lifecycle.ViewModelStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.core.*
 import com.videodown.douyin.domain.model.*
 import com.videodown.douyin.domain.repository.*
@@ -27,10 +35,14 @@ class P2BatchImportDeviceTest {
     private val calls = CopyOnWriteArrayList<String>()
     private var duplicate = false
     private var failing = false
+    private var allowBad = false
     private lateinit var model: BatchImportViewModel
     private lateinit var repository: VideoRepository
     private val low = VideoVariant("https://cdn.test/low.mp4", "360P")
     private val high = VideoVariant("https://cdn.test/high.mp4", "1080P")
+    private val image = VideoVariant("https://cdn.test/image.jpg", "原图", kind = MediaKind.IMAGE)
+    private val clipboard get() = InstrumentationRegistry.getInstrumentation().targetContext
+        .getSystemService(ClipboardManager::class.java)
     private val downloader = object : Downloader {
         override val progress = MutableStateFlow<Map<String, DownloadProgress>>(emptyMap())
         override suspend fun findDuplicate(video: DouyinVideo, variant: VideoVariant) =
@@ -55,23 +67,39 @@ class P2BatchImportDeviceTest {
                 return AppResult.Success(DouyinVideo(shareText.substringAfterLast('/'), "测试视频 " + shareText.substringAfterLast('/'),
                     variants = listOf(low, high), platform = VideoPlatform.GENERIC))
             }
+            override suspend fun parseVideos(shareText: String): AppResult<ParsedVideos> {
+                calls += shareText
+                if (shareText.contains("bad") && !allowBad) return AppResult.Failure(AppError.Network("该链接网络失败"))
+                if (shareText.contains("album")) return AppResult.Success(ParsedVideos(listOf(
+                    DouyinVideo(shareText.substringAfterLast('/'), "图文作品 " + shareText.substringAfterLast('/'),
+                        variants = listOf(image), platform = VideoPlatform.GENERIC),
+                )))
+                return AppResult.Success(ParsedVideos(listOf(
+                    DouyinVideo(shareText.substringAfterLast('/'), "测试视频 " + shareText.substringAfterLast('/'),
+                        variants = listOf(low, high), platform = VideoPlatform.GENERIC),
+                )))
+            }
         }
         compose.runOnUiThread {
             model = BatchImportViewModel(repository, downloader, { it.variants.first() }); store.put("batch", model)
             compose.activity.setContent { VideoDownTheme { BatchImportDialog(model, {}, {}) } }
         }
     }
-    @After fun close() { compose.runOnUiThread { store.clear() } }
+    @After fun close() {
+        runCatching { clipboard.clearPrimaryClip() }
+        compose.runOnUiThread { store.clear() }
+    }
 
     /** 页脚两条判据一起过：按钮落在卡片内、卡片落在容器（底部内边距 = 键盘顶边）内。 */
-    private fun footerVisible(text: String = "关闭"): Boolean =
+    private fun footerVisible(text: String = "下载所选"): Boolean =
         compose.footerInsideCard(APP_DIALOG_CARD_TAG, text) &&
             compose.cardInsideScrim(APP_DIALOG_CARD_TAG, APP_DIALOG_SCRIM_TAG)
     private fun parse(input: String) {
-        compose.onNode(hasSetTextAction() and hasText("粘贴多条分享文案或网址")).performTextReplacement(input)
+        compose.onNodeWithTag("batch-import-input").performTextReplacement(input)
         compose.onNodeWithText("开始批量解析").performClick()
         compose.waitUntil(5000) { model.state.value.rows.isNotEmpty() && !model.state.value.parsing }
     }
+
     @Test fun pastedMultipleUrlsAreDeduplicatedAndQualitySelectionControlsQueue() {
         parse("分享 https://example.test/one https://example.test/bad https://example.test/one")
         assertEquals(2, calls.size)
@@ -92,7 +120,7 @@ class P2BatchImportDeviceTest {
         compose.onNodeWithText("跳过重复项").performClick()
         compose.waitUntil(5000) { !model.state.value.submitting && model.state.value.selectedCount == 0 }
         assertTrue(starts.isEmpty())
-        compose.onNodeWithText("全选视频").performClick(); compose.onNodeWithText("下载所选").performClick()
+        compose.onNodeWithText("全选").performClick(); compose.onNodeWithText("下载所选").performClick()
         compose.onNodeWithText("仍然全部下载").performClick()
         compose.waitUntil(5000) { starts.size == 1 }; assertEquals("one" to "360P", starts.first())
     }
@@ -112,13 +140,14 @@ class P2BatchImportDeviceTest {
         try {
             compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
             compose.waitUntil(5000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
-            // 输入法弹着时页脚也必须完整可见：焦点回到输入框，等键盘真的起来再断言。
-            compose.onNode(hasSetTextAction() and hasText("粘贴多条分享文案或网址")).performClick()
+            // 解析后输入区已收起；横屏下先「编辑链接」展开，再点输入框把键盘叫起来。
+            compose.onNodeWithText("编辑链接").performScrollTo().performClick()
+            compose.onNodeWithTag("batch-import-input").performScrollTo().performClick()
             compose.waitUntil(5000) { imeVisible(compose.activity) }
             // 键盘动画没走完时可用高度还在变，判据会短暂成立：等它稳定下来再断言。
             val settler = ImeSettler(compose.activity)
             compose.waitUntil(8000) { settler.settled() && footerVisible() }
-            assertTrue("「关闭」必须完整露在键盘之上，而不是被卡片挤扁或落在键盘背后", footerVisible())
+            assertTrue("「下载所选」必须完整露在键盘之上，而不是被卡片挤扁或落在键盘背后", footerVisible())
             androidx.test.espresso.Espresso.closeSoftKeyboard()
             compose.onNodeWithTag("batch-import-list").performScrollToNode(hasTestTag("import-https://example.test/one"))
             compose.onNodeWithText("1080P").assertIsDisplayed()
@@ -143,8 +172,76 @@ class P2BatchImportDeviceTest {
         }
         // 真实用户点「开始批量解析」时会 clearFocus 收起键盘；这里直接驱动 model，所以要显式收一下。
         androidx.test.espresso.Espresso.closeSoftKeyboard()
-        compose.onNodeWithText("关闭", substring = false).assertIsDisplayed()
+        compose.onNodeWithTag("batch-import-close").assertIsDisplayed()
         compose.onNodeWithText("下载所选").assertIsDisplayed().assertIsEnabled()
         assertEquals(50, model.state.value.selectedCount); assertTrue(starts.isEmpty())
+    }
+
+    /** 解析完成后输入区收起，只留一行摘要；「编辑链接」能把它展开，结果态不显示裸 URL。 */
+    @Test fun parsedRowsCollapseTheInputAndHideRawUrls() {
+        parse("https://example.test/one")
+        compose.onNodeWithTag("batch-import-input").assertDoesNotExist()
+        compose.onNodeWithText("1 条链接").assertIsDisplayed()
+        compose.onAllNodesWithText("https://example.test/one").assertCountEquals(0)
+        compose.onNodeWithText("编辑链接").performClick()
+        compose.onNodeWithTag("batch-import-input").assertIsDisplayed()
+        compose.onNodeWithText("收起").performClick()
+        compose.onNodeWithTag("batch-import-input").assertDoesNotExist()
+    }
+
+    /** 单条失败只重跑这一条，成功的行与已选画质都不受影响。 */
+    @Test fun failingRowRetryOnlyThatLink() {
+        parse("https://example.test/one https://example.test/bad")
+        compose.onNodeWithTag("batch-import-list").performScrollToNode(hasTestTag("import-https://example.test/bad"))
+        assertEquals(ImportStatus.FAILED, model.state.value.rows.last().status)
+        val before = calls.size
+        val chosen = model.state.value.rows.first().media.first().choice
+        allowBad = true
+        compose.onNodeWithText("重试").performClick()
+        compose.waitUntil(5000) { model.state.value.rows.last().status == ImportStatus.READY }
+        assertEquals(before + 1, calls.size)
+        assertEquals("https://example.test/bad", calls.last())
+        assertEquals(chosen, model.state.value.rows.first().media.first().choice)
+    }
+
+    /** 剪贴板为空时点「粘贴链接」必须给出提示，而不是静默无反应。 */
+    @Test fun pastingWithAnEmptyClipboardShowsAHint() {
+        compose.runOnUiThread { clipboard.clearPrimaryClip() }
+        compose.onNodeWithText("粘贴链接").performClick()
+        compose.waitUntil(5000) {
+            compose.onAllNodesWithText("剪贴板里没有可用的链接").fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    /** 再次粘贴是追加：上一批已识别的内容不能被吞掉。 */
+    @Test fun pastingAppendsToTheExistingInput() {
+        compose.onNodeWithTag("batch-import-input").performTextReplacement("https://example.test/one")
+        compose.runOnUiThread { clipboard.setPrimaryClip(ClipData.newPlainText("copied", "https://example.test/two")) }
+        compose.onNodeWithText("粘贴链接").performClick()
+        compose.waitUntil(5000) { model.state.value.input.contains("example.test/two") }
+        assertTrue("粘贴不能覆盖上一批链接", model.state.value.input.contains("example.test/one"))
+    }
+
+    /** 图文作品不能继续被说成「视频」。 */
+    @Test fun imagePostRowUsesImageWording() {
+        parse("https://example.test/album")
+        compose.onNodeWithText("找到 1 张图片").assertIsDisplayed()
+        compose.onAllNodesWithText("找到 1 个视频").assertCountEquals(0)
+    }
+
+    /** 200% 字体下页脚与关闭仍可达：行高可变，触控区不缩。 */
+    @Test fun dialogRemainsUsableAtTwoHundredPercentFont() {
+        val configuration = Configuration(compose.activity.resources.configuration).apply { fontScale = 2f }
+        compose.runOnUiThread {
+            compose.activity.setContent {
+                CompositionLocalProvider(
+                    LocalConfiguration provides configuration,
+                    LocalDensity provides Density(compose.activity.resources.displayMetrics.density, fontScale = 2f),
+                ) { VideoDownTheme { BatchImportDialog(model, {}, {}) } }
+            }
+        }
+        parse("https://example.test/one")
+        compose.onNodeWithTag("batch-import-close").assertIsDisplayed()
+        compose.onNodeWithText("下载所选").assertIsDisplayed()
     }
 }

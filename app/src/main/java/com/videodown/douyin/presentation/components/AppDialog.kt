@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
@@ -41,20 +42,42 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.videodown.douyin.R
 import com.videodown.douyin.presentation.theme.appMotion
 
-/** 弹窗高度上限占**可用高度**的比例；正文放得下就整段展示，放不下才滚动。 */
-private const val DEFAULT_MAX_HEIGHT_FRACTION = 0.86f
+/** 弹窗尺寸的唯一来源：卡片式与铺满式共用，避免各处再写 420/560/0.86/0.94。 */
+internal object AppDialogMetrics {
+    /** 卡片式弹窗高度上限占**可用高度**的比例；正文放得下就整段展示，放不下才滚动。 */
+    const val DEFAULT_MAX_HEIGHT_FRACTION = 0.86f
+    /** 铺满式弹窗在宽屏上的高度比例（与批量导入一致）。 */
+    const val FULL_SCREEN_MAX_HEIGHT_FRACTION = 0.94f
+    val MAX_WIDTH = 420.dp
+    val FULL_SCREEN_MAX_WIDTH = 560.dp
+}
+
+/** 所有弹窗窗口共用的属性：整屏容器自己处理 insets，点击外部由容器实现。 */
+private fun appDialogProperties() = DialogProperties(
+    usePlatformDefaultWidth = false,
+    // 官方推荐的组合：整屏弹窗自己处理 WindowInsets，否则 IME 进出时窗口只会被平移。
+    decorFitsSystemWindows = false,
+    // 容器铺满整屏，系统的「点在内容之外」判断恒为「在内部」，改由 AppDialogContainer 实现。
+    dismissOnClickOutside = false,
+)
 
 /** [AppDialogContainer] 里铺满整屏、负责「点击卡片外关闭」的那一层，供设备用例点击。 */
 internal const val APP_DIALOG_SCRIM_TAG = "app-dialog-scrim"
@@ -138,6 +161,54 @@ internal fun AppDialogContainer(
 internal fun Modifier.consumeTaps(): Modifier = pointerInput(Unit) { detectTapGestures { } }
 
 /**
+ * 卡片式弹窗窗口：Dialog + 全屏容器 + 卡片 Surface 三段收敛在这里。
+ *
+ * [cardModifier] 拿到扣掉系统栏与键盘后的可用高度，调用方据此决定高度上限/宽度/入场动画；
+ * 卡片外点击关闭、卡片内点击不穿透、测试 tag 都由这里统一处理，调用方不再重复。
+ */
+@Composable
+internal fun AppDialogWindow(
+    onDismissRequest: () -> Unit,
+    shape: Shape,
+    color: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    border: BorderStroke? = null,
+    cardModifier: (availableHeightPx: Int) -> Modifier,
+    content: @Composable (availableHeightPx: Int) -> Unit,
+) {
+    Dialog(onDismissRequest = onDismissRequest, properties = appDialogProperties()) {
+        AppDialogContainer(onDismissRequest) { availableHeightPx ->
+            Surface(
+                modifier = cardModifier(availableHeightPx).consumeTaps().testTag(APP_DIALOG_CARD_TAG),
+                shape = shape,
+                color = color,
+                border = border,
+            ) {
+                content(availableHeightPx)
+            }
+        }
+    }
+}
+
+/**
+ * 铺满式弹窗窗口：没有卡片、没有遮罩，内容自己负责系统栏/键盘内边距。
+ *
+ * 只用于「整页流程」的弹窗（浏览器辅助、X 登录）：它们自带 BackHandler 与 WebView，
+ * 与卡片式弹窗不是同一种布局模型，但窗口属性必须一致。
+ */
+@Composable
+internal fun AppFullScreenDialog(
+    onDismissRequest: () -> Unit,
+    surfaceColor: Color = MaterialTheme.colorScheme.surface,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Dialog(onDismissRequest = onDismissRequest, properties = appDialogProperties()) {
+        Surface(Modifier.fillMaxSize(), color = surfaceColor) {
+            Box(Modifier.fillMaxSize(), content = content)
+        }
+    }
+}
+
+/**
  * 全应用统一的卡片式弹窗骨架。
  *
  * 头部是 `primaryContainer` 图标块 + 标题（可选副标题），正文可滚动，动作行固定在底部——
@@ -157,75 +228,63 @@ internal fun AppDialog(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
-    maxHeightFraction: Float = DEFAULT_MAX_HEIGHT_FRACTION,
+    maxHeightFraction: Float = AppDialogMetrics.DEFAULT_MAX_HEIGHT_FRACTION,
     actions: @Composable ColumnScope.() -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val density = LocalDensity.current
     val motion = appMotion()
-    Dialog(
+    // 只做入场：出场时弹窗窗口已被关闭，再挂动画只会让关闭显得迟滞。
+    var entered by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { entered = true }
+    val entrance by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec = motion.normal(),
+        label = "app-dialog-entrance",
+    )
+    AppDialogWindow(
         onDismissRequest = onDismissRequest,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            // 官方推荐的组合：整屏弹窗自己处理 WindowInsets，否则 IME 进出时窗口只会被平移。
-            decorFitsSystemWindows = false,
-            // 容器铺满整屏，系统的「点在内容之外」判断恒为「在内部」，改由 AppDialogContainer 实现。
-            dismissOnClickOutside = false,
-        ),
-    ) {
-        // 只做入场：出场时弹窗窗口已被关闭，再挂动画只会让关闭显得迟滞。
-        var entered by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) { entered = true }
-        val entrance by animateFloatAsState(
-            targetValue = if (entered) 1f else 0f,
-            animationSpec = motion.normal(),
-            label = "app-dialog-entrance",
-        )
-        AppDialogContainer(onDismissRequest) { availableHeightPx ->
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        cardModifier = { availableHeightPx ->
             val maxHeight = with(density) { appDialogMaxHeightPx(availableHeightPx, maxHeightFraction).toDp() }
-            val scrollWholeCard = appDialogScrollsWholeCard(
-                availableHeightPx,
-                with(density) { APP_DIALOG_MIN_FIXED_HEIGHT.roundToPx() },
-            )
-            Surface(
-                modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp).widthIn(max = 420.dp)
-                    .heightIn(max = maxHeight)
-                    .consumeTaps()
-                    .testTag(APP_DIALOG_CARD_TAG)
-                    // 只动透明度与缩放：位移会让依赖坐标的断言在动画中途读到中间值。
-                    .graphicsLayer {
-                        alpha = 0.35f + 0.65f * entrance
-                        val scale = 0.94f + 0.06f * entrance
-                        scaleX = scale
-                        scaleY = scale
-                    },
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            ) {
-                Column {
-                    if (scrollWholeCard) {
-                        // 可用高度连头部加动作行都放不下（横屏 + 键盘）：两块一起进滚动区，
-                        // 滚一下就能点到按钮，而不是让页脚被卡片裁掉。
-                        Column(Modifier.verticalScroll(rememberScrollState())) {
-                            AppDialogHeader(icon, title, subtitle)
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            AppDialogContent(content)
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            AppDialogActions(actions)
-                        }
-                    } else {
-                        AppDialogHeader(icon, title, subtitle)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        AppDialogContent(
-                            // fill = false：内容放得下就整段展示，放不下才把弹窗高度封顶并滚动。
-                            content = content,
-                            modifier = Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
-                        )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        AppDialogActions(actions)
-                    }
+            modifier.fillMaxWidth().padding(horizontal = 20.dp).widthIn(max = AppDialogMetrics.MAX_WIDTH)
+                .heightIn(max = maxHeight)
+                // 只动透明度与缩放：位移会让依赖坐标的断言在动画中途读到中间值。
+                .graphicsLayer {
+                    alpha = 0.35f + 0.65f * entrance
+                    val scale = 0.94f + 0.06f * entrance
+                    scaleX = scale
+                    scaleY = scale
                 }
+        },
+    ) { availableHeightPx ->
+        val scrollWholeCard = appDialogScrollsWholeCard(
+            availableHeightPx,
+            with(density) { APP_DIALOG_MIN_FIXED_HEIGHT.roundToPx() },
+        )
+        Column {
+            if (scrollWholeCard) {
+                // 可用高度连头部加动作行都放不下（横屏 + 键盘）：两块一起进滚动区，
+                // 滚一下就能点到按钮，而不是让页脚被卡片裁掉。
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    AppDialogHeader(icon, title, subtitle)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    AppDialogContent(content)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    AppDialogActions(actions)
+                }
+            } else {
+                AppDialogHeader(icon, title, subtitle)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                AppDialogContent(
+                    // fill = false：内容放得下就整段展示，放不下才把弹窗高度封顶并滚动。
+                    content = content,
+                    modifier = Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                AppDialogActions(actions)
             }
         }
     }
@@ -251,11 +310,25 @@ private fun AppDialogActions(actions: @Composable ColumnScope.() -> Unit) {
     )
 }
 
-/** 标题区：图标块 + 名称（+ 一句话说明）。 */
+/**
+ * 标题区：图标块 + 名称（+ 一句话说明）。
+ *
+ * [onClose] 只给需要自带关闭按钮的弹窗（批量导入这类接近整屏的流程）；普通确认框仍靠动作行。
+ * 关闭按钮放在标题行里，是因为整屏弹窗的页脚要留给推进型操作，不该再分一枚「关闭」，
+ * 否则「关闭」会和「下载所选」同权重。
+ */
 @Composable
-private fun AppDialogHeader(icon: AppIcons, title: String, subtitle: String?) {
+internal fun AppDialogHeader(
+    icon: AppIcons,
+    title: String,
+    subtitle: String?,
+    modifier: Modifier = Modifier,
+    onClose: (() -> Unit)? = null,
+    closeEnabled: Boolean = true,
+    closeModifier: Modifier = Modifier,
+) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 14.dp),
+        modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
@@ -268,9 +341,15 @@ private fun AppDialogHeader(icon: AppIcons, title: String, subtitle: String?) {
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(title, style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.semantics { heading() })
             subtitle?.let {
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        if (onClose != null) {
+            IconButton(onClick = onClose, enabled = closeEnabled, modifier = closeModifier) {
+                AppIcon(AppIcons.Close, stringResource(R.string.action_close), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

@@ -29,8 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,13 +36,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
 import com.videodown.douyin.R
 import com.videodown.douyin.domain.model.SiteSource
 import com.videodown.douyin.domain.model.SiteWatchRecord
 import com.videodown.douyin.domain.model.isGenericSiteMediaTitle
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.MediaCover
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,21 +127,12 @@ private fun WatchRecordCard(record: SiteWatchRecord, onClick: () -> Unit, onDele
                 Modifier.fillMaxWidth().padding(start = 10.dp, end = 4.dp, top = 10.dp, bottom = if (progress > 0f) 14.dp else 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(
-                    Modifier.size(width = 112.dp, height = 68.dp)
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .testTag("site-watch-cover-${record.id}"),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    AppIcon(AppIcons.Play, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    AsyncImage(
-                        model = record.coverUrl,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
+                MediaCover(
+                    model = record.coverUrl,
+                    modifier = Modifier.size(width = 112.dp, height = 68.dp).testTag("site-watch-cover-${record.id}"),
+                    shape = MaterialTheme.shapes.medium,
+                    placeholderIcon = AppIcons.Play,
+                )
                 Column(Modifier.padding(horizontal = 12.dp).weight(1f), verticalArrangement = Arrangement.Center) {
                     Text(
                         displayTitle,

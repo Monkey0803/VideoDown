@@ -4,12 +4,14 @@ import com.videodown.douyin.presentation.components.TabPageHeader
 import com.videodown.douyin.presentation.components.AppDialog
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppPrimaryButton
+import com.videodown.douyin.presentation.components.InlineNotice
+import com.videodown.douyin.presentation.components.NoticeTone
+import com.videodown.douyin.presentation.components.MediaCover
+import com.videodown.douyin.presentation.components.SelectAllToggle
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.AdaptivePage
 
-import android.content.ClipDescription
-import android.content.ClipboardManager
-import android.content.Context
 import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
@@ -62,12 +64,10 @@ import com.videodown.douyin.presentation.failureDescription
 import com.videodown.douyin.presentation.failureTitle
 import com.videodown.douyin.presentation.recoveryActionLabel
 import com.videodown.douyin.domain.model.selectionKey
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -93,6 +93,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -131,6 +132,7 @@ import com.videodown.douyin.presentation.theme.rememberEntranceAlpha
 import com.videodown.douyin.core.watchBadge
 import com.videodown.douyin.core.formatBytes
 import com.videodown.douyin.core.formatDuration
+import com.videodown.douyin.core.readClipboardText
 import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.MediaKind
@@ -291,13 +293,8 @@ fun HomeScreen(
         keyboard?.hide()
     }
 
-    fun clipboardText(): String? {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-        return clipboard?.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()?.takeIf(String::isNotBlank)
-    }
-
     fun pasteAndParse() {
-        val copied = clipboardText()
+        val copied = readClipboardText(context)
         if (copied == null) {
             scope.launch { snackbar.showSnackbar(resources.getString(R.string.home_clipboard_empty)) }
             return
@@ -325,10 +322,7 @@ fun HomeScreen(
     val rootView = LocalView.current
     fun offerCopiedLink() {
         if (!clipboardDetect) return
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
-        if (!clipboard.hasPrimaryClip()) return
-        if (clipboard.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) != true) return
-        val copied = clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString() ?: return
+        val copied = readClipboardText(context, plainTextOnly = true) ?: return
         viewModel.offerClipboardText(copied)
     }
     DisposableEffect(rootView, clipboardDetect) {
@@ -429,13 +423,13 @@ fun HomeScreen(
                                     ),
                                 )
                                 TextButton(modifier = Modifier.padding(end = 4.dp), onClick = {
-                                    clipboardText()?.let {
+                                    readClipboardText(context)?.let {
                                             viewModel.onInputChange(it)
                                             dismissKeyboard()
                                         }
                                 }) { Text(stringResource(R.string.action_paste), color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelMedium) }
                             }
-                            PrimaryButton(
+                            AppPrimaryButton(
                                 text = stringResource(if (state.isParsing) R.string.home_parsing else R.string.home_parse_now),
                                 onClick = { dismissKeyboard(); viewModel.parse() },
                                 enabled = state.canParse,
@@ -508,11 +502,13 @@ fun HomeScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 25.dp)) {
                         completed.forEach { record ->
                             val watch = watchBadge(record, watchProgress)
-                            Box(
+                            MediaCover(
+                                model = record.coverUrl,
                                 modifier = Modifier.weight(1f).height(150.dp).clip(MaterialTheme.shapes.large)
                                     .clickable { dismissKeyboard(); onPlayDownloaded(record.id) },
+                                shape = RectangleShape,
+                                backgroundColor = Color.Transparent,
                             ) {
-                                AsyncImage(record.coverUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                                 Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = .68f)))))
                                 Column(Modifier.align(Alignment.BottomStart).padding(12.dp)) {
                                     Text(record.title, color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall,
@@ -705,9 +701,14 @@ private fun ResultScreen(
         Column(Modifier.fillMaxWidth().heightIn(max = (screenHeight * .8f).dp).padding(horizontal = 16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.home_select_videos, state.videos.size), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                TextButton(onClick = onSelectAllMedia, enabled = selectableKeys.isNotEmpty() && !state.isSubmitting && state.duplicates == null) {
-                    Text(stringResource(if (allSelected) R.string.action_deselect_all else R.string.action_select_all))
-                }
+                SelectAllToggle(
+                    label = stringResource(R.string.action_select_all),
+                    summary = null,
+                    allSelected = allSelected,
+                    indeterminate = state.selectedMedia.isNotEmpty() && !allSelected,
+                    enabled = selectableKeys.isNotEmpty() && !state.isSubmitting && state.duplicates == null,
+                    onToggle = { onSelectAllMedia() },
+                )
             }
             Text(stringResource(R.string.home_selected_hint, state.selectedMedia.size), style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 12.dp))
@@ -722,8 +723,11 @@ private fun ResultScreen(
                     Card(onClick = { onSelectVideo(index); showingVideos = false }, enabled = !state.isSubmitting && state.duplicates == null,
                         modifier = Modifier.fillMaxWidth().semantics { contentDescription = previewLabel; selected = current },
                         border = BorderStroke(if (current) 2.dp else 1.dp, if (current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)) {
-                        Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f).background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
-                            AsyncImage(item.coverUrl, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        MediaCover(
+                            model = item.coverUrl,
+                            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                            shape = RectangleShape,
+                        ) {
                             Checkbox(checked = item.selectionKey() in state.selectedMedia,
                                 enabled = !state.isSubmitting && state.duplicates == null && state.variantChoices[item.selectionKey()] != null,
                                 onCheckedChange = { onToggleMedia(item.selectionKey()) },
@@ -768,9 +772,12 @@ private fun ResultScreen(
             }
         }
         Column(Modifier.weight(1f).verticalScroll(resultScroll)) {
-            Box(Modifier.fillMaxWidth().padding(horizontal = 22.dp).height((screenHeight * .28f).coerceIn(140f, 260f).dp).clip(MaterialTheme.shapes.extraLarge)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
-                AsyncImage(video.coverUrl, stringResource(R.string.home_video_cover), Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            MediaCover(
+                model = video.coverUrl,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp).height((screenHeight * .28f).coerceIn(140f, 260f).dp),
+                shape = MaterialTheme.shapes.extraLarge,
+                contentDescription = stringResource(R.string.home_video_cover),
+            ) {
                 Box(Modifier.align(Alignment.TopStart).padding(16.dp).clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = .95f)).padding(horizontal = 10.dp, vertical = 6.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -931,7 +938,7 @@ private fun ResultScreen(
                 Text(stringResource(R.string.home_download_archive, state.archiveTargets.size))
             }
         }
-        PrimaryButton(
+        AppPrimaryButton(
             text = when {
                 state.isSubmitting -> stringResource(R.string.home_submitting)
                 batchSelected -> stringResource(R.string.home_save_selected, state.selectedMedia.size)
@@ -961,27 +968,6 @@ private fun ResultScreen(
     }
 }
 
-@Composable
-private fun PrimaryButton(
-    text: String,
-    onClick: () -> Unit,
-    enabled: Boolean,
-    modifier: Modifier = Modifier,
-    loading: Boolean = false,
-) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier.fillMaxWidth().height(56.dp),
-    ) {
-        if (loading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
-        else {
-            Text(text, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.width(8.dp))
-            AppIcon(AppIcons.Forward, null, modifier = Modifier.size(18.dp))
-        }
-    }
-}
 
 /**
  * Offers a link found on the clipboard.
@@ -991,31 +977,26 @@ private fun PrimaryButton(
  */
 @Composable
 private fun ClipboardOfferBanner(platformLabel: String?, onParse: () -> Unit, onDismiss: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(top = 13.dp).testTag("clipboard-offer"),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Column(Modifier.padding(horizontal = 14.dp, vertical = 11.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AppIcon(AppIcons.Link, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                Text(
-                    text = if (platformLabel.isNullOrBlank()) stringResource(R.string.home_clipboard_detected)
-                        else stringResource(R.string.home_clipboard_detected_platform, platformLabel),
-                    style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
+    InlineNotice(
+        title = if (platformLabel.isNullOrBlank()) {
+            stringResource(R.string.home_clipboard_detected)
+        } else {
+            stringResource(R.string.home_clipboard_detected_platform, platformLabel)
+        },
+        message = stringResource(R.string.home_clipboard_hint),
+        modifier = Modifier.padding(top = 13.dp).testTag("clipboard-offer"),
+        icon = AppIcons.Link,
+        tone = NoticeTone.INFO,
+        actions = {
+            Spacer(Modifier.weight(1f))
+            TextButton(onClick = onDismiss, modifier = Modifier.testTag("clipboard-offer-dismiss")) {
+                Text(stringResource(R.string.action_ignore))
             }
-            Row(Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.home_clipboard_hint),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.weight(1f))
-                TextButton(onClick = onDismiss, modifier = Modifier.testTag("clipboard-offer-dismiss")) { Text(stringResource(R.string.action_ignore)) }
-                TextButton(onClick = onParse, modifier = Modifier.testTag("clipboard-offer-parse")) { Text(stringResource(R.string.action_parse)) }
+            TextButton(onClick = onParse, modifier = Modifier.testTag("clipboard-offer-parse")) {
+                Text(stringResource(R.string.action_parse))
             }
-        }
-    }
+        },
+    )
 }
 
 /** The wording for a neutral outcome. */

@@ -333,4 +333,6 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 
 > 通知相关设备用例需要系统已允许应用通知；`-Pandroid.testInstrumentationRunnerArguments.class` 一次只接受一个类。
 
+2026-11-18 起还具备：**应用内网页面板重做** —— 底部面板默认收起、扫到候选自动展开一次，可随时收起；同一媒体的多个格式/尺寸地址聚合为一行（缩略图、尺寸、大小、行内切换格式），视频按完整地址单列；页面级「重新解析」对已知平台直接走原生解析器（复用本机网页登录态），普通网页才用带 `Referer`/`User-Agent` 的网页会话引擎，原生失败且非「需要登录」时回退一次；网页自己的「打开 App」推广弹窗按已知文案隐藏，另有「桌面版网页」「在浏览器中打开」出口。证据见 [网页面板验证](validation/browser-assist-2026-11-18.md)。
+
 2026-11-16 起还具备：**图片、图文与打包下载** —— 图片直链、抖音图文、微博多图、X 多图、快手图集与网页抓图；看图器用 ZoomImage 缩放/子采样，并支持循环幻灯片、日期网格定位、EXIF/XMP 与 GPS 明细；「打包下载」一次任务产出一个 ZIP（暂停续传、条目校验、写入 `Download/拾影`）。证据见 [图片下载验证](validation/image-download-2026-11-16.md) 与 [图片浏览增强验证](validation/image-viewer-enhancements-2026-11-16.md)。

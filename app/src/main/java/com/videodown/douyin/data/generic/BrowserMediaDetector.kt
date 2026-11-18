@@ -47,7 +47,7 @@ class BrowserMediaDetector(private val client: OkHttpClient, private val session
                     val size = response.header("Content-Range")?.substringAfterLast('/')?.toLongOrNull()
                         ?: if (response.code == 200) response.header("Content-Length")?.toLongOrNull() else null
                     val dimensions = MediaSignature.imageSize(bytes)
-                    if (ImageMedia.isNoise(dimensions?.width, dimensions?.height, size)) return@use null
+                    if (ImageMedia.isNoiseUrl(safeUrl) || ImageMedia.isNoise(dimensions?.width, dimensions?.height, size)) return@use null
                     return@use Candidate(safeUrl, IMAGE, page, userAgent, imageExtension,
                         dimensions?.width, dimensions?.height, size)
                 }

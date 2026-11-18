@@ -130,7 +130,8 @@ class XLoginSessionDeviceTest {
             compose.onAllNodesWithText(context.getString(R.string.settings_x_login_row)).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithText(context.getString(R.string.settings_x_login_row)).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText(signedInLabel).assertExists()
+        // 账号页同时有 X 与哔哩哔哩两行，未登录文案会重复两次，必须限定在 X 行内。
+        compose.onNode(hasText(context.getString(R.string.settings_x_login_row)) and hasText(signedInLabel)).assertExists()
         compose.onNodeWithText(context.getString(R.string.settings_x_login_note)).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.settings_clear_session_scope)).performScrollTo().assertIsDisplayed()
     }

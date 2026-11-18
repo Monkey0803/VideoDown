@@ -39,6 +39,8 @@ import com.videodown.douyin.presentation.components.AppDialog
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
+import com.videodown.douyin.presentation.components.InlineNotice
+import com.videodown.douyin.presentation.components.NoticeTone
 import com.videodown.douyin.presentation.theme.appMotion
 
 /** Running-task entries shown individually; the rest collapse into a count. */
@@ -197,14 +199,11 @@ private fun StorageBusyRow() {
 @Composable
 private fun StorageNoticeCard(notice: StorageNotice) {
     val failed = notice is StorageNotice.InspectFailed || notice is StorageNotice.CleanIncomplete
-    val container = if (failed) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
-    val content = if (failed) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
-    Surface(modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium, color = container) {
-        Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            AppIcon(if (failed) AppIcons.Error else AppIcons.Success, null, modifier = Modifier.size(18.dp), tint = content)
-            Text(storageNoticeText(notice), style = MaterialTheme.typography.bodySmall, color = content)
-        }
-    }
+    InlineNotice(
+        message = storageNoticeText(notice),
+        icon = if (failed) AppIcons.Error else AppIcons.Success,
+        tone = if (failed) NoticeTone.ERROR else NoticeTone.INFO,
+    )
 }
 
 /** 说明临时文件的来源与释放空间的位置，刻意保持最轻的字重与颜色。 */

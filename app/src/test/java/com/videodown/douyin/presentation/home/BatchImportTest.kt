@@ -105,4 +105,56 @@ class BatchImportTest {
         // The state reports which notice applies; the dialog words it.
         assertEquals(ImportNotice.TooManyLinks, vm.state.value.notice)
     }
+    @Test fun `selectable count and tri state follow each media`() = runTest(dispatcher) {
+        vm.input("https://example.test/ok"); vm.prepareAndParse(); advanceUntilIdle()
+        assertEquals(2, vm.state.value.selectableCount); assertEquals(2, vm.state.value.selectedCount)
+        assertTrue(vm.state.value.allSelected)
+        val first = vm.state.value.rows.first().media.first().key
+        vm.select(first, false)
+        assertEquals(1, vm.state.value.selectedCount); assertFalse(vm.state.value.allSelected)
+        vm.selectAll(false)
+        assertEquals(0, vm.state.value.selectedCount); assertEquals(2, vm.state.value.selectableCount)
+        assertFalse(vm.state.value.allSelected)
+    }
+    @Test fun `selection stays editable while other links are parsing`() = runTest(dispatcher) {
+        suspended = true; vm.input("https://example.test/ok https://example.test/wait")
+        vm.prepareAndParse(); runCurrent()
+        assertTrue(vm.state.value.parsing)
+        val key = vm.state.value.rows.first().media.first().key
+        vm.choose(key, high); vm.select(key, false)
+        assertEquals(high, vm.state.value.rows.first().media.first().choice)
+        assertFalse(vm.state.value.rows.first().media.first().selected)
+        // 输入与再起一轮解析仍然被锁住，只有勾选/画质放开。
+        vm.input("changed")
+        assertEquals("https://example.test/ok https://example.test/wait", vm.state.value.input)
+        vm.stop(); advanceUntilIdle()
+    }
+    @Test fun `row selection only touches that links media`() = runTest(dispatcher) {
+        vm.input("https://example.test/ok"); vm.prepareAndParse(); advanceUntilIdle()
+        vm.selectRow("https://example.test/ok", false)
+        assertTrue(vm.state.value.rows.first().media.none { it.selected })
+        assertEquals(0, vm.state.value.selectedCount)
+        vm.selectRow("https://example.test/ok", true)
+        assertEquals(2, vm.state.value.selectedCount)
+        assertTrue(vm.state.value.allSelected)
+        // 不存在的 URL 不改变任何状态。
+        vm.selectRow("https://example.test/missing", false)
+        assertEquals(2, vm.state.value.selectedCount)
+    }
+    @Test fun `retry re-parses only the failed link and keeps ready choices`() = runTest(dispatcher) {
+        failParse = true
+        vm.input("https://example.test/ok https://example.test/bad"); vm.prepareAndParse(); advanceUntilIdle()
+        assertEquals(2, calls.size)
+        val key = vm.state.value.rows.first().media.first().key
+        vm.choose(key, high); vm.select(key, false)
+        failParse = false
+        vm.retry("https://example.test/bad"); advanceUntilIdle()
+        assertEquals(3, calls.size); assertEquals("https://example.test/bad", calls.last())
+        assertEquals(high, vm.state.value.rows.first().media.first().choice)
+        assertFalse(vm.state.value.rows.first().media.first().selected)
+        assertEquals(ImportStatus.READY, vm.state.value.rows.last().status)
+        // 已就绪的行不会被单条重试再次解析。
+        vm.retry("https://example.test/ok"); advanceUntilIdle()
+        assertEquals(3, calls.size)
+    }
 }

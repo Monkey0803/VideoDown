@@ -107,7 +107,8 @@ class ResultSelectionDeviceTest {
     @Test fun selectAllCanBeCancelledAndLandscapeSheetCanReachLastItem() {
         open()
         compose.onNodeWithText("全选", substring = false).performClick()
-        compose.onNodeWithText("取消全选").performClick()
+        // 全选改为三态勾选：再点一次同一个控件即取消全选。
+        compose.onNodeWithText("全选", substring = false).performClick()
         compose.runOnUiThread { compose.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
         compose.waitUntil(5000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
         preview(12)

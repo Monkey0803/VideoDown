@@ -31,6 +31,24 @@ internal object ImageMedia {
             ?: "jpg"
 
     /**
+     * 头像、资料横幅、表情这类页面装饰图：即使尺寸够大也不该列进「可下载的媒体」。
+     *
+     * 线上实测：X 的敏感内容门禁页把作者头像（400×400）加载了出来，面板于是把头像当成
+     * 「已找到可下载的媒体」。按 URL 路径段过滤只覆盖已知的装饰图目录，不猜更宽的范围——
+     * 误杀一张真实图片比漏掉一个头像更糟。
+     */
+    private val DECORATION_PATH = Regex(
+        """(?:^|/)(?:profile_images|profile_banners|avatars?|emoji|emojis|face)(?:/|$)""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    /** 只按路径判断，`?avatar=1` 之类的查询参数不算装饰图。 */
+    fun isNoiseUrl(url: String): Boolean {
+        val path = url.toHttpUrlOrNull()?.encodedPath ?: url.substringBefore('?')
+        return DECORATION_PATH.containsMatchIn(path)
+    }
+
+    /**
      * 网页候选是否值得展示。
      *
      * 宽高已知时按尺寸过滤；只知道大小时按字节数过滤（仍可能漏掉小图，但不会把 1×1 追踪像素

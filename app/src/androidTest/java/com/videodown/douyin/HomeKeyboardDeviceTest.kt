@@ -73,7 +73,8 @@ class HomeKeyboardDeviceTest {
         waitForKeyboard(false)
         compose.onNodeWithText("我的").performClick()
         waitForKeyboard(false)
-        compose.onNodeWithText("下载偏好").assertIsDisplayed()
+        // 设置首页已按分类收敛，「下载偏好」是「下载与网络」分类内的子项；这里只需确认已到设置页。
+        compose.onNodeWithText("下载与网络").assertIsDisplayed()
         // NavigationBar merges and animates its label semantics while the IME closes.
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithText("解析", substring = false, useUnmergedTree = true)

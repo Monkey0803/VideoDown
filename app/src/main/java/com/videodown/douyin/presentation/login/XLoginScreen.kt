@@ -13,12 +13,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.videodown.douyin.R
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.data.generic.XSession
 import com.videodown.douyin.presentation.components.AppIcon
+import com.videodown.douyin.presentation.components.AppFullScreenDialog
 import com.videodown.douyin.presentation.components.AppIcons
 import kotlinx.coroutines.launch
 
@@ -63,9 +62,8 @@ fun XLoginScreen(
         runCatching { CookieManager.getInstance().flush() }
         browser?.apply { webViewClient = WebViewClient(); stopLoading(); loadUrl("about:blank"); clearHistory(); removeAllViews(); destroy() }
     } }
-    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+    AppFullScreenDialog(onDismissRequest = onClose) {
         BackHandler { onClose() }
-        Surface(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onClose) { AppIcon(AppIcons.Close, contentDescription = stringResource(R.string.action_close)) }
@@ -125,6 +123,5 @@ fun XLoginScreen(
                     }, modifier = Modifier.padding(bottom = 8.dp)) { Text(stringResource(R.string.action_done)) }
                 }
             }
-        }
     }
 }
