@@ -35,6 +35,14 @@ Online acceptance tests are opt-in and cost real bytes, so they never run by def
 Pass them as `-Pandroid.testInstrumentationRunnerArguments.<flag>=true` alongside
 `-Pandroid.testInstrumentationRunnerArguments.class=<class>`; exact invocations are in `README.md`.
 
+**设备验证只做覆盖安装，绝不卸载。** AGP 默认在 `connected*AndroidTest` 结束后卸载被测 APK，应用的
+WebView 登录态、设置与下载历史会随之清空。`gradle.properties` 里的
+`android.injected.androidTest.leaveApksInstalledAfterRun=true` 已经打开，`installDebug` 与
+`connected*AndroidTest` 都走覆盖升级（`firstInstallTime` 保持不变）。不要手动 `adb uninstall`、
+不要关闭该开关、不要用「先卸载再安装」规避签名/版本冲突——真出现冲突时先停下来问，而不是清数据。
+另外：`XLoginSessionDeviceTest`、`XPostRecoveryDeviceTest`、`BilibiliLoginDeviceTest` 等登录隔离用例
+会主动清空 WebView Cookie，跑完等于把本机网页登录态登出；在真机/日常模拟器上只按需运行，并先告知用户。
+
 ## Architecture hard rules
 
 - **`domain/` stays framework-free.** No `import android.*` / `androidx.*`, Compose or OkHttp under
