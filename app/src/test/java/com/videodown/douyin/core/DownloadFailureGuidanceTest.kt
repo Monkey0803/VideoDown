@@ -12,6 +12,9 @@ class DownloadFailureGuidanceTest {
         assertEquals(DownloadFailureKind.STORAGE_ACCESS, VideoEngineException("STORAGE_ACCESS").failureKind)
         assertEquals(RecoveryAction.STORAGE, failureActions(VideoEngineException("STORAGE_ACCESS").failureKind).primary)
         assertEquals(DownloadFailureKind.RUNTIME, VideoEngineException("RUNTIME").failureKind)
+        // 页面本身没有视频（图文帖）是独立分类：重试不会变出视频，但也不该谎称 DRM/直播。
+        assertEquals(DownloadFailureKind.NO_VIDEO, VideoEngineException("NO_MEDIA").failureKind)
+        assertEquals(RecoveryAction.NONE, failureActions(DownloadFailureKind.NO_VIDEO).primary)
         assertEquals(RecoveryAction.REPARSE, failureActions(VideoEngineException("CHANGED").failureKind).primary)
         assertEquals(RecoveryAction.NONE, failureActions(VideoEngineException("DRM").failureKind).primary)
         assertEquals(RecoveryAction.RETRY, failureActions(AppError.Network("no details", failureKind = DownloadFailureKind.NETWORK).downloadFailureKind()).primary)

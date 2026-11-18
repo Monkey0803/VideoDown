@@ -32,6 +32,7 @@ object DownloadRetryPolicy {
         DownloadFailureKind.STORAGE_FULL,
         DownloadFailureKind.STORAGE_ACCESS,
         DownloadFailureKind.UNSUPPORTED,
+        DownloadFailureKind.NO_VIDEO,
         DownloadFailureKind.NO_AUDIO,
         DownloadFailureKind.FORMAT_CHANGED,
         DownloadFailureKind.LOGIN_REQUIRED,

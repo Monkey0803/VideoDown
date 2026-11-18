@@ -23,6 +23,7 @@ internal fun failureTitleRes(kind: DownloadFailureKind): Int = when (kind) {
     DownloadFailureKind.FORMAT_CHANGED -> R.string.failure_format_title
     DownloadFailureKind.NO_AUDIO -> R.string.failure_no_audio_title
     DownloadFailureKind.UNSUPPORTED -> R.string.failure_unsupported_title
+    DownloadFailureKind.NO_VIDEO -> R.string.failure_no_video_title
     DownloadFailureKind.RATE_LIMITED -> R.string.failure_rate_title
     DownloadFailureKind.WIFI_REQUIRED -> R.string.failure_wifi_title
     DownloadFailureKind.BACKGROUND_SERVICE -> R.string.failure_background_title
@@ -40,6 +41,7 @@ internal fun failureDescriptionRes(kind: DownloadFailureKind): Int = when (kind)
     DownloadFailureKind.FORMAT_CHANGED -> R.string.failure_format_body
     DownloadFailureKind.NO_AUDIO -> R.string.failure_no_audio_body
     DownloadFailureKind.UNSUPPORTED -> R.string.failure_unsupported_body
+    DownloadFailureKind.NO_VIDEO -> R.string.failure_no_video_body
     DownloadFailureKind.RATE_LIMITED -> R.string.failure_rate_body
     DownloadFailureKind.WIFI_REQUIRED -> R.string.failure_wifi_body
     DownloadFailureKind.BACKGROUND_SERVICE -> R.string.failure_background_body

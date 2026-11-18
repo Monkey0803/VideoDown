@@ -35,6 +35,8 @@ class VideoEngineException(
 
     val failureKind: DownloadFailureKind get() = when (kind) {
         "NO_AUDIO" -> DownloadFailureKind.NO_AUDIO
+        // 页面本身没有视频（图文帖、动态页），与「引擎不认识这个站点」不是一回事。
+        "NO_MEDIA" -> DownloadFailureKind.NO_VIDEO
         "ACCESS" -> DownloadFailureKind.ACCESS_DENIED
         "EXPIRED" -> DownloadFailureKind.LINK_EXPIRED
         "RATE" -> DownloadFailureKind.RATE_LIMITED

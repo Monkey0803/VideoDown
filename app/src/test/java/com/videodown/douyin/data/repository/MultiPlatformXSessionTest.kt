@@ -2,6 +2,7 @@ package com.videodown.douyin.data.repository
 
 import com.videodown.douyin.core.AppError
 import com.videodown.douyin.core.AppResult
+import com.videodown.douyin.data.generic.SessionVideoParser
 import com.videodown.douyin.data.remote.StubHttpServer
 import com.videodown.douyin.data.remote.StubResponse
 import com.videodown.douyin.data.remote.XFixtures
@@ -14,6 +15,8 @@ import com.videodown.douyin.domain.model.VideoPlatform
 import com.videodown.douyin.domain.model.VideoVariant
 import com.videodown.douyin.domain.repository.VideoRepository
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -46,6 +49,7 @@ class MultiPlatformXSessionTest {
         calls: Calls,
         anonymous: suspend () -> AppResult<ParsedVideos>,
         session: (suspend (String) -> AppResult<ParsedVideos>?)?,
+        nativeSession: (suspend (String) -> AppResult<ParsedVideos>?)? = null,
         client: okhttp3.OkHttpClient = okhttp3.OkHttpClient(),
     ): MultiPlatformVideoRepository {
         val fallback = object : VideoRepository {
@@ -64,6 +68,13 @@ class MultiPlatformXSessionTest {
                 calls.order.add("session")
                 calls.sessionUrl = target
                 session?.invoke(target)
+            },
+            xNativeSession = nativeSession?.let { parser ->
+                SessionVideoParser { target ->
+                    calls.order.add("native-session")
+                    calls.sessionUrl = target
+                    parser(target)
+                }
             },
         )
     }
@@ -91,7 +102,8 @@ class MultiPlatformXSessionTest {
         val calls = Calls()
         nativeSuccess().use { server ->
             val repo = repository(server, calls, anonymous = { AppResult.Success(ParsedVideos(listOf(engineVideo()))) },
-                session = { error("session must not be used") })
+                session = { error("session must not be used") },
+                nativeSession = { error("native session must not be used") })
             val result = repo.parseVideos(url)
             assertTrue(result is AppResult.Success)
             assertEquals(listOf("anonymous"), calls.order)
@@ -215,4 +227,93 @@ class MultiPlatformXSessionTest {
             assertEquals(tweet, result.value.videos.single().shareUrl)
         }
     }
+
+    @Test fun `a restricted post asks the native session before any engine`() = runBlocking {
+        val calls = Calls()
+        nativeTombstone().use { server ->
+            val repo = repository(server, calls,
+                anonymous = { error("the engine must not run once the native session succeeded") },
+                session = { error("the engine session must not run either") },
+                nativeSession = { AppResult.Success(ParsedVideos(listOf(engineVideo("88888")))) })
+            val result = repo.parseVideos(url) as AppResult.Success
+            assertEquals(listOf("native-session"), calls.order)
+            assertEquals(url, calls.sessionUrl)
+            assertEquals("${XFixtures.ID}_88888", result.value.videos.single().awemeId)
+        }
+    }
+
+    @Test fun `a restricted post keeps the login reason when no session is stored`() = runBlocking {
+        val calls = Calls()
+        nativeTombstone().use { server ->
+            val repo = repository(server, calls,
+                anonymous = { AppResult.Failure(AppError.Parse("", DownloadFailureKind.UNSUPPORTED, reasonKey = "engine:unsupported")) },
+                session = { null })
+            val error = (repo.parseVideos(url) as AppResult.Failure).error as AppError.Parse
+            // 引擎只会说「不支持」；原生知道「需要登录」，登录入口据此出现。
+            assertEquals(XParseFailure.RESTRICTED.storageKey, error.reasonKey)
+            assertEquals(DownloadFailureKind.LOGIN_REQUIRED, error.failureKind)
+            assertEquals(listOf("session", "anonymous"), calls.order)
+        }
+    }
+
+    @Test fun `a no-video post reports the native reason instead of the engine's generic one`() = runBlocking {
+        val calls = Calls()
+        nativeNoMedia().use { server ->
+            val repo = repository(server, calls,
+                anonymous = { AppResult.Failure(AppError.Parse("", DownloadFailureKind.UNSUPPORTED, reasonKey = "engine:unsupported")) },
+                session = { null })
+            val error = (repo.parseVideos(url) as AppResult.Failure).error as AppError.Parse
+            assertEquals(XParseFailure.NO_VIDEO.storageKey, error.reasonKey)
+            assertEquals(DownloadFailureKind.NO_VIDEO, error.failureKind)
+        }
+    }
+
+    @Test fun `a rejected native session is reported as a login problem`() = runBlocking {
+        val calls = Calls()
+        nativeTombstone().use { server ->
+            val repo = repository(server, calls,
+                anonymous = { AppResult.Failure(AppError.Parse("", DownloadFailureKind.UNSUPPORTED, reasonKey = "engine:unsupported")) },
+                session = { null },
+                nativeSession = {
+                    AppResult.Failure(AppError.Parse("", DownloadFailureKind.LOGIN_REQUIRED,
+                        reasonKey = XParseFailure.LOGIN_REQUIRED.storageKey))
+                })
+            val error = (repo.parseVideos(url) as AppResult.Failure).error as AppError.Parse
+            // 有登录态仍被拒：文案要说「登录可能失效或账号看不到」，并指引重新登录。
+            assertEquals(XParseFailure.SESSION_AUTH_FAILED.storageKey, error.reasonKey)
+            assertEquals(DownloadFailureKind.LOGIN_REQUIRED, error.failureKind)
+        }
+    }
+
+    @Test fun `a signed-in post with no media keeps the no-video reason`() = runBlocking {
+        val calls = Calls()
+        nativeTombstone().use { server ->
+            val repo = repository(server, calls,
+                anonymous = { AppResult.Failure(AppError.Parse("", DownloadFailureKind.UNSUPPORTED, reasonKey = "engine:unsupported")) },
+                session = { null },
+                nativeSession = {
+                    AppResult.Failure(AppError.Parse("", DownloadFailureKind.NO_VIDEO,
+                        reasonKey = XParseFailure.NO_VIDEO.storageKey, platform = VideoPlatform.X))
+                })
+            val error = (repo.parseVideos(url) as AppResult.Failure).error as AppError.Parse
+            // 登录后已确认「没有视频」：不能又退回「需要登录」。
+            assertEquals(XParseFailure.NO_VIDEO.storageKey, error.reasonKey)
+            assertEquals(DownloadFailureKind.NO_VIDEO, error.failureKind)
+        }
+    }
+
+    private fun nativeTombstone() = StubHttpServer(emptyMap()) { path, _ -> when {
+        path == "/guest" -> StubResponse(body = """{"guest_token":"12345"}""")
+        else -> StubResponse(body = """{"data":{"tweetResult":{"result":{"__typename":"TweetTombstone"}}}}""")
+    } }
+
+    private fun nativeNoMedia() = StubHttpServer(emptyMap()) { path, _ -> when {
+        path == "/guest" -> StubResponse(body = """{"guest_token":"12345"}""")
+        // 原生先走 GraphQL（rest_id），拿不到媒体时再走嵌入页接口（id_str + mediaDetails）。
+        path.startsWith("/embed") -> StubResponse(body = """{"__typename":"Tweet","id_str":"${XFixtures.ID}","text":"momo seiko"}""")
+        else -> StubResponse(body = XFixtures.graphql(buildJsonObject {
+            put("__typename", "Tweet"); put("rest_id", XFixtures.ID)
+            put("legacy", buildJsonObject { put("id_str", XFixtures.ID); put("full_text", "momo seiko") })
+        }))
+    } }
 }

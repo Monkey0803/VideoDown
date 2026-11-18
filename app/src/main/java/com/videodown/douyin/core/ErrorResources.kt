@@ -10,6 +10,7 @@ import com.videodown.douyin.R
  */
 internal fun engineKindRes(kind: String): Int = when (kind) {
     "NO_AUDIO" -> R.string.engine_no_audio
+    "NO_MEDIA" -> R.string.engine_no_media
     "NO_VIDEO" -> R.string.engine_no_video_track
     "MISSING_TRACK" -> R.string.engine_missing_track
     "TRUNCATED" -> R.string.engine_truncated_media

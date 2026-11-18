@@ -2,6 +2,7 @@ package com.videodown.douyin.data.remote
 
 import com.videodown.douyin.core.TestText
 
+import com.videodown.douyin.domain.model.DownloadFailureKind
 import com.videodown.douyin.domain.model.VideoPlatform
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
@@ -84,6 +85,15 @@ class XVideoParserTest {
         assertTrue(result.value.videos.any { it.mediaLabel!!.startsWith("media_label_quoted_image(") })
         // 2 是照片位置，不是视频；指向非视频的序号不能被当成"第 2 个视频"静默选中。
         assertTrue(parser.graphql(XFixtures.graphql(tweet), link.copy(mediaIndex = 2)) is XParseResult.Failure)
+    }
+
+    @Test fun `typed failures carry the UI category`() {
+        // 「帖子里没有视频」与「需要登录」不是同一种失败：前者不能说成 DRM/直播，后者要给登录入口。
+        assertEquals(DownloadFailureKind.NO_VIDEO, XParseFailure.NO_VIDEO.failureKind)
+        assertEquals(DownloadFailureKind.LOGIN_REQUIRED, XParseFailure.LOGIN_REQUIRED.failureKind)
+        assertEquals(DownloadFailureKind.LOGIN_REQUIRED, XParseFailure.RESTRICTED.failureKind)
+        assertEquals(DownloadFailureKind.LOGIN_REQUIRED, XParseFailure.SESSION_AUTH_FAILED.failureKind)
+        assertNull(XParseFailure.UNAVAILABLE.failureKind)
     }
 
     @Test fun `protected deleted and login restricted posts are terminal failures`() {

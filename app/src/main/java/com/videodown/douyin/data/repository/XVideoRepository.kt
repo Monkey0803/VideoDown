@@ -3,6 +3,7 @@ package com.videodown.douyin.data.repository
 import com.videodown.douyin.core.*
 import com.videodown.douyin.data.remote.*
 import com.videodown.douyin.domain.model.ParsedVideos
+import com.videodown.douyin.domain.model.VideoPlatform
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.currentCoroutineContext
@@ -37,6 +38,57 @@ class XVideoRepository(private val http: XVideoHttpClient = XVideoHttpClient()) 
         AppResult.Failure(AppError.Network("", reasonKey = "x:network"))
     }
 
+    /**
+     * 用本机 WebView 的 X 登录态再取一次同一条推文。
+     *
+     * 返回 `null` 表示没有可用登录态（未登录、Cookie 不完整或不是推文地址），调用方应当照常走匿名路径。
+     * 敏感内容/年龄门禁的帖子在匿名接口里只会得到 `TweetTombstone`，只有带上 `auth_token` + `ct0`
+     * 才能拿到真实媒体（包括纯图片帖的原图）。
+     */
+    suspend fun parseWithSession(url: String): AppResult<ParsedVideos>? = try {
+        withTimeout(55_000) { parseSessionWithinTimeout(url) }
+    } catch (e: TimeoutCancellationException) {
+        currentCoroutineContext().ensureActive()
+        AppResult.Failure(AppError.Network("", reasonKey = "x:timeout"))
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: IOException) {
+        currentCoroutineContext().ensureActive()
+        AppResult.Failure(AppError.Network("", reasonKey = "x:network"))
+    }
+
+    private suspend fun parseSessionWithinTimeout(url: String): AppResult<ParsedVideos>? {
+        val resolved = if (url.toHttpUrlOrNull()?.host == "t.co") http.expandShortLink(url) else url
+        val link = XVideoLink.parse(resolved) ?: return null
+        val session = http.sessionCookieHeader() ?: return null
+        val parser = XVideoJsonParser()
+        val result = try {
+            val response = http.graphqlWithSession(link.postId, session)
+            if (response.status in 200..299) parser.graphql(response.body, link)
+            // 已登录请求被拒：Cookie 还在但服务端不认，和匿名「没登录」不是一件事。
+            else XParseResult.Failure(
+                if (response.status == 429) XParseFailure.RATE_LIMITED else XParseFailure.SESSION_AUTH_FAILED,
+                allowFallback = false,
+            )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: IOException) {
+            currentCoroutineContext().ensureActive()
+            XParseResult.Failure(
+                if (e is XHttpException && e.status in listOf(401, 403)) XParseFailure.SESSION_AUTH_FAILED
+                else XParseFailure.NETWORK,
+                allowFallback = false,
+            )
+        }
+        return when (result) {
+            is XParseResult.Success -> AppResult.Success(result.value)
+            is XParseResult.Failure -> AppResult.Failure(
+                AppError.Parse("", result.failure.failureKind,
+                    reasonKey = com.videodown.douyin.core.reasonKeyOf(result.failure), platform = VideoPlatform.X),
+            )
+        }
+    }
+
     private suspend fun parseWithinTimeout(url: String): AppResult<ParsedVideos> {
         val resolved = if (url.toHttpUrlOrNull()?.host == "t.co") http.expandShortLink(url) else url
         val link = XVideoLink.parse(resolved) ?: return AppResult.Failure(AppError.InvalidLink("", reasonKey = "input:x_link"))
@@ -65,8 +117,9 @@ class XVideoRepository(private val http: XVideoHttpClient = XVideoHttpClient()) 
             is XParseResult.Success -> AppResult.Success(result.value)
             is XParseResult.Failure -> AppResult.Failure(
                 // A failed request is an HTTP error; the status is carried as a number.
-                result.httpStatus?.let { com.videodown.douyin.core.AppError.Http(it) }
-                    ?: AppError.Parse("", reasonKey = com.videodown.douyin.core.reasonKeyOf(result.failure)),
+                result.httpStatus?.let { com.videodown.douyin.core.AppError.Http(it, platform = VideoPlatform.X) }
+                    ?: AppError.Parse("", result.failure.failureKind,
+                        reasonKey = com.videodown.douyin.core.reasonKeyOf(result.failure), platform = VideoPlatform.X),
             )
         }
     }

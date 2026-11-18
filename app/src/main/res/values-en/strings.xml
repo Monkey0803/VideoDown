@@ -542,6 +542,8 @@
     <string name="failure_no_audio_body">This video has no extractable audio; pick another one that has sound. The original video was kept.</string>
     <string name="failure_unsupported_title">This content is not supported</string>
     <string name="failure_unsupported_body">DRM-protected and live content cannot be saved. For ordinary pages, try signing in or finding the video after playback.</string>
+    <string name="failure_no_video_title">This post has no video</string>
+    <string name="failure_no_video_body">The link only contains images or text, so there is no video to save. Open the original page to check it.</string>
     <string name="failure_rate_title">The site is rate limiting</string>
     <string name="failure_rate_body">Try again later, or lower the number of simultaneous downloads to avoid frequent requests.</string>
     <string name="failure_wifi_title">Waiting for Wi-Fi</string>
@@ -612,6 +614,7 @@
 
     <!-- Engine failures -->
     <string name="engine_no_audio">The video contains no extractable audio track</string>
+    <string name="engine_no_media">This link has no downloadable video; it may only contain images or text</string>
     <string name="engine_drm">This video is DRM-protected and cannot be downloaded</string>
     <string name="engine_live">Live streams and premieres are not supported yet</string>
     <string name="engine_changed">The video or the chosen quality changed; parse again and pick one</string>

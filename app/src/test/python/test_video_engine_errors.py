@@ -34,6 +34,12 @@ class EngineErrorClassificationTest(unittest.TestCase):
         self.assertEqual("LIVE", classify(Exception("Live streams are not supported")))
         self.assertEqual("UNSUPPORTED", classify(Exception("Video id 403123 could not be extracted")))
 
+    def test_posts_without_video_keep_their_own_category(self):
+        # X 的纯图片帖：yt-dlp 报 no formats，界面不该说成 DRM/直播或「不支持」。
+        self.assertEqual("NO_MEDIA", classify(Exception("No video could be found in this tweet")))
+        self.assertEqual("NO_MEDIA", classify(
+            Exception("[twitter] 2122404334675665059: No video could be found in this tweet")))
+
     def test_storage_access_failures_keep_storage_recovery(self):
         for error in (PermissionError(errno.EACCES, "denied"), OSError(errno.EROFS, "read-only"),
                       Exception("unable to write: Permission denied")):

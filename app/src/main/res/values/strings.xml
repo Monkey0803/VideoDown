@@ -541,6 +541,8 @@
     <string name="failure_no_audio_body">该视频不包含可提取的音频，请选择另一个有声音的视频。原视频已保留。</string>
     <string name="failure_unsupported_title">当前内容暂不支持</string>
     <string name="failure_unsupported_body">DRM 和直播无法保存。普通网页可尝试登录或播放后查找视频。</string>
+    <string name="failure_no_video_title">这条内容没有视频</string>
+    <string name="failure_no_video_body">该链接只有图片或文字，没有可下载的视频。可以打开原网页查看内容。</string>
     <string name="failure_rate_title">网站暂时限制请求</string>
     <string name="failure_rate_body">请稍后再试，也可降低同时下载数量，避免频繁请求。</string>
     <string name="failure_wifi_title">等待 Wi-Fi</string>
@@ -611,6 +613,7 @@
 
     <!-- Engine failures -->
     <string name="engine_no_audio">原视频不包含可提取的音轨</string>
+    <string name="engine_no_media">这个链接没有可下载的视频，可能只有图片或文字</string>
     <string name="engine_drm">此视频受 DRM 保护，无法下载</string>
     <string name="engine_live">暂不支持直播或尚未开始的视频</string>
     <string name="engine_changed">视频或所选画质已变化，请重新解析并选择</string>

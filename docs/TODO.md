@@ -319,7 +319,7 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
 
 2026-10-09 起还具备：播放手势（双击快进退、竖滑亮度音量、长按 2×）、字幕渲染与开关（含同名 sidecar）、全局与单任务限速、下载后自动存入相册、继续观看进度回填、音频睡眠定时器。
 
-2026-11-16 起还具备：**X（Twitter）登录态复用** —— 「我的 → X（Twitter）登录」登录一次，需要授权的推文在匿名路径失败后自动改用本机登录态解析与下载；有效期完全由 X 的 `Set-Cookie` 决定（App 不设 TTL、不在启动/升级/失败时清除），Cookie 过期或被服务端拒绝时给出专用提示并指引重新登录（`x:session_auth_failed`）。JVM 用例、设备用例（`XLoginSessionDeviceTest` 6 例 + 两阶段 `XLoginPersistenceDeviceTest`）与证据见 [X 登录态复用验证](validation/x-login-session-2026-11-16.md)。
+2026-11-16 起还具备：**X（Twitter）登录态复用** —— 「我的 → X（Twitter）登录」登录一次，需要授权的推文在匿名路径失败后自动改用本机登录态解析与下载；有效期完全由 X 的 `Set-Cookie` 决定（App 不设 TTL、不在启动/升级/失败时清除），Cookie 过期或被服务端拒绝时给出专用提示并指引重新登录（`x:session_auth_failed`）。2026-11-18 起登录态重试先走**原生 GraphQL**（带 WebView 的 `auth_token` + `ct0`，敏感内容/纯图片帖只有这条路径拿得到），再退回带 Cookie 的引擎；同时失败原因按 `NO_VIDEO`（帖子里没有视频）、需要登录（`TweetTombstone`）与通用的不支持分开，不再把纯图片帖说成 DRM/直播。JVM 用例、设备用例（`XLoginSessionDeviceTest` 6/7、`XPostRecoveryDeviceTest` 3/3）与证据见 [X 登录态复用验证](validation/x-login-session-2026-11-16.md) 与 [X 失败归因与原生登录态解析验证](validation/x-post-recovery-2026-11-18.md)。
 
 ## 验收命令
 

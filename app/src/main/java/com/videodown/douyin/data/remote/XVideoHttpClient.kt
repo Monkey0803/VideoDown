@@ -19,12 +19,18 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-/** X's anonymous web client. Account cookies are never loaded, accepted, or persisted. */
+/** X's anonymous web client. Account cookies are only attached when the caller asks for a session. */
 class XVideoHttpClient(
     client: OkHttpClient = OkHttpClient(),
     private val guestUrl: String = "https://api.x.com/1.1/guest/activate.json",
     private val graphqlUrl: String = "https://x.com/i/api/graphql/2ICDjqPd81tulZcYrtpTuQ/TweetResultByRestId",
     private val syndicationUrl: String = "https://cdn.syndication.twimg.com/tweet-result",
+    /**
+     * 本机 WebView 里的 X 登录 Cookie；null 表示不提供登录态。
+     *
+     * 只在调用方明确要求登录态时读取（原生解析默认完全匿名），因此公开推文不会带上账号 Cookie。
+     */
+    private val sessionCookies: (suspend () -> String?)? = null,
 ) {
     private val http = client.newBuilder().cookieJar(CookieJar.NO_COOKIES)
         .followRedirects(false).followSslRedirects(false)
@@ -34,7 +40,29 @@ class XVideoHttpClient(
     private var guestToken: String? = null
     private var guestCreatedAt = 0L
 
-    suspend fun graphql(id: String): SocialPage {
+    /**
+     * 本机登录态：`Cookie` 头与 GraphQL 必需的 `x-csrf-token` 都齐了才返回，否则按未登录处理。
+     *
+     * `auth_token` 与 `ct0` 缺一都发不出有效的已登录请求；这里只做存在性检查，有效性由 X 判定。
+     */
+    suspend fun sessionCookieHeader(): XSessionCookies? {
+        val provider = sessionCookies ?: return null
+        val header = provider()?.takeIf { it.isNotBlank() } ?: return null
+        val values = header.split(';').mapNotNull { pair ->
+            val name = pair.substringBefore('=').trim()
+            if (name.isEmpty() || !pair.contains('=')) null else name to pair.substringAfter('=', "").trim()
+        }.toMap()
+        if (values["auth_token"].isNullOrEmpty()) return null
+        val csrf = values["ct0"]?.takeIf { it.isNotEmpty() } ?: return null
+        return XSessionCookies(header, csrf)
+    }
+
+    suspend fun graphql(id: String): SocialPage = graphql(id, session = null)
+
+    /** 用本机登录态取同一条推文；敏感内容/年龄门禁的帖子只有这条路径拿得到内容。 */
+    suspend fun graphqlWithSession(id: String, session: XSessionCookies): SocialPage = graphql(id, session)
+
+    private suspend fun graphql(id: String, session: XSessionCookies?): SocialPage {
         val query = buildJsonObject {
             put("tweetId", id); put("withCommunity", false)
             put("includePromotedContent", false); put("withVoice", false)
@@ -43,6 +71,16 @@ class XVideoHttpClient(
             .addQueryParameter("variables", query.toString())
             .addQueryParameter("features", FEATURES)
             .addQueryParameter("fieldToggles", """{"withArticleRichContentState":false}""").build()
+        if (session != null) {
+            // 已登录的网页客户端就是这样取同一条推文的：Bearer + Cookie + CSRF 三件套。
+            return execute(base(url.toString()).header("Authorization", "Bearer $WEB_BEARER")
+                .header("Cookie", session.header)
+                .header("x-csrf-token", session.csrf)
+                .header("x-twitter-auth-type", "OAuth2Session")
+                .header("x-twitter-active-user", "yes")
+                .header("x-twitter-client-language", "en")
+                .build())
+        }
         var token = guest()
         var response = execute(base(url.toString()).header("Authorization", "Bearer $WEB_BEARER")
             .header("x-guest-token", token).build())
@@ -133,5 +171,8 @@ class XVideoHttpClient(
         }.toString()
     }
 }
+
+/** 一条已校验的 X 登录 Cookie：`Cookie` 头与 GraphQL 必需的 `x-csrf-token`。 */
+data class XSessionCookies(val header: String, val csrf: String)
 
 internal class XHttpException(val status: Int) : IOException(AppText.get(R.string.x_client_http_status, status))

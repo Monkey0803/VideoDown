@@ -83,6 +83,7 @@ class DownloadRetryPolicyTest {
             DownloadFailureKind.ACCESS_DENIED,
             DownloadFailureKind.LINK_EXPIRED,
             DownloadFailureKind.UNSUPPORTED,
+            DownloadFailureKind.NO_VIDEO,
             DownloadFailureKind.NO_AUDIO,
             DownloadFailureKind.FORMAT_CHANGED,
             DownloadFailureKind.RUNTIME,

@@ -16,6 +16,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
+/** 原生解析里比引擎兜底结论更值得展示的原因。 */
+private val DEFINITIVE_X_REASON_KEYS = setOf(
+    XParseFailure.NO_VIDEO.storageKey,
+    XParseFailure.LOGIN_REQUIRED.storageKey,
+    XParseFailure.RESTRICTED.storageKey,
+    XParseFailure.UNAVAILABLE.storageKey,
+    XParseFailure.NOT_FOUND.storageKey,
+    XParseFailure.UNSUPPORTED_FORMAT.storageKey,
+)
+
 class MultiPlatformVideoRepository(
     private val douyin: DouyinRepository,
     private val social: SocialVideoHttpClient = SocialVideoHttpClient(),
@@ -23,6 +33,8 @@ class MultiPlatformVideoRepository(
     private val fallback: VideoRepository? = null,
     /** 用本机 WebView 登录态解析，仅当匿名路径都失败时才使用；null 表示该站点不参与。 */
     private val sessionFallback: SessionVideoParser? = null,
+    /** 用原生 X 接口 + 本机登录态解析；返回 null 表示没有可用登录态。 */
+    private val xNativeSession: SessionVideoParser? = null,
     /** 展开 b23.tv 短链；null 时短链解析直接报告「无法展开」。返回 null 表示目标不可信。 */
     private val resolveBilibiliShortLink: (suspend (String) -> BilibiliVideoLink?)? = null,
     /** 用应用内 B 站登录态解析；null 表示当前没有登录态。 */
@@ -58,21 +70,34 @@ class MultiPlatformVideoRepository(
     }
 
     /**
-     * X 的三段式解析：原生匿名 → 随包引擎（匿名）→ 本机登录态重试。
+     * X 的解析顺序：原生匿名 → （需要登录时）原生登录态 → 引擎登录态 → 引擎匿名。
      *
-     * 顺序不是固定三段：原生已经说「需要登录」且有登录态时，先跑登录态、再退回匿名，
-     * 免得受保护内容白白多跑一次匿名引擎。登录态只在匿名路径拿不到结果时使用，
-     * 公开推文因此保持完全匿名，也避免一份陈旧 Cookie 把本来能成功的解析弄坏。
+     * 原生说「需要登录」时先跑登录态：敏感内容/年龄门禁的帖子匿名只看得到 `TweetTombstone`，
+     * 带上 WebView 的 `auth_token` + `ct0` 才能拿到真实媒体（含纯图片帖的原图）；
+     * 其它情况匿名优先，公开推文保持完全匿名，也避免一份陈旧 Cookie 把本来能成功的解析弄坏。
      */
     private suspend fun parseX(url: String): AppResult<ParsedVideos> {
         val native = x.parse(url)
         val supplemental = fallback ?: return native
         val session = sessionFallback
-        val sessionFirst = session != null && native.needsLogin()
 
         var sessionTarget: String? = null
         var sessionFailure: AppResult<ParsedVideos>? = null
+        var nativeSessionFailure: AppResult<ParsedVideos>? = null
         var anonymousFailure: AppResult<ParsedVideos>? = null
+
+        suspend fun attemptNativeSession(): AppResult<ParsedVideos>? {
+            val parser = xNativeSession ?: return null
+            val result = try {
+                parser.parseWithSession(url)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                null
+            } ?: return null
+            nativeSessionFailure = result
+            return result
+        }
 
         suspend fun attemptSession(): AppResult<ParsedVideos>? {
             if (session == null) return null
@@ -103,20 +128,32 @@ class MultiPlatformVideoRepository(
             return result
         }
 
-        val first = if (sessionFirst) attemptSession() else attemptAnonymous()
-        if (first is AppResult.Success) return mergedX(sessionTarget ?: url, native, first)
-        val second = if (sessionFirst) attemptAnonymous() else attemptSession()
-        if (second is AppResult.Success) return mergedX(sessionTarget ?: url, native, second)
+        val attempts: List<suspend () -> AppResult<ParsedVideos>?> = if (native.needsLogin()) {
+            listOf(::attemptNativeSession, ::attemptSession, ::attemptAnonymous)
+        } else {
+            listOf(::attemptAnonymous, ::attemptSession)
+        }
+        for (attempt in attempts) {
+            val result = attempt() ?: continue
+            if (result is AppResult.Success) return mergedX(sessionTarget ?: url, native, result)
+        }
 
         // 登录态尝试被服务端拒绝：这条比引擎的通用授权/网络失败更能指导用户（重新登录）。
-        if (sessionFailure?.isAuthFailure() == true) {
+        if (sessionFailure?.isAuthFailure() == true || nativeSessionFailure?.isAuthFailure() == true) {
             return AppResult.Failure(AppError.Parse("", DownloadFailureKind.LOGIN_REQUIRED,
                 reasonKey = XParseFailure.SESSION_AUTH_FAILED.storageKey, platform = VideoPlatform.X))
         }
         val anonymous = anonymousFailure
         val rejected = sessionFailure
+        val withSession = nativeSessionFailure
         return when {
             native is AppResult.Success -> native
+            // 登录态已经拿到更准确的原因（例如登录后确认帖子里没有视频），不要退回「需要登录」。
+            withSession != null && withSession.isDefinitiveXFailure() &&
+                (anonymous == null || anonymous.isGenericEngineFailure()) -> withSession
+            // 引擎只会说「不支持/没有视频」时，原生的 typed 原因（没有视频、需要登录）更准确，
+            // 不能被兜底引擎的通用结论盖掉。
+            native.isDefinitiveXFailure() && (anonymous == null || anonymous.isGenericEngineFailure()) -> native
             anonymous != null -> anonymous
             rejected != null -> rejected
             else -> native
@@ -134,12 +171,25 @@ class MultiPlatformVideoRepository(
             else -> extracted
         }
 
-    /** 原生结果是否明确要求登录（嵌入页回退也失败时才会这样）。 */
+    /** 原生结果是否明确要求登录（嵌入页回退也失败、或 X 用 tombstone 表示需要登录时才会这样）。 */
     private fun AppResult<ParsedVideos>.needsLogin(): Boolean = this is AppResult.Failure && when (val error = error) {
-        is AppError.Parse -> error.reasonKey == XParseFailure.LOGIN_REQUIRED.storageKey
+        is AppError.Parse -> error.reasonKey == XParseFailure.LOGIN_REQUIRED.storageKey ||
+            error.reasonKey == XParseFailure.RESTRICTED.storageKey
         is AppError.Http -> error.code == 401 || error.code == 403
         else -> false
     }
+
+    /** 原生解析给出、值得直接告诉用户的原因；比引擎的通用「不支持」更准确。 */
+    private fun AppResult<ParsedVideos>.isDefinitiveXFailure(): Boolean {
+        val error = if (this is AppResult.Failure) error else return false
+        val key = (error as? AppError.Parse)?.reasonKey ?: return false
+        return key in DEFINITIVE_X_REASON_KEYS
+    }
+
+    /** 引擎只说「不支持 / 没有视频」时，它的结论不该盖掉原生的 typed 原因。 */
+    private fun AppResult<ParsedVideos>.isGenericEngineFailure(): Boolean =
+        this is AppResult.Failure &&
+            error.failureKind in setOf(DownloadFailureKind.UNSUPPORTED, DownloadFailureKind.NO_VIDEO)
 
     /** 引擎说「需要登录」时才会被判定为登录态被拒（403 访问受限不算过期）。 */
     private fun AppResult<ParsedVideos>.isAuthFailure(): Boolean =

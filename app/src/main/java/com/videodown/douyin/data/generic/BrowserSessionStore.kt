@@ -32,6 +32,14 @@ class BrowserSessionStore {
     }
 
     /**
+     * 原生 GraphQL 用的 X 登录 Cookie。
+     *
+     * 只取 `x.com` 这一源：请求发往 `x.com/i/api`，不能把 `twitter.com` 域的 Cookie 发给另一个主机。
+     * 返回同时带 `auth_token` 与 `ct0` 的 Cookie 头；不完整时返回 `null`，调用方照常走匿名路径。
+     */
+    suspend fun xGraphqlCookieHeader(): String? = cookie("https://x.com/")?.takeIf { XSession.signedIn(it) }
+
+    /**
      * X 的登录态是否还在本机。
      *
      * 每次调用都现查 [CookieManager]，**不缓存**：有效期由 X 决定，过期后系统不再返回该 Cookie，

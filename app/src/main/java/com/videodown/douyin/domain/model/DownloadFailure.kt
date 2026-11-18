@@ -3,7 +3,7 @@ package com.videodown.douyin.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class DownloadFailureKind { NETWORK, LOGIN_REQUIRED, ACCESS_DENIED, LINK_EXPIRED, STORAGE_FULL, STORAGE_ACCESS, FORMAT_CHANGED, UNSUPPORTED, RATE_LIMITED, WIFI_REQUIRED, BACKGROUND_SERVICE, RUNTIME, NO_AUDIO, UNKNOWN }
+enum class DownloadFailureKind { NETWORK, LOGIN_REQUIRED, ACCESS_DENIED, LINK_EXPIRED, STORAGE_FULL, STORAGE_ACCESS, FORMAT_CHANGED, UNSUPPORTED, NO_VIDEO, RATE_LIMITED, WIFI_REQUIRED, BACKGROUND_SERVICE, RUNTIME, NO_AUDIO, UNKNOWN }
 
 /** What the user can do about a failure. The wording lives in the presentation layer. */
 enum class RecoveryAction { RETRY, REPARSE, BROWSER, STORAGE, SETTINGS, SYSTEM_SETTINGS, NONE }
@@ -21,6 +21,8 @@ fun failureActions(kind: DownloadFailureKind): FailureActions = when (kind) {
     DownloadFailureKind.FORMAT_CHANGED -> FailureActions(RecoveryAction.REPARSE)
     DownloadFailureKind.NO_AUDIO -> FailureActions(RecoveryAction.NONE)
     DownloadFailureKind.UNSUPPORTED -> FailureActions(RecoveryAction.NONE)
+    // 页面/帖子里本来就没有视频：重新解析同一个地址不会变出视频，唯一的出路是打开原页面看图片。
+    DownloadFailureKind.NO_VIDEO -> FailureActions(RecoveryAction.NONE)
     DownloadFailureKind.RATE_LIMITED -> FailureActions(RecoveryAction.SETTINGS, RecoveryAction.RETRY)
     DownloadFailureKind.WIFI_REQUIRED -> FailureActions(RecoveryAction.SETTINGS, RecoveryAction.RETRY)
     DownloadFailureKind.BACKGROUND_SERVICE -> FailureActions(RecoveryAction.RETRY, RecoveryAction.SYSTEM_SETTINGS)
@@ -53,7 +55,8 @@ fun legacyFailureKind(message: String?): DownloadFailureKind? {
 
 /** Applies the same retry boundary to older history and typed engine failures. */
 val DownloadRecord.canRetryDownload: Boolean
-    get() = (failureKind ?: legacyFailureKind(errorMessage)) !in setOf(DownloadFailureKind.UNSUPPORTED, DownloadFailureKind.NO_AUDIO)
+    get() = (failureKind ?: legacyFailureKind(errorMessage)) !in
+        setOf(DownloadFailureKind.UNSUPPORTED, DownloadFailureKind.NO_VIDEO, DownloadFailureKind.NO_AUDIO)
 
 /**
  * Typed failures an automatic resume may retry on its own.

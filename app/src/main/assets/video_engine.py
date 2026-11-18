@@ -43,6 +43,10 @@ def strip_html_comments(webpage):
 def classify_failure(error, mode=None):
     """Return an actionable category without disclosing extractor messages or credentials."""
     message = str(error).lower()
+    # 页面/帖子本身没有视频（典型：X 的纯图片帖）。这不是格式问题，重试也不会变出视频，
+    # 所以单独归类，界面才能说「这条内容没有视频」而不是通用的「不支持 / DRM / 直播」。
+    if any(value in message for value in ("no video could be found", "there's no video", "there is no video")):
+        return "NO_MEDIA"
     if mode == "extract_audio" and isinstance(error, subprocess.CalledProcessError):
         detail = error.stderr or b""
         if isinstance(detail, bytes):

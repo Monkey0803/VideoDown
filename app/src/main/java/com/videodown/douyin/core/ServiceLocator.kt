@@ -85,12 +85,28 @@ object ServiceLocator {
         GenericVideoRepository(videoEngine, browserSessions, douyinApiClient.okHttpClient, sessionDirectory,
             playlistEnabled = { preferences.playlistParsing })
     }
+
+    /**
+     * 原生 X 客户端：默认完全匿名；只有仓库在「需要登录」时才向它要登录态。
+     *
+     * Cookie 每次现查 WebView，不缓存、不落库、不进日志；公开推文永远不会带上账号 Cookie。
+     */
+    val xRepository by lazy {
+        com.videodown.douyin.data.repository.XVideoRepository(
+            com.videodown.douyin.data.remote.XVideoHttpClient(
+                sessionCookies = { browserSessions.xGraphqlCookieHeader() },
+            ),
+        )
+    }
     val videoRepository: VideoRepository by lazy {
         MultiPlatformVideoRepository(douyinRepository, fallback = genericRepository,
+            x = xRepository,
             // 登录态只由 WebView 持有；这里每次现查，读过期 Cookie 由系统 CookieManager 负责丢弃。
             sessionFallback = SessionVideoParser { url ->
                 if (browserSessions.xSignedIn()) genericRepository.parse(url, browserSession = true) else null
             },
+            // 原生 GraphQL 也能带本机登录态：敏感内容/图片帖只有这条路径拿得到内容。
+            xNativeSession = SessionVideoParser { url -> xRepository.parseWithSession(url) },
             // 有 B 站登录态时先用登录态解析，失败再退回匿名（仓库内部处理顺序）。
             bilibiliSession = SessionVideoParser { url ->
                 if (browserSessions.bilibiliSignedIn()) genericRepository.parse(url, browserSession = true) else null
