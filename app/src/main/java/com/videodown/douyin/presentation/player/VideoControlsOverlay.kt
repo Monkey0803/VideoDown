@@ -26,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -178,7 +179,7 @@ internal fun VideoControlsOverlay(
                         Column(Modifier.align(Alignment.CenterHorizontally), horizontalAlignment = Alignment.CenterHorizontally) {
                             preview?.let {
                                 Image(it.asImageBitmap(), null, contentScale = ContentScale.Fit,
-                                    modifier = Modifier.width(160.dp).height(90.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black))
+                                    modifier = Modifier.width(160.dp).height(90.dp).clip(MaterialTheme.shapes.medium).background(Color.Black))
                             }
                             Text(formatPlaybackTime(scrubPosition), color = Color.White)
                         }

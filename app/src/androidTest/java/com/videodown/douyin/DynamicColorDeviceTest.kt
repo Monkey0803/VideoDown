@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -67,6 +68,8 @@ class DynamicColorDeviceTest {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             compose.waitUntil(15_000) { compose.onAllNodesWithText("解析").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("我的").performClick()
+            // 设置已改为「分类列表 → 子页」的信息架构，动态取色位于「外观与语言」子页。
+            compose.onNodeWithTag("settings-open-appearance").performClick()
             val row = compose.onNodeWithText("动态取色（Material You）")
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
                 row.assertDoesNotExist()
@@ -86,7 +89,8 @@ class DynamicColorDeviceTest {
             assertTrue("Material You must repaint the palette (brand=$brandedPixels, dynamic=$dynamicPixels)",
                 brandedPixels != dynamicPixels)
 
-            assertTrue(compose.onAllNodesWithText("我的设置").fetchSemanticsNodes().isNotEmpty())
+            // 现在停留在「外观与语言」子页，标题随之变化。
+            assertTrue(compose.onAllNodesWithText("外观与语言").fetchSemanticsNodes().isNotEmpty())
             File(evidence, "summary.txt").writeText(
                 "sdk=${Build.VERSION.SDK_INT}\nbrand-primary pixels=$brandedPixels\ndynamic-primary pixels=$dynamicPixels\n" +
                     "preference persisted=true\n",

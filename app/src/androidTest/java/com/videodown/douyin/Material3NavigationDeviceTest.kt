@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.test.espresso.Espresso
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -45,6 +46,8 @@ class Material3NavigationDeviceTest {
         compose.onNodeWithText("已存内容").assertIsDisplayed()
         compose.onNodeWithText("我的").performClick()
         compose.onNodeWithText("我的设置").assertIsDisplayed()
+        // 设置是分类列表 → 子页：节奏、语言与动态取色都在「外观与语言」子页。
+        compose.onNodeWithTag("settings-open-appearance").performClick()
         compose.onNodeWithText("外观模式").assertIsDisplayed()
     }
 
@@ -60,6 +63,7 @@ class Material3NavigationDeviceTest {
         compose.onNodeWithText("已存内容").assertIsDisplayed()
         screenshot("library")
         compose.onNodeWithText("我的").performClick()
+        compose.onNodeWithTag("settings-open-download").performClick()
         compose.onNodeWithText("默认画质").assertIsDisplayed().performClick()
         compose.onNodeWithText("取消").assertIsDisplayed().performClick()
         screenshot("settings")
@@ -73,6 +77,7 @@ class Material3NavigationDeviceTest {
         try {
             preferences.preferredQuality = PreferredQuality.HIGHEST
             compose.onNodeWithText("我的").performClick()
+            compose.onNodeWithTag("settings-open-download").performClick()
             compose.onNodeWithText("默认画质").performClick()
             qualityOption("最高画质").assertIsSelected()
             qualityOption("节省空间").performClick().assertIsSelected()

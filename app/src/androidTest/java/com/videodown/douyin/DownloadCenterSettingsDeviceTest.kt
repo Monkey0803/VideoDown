@@ -7,7 +7,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.runtime.CompositionLocalProvider
@@ -21,10 +21,13 @@ import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.presentation.MainActivity
 import com.videodown.douyin.presentation.VideoDownApp
+import com.videodown.douyin.presentation.adaptive.LocalWindowWidth
+import com.videodown.douyin.presentation.adaptive.WindowWidth
 import com.videodown.douyin.presentation.settings.SettingsScreen
 import com.videodown.douyin.presentation.theme.VideoDownTheme
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.util.UUID
@@ -57,7 +60,11 @@ class DownloadCenterSettingsDeviceTest {
             compose.onNodeWithTag("download-center").assertIsDisplayed().performClick()
             compose.waitUntil(10_000) { compose.onAllNodesWithTag("task-$id").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("task-$id").assertIsDisplayed()
-            compose.onNodeWithContentDescription(context.getString(R.string.history_more_actions)).assertIsDisplayed()
+            // 设备上可能已有其他任务：只要当前卡片带「更多任务操作」即可，不要求全局只有一个。
+            assertTrue(
+                compose.onAllNodesWithContentDescription(context.getString(R.string.history_more_actions))
+                    .fetchSemanticsNodes().isNotEmpty(),
+            )
             compose.onNodeWithTag("task-more-$id").assertIsDisplayed().performClick()
             compose.onNodeWithText(context.getString(R.string.history_set_limit)).assertIsDisplayed()
             compose.onNodeWithText(context.getString(R.string.action_delete)).assertIsDisplayed()
@@ -136,10 +143,11 @@ class DownloadCenterSettingsDeviceTest {
     }
 
     @Test fun twelveHundredDpWindowUsesNavigationRail() {
-        val configuration = Configuration(compose.activity.resources.configuration).apply { screenWidthDp = 1200 }
+        // 导航形态改由官方窗口尺寸类决定：直接渲染 VideoDownApp 时注入同一个 CompositionLocal，
+        // 与 MainActivity 的 calculateWindowSizeClass 路径等价。
         compose.runOnUiThread {
             compose.activity.setContent {
-                CompositionLocalProvider(LocalConfiguration provides configuration) {
+                CompositionLocalProvider(LocalWindowWidth provides WindowWidth.EXPANDED) {
                     VideoDownTheme {
                         VideoDownApp(
                             sharedText = null,

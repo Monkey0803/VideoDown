@@ -69,7 +69,6 @@ import com.videodown.douyin.domain.model.DownloadStatus
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -84,6 +83,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.videodown.douyin.presentation.theme.appMotion
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.videodown.douyin.presentation.history.HistoryScreen
@@ -104,9 +106,16 @@ import java.io.File
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.readClipboardText
 import com.videodown.douyin.core.ThemeMode
-import com.videodown.douyin.presentation.theme.NavigationRailBreakpoint
+import com.videodown.douyin.presentation.adaptive.LocalFoldFeature
+import com.videodown.douyin.presentation.adaptive.LocalWindowWidth
+import com.videodown.douyin.presentation.adaptive.NavigationLayout
+import com.videodown.douyin.presentation.adaptive.WindowLayoutPolicy
+import com.videodown.douyin.presentation.adaptive.rememberFoldFeature
+import com.videodown.douyin.presentation.adaptive.windowWidthOf
+import com.videodown.douyin.presentation.theme.AppSpacing
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 class MainActivity : ComponentActivity() {
     private var sharedText by mutableStateOf<String?>(null)
     private var openLibrary by mutableStateOf(false)
@@ -205,6 +214,12 @@ class MainActivity : ComponentActivity() {
                     isAppearanceLightNavigationBars = !darkTheme
                 }
             }
+            val windowWidth = windowWidthOf(calculateWindowSizeClass(this@MainActivity).widthSizeClass)
+            val foldFeature = rememberFoldFeature(this@MainActivity)
+            CompositionLocalProvider(
+                LocalWindowWidth provides windowWidth,
+                LocalFoldFeature provides foldFeature,
+            ) {
             VideoDownTheme(
                 darkTheme = darkTheme,
                 dynamicColor = dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
@@ -227,6 +242,7 @@ class MainActivity : ComponentActivity() {
                             intent.data = null
                         }
                     })
+            }
             }
         }
     }
@@ -407,7 +423,9 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
     val pausedAttentionCount = resultInbox.pausedIds.size
     val completedResultCount = resultInbox.completedIds.size
     val unseenResultCount = resultInbox.count
-    val wideNavigation = LocalConfiguration.current.screenWidthDp.dp >= NavigationRailBreakpoint
+    val windowWidth = LocalWindowWidth.current
+    val navigationLayout = WindowLayoutPolicy.navigation(windowWidth, tabs.size)
+    val wideNavigation = navigationLayout != NavigationLayout.BOTTOM_BAR
 
     fun updateDownloadResults(value: DownloadResultInbox) {
         resultInbox = value
@@ -497,7 +515,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                             onDismissResults = ::clearDownloadResults,
                         )
                     }
-                    if (!wideNavigation) NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    if (!wideNavigation) NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     // Tags make the tab bar addressable by tests without depending on the copy,
                     // which now follows the app language.
                     modifier = Modifier.testTag("tab-bar")) {
@@ -556,8 +574,9 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
             Box(Modifier.fillMaxSize()) {
             if (wideNavigation && route in tabs && !keyboardVisible && !imageViewerBackdropRetained) {
                 NavigationRail(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    modifier = Modifier.align(Alignment.CenterStart).fillMaxHeight().width(80.dp).testTag("navigation-rail"),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    modifier = Modifier.align(Alignment.CenterStart).fillMaxHeight()
+                        .width(AppSpacing.navigationRailWidth).testTag("navigation-rail"),
                 ) {
                     tabs.forEachIndexed { index, destination ->
                         NavigationRailItem(
@@ -588,7 +607,7 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                     )
                 } else {
                     Modifier.padding(padding).consumeWindowInsets(padding)
-                        .padding(start = if (wideNavigation && route in tabs && !keyboardVisible) 80.dp else 0.dp)
+                        .padding(start = if (wideNavigation && route in tabs && !keyboardVisible) AppSpacing.navigationRailWidth else 0.dp)
                         .background(MaterialTheme.colorScheme.background)
                 },
                 enterTransition = { fadeIn(motion.fast()) },

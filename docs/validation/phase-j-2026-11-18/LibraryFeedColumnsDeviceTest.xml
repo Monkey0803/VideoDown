@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="2" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-19T03:10:40" hostname="localhost">
+  <testsuite name="com.videodown.douyin.LibraryFeedColumnsDeviceTest" tests="2" failures="0" errors="0" skipped="0" time="4.491" timestamp="2026-11-19T03:10:40" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="feedColumnsFollowWindowSizeClass" classname="com.videodown.douyin.LibraryFeedColumnsDeviceTest" time="3.730" />
+    <testcase name="selectingFromExpandedFeedStillOpensTheRecord" classname="com.videodown.douyin.LibraryFeedColumnsDeviceTest" time="0.761" />
+  </testsuite>
+</testsuites>

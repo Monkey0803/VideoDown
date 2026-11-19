@@ -47,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -81,6 +80,8 @@ import com.videodown.douyin.presentation.components.NoticeTone
 import com.videodown.douyin.presentation.components.SelectAllToggle
 import com.videodown.douyin.presentation.components.TriStateSelectionCheckbox
 import com.videodown.douyin.presentation.failureDescription
+import com.videodown.douyin.presentation.adaptive.LocalWindowWidth
+import com.videodown.douyin.presentation.adaptive.WindowWidth
 import com.videodown.douyin.presentation.theme.AppSpacing
 import com.videodown.douyin.presentation.videoPlatformLabelRes
 import kotlin.math.roundToInt
@@ -97,7 +98,6 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
     val state by model.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
     val focus = LocalFocusManager.current
     // 有关键结果时默认收起输入区；首次打开（无结果）默认展开。
     var editing by rememberSaveable { mutableStateOf(state.rows.isEmpty()) }
@@ -118,7 +118,8 @@ internal fun BatchImportDialog(model: BatchImportViewModel, onClose: () -> Unit,
         }
     }
     LaunchedEffect(state.rows.isEmpty()) { if (state.rows.isEmpty()) editing = true }
-    val wide = configuration.screenWidthDp >= 600
+    // 与页面共用同一套窗口尺寸类：Medium/Expanded 才用宽版对话框。
+    val wide = LocalWindowWidth.current != WindowWidth.COMPACT
     AppDialogWindow(
         onDismissRequest = ::close,
         shape = if (wide) MaterialTheme.shapes.extraLarge else RectangleShape,

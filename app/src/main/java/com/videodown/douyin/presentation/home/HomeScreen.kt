@@ -14,6 +14,11 @@ import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.presentation.components.SelectAllToggle
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.AdaptivePage
+import com.videodown.douyin.presentation.adaptive.LocalWindowWidth
+import com.videodown.douyin.presentation.adaptive.WindowLayoutPolicy
+import com.videodown.douyin.presentation.adaptive.pagePadding
+import com.videodown.douyin.presentation.theme.BrandColors
+import com.videodown.douyin.presentation.theme.AppSpacing
 
 import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
@@ -182,6 +187,7 @@ fun HomeScreen(
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
     val inputArea = remember { BringIntoViewRequester() }
+    val pagePad = pagePadding()
     var inputFocused by remember { mutableStateOf(false) }
     var showBrowser by remember(state.parseRequestId) { mutableStateOf(false) }
     var showXLogin by remember(state.parseRequestId) { mutableStateOf(false) }
@@ -380,18 +386,18 @@ fun HomeScreen(
             // 输入页出现时淡入；返回解析页同样重放一次。
             val entrance = rememberEntranceAlpha()
             AdaptivePage(Modifier.fillMaxSize().padding(padding)) {
-            Column(
-                modifier = Modifier.fillMaxWidth().fillMaxHeight().verticalScroll(rememberScrollState())
-                    .padding(horizontal = 22.dp).alpha(entrance),
-            ) {
-                TabPageHeader(stringResource(R.string.app_name), stringResource(R.string.home_header_subtitle))
+            // 解析主面板与「站点 / 最近保存」在 Expanded 下并排；其余尺寸保持单列，
+            // 双栏只放宽工作区，不改变任何业务流程与 testTag。
+            val dualPane = WindowLayoutPolicy.homeDualPane(LocalWindowWidth.current)
+            val parsePanel: @Composable () -> Unit = {
+                // 单一 surfaceContainerLow 工作区：外层不再叠描边，输入区用一档 tonal 容器区分，
+                // 层级由颜色而不是「卡片套输入框」的边框数量建立。
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.large,
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 ) {
-                    Column(Modifier.padding(17.dp)) {
+                    Column(Modifier.padding(AppSpacing.md)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(R.string.home_parse_video), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                             Spacer(Modifier.weight(1f))
@@ -406,7 +412,7 @@ fun HomeScreen(
                         }
                         Column(Modifier.bringIntoViewRequester(inputArea).padding(bottom = 12.dp)) {
                             Row(Modifier.fillMaxWidth().padding(top = 13.dp).clip(MaterialTheme.shapes.large)
-                                .background(MaterialTheme.colorScheme.surfaceContainerHighest).heightIn(min = 72.dp),
+                                .background(MaterialTheme.colorScheme.surfaceContainer).heightIn(min = 72.dp),
                                 verticalAlignment = Alignment.CenterVertically) {
                                 TextField(
                                     value = state.input,
@@ -482,17 +488,23 @@ fun HomeScreen(
                             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 3.dp))
                     }
                 }
+                }
+            val guideSection: @Composable () -> Unit = {
                 if (showFirstUseGuide) {
                     FirstUseGuide(
                         onPasteAndParse = ::pasteAndParse,
                         onDismiss = { ServiceLocator.preferences.firstUseGuideDismissed = true },
                     )
                 }
+                }
+            val sitesSection: @Composable () -> Unit = {
                 if (UiDensityPolicy.showExpandedHomeSections(showFirstUseGuide)) {
                     SiteSection(onOpenSites)
                 } else {
                     CompactSiteEntry(onOpenSites)
                 }
+                }
+            val recentSection: @Composable () -> Unit = {
                 if (UiDensityPolicy.showRecentSection(completed.size)) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 27.dp, bottom = 14.dp),
@@ -504,7 +516,7 @@ fun HomeScreen(
                         Text(stringResource(R.string.home_view_all_arrow), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
                     }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 25.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.xs), modifier = Modifier.padding(bottom = AppSpacing.lg)) {
                         completed.forEach { record ->
                             val watch = watchBadge(record, watchProgress)
                             MediaCover(
@@ -537,6 +549,33 @@ fun HomeScreen(
                             }
                         }
                     }
+                }                }
+            Column(
+                modifier = Modifier.fillMaxWidth().fillMaxHeight().verticalScroll(rememberScrollState())
+                    .padding(horizontal = pagePad).alpha(entrance),
+            ) {
+                if (dualPane) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.lg),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Column(Modifier.weight(1.1f)) {
+                            TabPageHeader(stringResource(R.string.app_name), stringResource(R.string.home_header_subtitle))
+                            parsePanel()
+                            guideSection()
+                        }
+                        Column(Modifier.weight(0.9f)) {
+                            sitesSection()
+                            recentSection()
+                        }
+                    }
+                } else {
+                    TabPageHeader(stringResource(R.string.app_name), stringResource(R.string.home_header_subtitle))
+                    parsePanel()
+                    guideSection()
+                    sitesSection()
+                    recentSection()
                 }
             }
             }
@@ -580,7 +619,7 @@ fun HomeScreen(
 private fun CompactSiteEntry(onOpenSites: () -> Unit) {
     TextButton(
         onClick = onOpenSites,
-        modifier = Modifier.fillMaxWidth().padding(top = 10.dp).testTag("site-kubb-card"),
+        modifier = Modifier.fillMaxWidth().padding(top = AppSpacing.xs).testTag("site-kubb-card"),
     ) {
         AppIcon(AppIcons.Browser, null, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(7.dp))
@@ -593,7 +632,7 @@ private fun CompactSiteEntry(onOpenSites: () -> Unit) {
 @Composable
 private fun SiteSection(onOpenSites: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 10.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = AppSpacing.lg, bottom = AppSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(stringResource(R.string.home_sites_title), style = MaterialTheme.typography.titleMedium,
@@ -608,7 +647,7 @@ private fun SiteSection(onOpenSites: () -> Unit) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier.size(46.dp).clip(MaterialTheme.shapes.large)
-                    .background(Brush.linearGradient(listOf(Color(0xFF6D5DFB), Color(0xFF3E9BFF)))),
+                    .background(Brush.linearGradient(BrandColors.siteBadgeGradient)),
                 contentAlignment = Alignment.Center,
             ) { Text("K", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge) }
             Column(Modifier.padding(start = 13.dp).weight(1f)) {
@@ -637,7 +676,7 @@ private fun FirstUseGuide(onPasteAndParse: () -> Unit, onDismiss: () -> Unit) {
             )
             Text(
                 stringResource(R.string.home_first_use_steps),
-                modifier = Modifier.padding(top = 6.dp),
+                modifier = Modifier.padding(top = AppSpacing.xxs),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
             )
@@ -687,6 +726,7 @@ private fun ResultScreen(
     modifier: Modifier = Modifier,
 ) {
     val video = state.video ?: return
+    val pagePad = pagePadding()
     var showingVideos by rememberSaveable(state.videos.firstOrNull()?.selectionKey()) { mutableStateOf(false) }
     var advancedOptions by rememberSaveable(video.selectionKey()) { mutableStateOf(false) }
     var expandedTitle by rememberSaveable(video.selectionKey(), video.title) { mutableStateOf(false) }
@@ -753,7 +793,7 @@ private fun ResultScreen(
     }
     Column(modifier.fillMaxSize()) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 7.dp),
+            Modifier.fillMaxWidth().padding(horizontal = pagePad, vertical = AppSpacing.xs),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack, modifier = Modifier.clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerLow)) {
@@ -767,7 +807,7 @@ private fun ResultScreen(
             }
         }
         if (state.videos.size > 1) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 22.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = pagePad), verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.home_position_hint, state.videos.indexOfFirst { it.selectionKey() == video.selectionKey() } + 1, state.videos.size, state.selectedMedia.size),
                     style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
                 TextButton(onClick = { showingVideos = true }, enabled = !state.isSubmitting && state.duplicates == null) {
@@ -780,7 +820,7 @@ private fun ResultScreen(
         Column(Modifier.weight(1f).verticalScroll(resultScroll)) {
             MediaCover(
                 model = video.coverUrl,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp).height((screenHeight * .28f).coerceIn(140f, 260f).dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = pagePad).height((screenHeight * .28f).coerceIn(140f, 260f).dp),
                 shape = MaterialTheme.shapes.extraLarge,
                 contentDescription = stringResource(R.string.home_video_cover),
             ) {
@@ -806,14 +846,14 @@ private fun ResultScreen(
                             .background(Color.Black.copy(alpha = .5f)).padding(horizontal = 7.dp, vertical = 5.dp))
                 }
             }
-            Column(Modifier.padding(horizontal = 22.dp, vertical = 21.dp)) {
+            Column(Modifier.padding(horizontal = pagePad, vertical = AppSpacing.lg)) {
                 Text(video.title, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold, maxLines = if (expandedTitle) Int.MAX_VALUE else 2, overflow = TextOverflow.Ellipsis,
                     onTextLayout = { if (!expandedTitle) titleOverflows = it.hasVisualOverflow })
                 if (titleOverflows || expandedTitle) TextButton(onClick = { expandedTitle = !expandedTitle }) {
                     Text(stringResource(if (expandedTitle) R.string.home_collapse_title else R.string.home_expand_title))
                 }
-                Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(top = AppSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
                     AsyncImage(video.author.avatarUrl, stringResource(R.string.home_author_avatar), Modifier.size(26.dp).clip(CircleShape),
                         contentScale = ContentScale.Crop)
                     Spacer(Modifier.width(8.dp))
@@ -829,7 +869,7 @@ private fun ResultScreen(
                 Box(Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
                 if (video.isImagePost) {
                     // 图片只有原图一档：不显示画质选择，也不给"无音轨"这类视频概念。
-                    Row(Modifier.fillMaxWidth().padding(top = 22.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth().padding(top = AppSpacing.lg), verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.quality_original), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.weight(1f))
                         Text(video.sortedVariants.firstOrNull()?.sizeBytes?.takeIf { it > 0L }?.let(::formatBytes)
@@ -844,7 +884,7 @@ private fun ResultScreen(
                         }
                     }
                 } else {
-                Row(Modifier.fillMaxWidth().padding(top = 22.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(top = AppSpacing.lg), verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         stringResource(if (hasMixedDownloadFormats) R.string.home_choose_format else R.string.home_choose_quality),
                         fontWeight = FontWeight.Bold,
@@ -860,7 +900,7 @@ private fun ResultScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(top = 10.dp),
+                        modifier = Modifier.padding(top = AppSpacing.xs),
                     )
                 }
                 TextButton(
@@ -939,7 +979,7 @@ private fun ResultScreen(
             TextButton(
                 onClick = onDownloadArchive,
                 enabled = !state.isSubmitting,
-                modifier = Modifier.padding(horizontal = 22.dp).testTag("download-archive"),
+                modifier = Modifier.padding(horizontal = pagePad).testTag("download-archive"),
             ) {
                 Text(stringResource(R.string.home_download_archive, state.archiveTargets.size))
             }
@@ -969,7 +1009,7 @@ private fun ResultScreen(
                 }
             },
             enabled = if (batchSelected) !state.isSubmitting && state.duplicates == null else state.canDownload,
-            modifier = Modifier.padding(horizontal = 22.dp, vertical = 14.dp),
+            modifier = Modifier.padding(horizontal = pagePad, vertical = AppSpacing.sm),
         )
     }
 }

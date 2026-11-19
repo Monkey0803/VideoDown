@@ -3,6 +3,7 @@ package com.videodown.douyin.presentation.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
+import com.videodown.douyin.presentation.theme.BrandColors
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -100,12 +102,12 @@ internal fun AppIcon(
 internal fun BrandTile(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.then(Modifier
-            .clip(RoundedCornerShape(18.dp))
+            .clip(MaterialTheme.shapes.large)
             .background(Brush.linearGradient(
-                listOf(Color(0xFFFFAD75), Color(0xFFF2784B))))),
+                BrandColors.brandIconGradient))),
         contentAlignment = Alignment.Center,
     ) {
         AppIcon(AppIcons.Brand, null, modifier = Modifier.fillMaxSize().padding(13.dp),
-            tint = Color(0xFFFFF8F5))
+            tint = BrandColors.onBrandIcon)
     }
 }

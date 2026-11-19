@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.videodown.douyin.presentation.theme.AppShapes
 import coil3.compose.LocalPlatformContext
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
@@ -95,7 +96,10 @@ internal fun BrowserPanel(
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         tonalElevation = 3.dp,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        shape = RoundedCornerShape(
+            topStart = AppShapes.extraLargeRadius,
+            topEnd = AppShapes.extraLargeRadius,
+        ),
     ) {
         Column(Modifier.fillMaxWidth()) {
             Row(
@@ -335,7 +339,7 @@ private fun MediaTile(candidate: BrowserMediaDetector.Candidate, images: Boolean
     MediaCover(
         model = request,
         modifier = Modifier.size(48.dp),
-        shape = RoundedCornerShape(10.dp),
+        shape = MaterialTheme.shapes.medium,
         placeholderIcon = if (images) null else AppIcons.Play,
         placeholderText = if (images) candidate.extension?.uppercase() ?: "IMG" else null,
     )

@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.videodown.douyin.presentation.theme.BrandColors
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -94,7 +95,7 @@ private fun SiteSourceCard(source: SiteSource, onClick: () -> Unit) {
         Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier.size(52.dp).background(
-                    Brush.linearGradient(listOf(Color(0xFF6D5DFB), Color(0xFF3E9BFF))),
+                    Brush.linearGradient(BrandColors.siteBadgeGradient),
                     MaterialTheme.shapes.large,
                 ),
                 contentAlignment = Alignment.Center,

@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="5" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-19T03:10:28" hostname="localhost">
+  <testsuite name="com.videodown.douyin.AdaptiveLayoutDeviceTest" tests="5" failures="0" errors="0" skipped="0" time="12.764" timestamp="2026-11-19T03:10:28" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="expandedSettingsUsesListDetailInsteadOfSubpageNavigation" classname="com.videodown.douyin.AdaptiveLayoutDeviceTest" time="4.911" />
+    <testcase name="expandedWindowSplitsHomeIntoTwoPanes" classname="com.videodown.douyin.AdaptiveLayoutDeviceTest" time="2.564" />
+    <testcase name="pageTitlesCarryHeadingSemantics" classname="com.videodown.douyin.AdaptiveLayoutDeviceTest" time="1.048" />
+    <testcase name="mediumWindowSwitchesToRailAndKeepsCurrentPageWhenResizingBack" classname="com.videodown.douyin.AdaptiveLayoutDeviceTest" time="3.299" />
+    <testcase name="compactWindowKeepsBottomBarAndFullWidthTabs" classname="com.videodown.douyin.AdaptiveLayoutDeviceTest" time="0.942" />
+  </testsuite>
+</testsuites>

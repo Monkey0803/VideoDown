@@ -13,11 +13,16 @@ import com.videodown.douyin.core.LibrarySort
 import com.videodown.douyin.presentation.components.EmptyState
 import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.presentation.history.BatchFailureDetails
+import com.videodown.douyin.presentation.theme.BrandColors
+import com.videodown.douyin.presentation.theme.AppSpacing
 import com.videodown.douyin.presentation.theme.appMotion
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.MediaCover
-import com.videodown.douyin.presentation.components.AdaptivePage
+import com.videodown.douyin.presentation.components.AdaptiveWorkspacePage
+import com.videodown.douyin.presentation.adaptive.LocalWindowWidth
+import com.videodown.douyin.presentation.adaptive.WindowLayoutPolicy
+import com.videodown.douyin.presentation.adaptive.pagePadding
 
 import android.Manifest
 import android.os.Build
@@ -146,6 +151,10 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     onReparse: (com.videodown.douyin.domain.model.DownloadRecord) -> Unit = {}) {
     val motion = appMotion()
     val context = LocalContext.current
+    // 一列 Feed 的列数与页面边距都由窗口尺寸类决定，页内不再各写 22dp / 固定 2 列。
+    val windowWidth = LocalWindowWidth.current
+    val pagePadding = pagePadding()
+    val feedColumns = WindowLayoutPolicy.feedColumns(windowWidth)
     // 资源按当前组合读取：context.getString 不会随语言/配置切换重算。
     val resources = LocalResources.current
     var extractingId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -329,9 +338,9 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             Column(
                 Modifier.fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 22.dp, vertical = 8.dp)
+                    .padding(horizontal = pagePadding, vertical = AppSpacing.xs)
                     .testTag("library-controls"),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.xs),
             ) {
                 Text(stringResource(R.string.library_filter_title), style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold)
@@ -367,13 +376,13 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             }
         }
     }
-    AdaptivePage(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    AdaptiveWorkspacePage(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     Box(Modifier.fillMaxWidth().fillMaxHeight()) {
         Column(Modifier.fillMaxSize()) {
             TabPageHeader(
                 title = stringResource(R.string.library_title),
                 subtitle = if (selecting) null else stringResource(R.string.library_subtitle, allSaved.size),
-                modifier = Modifier.padding(horizontal = 22.dp),
+                modifier = Modifier.padding(horizontal = pagePadding),
                 trailingContent = {
                     if (allSaved.isNotEmpty()) {
                     IconButton(
@@ -388,7 +397,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             )
             if (showManagementControls) {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp),
+                Modifier.fillMaxWidth().padding(horizontal = pagePadding, vertical = AppSpacing.xxs),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -407,11 +416,11 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                     Text(
                         if (state.libraryQuery.activeFilterCount > 0) stringResource(R.string.library_filter_count, state.libraryQuery.activeFilterCount)
                         else stringResource(R.string.library_filter),
-                        modifier = Modifier.padding(start = 6.dp),
+                        modifier = Modifier.padding(start = AppSpacing.xxs),
                     )
                 }
             }
-            Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = pagePadding - AppSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
                 FilterChip(selected = state.libraryQuery.vaultOnly, enabled = !state.batchBusy,
                     onClick = { unlockVault() },
                     label = { Text(stringResource(if (state.libraryQuery.vaultUnlocked) R.string.vault_open else R.string.vault_locked)) },
@@ -433,10 +442,10 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                     } else historyViewModel.exportSelected(selectedIds, galleryOperation)
                 }, stringResource(R.string.library_export_folder) to { fileExportViewModel.reset(); fileExportIds = selectedIds.toList() },
                     stringResource(R.string.history_delete_selected) to { pendingDelete = selectedIds.toSet() }))
-            if (editingId == null) organization.error?.let { Text(organizeErrorText(it), color = MaterialTheme.colorScheme.error, maxLines = 2, modifier = Modifier.padding(horizontal = 22.dp)) }
-            if (fileExportIds.isEmpty()) fileExport.message?.let { Text(it, maxLines = 2, modifier = Modifier.padding(horizontal = 22.dp)) }
+            if (editingId == null) organization.error?.let { Text(organizeErrorText(it), color = MaterialTheme.colorScheme.error, maxLines = 2, modifier = Modifier.padding(horizontal = pagePadding)) }
+            if (fileExportIds.isEmpty()) fileExport.message?.let { Text(it, maxLines = 2, modifier = Modifier.padding(horizontal = pagePadding)) }
             BatchFailureDetails(state.batchResult)
-            if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = 22.dp))
+            if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = pagePadding))
             if (saved.isEmpty()) {
                 // 只在「整个已存是空的」时候插画：被搜索/过滤筛空是另一回事，配图会让人困惑。
                 EmptyState(
@@ -448,10 +457,10 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                 )
             } else if (layout == LibraryLayout.WATERFALL) {
                 LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Fixed(2),
+                    columns = StaggeredGridCells.Fixed(feedColumns),
                     state = waterfallState,
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(start = 22.dp, end = 22.dp, top = 22.dp, bottom = 30.dp),
+                    contentPadding = PaddingValues(start = pagePadding, end = pagePadding, top = AppSpacing.lg, bottom = AppSpacing.lg),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalItemSpacing = 20.dp,
                 ) {
@@ -479,7 +488,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                                 modifier = Modifier.padding(top = 9.dp))
                             LibraryMetadata(record, Modifier.padding(top = 4.dp), watch)
                             if (canReorder) {
-                                Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.End) {
+                                Row(Modifier.fillMaxWidth().padding(top = AppSpacing.xxs), horizontalArrangement = Arrangement.End) {
                                     Box(Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = .85f))) {
                                         val actions = accessibilityActions(record.id)
                                         AppIcon(AppIcons.Sort, stringResource(R.string.library_drag_handle),
@@ -498,7 +507,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(start = 22.dp, end = 22.dp, top = 22.dp, bottom = 30.dp),
+                    contentPadding = PaddingValues(start = pagePadding, end = pagePadding, top = AppSpacing.lg, bottom = AppSpacing.lg),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(displayed, key = { it.id }) { record ->
@@ -605,18 +614,19 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
                 .clip(CircleShape)
                 .toggleable(value = selected, enabled = selectionEnabled, role = Role.Checkbox,
                     onValueChange = { onSelect() })
-                .semantics { stateDescription = record.title },
+                // 标题读作内容描述；选中状态由 Checkbox 角色自己朗读，不再塞进 stateDescription。
+                .semantics { contentDescription = record.title },
                 contentAlignment = Alignment.Center) {
                 Canvas(Modifier.size(24.dp).alpha(if (selectionEnabled) 1f else .38f)) {
                     val stroke = 2.dp.toPx()
                     val radius = (size.minDimension - stroke) / 2
-                    drawCircle(if (selected) Color(0xFFF2784B) else Color.White.copy(alpha = .18f), radius)
+                    drawCircle(if (selected) BrandColors.selectionIndicator else Color.White.copy(alpha = .18f), radius)
                     drawCircle(Color.White, radius, style = Stroke(stroke))
                     if (selected) {
                         val unit = size.width / 24f
-                        drawLine(Color(0xFF33251F), Offset(7 * unit, 12 * unit),
+                        drawLine(BrandColors.onSelectionIndicator, Offset(7 * unit, 12 * unit),
                             Offset(10.5f * unit, 15.5f * unit), stroke, StrokeCap.Round)
-                        drawLine(Color(0xFF33251F), Offset(10.5f * unit, 15.5f * unit),
+                        drawLine(BrandColors.onSelectionIndicator, Offset(10.5f * unit, 15.5f * unit),
                             Offset(17 * unit, 8.5f * unit), stroke, StrokeCap.Round)
                     }
                 }

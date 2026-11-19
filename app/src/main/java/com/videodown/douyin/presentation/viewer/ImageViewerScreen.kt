@@ -594,10 +594,10 @@ fun ImageViewerScreen(
                                 contentDescription = stringResource(R.string.viewer_thumbnail, index + 1, record.title),
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.size(56.dp)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(MaterialTheme.shapes.medium)
                                     .border(
                                         BorderStroke(if (selected) 2.dp else 1.dp, if (selected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = .28f)),
-                                        RoundedCornerShape(12.dp),
+                                        MaterialTheme.shapes.medium,
                                     )
                                     .background(Color.White.copy(alpha = .08f))
                                     .clickable {
@@ -867,14 +867,14 @@ private fun ImageDateGridSheet(
                             contentDescription = record.title,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxWidth().aspectRatio(1f)
-                                .clip(RoundedCornerShape(10.dp))
+                                .clip(MaterialTheme.shapes.medium)
                                 .border(
                                     BorderStroke(
                                         if (record.id == selectedId) 3.dp else 1.dp,
                                         if (record.id == selectedId) MaterialTheme.colorScheme.primary
                                         else MaterialTheme.colorScheme.outlineVariant,
                                     ),
-                                    RoundedCornerShape(10.dp),
+                                    MaterialTheme.shapes.medium,
                                 )
                                 .clickable { onSelect(record) }
                                 .testTag("date-grid-${record.id}"),

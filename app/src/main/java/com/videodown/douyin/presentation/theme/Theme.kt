@@ -59,10 +59,12 @@ internal val DarkColors = darkColorScheme(
     errorContainer = Color(0xFF93000A), onErrorContainer = Color(0xFFFFDAD6),
 )
 
-private val AppShapes = Shapes(
-    extraSmall = RoundedCornerShape(4.dp), small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(12.dp), large = RoundedCornerShape(16.dp),
-    extraLarge = RoundedCornerShape(28.dp),
+private val AppShapeScheme = Shapes(
+    extraSmall = RoundedCornerShape(AppShapes.extraSmallRadius),
+    small = RoundedCornerShape(AppShapes.smallRadius),
+    medium = RoundedCornerShape(AppShapes.mediumRadius),
+    large = RoundedCornerShape(AppShapes.largeRadius),
+    extraLarge = RoundedCornerShape(AppShapes.extraLargeRadius),
 )
 private val DefaultTypography = Typography()
 private val AppTypography = Typography(
@@ -92,5 +94,5 @@ fun VideoDownTheme(
         darkTheme -> DarkColors
         else -> LightColors
     }
-    MaterialTheme(colorScheme = colors, typography = AppTypography, shapes = AppShapes, content = content)
+    MaterialTheme(colorScheme = colors, typography = AppTypography, shapes = AppShapeScheme, content = content)
 }

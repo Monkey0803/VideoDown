@@ -36,6 +36,10 @@ androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graph
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+# 官方窗口尺寸类（Compact/Medium/Expanded）；版本由 compose-bom 管理。
+androidx-compose-material3-window-sizeclass = { group = "androidx.compose.material3", name = "material3-window-size-class" }
+# 折叠屏 FoldingFeature（WindowInfoTracker）；1.5.0 已在本地 Gradle 缓存中。
+androidx-window = { group = "androidx.window", name = "window", version = "1.5.0" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }

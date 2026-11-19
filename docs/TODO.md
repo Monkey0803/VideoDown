@@ -1,6 +1,6 @@
 # 拾影 功能待办（TODO）
 
-> 更新日期：2026-11-17 ｜ 当前分支：`main` ｜ 版本：1.2.0 / code 7（英文名 Keepsake，更新源走 GitHub Releases）
+> 更新日期：2026-11-19 ｜ 当前分支：`main` ｜ 版本：1.2.0 / code 7（英文名 Keepsake，更新源走 GitHub Releases）
 > 依据：同类应用对标（1DM+、ADM、Snaptube、VidMate、Seal、稞麦视频下载器）与当前源码核查
 > 关联：[功能排查与后续顺序](function-backlog-2026-10-09.md)（历史记录，不再更新）、[P4 验收记录](validation/p4-features-2026-10-09.md)、[P5 验收记录](validation/p5-features-2026-10-09.md)
 
@@ -273,6 +273,44 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
   登录被拒时优先提供重新登录，不能确定是过期还是权限不足时保持中性文案。
 - [x] **G7 信息密度、动效与键盘手感人工收敛** — 默认只展示高频操作，高级能力按内容渐进出现；
   人工复核转场节奏、横屏键盘弹窗页脚和启动器快捷方式视觉，并记录取舍与未覆盖边界。
+
+## Phase J — Material 3 自适应设计收敛（已完成）
+
+> 2026-11-18 按 Material 3 的颜色、字体、形状、层级、组件、布局、导航、动效、无障碍与主题
+> 十个维度完成源码及现有设备截图审核，当前基线为 **78/100**。品牌亮/暗主题、Material You、
+> Material3 组件、840dp 限宽、统一动效和既有无障碍验证继续保留；本阶段只追踪审核发现的未实现项。
+> 每项完成仍须同时具备 JVM 测试、设备测试与 `docs/validation/` 证据。
+> **2026-11-19 完成**，六项验证证据 [Phase J 验收记录](validation/phase-j-2026-11-18.md)（JVM 723 例通过；
+> 真实 480/700/1200dp、浅深色、Material You、200% 字体、TalkBack、横屏与 freeform 截图；
+> 真实分屏与折叠铰链姿态为未覆盖边界）。
+
+- [x] **J1 窗口尺寸类与自适应导航** — 用 Compose Window Size Class 或 Material3 adaptive API
+  替代 `LocalConfiguration.current.screenWidthDp` 与单一 840dp 判断：Compact（<600dp）使用底部
+  Navigation Bar，Medium（600–839dp）使用 Navigation Rail，Expanded（≥840dp）根据四个一级入口
+  的实际密度选择 Rail 或标准 Drawer。保留现有导航 testTag、页面状态恢复、IME 隐藏、下载结果徽标、
+  edge-to-edge 与安全区行为；窗口尺寸变化不得重建或丢失当前页面状态。
+- [x] **J2 各页面 canonical layout 与折叠姿态** — 将当前单一 `AdaptivePage(max = 840.dp)` 拆成
+  可读正文宽度（约 840dp）和工作区宽度（约 1040dp）：首页在 Expanded 下使用「解析主面板 +
+  站点/最近保存」双栏，已存内容按 Compact / Medium / Expanded 形成 2 / 3 / 4 列 Feed，设置页在
+  Expanded 下使用分类列表 + 详情的 list-detail；任务页保持可读单列，不为填满宽屏强行拉宽卡片。
+  使用 WindowManager/`FoldingFeature` 避开铰链，半折叠 tabletop/book 姿态不得把关键操作跨在折痕上。
+- [x] **J3 设计 Token 收敛** — 页面边距统一为 Compact 16dp、Medium+ 24dp，将 `22dp`、`11dp`、
+  `10dp`、`7dp`、`6dp` 等非组件固有间距迁移到 `AppSpacing`；把浏览器、看图器与图标中的私有
+  `RoundedCornerShape` 映射到 `MaterialTheme.shapes`。固定品牌渐变/站点品牌色若必须保留，建立明确的
+  `BrandColors` 语义入口；普通选择态、描边和容器继续使用 `MaterialTheme.colorScheme`，不得因固定暖橙
+  破坏 Material You。播放器/看图器为媒体可读性使用黑白遮罩属于允许的明确例外。
+- [x] **J4 视觉层级与组件语义** — 减少首页「外层描边卡片 + 填充输入框 + 圆角按钮」的嵌套容器，
+  用单一 `surfaceContainerLow` 工作区建立层级；底部导航评估改用 `surfaceContainer` 与正文形成 tonal
+  分隔。任务搜索按当前 Material3 版本评估 SearchBar/搜索 app bar，已存多选改为明确的 contextual
+  toolbar；保持现有复用组件、testTag、文案、主操作层级和渐进披露策略，不为套组件改变业务流程。
+- [x] **J5 无障碍与动效补齐** — 为四个主页面标题补 heading 语义，复核自定义 clickable/toggleable
+  的 Role、状态朗读、焦点顺序和 48dp 触控区域；亮/暗/动态色均验证正文 4.5:1、重要边界 3:1。
+  继续尊重系统动画缩放为 0；在当前 Compose BOM 的公开 API 可用并通过稳定性验证后，再评估
+  `MotionScheme`/spring 替换，不能牺牲设备测试 idle 或共享元素回程的一致性。
+- [x] **J6 设备矩阵与验收证据** — 新增纯逻辑窗口策略/列数测试及对应设备用例，至少覆盖 480dp
+  Compact、700dp Medium、1200dp Expanded、浅色、深色、Material You、200% 字体、TalkBack、
+  横竖屏与真实分屏；有可用 device state 时补 tabletop/book 铰链姿态，否则在验证记录中明确为未覆盖，
+  不得用单纯修改分辨率代替。截图、UI hierarchy、测试命令与结果统一写入新的 `docs/validation/` 记录。
 
 ## Phase F — 哔哩哔哩支持（后续）
 

@@ -9,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -25,7 +27,9 @@ fun TabPageHeader(
     ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
+                // 四个主页面的标题统一是 heading：TalkBack 可按标题导航。
+                modifier = Modifier.semantics { heading() })
             if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp))

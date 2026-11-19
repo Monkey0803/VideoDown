@@ -11,6 +11,8 @@ import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.MediaCover
 import com.videodown.douyin.presentation.components.AdaptivePage
+import com.videodown.douyin.presentation.adaptive.pagePadding
+import com.videodown.douyin.presentation.theme.AppSpacing
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Checkbox
@@ -216,6 +218,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
         )
     }
 
+    val pagePadding = pagePadding()
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbar) },
@@ -223,7 +226,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     ) { padding ->
         AdaptivePage(Modifier.fillMaxSize().padding(padding)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight()) {
-            Column(Modifier.padding(horizontal = 22.dp)) {
+            Column(Modifier.padding(horizontal = pagePadding)) {
                 TabPageHeader(stringResource(R.string.history_header_title))
                 if (!selecting && state.records.isNotEmpty()) {
                     Text(
@@ -249,14 +252,14 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                 trailingIcon = { if (state.taskQuery.text.isNotEmpty()) TextButton(onClick = { queryChanged(state.taskQuery.copy(text = "")) }) { Text(stringResource(R.string.action_clear)) } },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp).testTag("task-search"))
+                modifier = Modifier.fillMaxWidth().padding(horizontal = pagePadding, vertical = AppSpacing.xxs).testTag("task-search"))
             if (UiDensityPolicy.showQueueSummary(state.queue.runningIds.size, state.queue.pendingIds.size)) {
                 Text(stringResource(R.string.history_queue_line, state.queue.maxConcurrent, state.queue.pendingIds.size),
-                    style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp))
-                if (state.queue.runningIds.size > state.queue.maxConcurrent) Text(stringResource(R.string.history_queue_note), modifier = Modifier.padding(horizontal = 22.dp), style = MaterialTheme.typography.labelSmall)
+                    style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = pagePadding, vertical = AppSpacing.xxs))
+                if (state.queue.runningIds.size > state.queue.maxConcurrent) Text(stringResource(R.string.history_queue_note), modifier = Modifier.padding(horizontal = pagePadding), style = MaterialTheme.typography.labelSmall)
             }
             LazyRow(
-                contentPadding = PaddingValues(horizontal = 22.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(horizontal = pagePadding, vertical = AppSpacing.xs),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -277,13 +280,13 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                 }
             }
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 2.dp),
+                Modifier.fillMaxWidth().padding(horizontal = pagePadding - AppSpacing.xs, vertical = AppSpacing.xxs),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.testTag("task-sort")) {
                     TextButton(onClick = { sortExpanded = true }, enabled = !state.batchBusy) {
                         AppIcon(AppIcons.Sort, null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(AppSpacing.xxs))
                         Text(stringResource(taskSortLabelRes(state.taskQuery.sort)))
                     }
                     DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
@@ -313,7 +316,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                     stringResource(R.string.history_delete_selected) to { pendingBatchDelete = selectedIds.toSet() },
                 ))
             BatchFailureDetails(state.batchResult)
-            if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = 22.dp))
+            if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = pagePadding))
             if (state.visibleRecords.isEmpty()) {
                 EmptyState(
                     title = stringResource(if (state.records.isEmpty()) R.string.history_empty else R.string.history_empty_filtered),
@@ -350,8 +353,8 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                 LazyColumn(
                     state = taskListState,
                     modifier = Modifier.testTag("task-list"),
-                    contentPadding = PaddingValues(start = 22.dp, end = 22.dp, bottom = 28.dp),
-                    verticalArrangement = Arrangement.spacedBy(11.dp),
+                    contentPadding = PaddingValues(start = pagePadding, end = pagePadding, bottom = AppSpacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
                 ) {
                     items(taskOrder, key = { it.id }) { record ->
                         // 任务卡随状态进出列表：位置变化用默认曲线，增删用快曲线淡入淡出。
@@ -406,8 +409,8 @@ private fun StatCard(count: Int, label: String, modifier: Modifier) {
     Card(modifier, shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
-        Row(Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.padding(horizontal = AppSpacing.xs, vertical = AppSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.xxs)) {
             Text(count.toString(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary)
             Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -503,8 +506,8 @@ private fun TaskCard(
                             record.resolutionLabel.isBlank() -> sizeText
                             else -> "${record.resolutionLabel} · $sizeText"
                         },
-                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 7.dp))
-                    Row(Modifier.padding(top = 7.dp), verticalAlignment = Alignment.CenterVertically,
+                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = AppSpacing.xxs))
+                    Row(Modifier.padding(top = AppSpacing.xxs), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         AppIcon(when (status) {
                             DownloadStatus.PENDING -> AppIcons.Queue
@@ -634,7 +637,7 @@ private fun TaskCard(
                     color = MaterialTheme.colorScheme.primary,
                     trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 )
-                Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(top = AppSpacing.xxs), verticalAlignment = Alignment.CenterVertically) {
                     Text("${(state.fractionFor(record) * 100).toInt()}% · " +
                         if (status in setOf(DownloadStatus.RUNNING, DownloadStatus.PAUSED) && retryDeadline != null) {
                             stringResource(R.string.history_waiting_retry, retrySeconds)

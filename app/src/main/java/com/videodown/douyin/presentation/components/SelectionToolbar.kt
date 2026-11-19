@@ -1,8 +1,11 @@
 package com.videodown.douyin.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,8 +31,11 @@ internal fun SelectionToolbar(
     onExit: () -> Unit,
     actions: List<Pair<String, () -> Unit>>,
 ) {
+    // 多选期间的 contextual toolbar：用一档 tonal 容器与正文区分，动作仍是原来的三个入口。
     LazyRow(
-        modifier = Modifier.testTag("selection-toolbar"),
+        modifier = Modifier.fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .testTag("selection-toolbar"),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,

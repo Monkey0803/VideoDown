@@ -6,6 +6,9 @@ import com.videodown.douyin.presentation.components.AppDialog
 import com.videodown.douyin.presentation.components.AppDialogButtonRow
 import com.videodown.douyin.presentation.components.AppDialogRadioRow
 import com.videodown.douyin.presentation.components.AdaptivePage
+import com.videodown.douyin.presentation.adaptive.LocalWindowWidth
+import com.videodown.douyin.presentation.adaptive.WindowLayoutPolicy
+import com.videodown.douyin.presentation.adaptive.pagePadding
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 
@@ -31,6 +34,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -40,6 +44,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.Switch
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
@@ -65,6 +70,8 @@ import com.videodown.douyin.presentation.speedLimitText
 import com.videodown.douyin.presentation.themeModeLabelRes
 import com.videodown.douyin.presentation.appLanguageLabelRes
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -515,51 +522,19 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
     }
 
     AdaptivePage(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-    Column(Modifier.fillMaxWidth().fillMaxHeight().verticalScroll(rememberScrollState())
-        .padding(horizontal = AppSpacing.lg)) {
-        when (page) {
+    val windowWidth = LocalWindowWidth.current
+    val listDetail = WindowLayoutPolicy.settingsListDetail(windowWidth)
+    val paneWidth = WindowLayoutPolicy.listPaneWidthDp(windowWidth)
+    val pagePadding = pagePadding()
+    // 详情区在每个分支里复用同一份内容：单栏带返回键，list-detail 的右侧不带。
+    val detailFor: @Composable (SettingsPage, Boolean) -> Unit = { target, showBack ->
+        when (target) {
         SettingsPage.ROOT -> {
         TabPageHeader(stringResource(R.string.settings_header_title), stringResource(R.string.settings_header_subtitle))
-        SettingsCard {
-            SettingsHubRow(
-                icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
-                title = stringResource(R.string.settings_hub_appearance),
-                subtitle = stringResource(R.string.settings_hub_appearance_value),
-                onClick = { page = SettingsPage.APPEARANCE },
-                modifier = Modifier.testTag("settings-open-appearance"),
-            )
-            SettingsHubRow(
-                icon = { AppIcon(AppIcons.Download, null, tint = MaterialTheme.colorScheme.primary) },
-                title = stringResource(R.string.settings_hub_download),
-                subtitle = stringResource(R.string.settings_hub_download_value),
-                onClick = { page = SettingsPage.DOWNLOAD_NETWORK },
-                modifier = Modifier.testTag("settings-open-download"),
-            )
-            SettingsHubRow(
-                icon = { AppIcon(AppIcons.Browser, null, tint = MaterialTheme.colorScheme.primary) },
-                title = stringResource(R.string.settings_hub_accounts),
-                subtitle = stringResource(R.string.settings_hub_accounts_value),
-                onClick = { page = SettingsPage.WEBSITES_ACCOUNTS },
-                modifier = Modifier.testTag("settings-open-accounts"),
-            )
-            SettingsHubRow(
-                icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
-                title = stringResource(R.string.settings_hub_storage),
-                subtitle = stringResource(R.string.settings_hub_storage_value),
-                onClick = { page = SettingsPage.BACKUP_STORAGE },
-                modifier = Modifier.testTag("settings-open-storage"),
-            )
-            SettingsHubRow(
-                icon = { AppIcon(AppIcons.Info, null, tint = MaterialTheme.colorScheme.primary) },
-                title = stringResource(R.string.settings_hub_about),
-                subtitle = stringResource(R.string.settings_hub_about_value),
-                onClick = { page = SettingsPage.ABOUT_UPDATE },
-                modifier = Modifier.testTag("settings-open-about"),
-            )
-        }
+        SettingsCategoryList(target) { page = it }
         }
         SettingsPage.APPEARANCE -> {
-        SettingsSubpageHeader(stringResource(R.string.settings_hub_appearance)) { page = SettingsPage.ROOT }
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_appearance), showBack) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_appearance))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
@@ -579,7 +554,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         }
         }
         SettingsPage.DOWNLOAD_NETWORK -> {
-        SettingsSubpageHeader(stringResource(R.string.settings_hub_download)) { page = SettingsPage.ROOT }
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_download), showBack) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_download))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Queue, null, tint = MaterialTheme.colorScheme.primary) },
@@ -685,7 +660,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
             style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = AppSpacing.xxs, top = AppSpacing.xs))
         }
         SettingsPage.WEBSITES_ACCOUNTS -> {
-        SettingsSubpageHeader(stringResource(R.string.settings_hub_accounts)) { page = SettingsPage.ROOT }
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_accounts), showBack) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_engine))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Settings, null, tint = MaterialTheme.colorScheme.primary) },
@@ -726,7 +701,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         }
         }
         SettingsPage.BACKUP_STORAGE -> {
-        SettingsSubpageHeader(stringResource(R.string.settings_hub_storage)) { page = SettingsPage.ROOT }
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_storage), showBack) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_backup))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.ExportFolder, null, tint = MaterialTheme.colorScheme.primary) },
@@ -755,7 +730,7 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         Spacer(Modifier.height(AppSpacing.lg))
         }
         SettingsPage.ABOUT_UPDATE -> {
-        SettingsSubpageHeader(stringResource(R.string.settings_hub_about)) { page = SettingsPage.ROOT }
+        SettingsSubpageHeader(stringResource(R.string.settings_hub_about), showBack) { page = SettingsPage.ROOT }
         SectionLabel(stringResource(R.string.settings_section_about))
         SettingsCard {
             SettingsRow(icon = { AppIcon(AppIcons.Download, null, tint = MaterialTheme.colorScheme.primary) },
@@ -766,25 +741,102 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
         Spacer(Modifier.height(AppSpacing.lg))
         }
         }
+        }
+    if (listDetail && paneWidth > 0) {
+        Row(Modifier.fillMaxSize()) {
+            Column(
+                Modifier.width(paneWidth.dp).fillMaxHeight()
+                    .verticalScroll(rememberScrollState()).padding(horizontal = pagePadding),
+            ) {
+                TabPageHeader(stringResource(R.string.settings_header_title), stringResource(R.string.settings_header_subtitle))
+                SettingsCategoryList(page.takeIf { it != SettingsPage.ROOT } ?: SettingsPage.APPEARANCE) { page = it }
+            }
+            VerticalDivider(Modifier.fillMaxHeight(), color = MaterialTheme.colorScheme.outlineVariant)
+            Column(
+                Modifier.weight(1f).fillMaxHeight()
+                    .verticalScroll(rememberScrollState()).padding(horizontal = pagePadding),
+            ) {
+                detailFor(page.takeIf { it != SettingsPage.ROOT } ?: SettingsPage.APPEARANCE, false)
+            }
+        }
+    } else {
+        Column(Modifier.fillMaxWidth().fillMaxHeight().verticalScroll(rememberScrollState())
+            .padding(horizontal = pagePadding)) {
+            detailFor(page, true)
+        }
     }
     }
 }
 
 @Composable
-private fun SettingsSubpageHeader(title: String, onBack: () -> Unit) {
+private fun SettingsSubpageHeader(title: String, showBack: Boolean = true, onBack: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = AppSpacing.sm, bottom = AppSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onBack, modifier = Modifier.testTag("settings-back")) {
-            AppIcon(AppIcons.Back, stringResource(R.string.action_back))
+        if (showBack) {
+            IconButton(onClick = onBack, modifier = Modifier.testTag("settings-back")) {
+                AppIcon(AppIcons.Back, stringResource(R.string.action_back))
+            }
         }
         Text(
             title,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = AppSpacing.xs),
+            modifier = Modifier.padding(start = if (showBack) AppSpacing.xs else 0.dp)
+                .semantics { heading() },
+        )
+    }
+}
+
+/**
+ * 设置分类列表。
+ *
+ * 单栏模式充当 ROOT 页；Expanded 的 list-detail 里充当左侧导航。
+ * 两条路径共用同一份行定义与 testTag，展开宽屏不会产生第二套入口。
+ */
+@Composable
+private fun SettingsCategoryList(selected: SettingsPage, onSelect: (SettingsPage) -> Unit) {
+    // list-detail 的左侧导航用 tonal 高亮当前分类；单栏 ROOT 页同样可见，不额外引入控件。
+    @Composable
+    fun rowBackground(page: SettingsPage): Modifier =
+        if (page == selected) Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest) else Modifier
+    SettingsCard {
+        SettingsHubRow(
+            icon = { AppIcon(AppIcons.Appearance, null, tint = MaterialTheme.colorScheme.primary) },
+            title = stringResource(R.string.settings_hub_appearance),
+            subtitle = stringResource(R.string.settings_hub_appearance_value),
+            onClick = { onSelect(SettingsPage.APPEARANCE) },
+            modifier = Modifier.testTag("settings-open-appearance").then(rowBackground(SettingsPage.APPEARANCE)),
+        )
+        SettingsHubRow(
+            icon = { AppIcon(AppIcons.Download, null, tint = MaterialTheme.colorScheme.primary) },
+            title = stringResource(R.string.settings_hub_download),
+            subtitle = stringResource(R.string.settings_hub_download_value),
+            onClick = { onSelect(SettingsPage.DOWNLOAD_NETWORK) },
+            modifier = Modifier.testTag("settings-open-download").then(rowBackground(SettingsPage.DOWNLOAD_NETWORK)),
+        )
+        SettingsHubRow(
+            icon = { AppIcon(AppIcons.Browser, null, tint = MaterialTheme.colorScheme.primary) },
+            title = stringResource(R.string.settings_hub_accounts),
+            subtitle = stringResource(R.string.settings_hub_accounts_value),
+            onClick = { onSelect(SettingsPage.WEBSITES_ACCOUNTS) },
+            modifier = Modifier.testTag("settings-open-accounts").then(rowBackground(SettingsPage.WEBSITES_ACCOUNTS)),
+        )
+        SettingsHubRow(
+            icon = { AppIcon(AppIcons.Storage, null, tint = MaterialTheme.colorScheme.primary) },
+            title = stringResource(R.string.settings_hub_storage),
+            subtitle = stringResource(R.string.settings_hub_storage_value),
+            onClick = { onSelect(SettingsPage.BACKUP_STORAGE) },
+            modifier = Modifier.testTag("settings-open-storage").then(rowBackground(SettingsPage.BACKUP_STORAGE)),
+        )
+        SettingsHubRow(
+            icon = { AppIcon(AppIcons.Info, null, tint = MaterialTheme.colorScheme.primary) },
+            title = stringResource(R.string.settings_hub_about),
+            subtitle = stringResource(R.string.settings_hub_about_value),
+            onClick = { onSelect(SettingsPage.ABOUT_UPDATE) },
+            modifier = Modifier.testTag("settings-open-about").then(rowBackground(SettingsPage.ABOUT_UPDATE)),
         )
     }
 }
