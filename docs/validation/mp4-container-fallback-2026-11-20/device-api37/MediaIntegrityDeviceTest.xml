@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="8" failures="0" errors="0" skipped="0" time="0.000" timestamp="2026-11-20T03:30:28" hostname="localhost">
+  <testsuite name="com.videodown.douyin.MediaIntegrityDeviceTest" tests="8" failures="0" errors="0" skipped="0" time="0.618" timestamp="2026-11-20T03:30:28" hostname="localhost">
+    <properties>
+      <property name="device" value="emulator-5554" />
+    </properties>
+    <testcase name="aTruncatedAudioFileIsRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.001" />
+    <testcase name="theRefusedContainerStillPlaysInTheAppsOwnPlayer" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.459" />
+    <testcase name="aTruncatedContainerThePlatformRefusesIsStillRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.004" />
+    <testcase name="aTruncatedWebmIsRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.008" />
+    <testcase name="aMergedResultWithoutItsAudioTrackIsRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.009" />
+    <testcase name="completeFixturesPassWithTheTracksTheTaskAskedFor" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.122" />
+    <testcase name="aContainerThePlatformExtractorRefusesFallsBackToItsStructure" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.008" />
+    <testcase name="aTruncatedMp4NearTheEndIsRejected" classname="com.videodown.douyin.MediaIntegrityDeviceTest" time="0.007" />
+  </testsuite>
+</testsuites>

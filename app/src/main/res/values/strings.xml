@@ -1059,6 +1059,7 @@
     <string name="viewer_exif_title">EXIF / XMP</string>
     <string name="viewer_exif_loading">正在读取图片信息…</string>
     <string name="viewer_exif_empty">无 EXIF 信息</string>
+    <string name="download_invalid_media">文件校验未通过，已删除未完成的成品</string>
     <string name="download_not_an_image">下载到的文件不是有效图片</string>
     <string name="download_invalid_archive">压缩包不完整或已损坏</string>
     <string name="archive_saved_downloads">已存入 下载/拾影</string>

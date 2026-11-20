@@ -69,6 +69,7 @@ fun reasonKeyRes(key: String?): Int? = when {
     key == "download:out_of_space" -> R.string.download_out_of_space
     key == "download:storage_write" -> R.string.download_storage_write
     key == "download:network" -> R.string.download_network_failed
+    key == com.videodown.douyin.data.download.DOWNLOAD_INVALID_MEDIA -> R.string.download_invalid_media
     key == com.videodown.douyin.data.download.DOWNLOAD_NOT_AN_IMAGE -> R.string.download_not_an_image
     key == com.videodown.douyin.data.download.DOWNLOAD_INVALID_ARCHIVE -> R.string.download_invalid_archive
     key == "generic:network" -> R.string.error_network_failed

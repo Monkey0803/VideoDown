@@ -46,6 +46,18 @@ class AppErrorLanguageTest {
         }
     }
 
+    @Test fun downloadValidationFailuresAreWorded() {
+        // 校验失败会作为记录的 reasonKey 落库，界面只认资源；缺翻译就会变成空白提示。
+        listOf(
+            com.videodown.douyin.data.download.DOWNLOAD_NOT_AN_IMAGE,
+            com.videodown.douyin.data.download.DOWNLOAD_INVALID_ARCHIVE,
+            com.videodown.douyin.data.download.DOWNLOAD_INVALID_MEDIA,
+        ).forEach { key ->
+            val res = reasonKeyRes(key)
+            assertTrue("$key must resolve to copy", res != null && res != 0)
+        }
+    }
+
     @Test fun everyGalleryFailureIsWorded() {
         // A new failure kind cannot ship without a translation.
         val ids = com.videodown.douyin.data.gallery.GalleryExportFailure.entries.map { com.videodown.douyin.core.galleryFailureRes(it) }

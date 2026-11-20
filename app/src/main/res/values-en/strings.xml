@@ -1060,6 +1060,7 @@
     <string name="viewer_exif_title">EXIF / XMP</string>
     <string name="viewer_exif_loading">Reading image details…</string>
     <string name="viewer_exif_empty">No EXIF information</string>
+    <string name="download_invalid_media">The downloaded file failed validation and the unfinished copy was deleted</string>
     <string name="download_not_an_image">The downloaded file is not a valid image</string>
     <string name="download_invalid_archive">The ZIP is incomplete or corrupt</string>
     <string name="archive_saved_downloads">Saved to Downloads/拾影</string>

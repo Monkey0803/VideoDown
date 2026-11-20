@@ -3,6 +3,10 @@
 - `landscape-fixture.mp4`：320×180、60 秒 H.264 无声双色动画，用于真实解码、宽高比、横竖屏切换和无音轨失败测试。
 - `faststart-fixture.mp4`：`landscape-fixture.mp4` 的 faststart 版本（`moov` 移到 `mdat` 之前、`stco` 偏移同步调整），
   用于 I2 的尾部完整性测试：截掉文件末尾后容器仍可打开且声明时长不变，只有接近结尾的有效样本会缺失。
+- `ctts-flags-fixture.mp4`：`faststart-fixture.mp4` 的副本，只把 `ctts` 的 flags 由 0 改成 1（由脚本按盒子改写，
+  不改任何样本数据）。真实来源是 X 的动图 MP4：`ctts` flags 非 0 时 Android 的 MPEG4 解析器会放弃整条轨道
+  （`trackCount` 为 0、文件级 DRM 摘要抛 `IllegalArgumentException`），而 ExoPlayer 照常播放。用于验证下载成品在校验
+  时退回容器结构判定、并仍能播放。
 - `aac-video-fixture.mp4`：320×180、3 秒 MPEG-4 视频和 440 Hz AAC 音轨，用于离线提取、原文件保留、AAC 编码采样一致性及队列暂停恢复。
 - `audio-fixture.m4a`：同一 AAC 音轨，用于应用内播放、系统分享、MediaStore 音乐导出和 SAF 文件复制。
 - `background-audio-fixture.m4a`：30 秒 440 Hz AAC 音轨，用于后台持续播放、锁屏和通知会话测试。

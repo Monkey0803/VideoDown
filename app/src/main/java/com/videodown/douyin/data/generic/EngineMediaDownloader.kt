@@ -6,6 +6,7 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import com.videodown.douyin.data.download.DownloadNetworkPolicy
 import com.videodown.douyin.data.download.DownloadPaths
+import com.videodown.douyin.data.download.Mp4Structure
 import com.videodown.douyin.domain.model.*
 import com.videodown.douyin.domain.model.ExpectedTrack
 import com.videodown.douyin.domain.model.MediaIntegrity
@@ -183,11 +184,17 @@ internal fun validateMediaFile(
     require(file.isFile && file.length() > 0L) { AppText.get(R.string.engine_no_complete_video) }
     val extractor = MediaExtractor()
     try {
-        extractor.setDataSource(file.absolutePath)
-        // Reject encrypted tracks before native file-level metadata.
-        if (extractor.drmInitData != null || !extractor.psshInfo.isNullOrEmpty()) throw VideoEngineException("DRM")
-        val formats = (0 until extractor.trackCount).map {
-            extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME).orEmpty()
+        // 有些真实文件平台解析器读不出来：X 的动图 MP4 把 ctts 的 flags 写成 1，MPEG4 解析器
+        // 直接放弃整条轨道（trackCount = 0，getFileFormat 抛 IllegalArgumentException），
+        // 而同一份字节在 ExoPlayer 里能正常播放。这一档退回容器结构判定，见 [Mp4Structure]。
+        val formats = try {
+            openTracks(extractor, file.absolutePath)
+        } catch (_: Exception) {
+            null
+        }
+        if (formats == null) {
+            validateByContainerStructure(file, expected, requireAudioOnly)
+            return
         }
         val present = buildSet {
             if (formats.any { it.startsWith("video/") }) add(ExpectedTrack.VIDEO)
@@ -201,6 +208,9 @@ internal fun validateMediaFile(
             val mimePrefix = if (track == ExpectedTrack.VIDEO) "video/" else "audio/"
             val index = formats.indexOfFirst { it.startsWith(mimePrefix) }
             val format = extractor.getTrackFormat(index)
+            // 逐轨道判 DRM：文件级的 drmInitData / psshInfo 依赖 getFileFormat，平台读不顺时
+            // 会抛 IllegalArgumentException，把「解析器不认识容器」误报成加密。
+            if (format.isEncrypted()) throw VideoEngineException("DRM")
             extractor.selectTrack(index)
             if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_ENCRYPTED != 0) throw VideoEngineException("DRM")
             // A valid first sample can have a negative presentation timestamp (edit-list preroll).
@@ -220,6 +230,41 @@ internal fun validateMediaFile(
         }
     } finally { extractor.release() }
 }
+
+/** 打开 [path] 并列出各轨道的 MIME；平台读不出任何轨道时返回 null。 */
+private fun openTracks(extractor: MediaExtractor, path: String): List<String>? {
+    extractor.setDataSource(path)
+    if (extractor.trackCount <= 0) return null
+    return (0 until extractor.trackCount).map {
+        extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME).orEmpty()
+    }
+}
+
+/**
+ * 平台解析器读不出轨道时的兜底：只按容器结构确认「完整 + 轨道齐全」。
+ *
+ * 这一档**覆盖不到** I2 的尾部检查——容器都打不开，自然读不到接近结尾的样本。传输层已经
+ * 用 `Content-Length` 对齐了字节数，因此结构完整时保存原文件，比把一份能播放的文件判成失败
+ * 更贴近事实；结构不完整仍按截断处理。
+ */
+private fun validateByContainerStructure(
+    file: File,
+    expected: Set<ExpectedTrack>,
+    requireAudioOnly: Boolean,
+) {
+    when (val structure = Mp4Structure.inspect(file)) {
+        Mp4Structure.NotMp4 -> throw VideoEngineException("UNSUPPORTED")
+        Mp4Structure.Incomplete -> throw VideoEngineException("TRUNCATED")
+        is Mp4Structure.Complete -> {
+            if ((expected - structure.tracks).isNotEmpty()) throw VideoEngineException("MISSING_TRACK")
+            if (requireAudioOnly && ExpectedTrack.VIDEO in structure.tracks) throw VideoEngineException("UNSUPPORTED")
+        }
+    }
+}
+
+/** 轨道是否加密：与 ExoPlayer 一致地看逐轨道标记，而不是文件级的 DRM 摘要。 */
+private fun MediaFormat.isEncrypted(): Boolean =
+    containsKey("crypto-key") || runCatching { (getInteger("is-encrypted") ?: 0) != 0 }.getOrDefault(false)
 
 /**
  * 从声明时长的 90% 处向前找同步帧，再向后推进，返回最后一个有效样本的时间戳。
@@ -248,11 +293,11 @@ internal fun validateAudioTrack(descriptor: FileDescriptor, requireAudioOnly: Bo
     val extractor = MediaExtractor()
     try {
         extractor.setDataSource(descriptor)
-        if (extractor.drmInitData != null || !extractor.psshInfo.isNullOrEmpty()) throw VideoEngineException("DRM")
         val formats = (0 until extractor.trackCount).map { extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME).orEmpty() }
         if (requireAudioOnly) require(formats.none { it.startsWith("video/") }) { AppText.get(R.string.engine_still_has_video) }
         val track = formats.indexOfFirst { it.startsWith("audio/") }
         if (track < 0) throw VideoEngineException("NO_AUDIO")
+        if (extractor.getTrackFormat(track).isEncrypted()) throw VideoEngineException("DRM")
         extractor.selectTrack(track)
         if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_ENCRYPTED != 0) throw VideoEngineException("DRM")
         require(extractor.readSampleData(java.nio.ByteBuffer.allocate(1024 * 1024), 0) > 0) { AppText.get(R.string.engine_audio_no_data) }

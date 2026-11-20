@@ -1,7 +1,13 @@
 package com.videodown.douyin
 
+import android.media.MediaExtractor
+import android.net.Uri
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.videodown.douyin.data.download.Mp4Structure
 import com.videodown.douyin.data.generic.VideoEngineException
 import com.videodown.douyin.data.generic.validateMediaFile
 import com.videodown.douyin.domain.model.ExpectedTrack
@@ -68,6 +74,72 @@ class MediaIntegrityDeviceTest {
         assertEquals("MISSING_TRACK", audioOnly.kind)
     }
 
+
+    /**
+     * 平台解析器拒绝、但容器本身与播放都正常的文件。
+     *
+     * `ctts-flags-fixture.mp4` 是 `faststart-fixture.mp4` 把 `ctts` 的 flags 改成 1（该字段应为 0）
+     * 得到的——X 的动图 MP4 就是这个形态：MPEG4 解析器整条轨道放弃（`trackCount` 为 0，
+     * 文件级 DRM 摘要直接抛 `IllegalArgumentException`），字节却能被 ExoPlayer 正常播放。
+     */
+    @Test fun aContainerThePlatformExtractorRefusesFallsBackToItsStructure() {
+        val file = fixture("ctts-flags-fixture.mp4")
+        assertEquals("平台解析器必须仍然读不出轨道", 0, platformTrackCount(file))
+
+        // 兜底判定：结构完整 + 有视频轨道 -> 通过。
+        assertEquals(Mp4Structure.Complete(setOf(ExpectedTrack.VIDEO)), Mp4Structure.inspect(file))
+        validateMediaFile(file, setOf(ExpectedTrack.VIDEO))
+        // 任务要求音轨时仍然必须失败：容器里只有一条视频轨。
+        assertEquals("MISSING_TRACK", failureOf { validateMediaFile(file, setOf(ExpectedTrack.VIDEO, ExpectedTrack.AUDIO)) }.kind)
+    }
+
+    @Test fun theRefusedContainerStillPlaysInTheAppsOwnPlayer() {
+        val file = fixture("ctts-flags-fixture.mp4")
+        var player: ExoPlayer? = null
+        instrumentation.runOnMainSync {
+            player = ExoPlayer.Builder(context).build().apply {
+                setMediaItem(MediaItem.fromUri(Uri.fromFile(file)))
+                prepare()
+            }
+        }
+        val active = player ?: error("player was not created")
+        try {
+            val deadline = System.currentTimeMillis() + PLAYBACK_TIMEOUT_MS
+            var state = Player.STATE_IDLE
+            var durationMs = 0L
+            while (System.currentTimeMillis() < deadline) {
+                instrumentation.runOnMainSync {
+                    state = active.playbackState
+                    durationMs = active.duration
+                }
+                if (state == Player.STATE_READY) break
+                if (state == Player.STATE_ENDED) error("player ended before becoming ready")
+                Thread.sleep(200)
+            }
+            assertEquals("the app's own player must be able to prepare the file", Player.STATE_READY, state)
+            assertTrue("the player must read a positive duration, got $durationMs", durationMs > 0L)
+        } finally {
+            instrumentation.runOnMainSync { active.release() }
+        }
+    }
+
+    @Test fun aTruncatedContainerThePlatformRefusesIsStillRejected() {
+        val error = failureOf {
+            validateMediaFile(truncated("ctts-flags-fixture.mp4", 0.6), setOf(ExpectedTrack.VIDEO))
+        }
+        assertEquals("TRUNCATED", error.kind)
+    }
+
+    private fun platformTrackCount(file: File): Int {
+        val extractor = MediaExtractor()
+        return try {
+            extractor.setDataSource(file.absolutePath)
+            extractor.trackCount
+        } finally {
+            extractor.release()
+        }
+    }
+
     @Test fun aTruncatedMp4NearTheEndIsRejected() {
         val error = failureOf {
             validateMediaFile(truncated("faststart-fixture.mp4", 0.6), setOf(ExpectedTrack.VIDEO))
@@ -87,5 +159,9 @@ class MediaIntegrityDeviceTest {
             validateMediaFile(truncated("audio-fixture.m4a", 0.6), setOf(ExpectedTrack.AUDIO))
         }.exceptionOrNull()
         assertTrue("truncated audio must never pass validation, got $error", error != null)
+    }
+
+    private companion object {
+        const val PLAYBACK_TIMEOUT_MS = 15_000L
     }
 }

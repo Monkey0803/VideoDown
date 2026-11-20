@@ -1,5 +1,6 @@
 package com.videodown.douyin.data.download
 
+import com.videodown.douyin.data.generic.VideoEngineException
 import com.videodown.douyin.data.generic.validateMediaFile
 import com.videodown.douyin.domain.model.ExpectedTrack
 import com.videodown.douyin.domain.model.MediaIntegrityPolicy
@@ -14,6 +15,9 @@ import java.util.zip.ZipFile
 const val DOWNLOAD_NOT_AN_IMAGE = "download:not_an_image"
 const val DOWNLOAD_INVALID_ARCHIVE = "download:invalid_archive"
 
+/** 平台解析器抛出的非受控异常：文件还在，但没能校验通过。 */
+const val DOWNLOAD_INVALID_MEDIA = "download:invalid_media"
+
 /** 下载完成后的校验失败；[reasonKey] 是持久化用的 key，不是给用户看的句子。 */
 class DownloadContentException(val reasonKey: String) : Exception(reasonKey)
 
@@ -24,12 +28,22 @@ class DownloadContentException(val reasonKey: String) : Exception(reasonKey)
  * 现在按 [DownloadRecord.mediaKind] 分派，视频校验保持不变。
  */
 fun validateDownloadedFile(file: File, record: DownloadRecord) {
-    when {
-        record.mediaKind == MediaKind.IMAGE -> validateImage(file)
-        record.mediaKind == MediaKind.ARCHIVE -> validateArchive(file, record.archiveEntries)
-        // 旧音频记录没有 AUDIO 这个 mediaKind，按 `audioOnly` 兜底，与播放器分流一致。
-        record.isAudio -> validateMediaFile(file, setOf(ExpectedTrack.AUDIO))
-        else -> validateMediaFile(file, MediaIntegrityPolicy.expectedTracks(record.media))
+    try {
+        when {
+            record.mediaKind == MediaKind.IMAGE -> validateImage(file)
+            record.mediaKind == MediaKind.ARCHIVE -> validateArchive(file, record.archiveEntries)
+            // 旧音频记录没有 AUDIO 这个 mediaKind，按 `audioOnly` 兜底，与播放器分流一致。
+            record.isAudio -> validateMediaFile(file, setOf(ExpectedTrack.AUDIO))
+            else -> validateMediaFile(file, MediaIntegrityPolicy.expectedTracks(record.media))
+        }
+    } catch (error: DownloadContentException) {
+        throw error
+    } catch (error: VideoEngineException) {
+        throw error
+    } catch (error: Exception) {
+        // 平台解析器偶尔会用非法参数异常拒绝一份完好的容器。这类失败原先一路冒到下载引擎，
+        // 落成「UNKNOWN + 空提示」，用户只看到「下载失败」。归成校验失败后至少有一句原因。
+        throw DownloadContentException(DOWNLOAD_INVALID_MEDIA)
     }
 }
 
