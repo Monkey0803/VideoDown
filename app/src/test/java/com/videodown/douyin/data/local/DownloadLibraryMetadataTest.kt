@@ -66,10 +66,10 @@ class DownloadLibraryMetadataTest {
         assertFalse(motion.exists())
         assertFalse(File(journal, "rename.json").exists())
     }
-    @Test fun `invalid names and active missing or outside files are rejected without loss`() = runBlocking {
+    @Test fun `empty or overlength names and active missing or outside files are rejected without loss`() = runBlocking {
         val before = saved(); val repo = repository()
-        assertTrue(repo.update(before.id, "../escape", null, null).isFailure)
-        assertTrue(repo.update(before.id, "", null, null).isFailure)
+        assertTrue(repo.update(before.id, "   ", null, null).isFailure)
+        assertTrue(repo.update(before.id, "长".repeat(81), null, null).isFailure)
         assertTrue(repo.update(before.id, null, null, "bad/folder").isFailure)
         active = setOf(before.id); assertTrue(repo.update(before.id, null, true, null).isFailure); active = emptySet()
         val outside = File(temp.root, "outside.mp4").apply { writeText("keep") }
@@ -106,6 +106,27 @@ class DownloadLibraryMetadataTest {
         assertEquals(before.title, after.title)
         assertEquals(before.filePath, after.filePath)
         assertEquals("旅行", after.folder)
+    }
+    @Test fun `platform caption line breaks do not block a rename and never reach the file name`() = runBlocking {
+        val before = saved()
+        // 平台标题本身就是多行文本（X 的推文换行会原样进库），重命名不能因此失败。
+        val caption = "还是得前排32\n\n这钱\u0001花的真值\n风光无限好啊"
+        assertTrue(repository().update(before.id, caption, null, "美女").isSuccess)
+        val after = history.getById(before.id)!!
+        assertEquals(caption, after.title)
+        assertEquals("美女", after.folder)
+        assertTrue(File(after.filePath!!).isFile)
+        assertFalse(after.fileName.any { it.isISOControl() })
+        assertTrue(after.fileName.startsWith("还是得前排32 这钱 花的真值 风光无限好啊_"))
+        assertTrue(File(after.filePath!!).parentFile == paths.downloadDir)
+    }
+    @Test fun `caption punctuation cannot turn a title into a path outside the download directory`() = runBlocking {
+        val before = saved()
+        assertTrue(repository().update(before.id, "../../逃逸/名字?", null, null).isSuccess)
+        val after = history.getById(before.id)!!
+        assertEquals("../../逃逸/名字?", after.title)
+        assertTrue(File(after.filePath!!).isFile)
+        assertEquals(paths.downloadDir.canonicalFile, File(after.filePath!!).canonicalFile.parentFile)
     }
     @Test fun `journal recovers a process interruption between file move and history commit`() = runBlocking {
         val before = saved()

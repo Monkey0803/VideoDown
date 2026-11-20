@@ -179,7 +179,7 @@ class LibraryReorderDeviceTest {
         // 多选：列表正被挑出来批量处理，此时拖出来的顺序不是用户想固定的。
         compose.onNodeWithText("多选").performClick()
         compose.waitUntil(5_000) { handles() == 0 }
-        compose.onNodeWithText("取消多选").performClick()
+        compose.onNodeWithText("完成选择").performClick()
         compose.waitUntil(5_000) { handles() == 1 }
 
         // 分类过滤：三条都属于「未分类」，筛完列表还是三条，但顺序不再由用户决定。

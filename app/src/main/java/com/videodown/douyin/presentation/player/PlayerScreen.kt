@@ -123,6 +123,9 @@ import com.videodown.douyin.data.playback.VideoFrameProvider
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.core.VaultAccess
+import com.videodown.douyin.domain.model.DownloadRecord
+import com.videodown.douyin.domain.model.VaultPolicy
 import com.videodown.douyin.presentation.galleryErrorMessage
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.formatBytes
@@ -163,6 +166,10 @@ fun PlayerScreen(
     // 两个作用域为 null 时（设备测试直接渲染播放器）不参与共享过渡，行为与改造前一致。
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedVisibilityScope: AnimatedVisibilityScope? = null,
+    /** 文件被删/丢失时就地恢复；由导航层决定是重新下载还是重新解析。 */
+    onRedownload: (DownloadRecord) -> Unit = {},
+    onReparse: (DownloadRecord) -> Unit = {},
+    onOpenTasks: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -198,10 +205,17 @@ fun PlayerScreen(
     var rawBuffering by remember { mutableStateOf(false) }
     var showBuffering by remember { mutableStateOf(false) }
     var playbackError by remember { mutableStateOf<PlaybackException?>(null) }
+    var controllerRetry by remember { mutableIntStateOf(0) }
+    var vaultUnlocked by remember(recordId) { mutableStateOf(VaultAccess.isUnlocked()) }
+    var showGestureHelp by remember { mutableStateOf(false) }
     var swipeBrightnessStart by remember { mutableStateOf(0f) }
     var swipeVolumeStart by remember { mutableStateOf(0f) }
 
     LaunchedEffect(recordId) { viewModel.load(recordId) }
+    LaunchedEffect(state.record?.id) {
+        if (state.record?.isPrivate == true) vaultUnlocked = VaultAccess.isUnlocked()
+    }
+    val privateLocked = state.record?.isPrivate == true && !vaultUnlocked
 
     val localPlayer = remember(context) {
         val renderers = DefaultRenderersFactory(context).setEnableDecoderFallback(true)
@@ -214,7 +228,7 @@ fun PlayerScreen(
     val isAudio = state.record?.isAudio == true
     var controller by remember { mutableStateOf<MediaController?>(null) }
     var connectionError by remember { mutableStateOf(false) }
-    DisposableEffect(context, isAudio) {
+    DisposableEffect(context, isAudio, controllerRetry) {
         if (!isAudio) return@DisposableEffect onDispose { }
         connectionError = false
         val future = MediaController.Builder(context,
@@ -317,7 +331,8 @@ fun PlayerScreen(
         }
     }
     val sidecar = remember(filePath) { filePath?.let { SubtitleSidecarResolver.find(File(it)) } }
-    LaunchedEffect(filePath, state.fileExists, player) {
+    LaunchedEffect(filePath, state.fileExists, player, privateLocked) {
+        if (privateLocked) return@LaunchedEffect
         if (filePath != null && state.fileExists && (!isAudio || controller != null)) {
             if (!isAudio) AudioPlaybackService.pauseActive()
             if (player.currentMediaItem?.mediaId != recordId) {
@@ -341,8 +356,8 @@ fun PlayerScreen(
             } else if (player.playbackState == Player.STATE_ENDED) { player.seekTo(0); player.play() }
         }
     }
-    DisposableEffect(pipActivity, player, isAudio, state.fileExists, videoAspectRatio) {
-        pipActivity?.configurePip(player.takeIf { !isAudio && state.fileExists }, videoAspectRatio)
+    DisposableEffect(pipActivity, player, isAudio, state.fileExists, videoAspectRatio, privateLocked) {
+        pipActivity?.configurePip(player.takeIf { !privateLocked && !isAudio && state.fileExists }, videoAspectRatio)
         onDispose { pipActivity?.configurePip(null) }
     }
     val owner = LocalLifecycleOwner.current
@@ -441,6 +456,23 @@ fun PlayerScreen(
             onClick = { viewModel.setSleepTimer(0); choosingSleep = false }) { Text(stringResource(R.string.player_sleep_off)) }
     }
     if (choosingTracks && !inPip && !isAudio) VideoTrackDialog(player) { choosingTracks = false }
+    if (showGestureHelp && !inPip) AppDialog(
+        onDismissRequest = { showGestureHelp = false },
+        icon = AppIcons.Info,
+        title = stringResource(R.string.player_gestures_title),
+        actions = {
+            AppDialogButtonRow {
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { showGestureHelp = false }) { Text(stringResource(R.string.action_close)) }
+            }
+        },
+    ) {
+        Text(
+            stringResource(R.string.player_gestures_body),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 
     DisposableEffect(activity) {
         val previousOrientation = activity?.requestedOrientation
@@ -548,6 +580,20 @@ fun PlayerScreen(
             if (result == SnackbarResult.ActionPerformed) openPipSettings()
         }
     }
+    fun requestVaultUnlock() {
+        val authenticator = ServiceLocator.vaultAuthenticator
+        if (activity == null || !authenticator.isAvailable(activity)) {
+            scope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_no_keyguard)) }
+            return
+        }
+        val started = authenticator.authenticate(activity) { granted ->
+            if (granted) {
+                VaultAccess.unlock()
+                vaultUnlocked = true
+            }
+        }
+        if (!started) scope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_unavailable)) }
+    }
 
     val audioManager = remember(context) { context.getSystemService(android.media.AudioManager::class.java) }
     val maxVolume = remember(audioManager) { audioManager?.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC) ?: 1 }
@@ -637,7 +683,11 @@ fun PlayerScreen(
             if (!fullscreen && !inPip) {
                 TopAppBar(
                     title = {
-                        Text(state.record?.title ?: stringResource(R.string.player_playing_title), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        val title = state.record?.let { record ->
+                            VaultPolicy.title(record, unlocked = vaultUnlocked)
+                                ?: stringResource(R.string.vault_locked_title)
+                        } ?: stringResource(R.string.player_playing_title)
+                        Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
@@ -661,7 +711,7 @@ fun PlayerScreen(
                 (if (fullscreen || inPip) Modifier.fillMaxSize() else Modifier.fillMaxWidth().aspectRatio(videoAspectRatio))
                     .background(Color.Black),
             ) {
-                    val showCoverPoster = shouldShowPlayerPoster(
+                    val showCoverPoster = !privateLocked && shouldShowPlayerPoster(
                         posterAvailable = !coverUrl.isNullOrBlank(),
                         firstFrameRendered = firstFrameRendered,
                         isAudio = state.record?.isAudio == true,
@@ -678,6 +728,7 @@ fun PlayerScreen(
                         )
                     }
                     when {
+                        privateLocked -> VaultLockedPlayer(onUnlock = ::requestVaultUnlock, onBack = onBack)
                         state.loading || (isAudio && controller == null && !connectionError) -> {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -779,6 +830,23 @@ fun PlayerScreen(
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(stringResource(if (connectionError) R.string.player_audio_service_failed else R.string.player_file_missing), color = Color.White)
                                     Spacer(Modifier.height(8.dp))
+                                    state.record?.let { record ->
+                                        if (connectionError) {
+                                            OutlinedButton(onClick = { controllerRetry++ }) {
+                                                Text(stringResource(R.string.player_retry_audio_service))
+                                            }
+                                        } else {
+                                            OutlinedButton(onClick = { onRedownload(record); onOpenTasks() }) {
+                                                Text(stringResource(R.string.action_retry_download))
+                                            }
+                                            val page = record.sourcePageUrl.ifBlank { record.media?.pageUrl.orEmpty() }
+                                            if (page.isNotBlank()) {
+                                                TextButton(onClick = { onReparse(record) }) {
+                                                    Text(stringResource(R.string.recovery_reparse))
+                                                }
+                                            }
+                                        }
+                                    }
                                     OutlinedButton(onClick = onBack) { Text(stringResource(R.string.action_back)) }
                                 }
                             }
@@ -786,7 +854,7 @@ fun PlayerScreen(
                     }
 
             }
-            if (!fullscreen && !inPip) {
+            if (!fullscreen && !inPip && !privateLocked) {
                 state.record?.let { record ->
                     Column(
                         Modifier.padding(16.dp).fillMaxWidth(),
@@ -851,6 +919,9 @@ fun PlayerScreen(
                             PlayerIconAction(stringResource(if (exporting) R.string.player_transferring else if (record.isAudio) R.string.player_transfer_audio else R.string.player_transfer_video),
                                 if (record.isAudio) AppIcons.Audio else AppIcons.SaveAlbum,
                                 enabled = state.fileExists && !exporting, busy = exporting, onClick = ::requestExport)
+                            if (!record.isAudio) PlayerIconAction(stringResource(R.string.player_gestures_action), AppIcons.Info, enabled = state.fileExists) {
+                                showGestureHelp = true
+                            }
                             PlayerIconAction(stringResource(R.string.player_share), AppIcons.Share, enabled = state.fileExists) {
                                 val file = File(record.filePath.orEmpty())
                                 if (!DouyinIntents.shareFile(context, file)) scope.launch { snackbar.showSnackbar(resources.getString(R.string.player_share_failed)) }
@@ -870,6 +941,23 @@ fun PlayerScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun VaultLockedPlayer(onUnlock: () -> Unit, onBack: () -> Unit) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AppIcon(AppIcons.Storage, null, tint = Color.White, modifier = Modifier.size(36.dp))
+            Spacer(Modifier.height(12.dp))
+            Text(stringResource(R.string.vault_locked_title), color = Color.White,
+                style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.vault_unlock_subtitle), color = Color.White.copy(alpha = .75f),
+                style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp, start = 24.dp, end = 24.dp))
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(onClick = onUnlock) { Text(stringResource(R.string.vault_unlock_title)) }
+            TextButton(onClick = onBack) { Text(stringResource(R.string.action_back), color = Color.White) }
         }
     }
 }

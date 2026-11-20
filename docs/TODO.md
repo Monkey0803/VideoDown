@@ -216,6 +216,14 @@ DRM 解密、直播录制、整站采集、torrent / magnet、悬浮窗（画中
   `SubtitleDownloadDeviceTest` / `PlaylistCollectionDeviceTest` 复跑通过。**未覆盖**：
   无声明时长的容器仍只做首样本校验；不检测中间空洞；缺音轨的重试收益、真实 CDN 断流、
   API 26/28 与平板/折叠屏未验证。
+  2026-11-20 补丁：平台解析器读不出轨道的容器（X 动图 MP4 的 `ctts` flags 非 0，`trackCount` 为 0
+  且文件级 DRM 摘要抛 `IllegalArgumentException`）不再落成 UNKNOWN 失败——DRM 改为逐轨道判定，
+  读不出轨道时退回纯 Kotlin `data/download/Mp4Structure.kt` 做「盒子完整 + 轨道齐全」判定，
+  结构不完整仍报 `TRUNCATED`；未分类的平台异常归一成 `download:invalid_media`。
+  新增 `ctts-flags-fixture.mp4`、`Mp4StructureTest`（13 例）与 `MediaIntegrityDeviceTest` 3 例
+  （平台拒绝 + 结构兜底 + 应用内 ExoPlayer 播放），JVM 742 例通过；证据见
+  [验收记录](validation/mp4-container-fallback-2026-11-20.md)。该补丁的**未覆盖**：
+  兜底档不做尾部样本检查、只认 ISO BMFF（WebM 仍需平台解析器）、只在 API 37 模拟器验证。
 - [x] **I3 相册与公共目录导出幂等化**（2026-11-17 完成，证据见 [验收记录](validation/gallery-export-idempotency-2026-11-17.md)）—
   新增 `ExportReceipt` / `GalleryExportReceiptStore`：回执由「记录 id + 每个源文件的名称/大小/
   修改时间指纹 + 目标 URI 列表」组成，原子落盘 `filesDir/export-receipts.json`；

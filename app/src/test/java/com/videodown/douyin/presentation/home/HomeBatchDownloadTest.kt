@@ -48,6 +48,13 @@ class HomeBatchDownloadTest {
         assertNotNull(vm.state.value.duplicates); assertTrue(downloader.started.isEmpty())
         vm.dismissDuplicates(); runCurrent(); assertTrue(downloader.started.isEmpty())
     }
+    @Test fun `private duplicate does not leak into the home prompt`() = runTest(dispatcher) {
+        downloader.duplicates[first.selectionKey()] = record(first).copy(isPrivate = true)
+        vm.download(); runCurrent()
+        assertNull("私密记录不应在首页提示里出现", vm.state.value.duplicates)
+        assertEquals(listOf("one" to "1080P"), downloader.started)
+    }
+
     @Test fun `batch skip downloads nonduplicate selections only`() = runTest(dispatcher) {
         downloader.duplicates[first.selectionKey()] = record(first)
         vm.selectAllMedia(); vm.downloadSelected(); runCurrent()

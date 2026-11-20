@@ -65,8 +65,12 @@ class DownloadPaths private constructor(private val baseDirectory: () -> File) {
         return "${safeTitle}_image${count.coerceAtLeast(1)}_$safeId.zip"
     }
 
+    /**
+     * 标题原文（平台文案）可能带换行、制表符或其它控制字符；写盘前统一换成空格。
+     * 这里是文件名安全的唯一出口：重命名与首次下载都经由 [buildFileName]，不要绕过它。
+     */
     private fun sanitizeTitle(title: String, fallback: String): String = title
-        .replace(Regex("[\\\\/:*?\"<>|\\r\\n\\t]"), " ")
+        .replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), " ")
         .replace(Regex("\\s+"), " ")
         .trim()
         .take(60)

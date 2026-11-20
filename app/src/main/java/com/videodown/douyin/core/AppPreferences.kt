@@ -86,6 +86,11 @@ class AppPreferences(context: Context) {
         }
 
     /** 首次使用卡片被用户主动关闭后不再重复出现；升级不会重置这个选择。 */
+    /** 首次完成下载后提示文件在应用专属目录；只提示一次。 */
+    var downloadLocationHintSeen: Boolean
+        get() = store.getBoolean("download_location_hint_seen", false)
+        set(value) { store.edit().putBoolean("download_location_hint_seen", value).apply() }
+
     private val _firstUseGuideDismissed = MutableStateFlow(store.getBoolean("first_use_guide_dismissed", false))
     val firstUseGuideDismissedChanges = _firstUseGuideDismissed.asStateFlow()
 

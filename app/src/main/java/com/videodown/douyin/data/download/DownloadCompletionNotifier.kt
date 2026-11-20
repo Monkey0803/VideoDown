@@ -45,6 +45,32 @@ class DownloadCompletionNotifier(private val context: Context, private val prefe
         }
     }
 
+    /**
+     * 后台下载失败的通知：只在用户已开启「完成时通知」时发送，复用同一个渠道。
+     *
+     * 私密记录照旧不显示标题、不深链到播放器；点击只进入任务页看原因与恢复操作。
+     */
+    fun notifyFailed(record: DownloadRecord) {
+        if (!preferences.notifyOnCompletion || !areNotificationsEnabled(context)) return
+        val intent = Intent(context, MainActivity::class.java)
+            .setAction(DownloadService.ACTION_OPEN_TASKS)
+            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(com.videodown.douyin.R.drawable.ic_shiying_error)
+            .setContentTitle(context.getString(com.videodown.douyin.R.string.notification_download_failed))
+            .setContentText(VaultPolicy.notificationTitle(record) ?: context.getString(com.videodown.douyin.R.string.vault_locked_title))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(com.videodown.douyin.R.string.notification_download_failed_body)))
+            .setAutoCancel(true)
+            .setContentIntent(PendingIntent.getActivity(context, 3, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+            .build()
+        try {
+            NotificationManagerCompat.from(context).notify(record.id, 1003, notification)
+        } catch (_: SecurityException) {
+            // Permission can be revoked between the check and notify; the task still exists.
+        }
+    }
+
     companion object {
         const val CHANNEL_ID = "download_completions"
         const val ACTION_OPEN_LIBRARY = "com.videodown.douyin.action.OPEN_LIBRARY"

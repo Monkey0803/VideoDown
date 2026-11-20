@@ -206,8 +206,8 @@
     <string name="settings_auto_resume_off">An interrupted task waits for a manual resume</string>
     <string name="settings_notify_row">Notify when finished</string>
     <string name="settings_notify_unavailable">System notifications are off; turn this on to grant them</string>
-    <string name="settings_notify_on">Tells you when a video has finished</string>
-    <string name="settings_notify_off">No reminder when a download finishes</string>
+    <string name="settings_notify_on">Tells you when a download finishes or fails</string>
+    <string name="settings_notify_off">No reminder when a download finishes or fails</string>
     <string name="settings_individual_row">Per-task notifications</string>
     <string name="settings_individual_on">Each task gets its own card with pause and resume</string>
     <string name="settings_individual_off">All tasks share one summary card</string>
@@ -349,9 +349,9 @@
     <string name="history_speed_follow_global">Follow global</string>
     <string name="history_delete_title">Delete this download task?</string>
     <string name="history_delete_body">This deletes the record for “%1$s” and its downloaded file.</string>
-    <string name="history_stat_running">Running</string>
-    <string name="history_stat_done">Finished</string>
-    <string name="history_stat_resumable">Resumable</string>
+    <string name="task_stat_running">%1$d active</string>
+    <string name="task_stat_completed">%1$d complete</string>
+    <string name="task_stat_recoverable">%1$d resumable</string>
     <string name="history_search_hint">Search title or author</string>
     <string name="history_queue_line">%1$d at once · %2$d queued</string>
     <string name="history_queue_note">Running tasks finish first; new ones wait for a slot</string>
@@ -424,7 +424,7 @@
     <string name="library_empty_filtered">No matching videos</string>
     <string name="library_empty_hint">Downloaded images, videos, audio, and archives appear here.</string>
     <string name="library_start_download">Start a download</string>
-    <string name="library_filter">Filter</string>
+    <string name="library_filter">Filter &amp; sort</string>
     <string name="library_filter_count">Filters %1$d</string>
     <string name="library_filter_title">Filter saved items</string>
     <string name="library_apply_filters">View results</string>
@@ -767,6 +767,8 @@
     <string name="pip_resume_playback">Resume playback</string>
 
     <!-- Completion notification -->
+    <string name="notification_download_failed">Download not finished</string>
+    <string name="notification_download_failed_body">Open Keepsake to see why and resume the download.</string>
     <string name="notification_download_complete">Download complete</string>
     <string name="notification_kind_audio">Audio</string>
     <string name="notification_kind_video">Video</string>
@@ -929,7 +931,7 @@
     <!-- Internal invariants -->
     <string name="meta_record_missing">The record no longer exists</string>
     <string name="meta_only_saved_files">Only saved files can be organised</string>
-    <string name="meta_name_invalid">The name cannot be empty or contain path separators or control characters</string>
+    <string name="meta_name_invalid">The name cannot be empty or longer than 80 characters</string>
     <string name="meta_category_invalid">The category name cannot be used</string>
     <string name="meta_local_file_missing">The local file does not exist</string>
     <string name="meta_local_file_unusable">The local file cannot be used</string>
@@ -1100,4 +1102,23 @@
     <string name="site_channel_fashion">Fashion</string>
     <string name="site_channel_tech">Tech</string>
     <string name="site_channel_short_video">Short videos</string>
+
+    <string name="action_undo">Undo</string>
+    <string name="history_filter_recoverable">Resumable</string>
+    <string name="history_clear_completed">Clear completed</string>
+    <string name="history_cleared_completed">%1$d completed task(s) removed from Tasks; files and Saved items are unaffected</string>
+    <string name="task_file_missing">File is missing; download it again</string>
+    <string name="library_more_actions">More actions</string>
+    <string name="library_open_archive_failed">No app can open this archive; returned to Saved</string>
+    <string name="player_retry_audio_service">Reconnect</string>
+    <string name="player_gestures_action">Gestures</string>
+    <string name="player_gestures_title">Playback gestures</string>
+    <string name="player_gestures_body">Double-tap the left/right half to skip back/forward 10 seconds.\nDrag horizontally to preview and seek.\nSwipe vertically on the left half for brightness, right half for volume.\nLong-press for temporary 2× playback; release to restore.</string>
+    <string name="home_cancel_parse">Cancel parsing</string>
+    <string name="home_download_location_hint">Files live in the app-private folder and are removed on uninstall. Turn on gallery auto-save in Settings to keep a copy.</string>
+    <string name="sites_watch_deleted">Watch history deleted</string>
+    <string name="sites_clear_title">Clear all watch history?</string>
+    <string name="sites_clear_body">This only clears the Sites watch history; no downloaded files are deleted.</string>
+    <string name="sites_clear_confirm">Clear history</string>
+    <string name="settings_storage_note">Downloaded files live in the app-private folder and are removed when the app is uninstalled. Turn on "Save to gallery after download" above to keep a copy.</string>
 </resources>

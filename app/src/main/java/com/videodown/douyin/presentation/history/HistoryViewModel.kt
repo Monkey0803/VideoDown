@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class HistoryFilter { ALL, RUNNING, COMPLETED }
+enum class HistoryFilter { ALL, RUNNING, RECOVERABLE, COMPLETED }
 
 /** The batch a user ran; the screen turns this into copy. */
 enum class BatchOperation {
@@ -63,12 +63,22 @@ data class HistoryUiState(
     /** 已完成磁盘快照装载；空列表也可能是有效的已装载结果。 */
     val hydrated: Boolean = false,
 ) {
+    /**
+     * 任务页可见的记录。
+     *
+     * [DownloadRecord.taskArchived] 只隐藏任务页，不影响「已存」；私密完成项也不在任务页出现，
+     * 避免任务卡封面、播放和分享绕过保险箱门禁。
+     */
+    val taskRecords: List<DownloadRecord>
+        get() = records.filterNot { it.taskArchived || (it.isPrivate && statusFor(it) == DownloadStatus.COMPLETED) }
+
     val visibleRecords: List<DownloadRecord>
         get() {
             val matching = when (filter) {
-                HistoryFilter.ALL -> records
-                HistoryFilter.RUNNING -> records.filter { statusFor(it) == DownloadStatus.RUNNING || statusFor(it) == DownloadStatus.PENDING }
-                HistoryFilter.COMPLETED -> records.filter { statusFor(it) == DownloadStatus.COMPLETED }
+                HistoryFilter.ALL -> taskRecords
+                HistoryFilter.RUNNING -> taskRecords.filter { statusFor(it) == DownloadStatus.RUNNING || statusFor(it) == DownloadStatus.PENDING }
+                HistoryFilter.RECOVERABLE -> taskRecords.filter { statusFor(it) == DownloadStatus.PAUSED || statusFor(it) == DownloadStatus.FAILED }
+                HistoryFilter.COMPLETED -> taskRecords.filter { statusFor(it) == DownloadStatus.COMPLETED }
             }
             return TaskListOrder.apply(
                 records = matching,
@@ -80,7 +90,7 @@ data class HistoryUiState(
         }
 
     val activeCount: Int
-        get() = records.count { statusFor(it) == DownloadStatus.RUNNING || statusFor(it) == DownloadStatus.PENDING }
+        get() = taskRecords.count { statusFor(it) == DownloadStatus.RUNNING || statusFor(it) == DownloadStatus.PENDING }
 
     fun progressFor(id: String): DownloadProgress? = progress[id]
 
@@ -262,6 +272,31 @@ class HistoryViewModel(
     fun pauseAll() {
         if (_state.value.batchBusy) return
         viewModelScope.launch { downloader.pauseAll() }
+    }
+
+    /**
+     * 「清除已完成」：只把它们从任务列表归档，不删除记录、文件和已存内容。
+     *
+     * 任务页与已存页共用记录，直接删除会让已存内容消失、文件变成孤儿；归档字段只影响任务页。
+     */
+    fun archiveCompleted(onDone: (Set<String>) -> Unit = {}) {
+        if (_state.value.batchBusy) return
+        viewModelScope.launch {
+            val completed = history.snapshot()
+                .filter { it.status == DownloadStatus.COMPLETED && !it.taskArchived }
+            completed.forEach { record -> history.upsert(record.copy(taskArchived = true)) }
+            onDone(completed.map { it.id }.toSet())
+        }
+    }
+
+    /** 撤销「清除已完成」：只恢复任务页可见性。 */
+    fun restoreArchived(ids: Set<String>) {
+        if (ids.isEmpty() || _state.value.batchBusy) return
+        viewModelScope.launch {
+            ids.forEach { id ->
+                history.getById(id)?.let { record -> history.upsert(record.copy(taskArchived = false)) }
+            }
+        }
     }
 
     fun clearAll() {

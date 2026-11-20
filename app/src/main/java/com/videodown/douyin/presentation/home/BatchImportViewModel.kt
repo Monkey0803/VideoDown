@@ -130,14 +130,16 @@ class BatchImportViewModel(
         viewModelScope.launch {
             try {
                 if (downloadAgain == null) {
-                    val duplicateCount = requests.count { downloader.findDuplicate(it.video, it.choice!!) != null }
+                    val duplicateCount = requests.count {
+                        downloader.findDuplicate(it.video, it.choice!!)?.isPrivate == false
+                    }
                     if (duplicateCount > 0) { mutable.update { it.copy(duplicateCount = duplicateCount) }; return@launch }
                 }
                 var queued = 0; var skipped = 0
                 val failures = mutableListOf<String>()
                 requests.forEach { item ->
                     try {
-                        if (downloadAgain != true && downloader.findDuplicate(item.video, item.choice!!) != null) skipped++
+                        if (downloadAgain != true && downloader.findDuplicate(item.video, item.choice!!)?.isPrivate == false) skipped++
                         else { downloader.start(item.video, item.choice!!); queued++ }
                         mutateMedia(item.key) { it.copy(selected = false) }
                     } catch (error: CancellationException) { throw error

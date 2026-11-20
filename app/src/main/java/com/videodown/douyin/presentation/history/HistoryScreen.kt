@@ -45,6 +45,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.DropdownMenu
@@ -69,6 +70,7 @@ import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
@@ -110,6 +112,8 @@ import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.domain.model.legacyFailureKind
 import com.videodown.douyin.domain.model.isGenericSiteMediaTitle
 import java.net.URI
+import java.io.File
+import kotlinx.coroutines.launch
 
 @Composable
 fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewModel(),
@@ -138,6 +142,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     val resources = LocalResources.current
     val focusManager = LocalFocusManager.current
     val snackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var selecting by remember { mutableStateOf(false) }
     var sortExpanded by remember { mutableStateOf(false) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -145,7 +150,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
     fun queryChanged(query: TaskQuery) { selectedIds = emptySet(); viewModel.setTaskQuery(query) }
     val visibleIds = state.visibleRecords.map { it.id }.toSet()
     val showManagementControls = UiDensityPolicy.showManagementControls(
-        itemCount = state.records.size,
+        itemCount = state.taskRecords.size,
         hasActiveQuery = state.taskQuery.text.isNotBlank() || state.filter != HistoryFilter.ALL,
     )
     LaunchedEffect(visibleIds) { selectedIds = selectedIds.intersect(visibleIds) }
@@ -228,17 +233,26 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
         Column(Modifier.fillMaxWidth().fillMaxHeight()) {
             Column(Modifier.padding(horizontal = pagePadding)) {
                 TabPageHeader(stringResource(R.string.history_header_title))
-                if (!selecting && state.records.isNotEmpty()) {
-                    Text(
-                        stringResource(
-                            R.string.history_stats_compact,
-                            state.records.count { state.statusFor(it) in listOf(DownloadStatus.RUNNING, DownloadStatus.PENDING) },
-                            state.records.count { state.statusFor(it) == DownloadStatus.COMPLETED },
-                            state.records.count { state.statusFor(it) in listOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) },
-                        ),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp),
+                if (!selecting && state.taskRecords.isNotEmpty()) {
+                    TaskStatsRow(
+                        running = state.taskRecords.count { state.statusFor(it) in listOf(DownloadStatus.RUNNING, DownloadStatus.PENDING) },
+                        completed = state.taskRecords.count { state.statusFor(it) == DownloadStatus.COMPLETED },
+                        recoverable = state.taskRecords.count { state.statusFor(it) in listOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) },
+                        selected = state.filter,
+                        onSelect = { selectedIds = emptySet(); viewModel.setFilter(it) },
+                        onClearCompleted = {
+                            viewModel.archiveCompleted { ids ->
+                                if (ids.isNotEmpty()) scope.launch {
+                                    val result = snackbar.showSnackbar(
+                                        message = resources.getString(R.string.history_cleared_completed, ids.size),
+                                        actionLabel = resources.getString(R.string.action_undo),
+                                    )
+                                    if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                                        viewModel.restoreArchived(ids)
+                                    }
+                                }
+                            }
+                        },
                     )
                 }
             }
@@ -274,7 +288,7 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                     if (state.activeCount > 0) {
                         TextButton(onClick = viewModel::pauseAll, enabled = !state.batchBusy) { Text(stringResource(R.string.history_pause_all)) }
                     }
-                    if (state.records.any { state.statusFor(it) in listOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) }) {
+                    if (state.taskRecords.any { state.statusFor(it) in listOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) }) {
                         TextButton(onClick = viewModel::resumeAll, enabled = !state.batchBusy) { Text(stringResource(R.string.history_resume_all)) }
                     }
                 }
@@ -302,8 +316,8 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                     }
                 }
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = { selecting = !selecting; selectedIds = emptySet() }, enabled = !state.batchBusy && state.records.isNotEmpty()) {
-                    Text(stringResource(if (selecting) R.string.action_exit_multi_select else R.string.history_multi_select))
+                if (!selecting) TextButton(onClick = { selecting = true; selectedIds = emptySet() }, enabled = !state.batchBusy && state.taskRecords.isNotEmpty()) {
+                    Text(stringResource(R.string.history_multi_select))
                 }
             }
             }
@@ -317,12 +331,16 @@ fun HistoryScreen(onPlay: (String) -> Unit, viewModel: HistoryViewModel = viewMo
                 ))
             BatchFailureDetails(state.batchResult)
             if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = pagePadding))
-            if (state.visibleRecords.isEmpty()) {
+            if (!state.hydrated) {
+                Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else if (state.visibleRecords.isEmpty()) {
                 EmptyState(
-                    title = stringResource(if (state.records.isEmpty()) R.string.history_empty else R.string.history_empty_filtered),
-                    body = if (state.records.isEmpty()) stringResource(R.string.history_empty_hint) else null,
-                    actionLabel = stringResource(if (state.records.isEmpty()) R.string.action_go_parse else R.string.history_clear_query),
-                    onAction = if (state.records.isEmpty()) {
+                    title = stringResource(if (state.taskRecords.isEmpty()) R.string.history_empty else R.string.history_empty_filtered),
+                    body = if (state.taskRecords.isEmpty()) stringResource(R.string.history_empty_hint) else null,
+                    actionLabel = stringResource(if (state.taskRecords.isEmpty()) R.string.action_go_parse else R.string.history_clear_query),
+                    onAction = if (state.taskRecords.isEmpty()) {
                         onOpenParse
                     } else {
                         ({ viewModel.setFilter(HistoryFilter.ALL); queryChanged(TaskQuery()) })
@@ -449,6 +467,9 @@ private fun TaskCard(
     val guidance = issue?.let(::failureActions)
     val position = state.queue.position(record.id)
     val hasSourcePage = record.sourcePageUrl.isNotBlank() || !record.media?.pageUrl.isNullOrBlank()
+    // 完成记录的文件被系统/用户删掉后，任务页是唯一还能看到它的地方；这里必须给恢复入口。
+    val fileMissing = status == DownloadStatus.COMPLETED &&
+        record.filePath?.let { path -> File(path).isFile } != true
     val guidedRecovery = status in setOf(DownloadStatus.PAUSED, DownloadStatus.FAILED) && guidance != null
     var moreExpanded by remember(record.id) { mutableStateOf(false) }
     // 运行中的倒计时来自进度事件；重启后进度没了，回落到记录上落库的冷却。
@@ -477,7 +498,10 @@ private fun TaskCard(
                 if (selecting) Checkbox(checked = selected, onCheckedChange = { onToggle() }, enabled = !state.batchBusy,
                     modifier = Modifier.semantics { stateDescription = lockedTitle })
                 MediaCover(
-                    model = record.coverUrl,
+                    // 私密任务不加载封面；标题已脱敏，封面也不能把内容漏出去。
+                    model = record.coverUrl.takeUnless { record.isPrivate },
+                    placeholderText = if (record.isPrivate) stringResource(R.string.vault_locked_title) else null,
+                    placeholderIcon = if (record.isPrivate) null else AppIcons.Play,
                     modifier = Modifier.size(width = 84.dp, height = 52.dp)
                         .then(
                             if (status == DownloadStatus.COMPLETED && !record.isAudio && !record.isArchive) {
@@ -493,7 +517,6 @@ private fun TaskCard(
                         )
                         .testTag("task-cover-${record.id}"),
                     shape = MaterialTheme.shapes.medium,
-                    placeholderIcon = AppIcons.Play,
                 )
                 Column(Modifier.weight(1f)) {
                     // The task list has no vault gate, so a private task never names itself here.
@@ -519,15 +542,25 @@ private fun TaskCard(
                         Text(statusLabel(status), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold,
                             color = statusColor(status))
                     }
+                    if (fileMissing) {
+                        Text(
+                            stringResource(R.string.task_file_missing),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
                 }
                 onDragHandle?.invoke()
                 if (!selecting && !guidedRecovery) {
-                IconButton(onClick = when (status) {
-                    DownloadStatus.COMPLETED -> onPlay
-                    DownloadStatus.RUNNING, DownloadStatus.PENDING -> onPause
-                    DownloadStatus.PAUSED, DownloadStatus.FAILED -> if (guidance != null && guidance.primary != RecoveryAction.RETRY) ({ onRecover(guidance.primary) }) else onResume
+                IconButton(onClick = when {
+                    fileMissing -> onRestart
+                    status == DownloadStatus.COMPLETED -> onPlay
+                    status == DownloadStatus.RUNNING || status == DownloadStatus.PENDING -> onPause
+                    else -> if (guidance != null && guidance.primary != RecoveryAction.RETRY) ({ onRecover(guidance.primary) }) else onResume
                 }, enabled = !state.batchBusy && (guidance == null || canRecover(guidance.primary)), modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
                     AppIcon(when {
+                        fileMissing -> AppIcons.Retry
                         status == DownloadStatus.COMPLETED && record.isImage -> AppIcons.Grid
                         status == DownloadStatus.COMPLETED && record.isArchive -> AppIcons.ExportFolder
                         status == DownloadStatus.COMPLETED -> AppIcons.Play
@@ -539,15 +572,16 @@ private fun TaskCard(
                         guidance?.primary == RecoveryAction.NONE -> AppIcons.Warning
                         else -> AppIcons.ResumeDownload
                     },
-                        contentDescription = when (status) {
-                            DownloadStatus.COMPLETED -> stringResource(
+                        contentDescription = when {
+                            fileMissing -> stringResource(R.string.action_retry_download)
+                            status == DownloadStatus.COMPLETED -> stringResource(
                                 when {
                                     record.isImage -> R.string.library_click_view_image
                                     record.isArchive -> R.string.library_click_open_archive
                                     else -> R.string.action_play
                                 },
                             )
-                            DownloadStatus.RUNNING, DownloadStatus.PENDING -> stringResource(R.string.action_pause)
+                            status == DownloadStatus.RUNNING || status == DownloadStatus.PENDING -> stringResource(R.string.action_pause)
                             else -> guidance?.primary?.let { recoveryActionLabel(it) } ?: stringResource(R.string.action_resume)
                         }, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(17.dp))
                 }
@@ -568,7 +602,7 @@ private fun TaskCard(
                                 onClick = { moreExpanded = false; onSpeedLimit() },
                             )
                         }
-                        if (status == DownloadStatus.COMPLETED) {
+                        if (status == DownloadStatus.COMPLETED && !record.isPrivate) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_share)) },
                                 leadingIcon = { AppIcon(AppIcons.Share, null, modifier = Modifier.size(18.dp)) },
@@ -582,7 +616,14 @@ private fun TaskCard(
                                 onClick = { moreExpanded = false; onRetryNow() },
                             )
                         }
-                        if (status != DownloadStatus.RUNNING && status != DownloadStatus.PENDING && guidance?.primary != RecoveryAction.NONE) {
+                        if (fileMissing) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_retry_download)) },
+                                leadingIcon = { AppIcon(AppIcons.Retry, null, modifier = Modifier.size(18.dp)) },
+                                onClick = { moreExpanded = false; onRestart() },
+                            )
+                        }
+                        if (guidance != null && status != DownloadStatus.RUNNING && status != DownloadStatus.PENDING && guidance.primary != RecoveryAction.NONE) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_retry_download)) },
                                 leadingIcon = { AppIcon(AppIcons.Retry, null, modifier = Modifier.size(18.dp)) },
@@ -748,7 +789,70 @@ internal fun contextOperationLabel(operation: BatchOperation): Int = when (opera
 private fun filterLabel(filter: HistoryFilter): Int = when (filter) {
     HistoryFilter.ALL -> R.string.history_filter_all
     HistoryFilter.RUNNING -> R.string.history_filter_running
+    HistoryFilter.RECOVERABLE -> R.string.history_filter_recoverable
     HistoryFilter.COMPLETED -> R.string.history_filter_completed
+}
+
+@Composable
+private fun TaskStatsRow(
+    running: Int,
+    completed: Int,
+    recoverable: Int,
+    selected: HistoryFilter,
+    onSelect: (HistoryFilter) -> Unit,
+    onClearCompleted: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth().padding(bottom = AppSpacing.xxs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        TaskStat(running, R.string.task_stat_running, selected == HistoryFilter.RUNNING, "task-stat-running") {
+            onSelect(HistoryFilter.RUNNING)
+        }
+        TaskStat(completed, R.string.task_stat_completed, selected == HistoryFilter.COMPLETED, "task-stat-completed") {
+            onSelect(HistoryFilter.COMPLETED)
+        }
+        TaskStat(recoverable, R.string.task_stat_recoverable, selected == HistoryFilter.RECOVERABLE, "task-stat-recoverable") {
+            onSelect(HistoryFilter.RECOVERABLE)
+        }
+        if (completed > 0) {
+            Spacer(Modifier.weight(1f))
+            TextButton(
+                onClick = onClearCompleted,
+                modifier = Modifier.heightIn(min = 48.dp).testTag("task-clear-completed"),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+            ) {
+                Text(
+                    stringResource(R.string.history_clear_completed),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TaskStat(
+    count: Int,
+    labelRes: Int,
+    selected: Boolean,
+    testTag: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier.heightIn(min = 48.dp).testTag(testTag),
+        contentPadding = PaddingValues(horizontal = 6.dp),
+    ) {
+        Text(
+            stringResource(labelRes, count),
+            style = MaterialTheme.typography.labelMedium,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+        )
+    }
 }
 
 private fun noticeLabel(notice: HistoryNotice): Int = when (notice) {

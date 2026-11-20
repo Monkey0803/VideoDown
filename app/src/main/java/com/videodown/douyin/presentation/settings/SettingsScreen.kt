@@ -639,6 +639,12 @@ fun SettingsScreen(openStorage: Boolean = false, onStorageOpened: () -> Unit = {
                 checked = autoSaveToGallery,
                 onCheckedChange = { preferences.autoSaveToGallery = it },
             )
+            Text(
+                stringResource(R.string.settings_storage_note),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(start = AppSpacing.xxs, end = AppSpacing.xxs, top = AppSpacing.xxs),
+            )
             ToggleRow(
                 icon = { AppIcon(AppIcons.BatchImport, null, tint = MaterialTheme.colorScheme.primary) },
                 title = stringResource(R.string.settings_playlist_row),

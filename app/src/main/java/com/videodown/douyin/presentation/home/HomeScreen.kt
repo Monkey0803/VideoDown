@@ -11,6 +11,7 @@ import com.videodown.douyin.presentation.components.InlineNotice
 import com.videodown.douyin.presentation.components.NoticeTone
 import com.videodown.douyin.presentation.components.MediaCover
 import com.videodown.douyin.presentation.components.sharedCover
+import com.videodown.douyin.presentation.components.CoverSelectionMark
 import com.videodown.douyin.presentation.components.SelectAllToggle
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.AdaptivePage
@@ -58,7 +59,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.Checkbox
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.RecoveryAction
 import com.videodown.douyin.domain.model.VideoPlatform
@@ -146,6 +146,7 @@ import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.SubtitleLanguageSelection
 import com.videodown.douyin.domain.model.SubtitleSelection
+import com.videodown.douyin.domain.model.VaultPolicy
 import com.videodown.douyin.domain.model.DouyinVideo
 import com.videodown.douyin.domain.model.VideoVariant
 import com.videodown.douyin.domain.model.WatchProgress
@@ -233,6 +234,19 @@ fun HomeScreen(
         // 入队成功后留在结果页，便于继续选择或返回解析；全局下载条持续提供任务入口。
         if (state.queuedCount != null) viewModel.onQueuedConsumed()
     }
+    LaunchedEffect(state.isDownloadFinished, state.activeRecord?.id) {
+        // 只提示一次：文件默认在应用专属目录，卸载会丢；用户知道后不再重复打扰。
+        if (state.isDownloadFinished && state.activeRecord != null &&
+            !ServiceLocator.preferences.downloadLocationHintSeen
+        ) {
+            ServiceLocator.preferences.downloadLocationHintSeen = true
+            val result = snackbar.showSnackbar(
+                message = resources.getString(R.string.home_download_location_hint),
+                actionLabel = resources.getString(R.string.action_open_settings),
+            )
+            if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) onOpenSettings()
+        }
+    }
     state.duplicates?.let { pending ->
         val single = pending.requests.size == 1
         val existing = pending.records.values.first()
@@ -245,14 +259,28 @@ fun HomeScreen(
                     onClick = {
                         if (single) {
                             viewModel.dismissDuplicates()
-                            if (existing.status == DownloadStatus.COMPLETED && existing.filePath?.let { File(it).isFile } == true) onPlayDownloaded(existing.id) else onOpenHistory()
+                            if (existing.isPrivate) {
+                                // 私密记录不深链：提示里连“保险箱里有这条”都不确认，只允许关闭。
+                            } else if (existing.status == DownloadStatus.COMPLETED && existing.filePath?.let { File(it).isFile } == true) {
+                                onPlayDownloaded(existing.id)
+                            } else {
+                                onOpenHistory()
+                            }
                         } else {
                             viewModel.confirmDuplicates(downloadAgain = false)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(if (single) stringResource(if (existing.status == DownloadStatus.COMPLETED) R.string.home_view_saved else R.string.home_view_tasks) else stringResource(R.string.home_skip_duplicates))
+                    Text(
+                        if (single) stringResource(
+                            when {
+                                existing.isPrivate -> R.string.action_close
+                                existing.status == DownloadStatus.COMPLETED -> R.string.home_view_saved
+                                else -> R.string.home_view_tasks
+                            },
+                        ) else stringResource(R.string.home_skip_duplicates),
+                    )
                 }
                 AppDialogButtonRow {
                     TextButton(onClick = { viewModel.confirmDuplicates(downloadAgain = true) }) { Text(stringResource(R.string.home_download_anyway)) }
@@ -288,7 +316,9 @@ fun HomeScreen(
         ) {
             Text(stringResource(R.string.home_archive_duplicate_body), style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("${existing.title} · " + when (existing.status) {
+            val shownTitle = VaultPolicy.title(existing, unlocked = false)
+                ?: stringResource(R.string.vault_locked_title)
+            Text("$shownTitle · " + when (existing.status) {
                 DownloadStatus.COMPLETED -> stringResource(R.string.home_existing_saved)
                 DownloadStatus.PENDING, DownloadStatus.RUNNING -> stringResource(R.string.home_existing_downloading)
                 else -> stringResource(R.string.home_existing_resumable)
@@ -302,6 +332,16 @@ fun HomeScreen(
     fun dismissKeyboard() {
         focusManager.clearFocus(force = true)
         keyboard?.hide()
+    }
+
+    fun pasteIntoInput() {
+        val copied = readClipboardText(context)
+        if (copied == null) {
+            scope.launch { snackbar.showSnackbar(resources.getString(R.string.home_clipboard_empty)) }
+            return
+        }
+        viewModel.onInputChange(copied)
+        dismissKeyboard()
     }
 
     fun pasteAndParse() {
@@ -401,7 +441,13 @@ fun HomeScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(R.string.home_parse_video), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                             Spacer(Modifier.weight(1f))
-                            Text(stringResource(R.string.home_paste_link), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium)
+                            TextButton(
+                                onClick = ::pasteIntoInput,
+                                modifier = Modifier.testTag("home-paste-link"),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                            ) {
+                                Text(stringResource(R.string.home_paste_link), style = MaterialTheme.typography.labelMedium)
+                            }
                         }
                         state.clipboardOffer?.let { copied ->
                             ClipboardOfferBanner(
@@ -433,12 +479,6 @@ fun HomeScreen(
                                         errorIndicatorColor = Color.Transparent,
                                     ),
                                 )
-                                TextButton(modifier = Modifier.padding(end = 4.dp), onClick = {
-                                    readClipboardText(context)?.let {
-                                            viewModel.onInputChange(it)
-                                            dismissKeyboard()
-                                        }
-                                }) { Text(stringResource(R.string.action_paste), color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelMedium) }
                             }
                             AppPrimaryButton(
                                 text = stringResource(if (state.isParsing) R.string.home_parsing else R.string.home_parse_now),
@@ -447,9 +487,17 @@ fun HomeScreen(
                                 modifier = Modifier.padding(top = 12.dp),
                                 loading = state.isParsing,
                             )
+                            if (state.isParsing) {
+                                TextButton(
+                                    onClick = viewModel::cancelParse,
+                                    modifier = Modifier.align(Alignment.CenterHorizontally).testTag("home-cancel-parse"),
+                                ) { Text(stringResource(R.string.home_cancel_parse)) }
+                            }
                         }
-                        TextButton(contentPadding = PaddingValues(vertical = 8.dp), enabled = browserUrl != null && !state.isParsing, onClick = { dismissKeyboard(); showBrowser = true }) {
-                            Text(stringResource(R.string.home_open_web))
+                        if (browserUrl != null) {
+                            TextButton(contentPadding = PaddingValues(vertical = 8.dp), enabled = !state.isParsing, onClick = { dismissKeyboard(); showBrowser = true }) {
+                                Text(stringResource(R.string.home_open_web))
+                            }
                         }
                         state.errorKind?.let { kind ->
                             val advice = failureActions(kind)
@@ -728,7 +776,6 @@ private fun ResultScreen(
     val video = state.video ?: return
     val pagePad = pagePadding()
     var showingVideos by rememberSaveable(state.videos.firstOrNull()?.selectionKey()) { mutableStateOf(false) }
-    var advancedOptions by rememberSaveable(video.selectionKey()) { mutableStateOf(false) }
     var expandedTitle by rememberSaveable(video.selectionKey(), video.title) { mutableStateOf(false) }
     var titleOverflows by remember(video.selectionKey(), video.title) { mutableStateOf(false) }
     val windowHeight = LocalWindowInfo.current.containerSize.height
@@ -774,11 +821,13 @@ private fun ResultScreen(
                             modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
                             shape = RectangleShape,
                         ) {
-                            Checkbox(checked = item.selectionKey() in state.selectedMedia,
+                            CoverSelectionMark(
+                                selected = item.selectionKey() in state.selectedMedia,
                                 enabled = !state.isSubmitting && state.duplicates == null && state.variantChoices[item.selectionKey()] != null,
-                                onCheckedChange = { onToggleMedia(item.selectionKey()) },
-                                modifier = Modifier.align(Alignment.TopEnd).background(MaterialTheme.colorScheme.surface.copy(alpha = .9f), CircleShape)
-                                    .semantics { contentDescription = checkLabel })
+                                contentDescription = checkLabel,
+                                onToggle = { onToggleMedia(item.selectionKey()) },
+                                modifier = Modifier.align(Alignment.TopEnd).padding(AppSpacing.xxs),
+                            )
                         }
                         Column(Modifier.padding(8.dp)) {
                             Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
@@ -876,13 +925,6 @@ private fun ResultScreen(
                                 ?: stringResource(if (state.isLoadingSizes) R.string.home_size_loading else R.string.home_size_unknown),
                             style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    if (state.canDownloadArchive) {
-                        TextButton(onClick = { advancedOptions = !advancedOptions }, modifier = Modifier.testTag("result-more-options")) {
-                            Text(stringResource(if (advancedOptions) R.string.home_less_options else R.string.home_more_options))
-                            Spacer(Modifier.width(4.dp))
-                            AppIcon(if (advancedOptions) AppIcons.ChevronUp else AppIcons.ChevronDown, null, modifier = Modifier.size(18.dp))
-                        }
-                    }
                 } else {
                 Row(Modifier.fillMaxWidth().padding(top = AppSpacing.lg), verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -903,15 +945,6 @@ private fun ResultScreen(
                         modifier = Modifier.padding(top = AppSpacing.xs),
                     )
                 }
-                TextButton(
-                    onClick = { advancedOptions = !advancedOptions },
-                    modifier = Modifier.testTag("result-more-options"),
-                ) {
-                    Text(stringResource(if (advancedOptions) R.string.home_less_options else R.string.home_more_options))
-                    Spacer(Modifier.width(4.dp))
-                    AppIcon(if (advancedOptions) AppIcons.ChevronUp else AppIcons.ChevronDown, null, modifier = Modifier.size(18.dp))
-                }
-                if (advancedOptions) {
                 val variants = video.sortedVariants
                 variants.chunked(3).forEach { row ->
                     Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -953,14 +986,13 @@ private fun ResultScreen(
                     Text(stringResource(R.string.home_no_audio_track), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
                 }
                 }
-                }
                 // Only offered when the source really has a subtitle track and the target is a video:
                 // there is nothing to embed into an extracted audio file.
                 val subtitleTarget = state.video ?: state.videos.firstOrNull { it.selectionKey() in state.selectedMedia }
                 val subtitleChoice = subtitleTarget?.let {
                     SubtitleLanguageSelection.preferred(it.subtitleLanguages, it.autoCaptionLanguages)
                 } ?: SubtitleSelection.NONE
-                if (advancedOptions && subtitleChoice.available && state.selectedVariant?.media?.audioOnly != true && !selectedIsImage) {
+                if (subtitleChoice.available && state.selectedVariant?.media?.audioOnly != true && !selectedIsImage) {
                     Text(stringResource(R.string.home_subtitles), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 18.dp))
                     FilterChip(selected = state.saveSubtitles,
                         enabled = !state.isSubmitting && state.duplicates == null,
@@ -975,7 +1007,7 @@ private fun ResultScreen(
                     modifier = Modifier.padding(top = 18.dp))
             }
         }
-        if (state.canDownloadArchive && advancedOptions) {
+        if (state.canDownloadArchive) {
             TextButton(
                 onClick = onDownloadArchive,
                 enabled = !state.isSubmitting,

@@ -5,6 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.Text
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStore
 import androidx.test.platform.app.InstrumentationRegistry
 import com.videodown.douyin.core.AppResult
@@ -81,6 +82,17 @@ class ResultSelectionDeviceTest {
         compose.onNodeWithText("选择内容（12）").assertIsDisplayed()
         screenshot("result-selection.png")
     }
+    @Test fun selectionMarkKeepsTheFullTouchTargetAndTogglesBothWays() {
+        open()
+        val mark = compose.onNodeWithContentDescription("勾选动画 1")
+        // 可见标记只有 24dp，命中区必须仍是 48dp：缩略图再小也不能缩可点范围。
+        mark.assertWidthIsAtLeast(48.dp)
+        mark.assertHeightIsAtLeast(48.dp)
+        mark.performClick().assertIsOn()
+        compose.onNodeWithText("已选 1 个 · 点击封面预览，勾选后批量保存").assertIsDisplayed()
+        mark.performClick().assertIsOff()
+        compose.onNodeWithText("已选 0 个 · 点击封面预览，勾选后批量保存").assertIsDisplayed()
+    }
     @Test fun checkboxDoesNotChangePreviewAndBatchUsesChosenItems() {
         open()
         compose.onNodeWithContentDescription("勾选动画 1").performClick().assertIsOn()
@@ -93,7 +105,6 @@ class ResultSelectionDeviceTest {
         assertEquals("入队后应留在结果页，由全局下载条提供任务入口", 0, historyOpens.get())
     }
     @Test fun lastVideoPreviewPreservesQualityAndDoesNotSelectForBatch() {
-        compose.onNodeWithTag("result-more-options").performClick()
         compose.onNodeWithContentDescription("画质 360P").performScrollTo().performClick()
         open(); preview(12)
         compose.onNodeWithText("当前 12/12 · 已选 0 个").assertIsDisplayed()

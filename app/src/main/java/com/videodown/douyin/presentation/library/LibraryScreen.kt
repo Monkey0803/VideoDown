@@ -13,12 +13,13 @@ import com.videodown.douyin.core.LibrarySort
 import com.videodown.douyin.presentation.components.EmptyState
 import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.presentation.history.BatchFailureDetails
-import com.videodown.douyin.presentation.theme.BrandColors
 import com.videodown.douyin.presentation.theme.AppSpacing
 import com.videodown.douyin.presentation.theme.appMotion
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.MediaCover
+import com.videodown.douyin.presentation.components.CoverChip
+import com.videodown.douyin.presentation.components.CoverSelectionMark
 import com.videodown.douyin.presentation.components.AdaptiveWorkspacePage
 import com.videodown.douyin.presentation.adaptive.LocalWindowWidth
 import com.videodown.douyin.presentation.adaptive.WindowLayoutPolicy
@@ -51,13 +52,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.videodown.douyin.domain.model.VideoPlatform
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.rememberScrollState
@@ -93,6 +87,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -122,6 +117,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.videodown.douyin.core.LibraryLayout
+import com.videodown.douyin.core.VaultAccess
 import com.videodown.douyin.core.WatchBadge
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.relativeTime
@@ -175,6 +171,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     val state by historyViewModel.state.collectAsStateWithLifecycle()
     var selecting by remember { mutableStateOf(false) }
     var showFilters by rememberSaveable { mutableStateOf(false) }
+    var sortExpanded by remember { mutableStateOf(false) }
     var filterDraft by remember { mutableStateOf(state.libraryQuery) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     var pendingDelete by remember { mutableStateOf<Set<String>?>(null) }
@@ -294,7 +291,11 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     val vaultScope = rememberCoroutineScope()
     fun unlockVault() {
         val query = state.libraryQuery
-        if (query.vaultUnlocked) { controlsChanged(query.copy(vaultUnlocked = false, vaultOnly = false)); return }
+        if (query.vaultUnlocked) {
+            VaultAccess.lock()
+            controlsChanged(query.copy(vaultUnlocked = false, vaultOnly = false))
+            return
+        }
         val activity = context.findActivity()
         if (activity == null) { vaultScope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_unavailable)) }; return }
         val authenticator = ServiceLocator.vaultAuthenticator
@@ -303,8 +304,10 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             return
         }
         val started = authenticator.authenticate(activity) { granted ->
-            if (granted) controlsChanged(query.copy(vaultUnlocked = true, vaultOnly = true))
-            else vaultScope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_denied)) }
+            if (granted) {
+                VaultAccess.unlock()
+                controlsChanged(query.copy(vaultUnlocked = true, vaultOnly = true))
+            } else vaultScope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_denied)) }
         }
         if (!started) vaultScope.launch { snackbar.showSnackbar(resources.getString(R.string.vault_unavailable)) }
     }
@@ -429,8 +432,35 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                     TextButton(onClick = { unlockVault() }, modifier = Modifier.testTag("vault-lock")) { Text(stringResource(R.string.vault_lock_action)) }
                 }
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = { focusManager.clearFocus(); selecting = !selecting; selectedIds = emptySet() },
-                    enabled = !state.batchBusy && allSaved.isNotEmpty()) { Text(stringResource(if (selecting) R.string.action_exit_multi_select else R.string.action_multi_select)) }
+                if (!selecting) {
+                    Box {
+                        TextButton(
+                            onClick = { sortExpanded = true },
+                            enabled = !state.batchBusy,
+                            modifier = Modifier.testTag("library-sort"),
+                        ) {
+                            AppIcon(AppIcons.Sort, null, modifier = Modifier.size(18.dp))
+                            Text(
+                                stringResource(librarySortLabelRes(state.libraryQuery.sort)),
+                                modifier = Modifier.padding(start = AppSpacing.xxs),
+                            )
+                        }
+                        DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
+                            LibrarySort.entries.forEach { sort ->
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(librarySortLabelRes(sort))) },
+                                    onClick = {
+                                        sortExpanded = false
+                                        ServiceLocator.preferences.librarySort = sort
+                                        queryChanged(state.libraryQuery.copy(sort = sort))
+                                    },
+                                )
+                            }
+                        }
+                    }
+                    TextButton(onClick = { focusManager.clearFocus(); selecting = true; selectedIds = emptySet() },
+                        enabled = !state.batchBusy && allSaved.isNotEmpty()) { Text(stringResource(R.string.action_multi_select)) }
+                }
             }
             }
             if (selecting) SelectionToolbar(selectedIds.size, state.batchBusy, selectedIds == visibleIds && visibleIds.isNotEmpty(),
@@ -446,7 +476,11 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             if (fileExportIds.isEmpty()) fileExport.message?.let { Text(it, maxLines = 2, modifier = Modifier.padding(horizontal = pagePadding)) }
             BatchFailureDetails(state.batchResult)
             if (state.batchBusy) Text(stringResource(R.string.history_working, state.batchDone, state.batchTotal), modifier = Modifier.padding(horizontal = pagePadding))
-            if (saved.isEmpty()) {
+            if (!state.hydrated) {
+                Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else if (saved.isEmpty()) {
                 // 只在「整个已存是空的」时候插画：被搜索/过滤筛空是另一回事，配图会让人困惑。
                 EmptyState(
                     title = stringResource(if (allSaved.isEmpty()) R.string.library_empty else R.string.library_empty_filtered),
@@ -482,14 +516,16 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                                 .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope, inOverlay = true), adaptToCover = true,
                                 watch = watch,
                                 selected = if (selecting) record.id in selectedIds else null,
-                                selectionEnabled = !state.batchBusy, onSelect = { toggle(record.id) })
+                                selectionEnabled = !state.batchBusy, onSelect = { toggle(record.id) },
+                                onMore = if (selecting || state.batchBusy) null else ({ selectedRecordId = record.id }))
                             Text(record.title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.padding(top = 9.dp))
                             LibraryMetadata(record, Modifier.padding(top = 4.dp), watch)
                             if (canReorder) {
                                 Row(Modifier.fillMaxWidth().padding(top = AppSpacing.xxs), horizontalArrangement = Arrangement.End) {
-                                    Box(Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = .85f))) {
+                                    // 与封面右上角的「更多」共用同一个圆底，避免两个角上的控件一深一浅。
+                                    CoverChip {
                                         val actions = accessibilityActions(record.id)
                                         AppIcon(AppIcons.Sort, stringResource(R.string.library_drag_handle),
                                             modifier = Modifier.padding(6.dp).size(20.dp).draggableHandle()
@@ -544,6 +580,15 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                                     modifier = Modifier.padding(top = 5.dp))
                                 LibraryMetadata(record, Modifier.padding(top = 5.dp), watch)
                             }
+                            if (!selecting) {
+                                IconButton(
+                                    onClick = { selectedRecordId = record.id },
+                                    modifier = Modifier.size(48.dp).testTag("library-more-${record.id}"),
+                                ) {
+                                    AppIcon(AppIcons.More, stringResource(R.string.library_more_actions),
+                                        modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
                             if (canReorder) {
                                 val actions = accessibilityActions(record.id)
                                 AppIcon(AppIcons.Sort, stringResource(R.string.library_drag_handle),
@@ -588,7 +633,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
 @Composable
 private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCover: Boolean = false,
     watch: WatchBadge? = null,
-    selected: Boolean? = null, selectionEnabled: Boolean = true, onSelect: () -> Unit = {}) {
+    selected: Boolean? = null, selectionEnabled: Boolean = true, onSelect: () -> Unit = {},
+    onMore: (() -> Unit)? = null) {
     var coverAspectRatio by rememberSaveable(record.coverUrl) { mutableFloatStateOf(3f / 4f) }
     MediaCover(
         // 图片记录直接显示本地文件：CDN 链接会过期，已下载的内容不该因此变成灰底。
@@ -610,25 +656,23 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
         },
     ) {
         if (selected != null) {
-            Box(Modifier.align(Alignment.TopStart).padding(2.dp).size(48.dp)
-                .clip(CircleShape)
-                .toggleable(value = selected, enabled = selectionEnabled, role = Role.Checkbox,
-                    onValueChange = { onSelect() })
-                // 标题读作内容描述；选中状态由 Checkbox 角色自己朗读，不再塞进 stateDescription。
-                .semantics { contentDescription = record.title },
-                contentAlignment = Alignment.Center) {
-                Canvas(Modifier.size(24.dp).alpha(if (selectionEnabled) 1f else .38f)) {
-                    val stroke = 2.dp.toPx()
-                    val radius = (size.minDimension - stroke) / 2
-                    drawCircle(if (selected) BrandColors.selectionIndicator else Color.White.copy(alpha = .18f), radius)
-                    drawCircle(Color.White, radius, style = Stroke(stroke))
-                    if (selected) {
-                        val unit = size.width / 24f
-                        drawLine(BrandColors.onSelectionIndicator, Offset(7 * unit, 12 * unit),
-                            Offset(10.5f * unit, 15.5f * unit), stroke, StrokeCap.Round)
-                        drawLine(BrandColors.onSelectionIndicator, Offset(10.5f * unit, 15.5f * unit),
-                            Offset(17 * unit, 8.5f * unit), stroke, StrokeCap.Round)
-                    }
+            CoverSelectionMark(
+                selected = selected,
+                enabled = selectionEnabled,
+                contentDescription = record.title,
+                onToggle = onSelect,
+                modifier = Modifier.align(Alignment.TopStart).padding(AppSpacing.xxs),
+            )
+        }
+        if (onMore != null) {
+            // 48dp 命中区贴角，可见的只有居中的 32dp 圆：视觉距封面边缘 8dp，不再压住圆角。
+            IconButton(
+                onClick = onMore,
+                modifier = Modifier.align(Alignment.TopEnd).size(48.dp).testTag("library-more-${record.id}"),
+            ) {
+                CoverChip {
+                    AppIcon(AppIcons.More, stringResource(R.string.library_more_actions),
+                        modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

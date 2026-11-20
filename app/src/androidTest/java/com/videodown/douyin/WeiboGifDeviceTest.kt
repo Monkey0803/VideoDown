@@ -112,7 +112,6 @@ class WeiboGifDeviceTest {
         }
         show(repository)
         parseThroughUi()
-        compose.onNodeWithTag("result-more-options").performClick()
         // 底部按钮区不随结果页滚动，用 assertExists；重点是「图片」路径出现且没有画质选择。
         compose.onNodeWithText("打包下载（2 张）").assertExists()
         compose.onNodeWithText("保存这张图片").assertExists()
@@ -166,7 +165,6 @@ class WeiboGifDeviceTest {
 
         show(repository)
         parseThroughUi()
-        compose.onNodeWithTag("result-more-options").performClick()
 
         assertNull(vm.state.value.error)
         assertEquals(11, vm.state.value.videos.size)

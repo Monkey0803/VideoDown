@@ -467,6 +467,7 @@ class DownloadEngine(
             fileSizeBytes = null,
             fileModifiedAt = null,
             livePhotoMotion = record.livePhotoMotion?.copy(filePath = null),
+            taskArchived = false,
             updatedAt = System.currentTimeMillis(),
         ).withRetryCleared()
         history.upsert(reset)

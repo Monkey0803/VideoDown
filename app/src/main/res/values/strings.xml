@@ -205,8 +205,8 @@
     <string name="settings_auto_resume_off">中断的任务需手动点击继续</string>
     <string name="settings_notify_row">完成时通知</string>
     <string name="settings_notify_unavailable">系统通知未开启，打开开关以授权</string>
-    <string name="settings_notify_on">视频下载完成后提醒你</string>
-    <string name="settings_notify_off">下载完成时不提醒</string>
+    <string name="settings_notify_on">下载完成或失败时提醒你</string>
+    <string name="settings_notify_off">下载完成或失败时不提醒</string>
     <string name="settings_individual_row">每条任务独立通知</string>
     <string name="settings_individual_on">每个下载任务单独显示，可逐条暂停或继续</string>
     <string name="settings_individual_off">所有任务汇总在一条通知里</string>
@@ -348,9 +348,9 @@
     <string name="history_speed_follow_global">跟随全局</string>
     <string name="history_delete_title">删除下载任务？</string>
     <string name="history_delete_body">将删除“%1$s”的记录和已下载文件。</string>
-    <string name="history_stat_running">进行中</string>
-    <string name="history_stat_done">已完成</string>
-    <string name="history_stat_resumable">可续传</string>
+    <string name="task_stat_running">进行中 %1$d</string>
+    <string name="task_stat_completed">已完成 %1$d</string>
+    <string name="task_stat_recoverable">可继续 %1$d</string>
     <string name="history_search_hint">搜索标题或作者</string>
     <string name="history_queue_line">同时下载 %1$d 个 · %2$d 个排队</string>
     <string name="history_queue_note">正在运行的任务继续完成，新任务等待名额</string>
@@ -423,7 +423,7 @@
     <string name="library_empty_filtered">没有符合条件的视频</string>
     <string name="library_empty_hint">下载完成的图片、视频、音频和压缩包会显示在这里。</string>
     <string name="library_start_download">开始下载</string>
-    <string name="library_filter">筛选</string>
+    <string name="library_filter">筛选与排序</string>
     <string name="library_filter_count">筛选 %1$d</string>
     <string name="library_filter_title">筛选已存内容</string>
     <string name="library_apply_filters">查看结果</string>
@@ -766,6 +766,8 @@
     <string name="pip_resume_playback">继续播放</string>
 
     <!-- Completion notification -->
+    <string name="notification_download_failed">下载未完成</string>
+    <string name="notification_download_failed_body">打开拾影查看原因并恢复下载。</string>
     <string name="notification_download_complete">下载完成</string>
     <string name="notification_kind_audio">音频</string>
     <string name="notification_kind_video">视频</string>
@@ -928,7 +930,7 @@
     <!-- Internal invariants -->
     <string name="meta_record_missing">记录已不存在</string>
     <string name="meta_only_saved_files">只可整理已保存文件</string>
-    <string name="meta_name_invalid">名称不能为空，且不能包含路径分隔符或控制字符</string>
+    <string name="meta_name_invalid">名称不能为空，且不能超过 80 个字符</string>
     <string name="meta_category_invalid">分类名称不可用</string>
     <string name="meta_local_file_missing">本地文件不存在</string>
     <string name="meta_local_file_unusable">本地文件不可用</string>
@@ -1099,4 +1101,23 @@
     <string name="site_channel_fashion">时尚</string>
     <string name="site_channel_tech">科技</string>
     <string name="site_channel_short_video">小视频</string>
+
+    <string name="action_undo">撤销</string>
+    <string name="history_filter_recoverable">可继续</string>
+    <string name="history_clear_completed">清除已完成</string>
+    <string name="history_cleared_completed">已从任务列表移除 %1$d 项，文件与已存内容不受影响</string>
+    <string name="task_file_missing">文件已不存在，可重新下载</string>
+    <string name="library_more_actions">更多操作</string>
+    <string name="library_open_archive_failed">没有可打开压缩包的应用，已返回已存</string>
+    <string name="player_retry_audio_service">重试连接</string>
+    <string name="player_gestures_action">手势说明</string>
+    <string name="player_gestures_title">播放手势</string>
+    <string name="player_gestures_body">双击画面左右两侧：快退 / 快进 10 秒。\n横向拖动：预览并跳转到目标时间。\n左半屏上下滑：调亮度；右半屏上下滑：调音量。\n长按画面：临时 2× 播放，松手恢复。</string>
+    <string name="home_cancel_parse">取消解析</string>
+    <string name="home_download_location_hint">文件保存在应用专属目录，卸载会删除；可在「我的」开启自动存入相册保留副本。</string>
+    <string name="sites_watch_deleted">已删除观看记录</string>
+    <string name="sites_clear_title">清除全部观看记录？</string>
+    <string name="sites_clear_body">只清除站点专区的观看记录，不会删除任何已下载文件。</string>
+    <string name="sites_clear_confirm">清除记录</string>
+    <string name="settings_storage_note">下载文件默认保存在应用专属目录，卸载应用会一并删除；可在上方开启「下载后自动存入相册」保留副本。</string>
 </resources>

@@ -132,6 +132,13 @@ data class DownloadRecord(
      */
     val fileSizeBytes: Long? = null,
     val fileModifiedAt: Long? = null,
+    /**
+     * 从「任务」列表移除（归档）后为 `true`；只影响任务页，不影响「已存」。
+     *
+     * 任务页和已存页共用同一份记录，所以「清除已完成」不能删记录——那会把已存内容一起删掉。
+     * 旧记录没有这个字段，反序列化后按未归档处理。
+     */
+    val taskArchived: Boolean = false,
 ) {
     val isAudio: Boolean get() = media?.audioOnly == true
 

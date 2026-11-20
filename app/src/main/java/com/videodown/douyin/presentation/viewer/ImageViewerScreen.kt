@@ -724,7 +724,7 @@ private fun ViewerAction(
         IconButton(
             onClick = onClick,
             enabled = enabled,
-            modifier = Modifier.size(44.dp).clip(CircleShape).background(Color.White.copy(alpha = .14f)),
+            modifier = Modifier.size(48.dp).clip(CircleShape).background(Color.White.copy(alpha = .14f)),
         ) {
             if (busy) CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
             else AppIcon(icon, label, tint = Color.White, modifier = Modifier.size(21.dp))

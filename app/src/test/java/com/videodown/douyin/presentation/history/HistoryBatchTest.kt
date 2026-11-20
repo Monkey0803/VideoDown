@@ -85,6 +85,33 @@ class HistoryBatchTest {
         assertEquals(listOf("other"), history.snapshot().map { it.id })
         assertFalse(vm.state.value.batchBusy)
     }
+    @Test fun `recoverable filter covers paused and failed but not running`() {
+        val state = HistoryUiState(records = listOf(
+            DownloadRecord("run", "run", "进行中", status = DownloadStatus.RUNNING),
+            DownloadRecord("paused", "paused", "暂停", status = DownloadStatus.PAUSED),
+            DownloadRecord("failed", "failed", "失败", status = DownloadStatus.FAILED),
+            DownloadRecord("done", "done", "完成", status = DownloadStatus.COMPLETED),
+        ), filter = HistoryFilter.RECOVERABLE)
+        assertEquals(setOf("paused", "failed"), state.visibleRecords.map { it.id }.toSet())
+    }
+
+    @Test fun `clear completed only hides tasks and keeps the saved library records`() = runTest(dispatcher) {
+        history.upsert(DownloadRecord("done", "done", "已完成", status = DownloadStatus.COMPLETED))
+        history.upsert(DownloadRecord("private", "private", "私密", status = DownloadStatus.COMPLETED, isPrivate = true))
+        history.upsert(DownloadRecord("paused", "paused", "暂停", status = DownloadStatus.PAUSED))
+        runCurrent()
+        var archived = emptySet<String>()
+        vm.archiveCompleted { archived = it }; advanceUntilIdle()
+        assertEquals(setOf("done", "private"), archived)
+        assertTrue("归档后任务页只剩可恢复项", vm.state.value.taskRecords.map { it.id } == listOf("paused"))
+        assertTrue("记录仍留在已存", history.snapshot().any { it.id == "done" })
+        assertTrue("私密完成项绝不进入任务页", history.snapshot().first { it.id == "private" }.isPrivate)
+
+        vm.restoreArchived(archived); advanceUntilIdle()
+        assertTrue(vm.state.value.taskRecords.any { it.id == "done" })
+        assertFalse(vm.state.value.taskRecords.any { it.id == "private" })
+    }
+
     @Test fun `gallery failure does not stop remaining items and reports skipped stale selection`() = runTest(dispatcher) {
         add("bad", DownloadStatus.COMPLETED); add("ok", DownloadStatus.COMPLETED); add("paused", DownloadStatus.PAUSED); runCurrent()
         vm.exportSelected(linkedSetOf("bad", "missing", "paused", "ok")); advanceUntilIdle()

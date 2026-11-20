@@ -34,5 +34,6 @@ class SiteHubViewModel(
     }
 
     fun delete(id: String) { viewModelScope.launch { history.delete(id) } }
+    fun restore(record: SiteWatchRecord) { viewModelScope.launch { history.upsert(record) } }
     fun clear() { viewModelScope.launch { history.clear() } }
 }

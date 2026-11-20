@@ -20,11 +20,18 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -35,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.videodown.douyin.R
@@ -44,6 +52,10 @@ import com.videodown.douyin.domain.model.isGenericSiteMediaTitle
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.MediaCover
+import com.videodown.douyin.presentation.components.AppConfirmDialog
+import com.videodown.douyin.presentation.components.AdaptivePage
+import com.videodown.douyin.presentation.adaptive.pagePadding
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,34 +65,65 @@ fun SiteHubScreen(
     model: SiteHubViewModel = viewModel(),
 ) {
     val state by model.state.collectAsStateWithLifecycle()
-    Scaffold(topBar = {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbar = remember { SnackbarHostState() }
+    var confirmClear by remember { mutableStateOf(false) }
+    fun deleteWithUndo(record: SiteWatchRecord) {
+        scope.launch {
+            model.delete(record.id)
+            val result = snackbar.showSnackbar(
+                message = context.getString(R.string.sites_watch_deleted),
+                actionLabel = context.getString(R.string.action_undo),
+            )
+            if (result == SnackbarResult.ActionPerformed) model.restore(record)
+        }
+    }
+    if (confirmClear) {
+        AppConfirmDialog(
+            onDismissRequest = { confirmClear = false },
+            icon = AppIcons.Delete,
+            title = stringResource(R.string.sites_clear_title),
+            body = stringResource(R.string.sites_clear_body),
+            confirmText = stringResource(R.string.sites_clear_confirm),
+            onConfirm = { confirmClear = false; model.clear() },
+            dismissText = stringResource(R.string.action_cancel),
+            destructive = true,
+        )
+    }
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbar) },
+        topBar = {
         TopAppBar(
             title = { Text(stringResource(R.string.sites_title)) },
             navigationIcon = { IconButton(onClick = onBack) { AppIcon(AppIcons.Back, stringResource(R.string.action_back)) } },
         )
     }) { padding ->
-        LazyColumn(
-            Modifier.fillMaxSize().padding(padding).padding(horizontal = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item { Text(stringResource(R.string.sites_sources), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
-            items(state.sources, key = SiteSource::id) { source ->
-                SiteSourceCard(source) { onOpenSite(source.id, null) }
-            }
-            item {
-                Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.sites_recent), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.weight(1f))
-                    if (state.history.isNotEmpty()) TextButton(onClick = model::clear) { Text(stringResource(R.string.sites_clear_history)) }
+        AdaptivePage(Modifier.fillMaxSize().padding(padding)) {
+            val pagePadding = pagePadding()
+            LazyColumn(
+                Modifier.fillMaxSize().padding(horizontal = pagePadding),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                item { Text(stringResource(R.string.sites_sources), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+                items(state.sources, key = SiteSource::id) { source ->
+                    SiteSourceCard(source) { onOpenSite(source.id, null) }
                 }
+                item {
+                    Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.sites_recent), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.weight(1f))
+                        if (state.history.isNotEmpty()) TextButton(onClick = { confirmClear = true }) { Text(stringResource(R.string.sites_clear_history)) }
+                    }
+                }
+                if (!state.loading && state.history.isEmpty()) {
+                    item { Text(stringResource(R.string.sites_no_history), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                }
+                items(state.history, key = SiteWatchRecord::id) { record ->
+                    WatchRecordCard(record, { onOpenSite(record.siteId, record.pageUrl) }, { deleteWithUndo(record) })
+                }
+                item { Spacer(Modifier.height(24.dp)) }
             }
-            if (!state.loading && state.history.isEmpty()) {
-                item { Text(stringResource(R.string.sites_no_history), color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            }
-            items(state.history, key = SiteWatchRecord::id) { record ->
-                WatchRecordCard(record, { onOpenSite(record.siteId, record.pageUrl) }, { model.delete(record.id) })
-            }
-            item { Spacer(Modifier.height(24.dp)) }
         }
     }
 }

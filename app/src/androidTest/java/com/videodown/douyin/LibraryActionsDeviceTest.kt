@@ -1,7 +1,9 @@
 package com.videodown.douyin
 
 import android.graphics.Bitmap
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
@@ -9,8 +11,10 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -109,6 +113,23 @@ class LibraryActionsDeviceTest {
             compose.onNodeWithText("取消").performClick()
             assertTrue(file.isFile)
         }
+    }
+
+    @Test fun cardOverflowKeepsTheFullTouchTarget() {
+        val more = compose.onNodeWithTag("library-more-${record.id}")
+        // 可见底形只剩 32dp 的主题色圆，命中区必须仍是 48dp：可点性不能跟着视觉一起缩水。
+        more.assertWidthIsAtLeast(48.dp)
+        more.assertHeightIsAtLeast(48.dp)
+        // 这张卡片没有封面（占位底色与圆底同色），顺手留一张「占位 + 圆底」的证据图。
+        saveScreenshot("waterfall-overflow.png")
+    }
+
+    @Test fun cardOverflowOpensTheSameMenuWithoutPlaying() {
+        compose.onNodeWithTag("library-more-${record.id}").performClick()
+        compose.onNodeWithText("播放视频").assertIsDisplayed()
+        compose.onNodeWithText("分享视频").assertIsDisplayed()
+        assertTrue(played.isEmpty())
+        compose.onNodeWithText("取消").performClick()
     }
 
     @Test fun normalTapAndMenuPlayUseTheSelectedVideo() {

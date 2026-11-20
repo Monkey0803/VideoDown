@@ -41,6 +41,11 @@ class DownloadService : Service() {
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + serviceJob)
     private var progressJob: Job? = null
+    /** 本轮服务运行中真正活跃过的任务，用来识别「活跃 → 失败」的转移。 */
+    private val trackedActive = mutableSetOf<String>()
+    /** 已经为哪条任务发过失败通知；重新开始下载时清除，允许下一次失败再提醒。 */
+    private val failureNotified = mutableSetOf<String>()
+    private val failureNotifier by lazy { DownloadCompletionNotifier(this, ServiceLocator.preferences) }
     private var individualJob: Job? = null
     private var foregroundError: DownloadServiceException? = null
     private var foregroundReady = false
@@ -109,6 +114,20 @@ class DownloadService : Service() {
         progressJob = serviceScope.launch {
             ServiceLocator.downloader.progress.collectLatest { map ->
                 val active = map.values.filter { it.isActive }
+                val activeIds = active.map { it.id }.toSet()
+                val departed = trackedActive - activeIds
+                trackedActive.clear()
+                trackedActive.addAll(activeIds)
+                // 重新活跃（重试/继续）的任务允许下一次失败再次提醒。
+                activeIds.forEach { failureNotified.remove(it) }
+                departed.forEach { id ->
+                    if (failureNotified.add(id)) {
+                        // 引擎先落库 FAILED 再移除 progress，所以这里读到的是终态。
+                        ServiceLocator.historyRepository.getById(id)
+                            ?.takeIf { it.status == DownloadStatus.FAILED }
+                            ?.let { failureNotifier.notifyFailed(it) }
+                    }
+                }
                 if (active.isEmpty()) {
                     kotlinx.coroutines.delay(150)
                     if (ServiceLocator.downloader.progress.value.values.any { it.isActive }) return@collectLatest

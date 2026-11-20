@@ -13,6 +13,7 @@ import android.os.Build
 import android.net.Uri
 import android.provider.Settings
 import android.app.PictureInPictureParams
+import android.widget.Toast
 import android.app.Activity
 import android.app.RemoteAction
 import android.app.PendingIntent
@@ -102,6 +103,7 @@ import com.videodown.douyin.data.download.DownloadCompletionNotifier
 import com.videodown.douyin.data.remote.VideoLinkExtractor
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.DownloadResultInbox
+import com.videodown.douyin.core.VaultAccess
 import java.io.File
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.readClipboardText
@@ -399,12 +401,30 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
      */
     fun openRecord(id: String) {
         val record = historyState.records.firstOrNull { it.id == id }
+        // 私密视频/压缩包从任何入口进入都必须先过同一道保险箱门禁；图片由看图器自己认证，
+        // 这里不能重复弹两次系统框。任务页已隐藏私密完成项，这里仍是必要的纵深防御。
+        if (record != null && record.isPrivate && !record.isImage && !VaultAccess.isUnlocked()) {
+            val activity = context as? Activity
+            val authenticator = ServiceLocator.vaultAuthenticator
+            if (activity == null || !authenticator.isAvailable(activity) ||
+                !authenticator.authenticate(activity) { granted ->
+                    if (granted) {
+                        VaultAccess.unlock()
+                        openRecord(id)
+                    }
+                }
+            ) {
+                Toast.makeText(context, R.string.vault_no_keyguard, Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
         when {
             record?.isImage == true -> navController.navigate(Routes.image(id))
             record?.isArchive == true -> {
-                // 没有能打开 ZIP 的应用时退回「已存」，而不是点了没反应。
+                // 没有能打开 ZIP 的应用时退回「已存」并说明原因，而不是静默返回。
                 val file = record.filePath?.let(::File)
                 if (file == null || !file.isFile || !DouyinIntents.playExternally(context, file)) {
+                    Toast.makeText(context, R.string.library_open_archive_failed, Toast.LENGTH_SHORT).show()
                     navController.navigate(Routes.LIBRARY)
                 }
             }
@@ -720,6 +740,19 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         coverUrl = playerEntry.arguments?.getString("cover")?.takeIf(String::isNotBlank),
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = animatedVisibilityScope,
+                        onRedownload = { historyViewModel.restart(it.id) },
+                        onReparse = { record ->
+                            val page = record.sourcePageUrl.ifBlank { record.media?.pageUrl.orEmpty() }
+                            if (page.isNotBlank()) {
+                                homeViewModel.parseSharedText(page)
+                                navController.popBackStack()
+                                navigateTab(Routes.HOME)
+                            }
+                        },
+                        onOpenTasks = {
+                            navController.popBackStack()
+                            navigateTab(Routes.TASKS)
+                        },
                     )
                 }
                 composable(Routes.SITES) {

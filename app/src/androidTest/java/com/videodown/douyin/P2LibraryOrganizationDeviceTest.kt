@@ -150,6 +150,26 @@ class P2LibraryOrganizationDeviceTest {
         } finally { compose.runOnUiThread { compose.activity.requestedOrientation = previous } }
         Unit
     }
+    @Test fun platformMultilineTitleCanStillBeRenamedAndSaved() = runBlocking {
+        // 平台标题会带换行（X 的推文原样入库）。重命名弹窗预填的就是这段文本，
+        // 用户只改一行也会把换行一起提交——这里验证它不会被文件名规则挡下。
+        val caption = "多行标题\n第二行"
+        history.upsert(record.copy(title = caption))
+        compose.waitUntil(5000) { model.state.value.records.first().title == caption }
+        menu(caption); compose.onNodeWithText("重命名与分类").performClick()
+        val edited = "$caption 改"
+        compose.onNode(hasSetTextAction() and hasText("文件名称")).performTextReplacement(edited)
+        compose.onNodeWithText("保存修改").performClick()
+        compose.waitUntil(5000) { model.state.value.records.first().title == edited && !organization.state.value.busy }
+        assertNull(organization.state.value.error)
+        val after = history.getById(record.id)!!
+        assertEquals(edited, after.title)
+        assertTrue(File(after.filePath!!).isFile)
+        assertFalse(after.fileName.contains('\n'))
+        assertTrue(after.fileName.startsWith("多行标题 第二行 改_"))
+        evidence("multiline-title-rename")
+        Unit
+    }
     @Test fun realPersistenceFailureShowsErrorAndRetryPreservesOriginalThenSucceeds() = runBlocking {
         val blocker = File(directory, "history.json.tmp").apply { mkdir() }
         menu(); compose.onNodeWithText("收藏视频", substring = false).performClick()

@@ -36,9 +36,11 @@ class DownloadLibraryMetadataRepository(
                 val record = history.getById(id) ?: error(AppText.get(R.string.meta_record_missing))
                 require(record.status == DownloadStatus.COMPLETED && id !in activeIds()) { AppText.get(R.string.meta_only_saved_files) }
                 val name = title?.trim()
-                require(name == null || validName(name, 80)) { AppText.get(R.string.meta_name_invalid) }
+                // 标题是平台原文（X 的推文会带换行，也可能带 ? / : 等标点），不能按文件名校验；
+                // 真正写入磁盘的名字由 DownloadPaths.buildFileName 清洗，路径安全不依赖这里。
+                require(name == null || validTitle(name)) { AppText.get(R.string.meta_name_invalid) }
                 val category = folder?.trim()
-                require(category == null || category.isEmpty() || validName(category, 40)) { AppText.get(R.string.meta_category_invalid) }
+                require(category == null || category.isEmpty() || validCategory(category)) { AppText.get(R.string.meta_category_invalid) }
                 val original = record.filePath?.let(::File) ?: error(AppText.get(R.string.meta_local_file_missing))
                 require(safe(original) && original.isFile) { AppText.get(R.string.meta_local_file_unusable) }
                 var changed = record.copy(
@@ -149,6 +151,8 @@ class DownloadLibraryMetadataRepository(
     }
     private fun safe(file: File): Boolean = !Files.isSymbolicLink(paths.downloadDir.toPath()) &&
         !Files.isSymbolicLink(file.toPath()) && file.canonicalFile.parentFile == paths.downloadDir.canonicalFile
-    private fun validName(value: String, max: Int) = value.isNotBlank() && value.length <= max &&
+    private fun validTitle(value: String) = value.isNotBlank() && value.length <= 80
+    /** 分类是库内标签，不经过文件名清洗，因此这里继续挡住分隔符和控制字符。 */
+    private fun validCategory(value: String) = value.isNotBlank() && value.length <= 40 &&
         value.none { it.isISOControl() || it in "\\/:*?\"<>|" } && value !in setOf(".", "..")
 }

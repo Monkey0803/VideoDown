@@ -242,6 +242,13 @@ class HomeViewModel(
         }
     }
 
+    /** 用户主动取消解析：只停止本次请求，不清空已经输入的内容。 */
+    fun cancelParse() {
+        parseJob?.cancel()
+        sizeJob?.cancel()
+        _state.update { it.copy(isParsing = false, isLoadingSizes = false) }
+    }
+
     fun acceptBrowserResult(videos: com.videodown.douyin.domain.model.ParsedVideos) {
         resultGeneration++
         submissionJob?.cancel(); parseJob?.cancel(); sizeJob?.cancel(); observeJob?.cancel()
@@ -369,7 +376,7 @@ class HomeViewModel(
         val generation = resultGeneration
         submissionJob = viewModelScope.launch {
             try {
-                val duplicate = downloader.findArchiveDuplicate(request)
+                val duplicate = downloader.findArchiveDuplicate(request)?.takeUnless { it.isPrivate }
                 if (duplicate != null) {
                     _state.update { it.copy(archiveDuplicate = duplicate, pendingArchive = request) }
                 } else {
@@ -424,9 +431,12 @@ class HomeViewModel(
         val generation = resultGeneration
         submissionJob = viewModelScope.launch {
             try {
-                val duplicates = requests.mapNotNull { request -> downloader.findDuplicate(request.video, request.variant)?.let {
-                    request.video.selectionKey() to it
-                } }.toMap()
+                val duplicates = requests.mapNotNull { request ->
+                    // 私密记录不参与首页的重复提示：否则一次粘贴就能探出保险箱里有什么。
+                    downloader.findDuplicate(request.video, request.variant)
+                        ?.takeUnless { it.isPrivate }
+                        ?.let { request.video.selectionKey() to it }
+                }.toMap()
                 if (duplicates.isNotEmpty()) _state.update { it.copy(duplicates = DuplicateDownloads(requests, duplicates)) }
                 else enqueue(requests, generation)
             } catch (error: CancellationException) { throw error
