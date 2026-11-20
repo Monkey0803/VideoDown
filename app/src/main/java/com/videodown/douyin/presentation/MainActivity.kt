@@ -720,6 +720,9 @@ internal fun VideoDownApp(sharedText: String?, onSharedTextConsumed: () -> Unit,
                         initialRecordId = recordId,
                         onBack = { navController.popBackStack() },
                         onDelete = { id, done -> historyViewModel.delete(id, done) },
+                        onDeleteMany = { ids -> historyViewModel.deleteSelected(ids) },
+                        // 从「收藏」「搜索」或自定义排序进入时，看图器沿用同一份筛选与顺序。
+                        query = historyState.libraryQuery,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = this,
                     )

@@ -7,6 +7,9 @@ import androidx.exifinterface.media.ExifInterface
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -30,6 +33,7 @@ import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
 import com.videodown.douyin.domain.model.MediaKind
 import com.videodown.douyin.domain.model.LivePhotoMotion
+import com.videodown.douyin.presentation.library.LibraryQuery
 import com.videodown.douyin.presentation.theme.VideoDownTheme
 import com.videodown.douyin.presentation.viewer.ImageViewerScreen
 import org.junit.After
@@ -104,6 +108,8 @@ class ImageViewerDeviceTest {
         updatedAt: Long = 1L,
         private: Boolean = false,
         motion: File? = null,
+        favorite: Boolean = false,
+        page: String = "",
     ) = DownloadRecord(
         id = id,
         awemeId = "post_img1",
@@ -114,6 +120,8 @@ class ImageViewerDeviceTest {
         mediaKind = MediaKind.IMAGE,
         updatedAt = updatedAt,
         isPrivate = private,
+        favorite = favorite,
+        sourcePageUrl = page,
         livePhotoMotion = motion?.let {
             LivePhotoMotion("https://video.weibo.com/live.mov", fileName = it.name, filePath = it.absolutePath)
         },
@@ -257,6 +265,7 @@ class ImageViewerDeviceTest {
 
         compose.waitUntil(5_000) { compose.onAllNodesWithText("私密图片").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("1 / 1").assertIsDisplayed()
+        compose.onNodeWithContentDescription("保险箱").assertIsDisplayed()
         assertEquals(true, compose.onAllNodesWithText("公开图片").fetchSemanticsNodes().isEmpty())
         assertEquals(1, gate.calls)
     }
@@ -331,5 +340,253 @@ class ImageViewerDeviceTest {
         compose.waitUntil(5_000) { compose.onAllNodesWithTag("image-info-content").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("image-info-content").performScrollToIndex(1)
         compose.onNodeWithText("EXIF / XMP").assertIsDisplayed()
+    }
+
+    @Test fun filteredViewerOnlyPagesWithinTheActiveQuery() {
+        val first = record(pngFile("fav-first.png"), id = "fav-first", title = "收藏一", updatedAt = 30L, favorite = true)
+        val second = record(pngFile("fav-second.png", 0xFF42A5F5.toInt()), id = "fav-second", title = "收藏二", updatedAt = 20L, favorite = true)
+        val other = record(pngFile("unfav.png", 0xFF66BB6A.toInt()), id = "unfav", title = "未收藏", updatedAt = 10L)
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(first, second, other),
+                    initialRecordId = first.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    query = LibraryQuery(favoritesOnly = true),
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.onNodeWithText("1 / 2").assertIsDisplayed()
+        compose.onNodeWithTag("image-viewer-fav-first").performTouchInput { swipeLeft() }
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("2 / 2").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("收藏二").assertIsDisplayed()
+        assertEquals(true, compose.onAllNodesWithText("未收藏").fetchSemanticsNodes().isEmpty())
+        capture("image-viewer-filtered.png")
+    }
+
+    @Test fun corruptImageSaysItCannotBeShownInsteadOfStayingBlack() {
+        val broken = File(directory, "broken.png").apply { writeBytes(ByteArray(64) { 0x5A }) }
+        val item = record(broken, title = "损坏的图片")
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(item),
+                    initialRecordId = item.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.waitUntil(10_000) {
+            compose.onAllNodesWithText("这张图片无法显示").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("用其他应用打开").assertIsDisplayed()
+        capture("image-viewer-failed.png")
+    }
+
+    @Test fun moreMenuSurfacesTheSameLibraryActions() {
+        val item = record(pngFile(), title = "操作菜单")
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(item),
+                    initialRecordId = item.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.onNodeWithContentDescription("更多操作").performClick()
+        compose.onNodeWithText("收藏图片").assertIsDisplayed()
+        compose.onNodeWithText("重命名与分类").assertIsDisplayed()
+        compose.onNodeWithText("移入保险箱").assertIsDisplayed()
+        compose.onNodeWithText("导出到文件夹").assertIsDisplayed()
+    }
+
+    @Test fun dateGridCanSelectSeveralImagesAndCountsThem() {
+        val first = record(pngFile("multi-first.png"), id = "multi-first", title = "多选一", updatedAt = 20L)
+        val second = record(pngFile("multi-second.png", 0xFF42A5F5.toInt()), id = "multi-second", title = "多选二", updatedAt = 10L)
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(first, second),
+                    initialRecordId = first.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.onNodeWithText("按日期查找").performClick()
+        compose.onNodeWithText("多选").performClick()
+        compose.onNodeWithTag("date-grid-multi-first").performClick()
+        compose.onNodeWithTag("date-grid-multi-second").performClick()
+        compose.onNodeWithText("已选 2 张").assertIsDisplayed()
+        // 等系统剪贴板浮层等覆盖 UI 消失，截图里只留应用自己的界面。
+        Thread.sleep(1_200)
+        capture("image-viewer-date-grid-select.png")
+        compose.onNodeWithText("取消多选").performClick()
+        compose.onNodeWithText("已选 2 张").assertDoesNotExist()
+    }
+
+    @Test fun tappingALivePhotoOnlyTogglesControls() {
+        val item = record(pngFile(), title = "实况图片", motion = motionFile())
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(item),
+                    initialRecordId = item.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("停止").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("live-photo-tap").performClick()
+        compose.onNodeWithText("实况图片").assertDoesNotExist()
+        compose.onNodeWithTag("live-photo-tap").performClick()
+        compose.onNodeWithText("实况图片").assertIsDisplayed()
+        compose.onNodeWithText("停止").assertIsDisplayed()
+        capture("image-viewer-live-photo.png")
+    }
+
+    @Test fun animatedGifKeepsAnimatingInTheViewer() {
+        val file = File(directory, "animated.gif").apply { writeBytes(ANIMATED_GIF_BYTES) }
+        val item = record(file, id = "animated-gif", title = "动图")
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(item),
+                    initialRecordId = item.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+        compose.waitForIdle()
+        Thread.sleep(800)
+        // 收起控制栏，屏幕里只剩动图；静态图时连续截图应完全一致。
+        compose.onNodeWithTag("image-viewer-animated-gif").performTouchInput { click() }
+        Thread.sleep(500)
+        val target = InstrumentationRegistry.getInstrumentation().uiAutomation
+        var differing = false
+        val deadline = System.currentTimeMillis() + 5_000
+        while (!differing && System.currentTimeMillis() < deadline) {
+            val first = target.takeScreenshot() ?: break
+            Thread.sleep(120)
+            val second = target.takeScreenshot() ?: break
+            differing = !first.sameAs(second)
+            first.recycle()
+            second.recycle()
+        }
+        assertTrue("GIF 应当逐帧刷新，而不是停在首帧", differing)
+    }
+
+    @Test fun infoSheetCopiesThePathAndOffersAMapLink() {
+        val file = jpegWithExif()
+        val item = record(file, title = "可操作信息")
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(item),
+                    initialRecordId = item.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.onNodeWithContentDescription("图片信息").performClick()
+        compose.onNodeWithTag("image-info-content").performScrollToNode(hasText("复制文件路径"))
+        compose.onNodeWithText("复制文件路径").performClick()
+        compose.onNodeWithText("已复制路径").assertIsDisplayed()
+        compose.onNodeWithTag("image-info-content").performScrollToNode(hasText("在地图中打开"))
+        compose.onNodeWithText("在地图中打开").assertIsDisplayed()
+        // 清掉剪贴板，避免 Android 13+ 的剪贴板浮层出现在后续用例的截图里。
+        InstrumentationRegistry.getInstrumentation().targetContext
+            .getSystemService(android.content.ClipboardManager::class.java)?.clearPrimaryClip()
+    }
+
+    @Test fun imageSemanticsAnnouncePositionInsideTheCollection() {
+        val first = record(pngFile("position-first.png"), id = "position-first", title = "第一张", updatedAt = 20L)
+        val second = record(pngFile("position-second.png", 0xFF42A5F5.toInt()), id = "position-second", title = "第二张", updatedAt = 10L)
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(first, second),
+                    initialRecordId = first.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.onNodeWithContentDescription("第 1 张，共 2 张：第一张").assertIsDisplayed()
+    }
+
+    @Test fun postPositionIsShownWhenTheImagesBelongToOnePost() {
+        val first = record(pngFile("post-first.png"), id = "post-first", title = "同帖一", updatedAt = 20L, page = "https://example.com/post/1")
+        val second = record(pngFile("post-second.png", 0xFF42A5F5.toInt()), id = "post-second", title = "同帖二", updatedAt = 10L, page = "https://example.com/post/1")
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = listOf(first, second),
+                    initialRecordId = first.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.onNodeWithText("1 / 2 · 本作品 1 / 2").assertIsDisplayed()
+    }
+
+    @Test fun dateGridOpensAtTheCurrentImageInsteadOfTheTop() {
+        // 6 天 × 每天 4 张：3 列网格共 8 行，加上日期标题远超一屏。
+        val records = (0 until 24).map { index ->
+            val day = index / 4
+            val slot = index % 4
+            record(
+                pngFile("located-$index.png", 0xFF000000.toInt() or (index * 0x000B0D11)),
+                id = "located-$index",
+                title = "定位 $index",
+                updatedAt = 1_700_000_000_000L + day * 86_400_000L + slot * 60_000L,
+            )
+        }
+        val current = records.first()
+        compose.setContent {
+            VideoDownTheme {
+                ImageViewerScreen(
+                    records = records,
+                    initialRecordId = current.id,
+                    onBack = {},
+                    onDelete = { _, done -> done(Result.success(Unit)) },
+                    autoHideMillis = 30_000L,
+                )
+            }
+        }
+
+        compose.waitUntil(10_000) {
+            compose.onAllNodesWithText("24 / 24").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("按日期查找").performClick()
+        compose.onNodeWithTag("image-date-grid").assertIsDisplayed()
+        // 网格远超一屏；打开即滚到当前项，否则这项根本不会被组合出来。
+        compose.onNodeWithTag("date-grid-located-0").assertIsDisplayed()
+        capture("image-viewer-date-grid-located.png")
     }
 }

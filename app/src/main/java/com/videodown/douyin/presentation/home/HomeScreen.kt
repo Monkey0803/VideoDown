@@ -778,6 +778,7 @@ private fun ResultScreen(
     var showingVideos by rememberSaveable(state.videos.firstOrNull()?.selectionKey()) { mutableStateOf(false) }
     var expandedTitle by rememberSaveable(video.selectionKey(), video.title) { mutableStateOf(false) }
     var titleOverflows by remember(video.selectionKey(), video.title) { mutableStateOf(false) }
+    var previewImageIndex by rememberSaveable(video.selectionKey()) { mutableStateOf<Int?>(null) }
     val windowHeight = LocalWindowInfo.current.containerSize.height
     val screenHeight = with(LocalDensity.current) { windowHeight.toDp().value }
     val batchSelected = state.videos.size > 1 && state.selectedMedia.isNotEmpty()
@@ -787,6 +788,16 @@ private fun ResultScreen(
     val allSelected = selectableKeys.isNotEmpty() && state.selectedMedia == selectableKeys
     val resultScroll = rememberScrollState()
     LaunchedEffect(video.selectionKey()) { resultScroll.scrollTo(0) }
+    // 图片作品的存前预览：按当前选择取原图地址，勾选状态直接写回批量选择。
+    val previewImages = remember(state.videos, state.variantChoices) {
+        state.videos.mapNotNull { item ->
+            val variant = state.variantChoices[item.selectionKey()] ?: item.sortedVariants.firstOrNull()
+            if (item.isImagePost || variant?.kind == MediaKind.IMAGE) {
+                val url = variant?.url ?: item.coverUrl ?: return@mapNotNull null
+                ImagePreviewItem(item.selectionKey(), url, item.mediaLabel ?: item.title)
+            } else null
+        }
+    }
     if (showingVideos) ModalBottomSheet(
         onDismissRequest = { showingVideos = false },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -810,6 +821,7 @@ private fun ResultScreen(
                 contentPadding = PaddingValues(bottom = 8.dp)) {
                 itemsIndexed(state.videos, key = { _, item -> item.selectionKey() }) { index, item ->
                     val current = item.selectionKey() == video.selectionKey()
+                    val imageItem = item.isImagePost || state.variantChoices[item.selectionKey()]?.kind == MediaKind.IMAGE
                     val label = item.mediaLabel ?: stringResource(R.string.home_video_index, index + 1)
                     val previewLabel = stringResource(R.string.home_preview_label, label)
                     val checkLabel = stringResource(R.string.home_check_label, label)
@@ -818,7 +830,7 @@ private fun ResultScreen(
                         border = BorderStroke(if (current) 2.dp else 1.dp, if (current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)) {
                         MediaCover(
                             model = item.coverUrl,
-                            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                            modifier = Modifier.fillMaxWidth().aspectRatio(if (imageItem) 1f else 16f / 9f),
                             shape = RectangleShape,
                         ) {
                             CoverSelectionMark(
@@ -880,11 +892,19 @@ private fun ResultScreen(
                         Text(stringResource(R.string.home_parsed_platform, stringResource(videoPlatformLabelRes(video.platform))), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
                     }
                 }
-                IconButton(onClick = { onPreview(video) }, modifier = Modifier.align(Alignment.Center)
+                IconButton(onClick = {
+                    if (video.isImagePost || selectedIsImage) {
+                        previewImageIndex = previewImages
+                            .indexOfFirst { it.selectionKey == video.selectionKey() }
+                            .takeIf { it >= 0 }
+                    } else {
+                        onPreview(video)
+                    }
+                }, modifier = Modifier.align(Alignment.Center)
                     .size(56.dp).clip(CircleShape).background(Color.White.copy(alpha = .28f))) {
                     if (video.isImagePost || selectedIsImage) {
-                        // 图片没有"在平台中预览播放"，这里打开的是原帖。
-                        AppIcon(AppIcons.ExternalLink, stringResource(R.string.home_view_post), tint = Color.White, modifier = Modifier.size(28.dp))
+                        // 图片作品先在应用内预览并勾选要存的图；原帖入口留在作者行。
+                        AppIcon(AppIcons.Fullscreen, stringResource(R.string.home_image_preview), tint = Color.White, modifier = Modifier.size(28.dp))
                     } else {
                         AppIcon(AppIcons.Play, stringResource(R.string.home_preview_on_platform, stringResource(videoPlatformLabelRes(video.platform))), tint = Color.White, modifier = Modifier.size(35.dp))
                     }
@@ -908,6 +928,11 @@ private fun ResultScreen(
                     Spacer(Modifier.width(8.dp))
                     Text("@ ${video.author.nickname.ifBlank { stringResource(R.string.home_unknown_author) }}", style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                    if (video.isImagePost || selectedIsImage) {
+                        TextButton(onClick = { onPreview(video) }) {
+                            Text(stringResource(R.string.home_open_post), style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
                     TextButton(onClick = { onOpenAuthor(video) }, enabled = video.author.profileUrl != null) {
                         Text(stringResource(R.string.home_view_author), style = MaterialTheme.typography.labelMedium)
                         Spacer(Modifier.width(4.dp))
@@ -1042,6 +1067,15 @@ private fun ResultScreen(
             },
             enabled = if (batchSelected) !state.isSubmitting && state.duplicates == null else state.canDownload,
             modifier = Modifier.padding(horizontal = pagePad, vertical = AppSpacing.sm),
+        )
+    }
+    previewImageIndex?.let { index ->
+        ImagePostPreview(
+            items = previewImages,
+            initialIndex = index,
+            selectedKeys = state.selectedMedia,
+            onToggleSelection = onToggleMedia,
+            onDismiss = { previewImageIndex = null },
         )
     }
 }

@@ -60,28 +60,51 @@ data class LibraryQuery(
      */
     fun canReorder(selecting: Boolean, batchBusy: Boolean): Boolean = ordersManually && !selecting && !batchBusy
 
-    fun apply(records: List<DownloadRecord>): List<DownloadRecord> {
+    /**
+     * 单条记录是否满足搜索与筛选。
+     *
+     * [ignorePrivacy] 供看图器使用：它进入时已按入口记录固定普通库/保险箱，不能再被这里的
+     * 门禁字段筛掉，否则从通知或深链打开私密图片会得到空列表。
+     */
+    fun matches(record: DownloadRecord, ignorePrivacy: Boolean = false): Boolean {
+        val privacyMatches = if (ignorePrivacy) true else
+            record.isPrivate == vaultOnly && (!vaultOnly || vaultUnlocked)
         val words = text.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
-        val matching = records.filter { record ->
-            record.isPrivate == vaultOnly && (!vaultOnly || vaultUnlocked) &&
-                (platform == null || record.platform == platform) &&
-                (mediaKind == null || record.mediaKind == mediaKind) && (!favoritesOnly || record.favorite) &&
-                (folder == null || record.folder == folder) && words.all { word ->
-                record.title.contains(word, ignoreCase = true) || record.authorNickname.contains(word, ignoreCase = true)
+        return privacyMatches &&
+            (platform == null || record.platform == platform) &&
+            (mediaKind == null || record.mediaKind == mediaKind) &&
+            (!favoritesOnly || record.favorite) &&
+            (folder == null || record.folder == folder) &&
+            words.all { word ->
+                record.title.contains(word, ignoreCase = true) ||
+                    record.authorNickname.contains(word, ignoreCase = true)
             }
-        }
-        return when (sort) {
-            LibrarySort.NEWEST -> matching.sortedWith(compareByDescending<DownloadRecord> { it.updatedAt }.thenBy { it.id })
-            LibrarySort.OLDEST -> matching.sortedWith(compareBy<DownloadRecord> { it.updatedAt }.thenBy { it.id })
-            LibrarySort.LARGEST -> matching.sortedWith(compareByDescending<DownloadRecord> { it.downloadedBytes }.thenByDescending { it.updatedAt }.thenBy { it.id })
-            // 手动排过的（sortIndex > 0）按顺序在前，没排过的接在后面——按更新时间降序，
-            // 这样刚保存的新视频不会插到用户排好的顺序中间。
-            LibrarySort.CUSTOM -> matching.sortedWith(
-                compareBy<DownloadRecord> { it.sortIndex == 0L }
-                    .thenBy { it.sortIndex }
-                    .thenByDescending { it.updatedAt }
-                    .thenBy { it.id },
-            )
-        }
+    }
+
+    /** 应用搜索与筛选，再按当前排序返回。 */
+    fun apply(records: List<DownloadRecord>): List<DownloadRecord> =
+        ordered(records.filter { matches(it) })
+
+    /** 只排序不过滤：看图器沿用已存的排序方式，但筛选已经由 [matches] 完成。 */
+    fun ordered(records: List<DownloadRecord>): List<DownloadRecord> = when (sort) {
+        LibrarySort.NEWEST -> records.sortedWith(
+            compareByDescending<DownloadRecord> { it.updatedAt }.thenBy { it.id },
+        )
+        LibrarySort.OLDEST -> records.sortedWith(
+            compareBy<DownloadRecord> { it.updatedAt }.thenBy { it.id },
+        )
+        LibrarySort.LARGEST -> records.sortedWith(
+            compareByDescending<DownloadRecord> { it.downloadedBytes }
+                .thenByDescending { it.updatedAt }
+                .thenBy { it.id },
+        )
+        // 手动排过的（sortIndex > 0）按顺序在前，没排过的接在后面——按更新时间降序，
+        // 这样刚保存的新视频不会插到用户排好的顺序中间。
+        LibrarySort.CUSTOM -> records.sortedWith(
+            compareBy<DownloadRecord> { it.sortIndex == 0L }
+                .thenBy { it.sortIndex }
+                .thenByDescending { it.updatedAt }
+                .thenBy { it.id },
+        )
     }
 }

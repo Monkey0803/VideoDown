@@ -123,6 +123,8 @@ import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.core.relativeTime
 import com.videodown.douyin.presentation.relativeTimeText
 import com.videodown.douyin.presentation.watchBadgeText
+import com.videodown.douyin.presentation.imagePostKey
+import com.videodown.douyin.presentation.imagePostSizes
 import com.videodown.douyin.core.watchBadge
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
@@ -174,6 +176,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     var sortExpanded by remember { mutableStateOf(false) }
     var filterDraft by remember { mutableStateOf(state.libraryQuery) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    // 多选时的区间锚点：长按另一张即可选中两点之间的全部条目。
+    var selectionAnchor by remember { mutableStateOf<String?>(null) }
     var pendingDelete by remember { mutableStateOf<Set<String>?>(null) }
     var pendingExport by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
     var layout by remember { mutableStateOf(ServiceLocator.preferences.libraryLayout) }
@@ -190,11 +194,16 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     val nextLayout = if (layout == LibraryLayout.WATERFALL) LibraryLayout.LIST else LibraryLayout.WATERFALL
     // Private records only join the visible stock once the vault is unlocked, so the count, the
     // category list and every batch action are all computed over what the user may see.
-    val allSaved = state.records.filter { state.statusFor(it) == DownloadStatus.COMPLETED &&
-        it.filePath?.let { path -> File(path).isFile } == true &&
-        (!it.isPrivate || state.libraryQuery.vaultUnlocked) }
-    val savedInventoryCount = state.records.count { state.statusFor(it) == DownloadStatus.COMPLETED &&
-        it.filePath?.let { path -> File(path).isFile } == true }
+    // 只在这里 stat 一次文件；页面重组（选择、弹窗、滚动状态）不再对整库做 File.isFile。
+    val allSaved = remember(state.records, state.libraryQuery.vaultUnlocked) {
+        state.records.filter { state.statusFor(it) == DownloadStatus.COMPLETED &&
+            it.filePath?.let { path -> File(path).isFile } == true &&
+            (!it.isPrivate || state.libraryQuery.vaultUnlocked) }
+    }
+    val savedInventoryCount = remember(state.records) {
+        state.records.count { state.statusFor(it) == DownloadStatus.COMPLETED &&
+            it.filePath?.let { path -> File(path).isFile } == true }
+    }
     val showManagementControls = com.videodown.douyin.presentation.UiDensityPolicy.showManagementControls(
         itemCount = savedInventoryCount,
         // 单纯记住了排序方式不会把空库筛空；只有搜索/筛选需要保留控件让用户清除。
@@ -219,6 +228,8 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
     // 拖拽期间先按本地顺序显示，松手后落盘；落盘回流的新数据会取代本地顺序。
     var draggedOrder by remember { mutableStateOf<List<String>?>(null) }
     val displayed = draggedOrder?.let { order -> order.mapNotNull { id -> saved.firstOrNull { it.id == id } } } ?: saved
+    // 同一作品的多张图在网格里只需要一个"N 张"角标；只统计当前可见库，避免把保险箱里的张数透出来。
+    val imageGroupCounts = remember(allSaved) { imagePostSizes(allSaved) }
     // 拖拽中只改本地顺序，松手（isAnyItemDragging 落回 false）才落盘一次。
     fun moveDragged(fromKey: Any?, toIndex: Int) {
         val id = fromKey as? String ?: return
@@ -279,8 +290,20 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
             selectedIds = result.failures.map { it.id }.toSet().intersect(visibleIds)
         }
     }
-    BackHandler(selecting && !state.batchBusy) { selecting = false; selectedIds = emptySet() }
-    fun toggle(id: String) { if (!state.batchBusy) selectedIds = if (id in selectedIds) selectedIds - id else selectedIds + id }
+    BackHandler(selecting && !state.batchBusy) { selecting = false; selectedIds = emptySet(); selectionAnchor = null }
+    fun toggle(id: String) {
+        if (state.batchBusy) return
+        selectionAnchor = id
+        selectedIds = if (id in selectedIds) selectedIds - id else selectedIds + id
+    }
+    /** 长按区间选择：取锚点到当前项的连续区间；没有锚点时等价于选中当前项。 */
+    fun selectRangeTo(id: String) {
+        if (state.batchBusy) return
+        val range = selectionRange(displayed.map { it.id }, selectionAnchor, id)
+        if (range.isEmpty()) return
+        selectedIds = selectedIds + range
+        selectionAnchor = id
+    }
     fun queryChanged(query: LibraryQuery) { selectedIds = emptySet(); historyViewModel.setLibraryQuery(query) }
 
     fun controlsChanged(query: LibraryQuery) { focusManager.clearFocus(); queryChanged(query) }
@@ -458,14 +481,14 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                             }
                         }
                     }
-                    TextButton(onClick = { focusManager.clearFocus(); selecting = true; selectedIds = emptySet() },
+                    TextButton(onClick = { focusManager.clearFocus(); selecting = true; selectedIds = emptySet(); selectionAnchor = null },
                         enabled = !state.batchBusy && allSaved.isNotEmpty()) { Text(stringResource(R.string.action_multi_select)) }
                 }
             }
             }
             if (selecting) SelectionToolbar(selectedIds.size, state.batchBusy, selectedIds == visibleIds && visibleIds.isNotEmpty(),
                 onSelectAll = { selectedIds = if (selectedIds == visibleIds) emptySet() else visibleIds },
-                onExit = { selecting = false; selectedIds = emptySet() },
+                onExit = { selecting = false; selectedIds = emptySet(); selectionAnchor = null },
                 actions = listOf(galleryAction to {
                     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P && ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                         pendingExport = selectedIds.toList(); permission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -505,16 +528,17 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                             fadeInSpec = motion.fast(),
                             placementSpec = motion.normal(),
                             fadeOutSpec = motion.fast(),
-                        ).combinedClickable(
+                        ).testTag("library-item-${record.id}").combinedClickable(
                                 role = Role.Button,
                                 onClickLabel = stringResource(if (selecting) R.string.library_click_select else libraryClickRes(record)),
                                 onLongClickLabel = stringResource(R.string.library_long_click),
                                 onClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) onPlay(record.id) },
-                                onLongClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) selectedRecordId = record.id },
+                                onLongClick = { if (selecting) selectRangeTo(record.id) else if (!state.batchBusy) selectedRecordId = record.id },
                             )) {
                             LibraryCover(record, Modifier.fillMaxWidth()
                                 .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope, inOverlay = true), adaptToCover = true,
                                 watch = watch,
+                                groupCount = imageGroupCounts[imagePostKey(record)]?.takeIf { it > 1 },
                                 selected = if (selecting) record.id in selectedIds else null,
                                 selectionEnabled = !state.batchBusy, onSelect = { toggle(record.id) },
                                 onMore = if (selecting || state.batchBusy) null else ({ selectedRecordId = record.id }))
@@ -554,14 +578,14 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                                 fadeInSpec = motion.fast(),
                                 placementSpec = motion.normal(),
                                 fadeOutSpec = motion.fast(),
-                            ).fillMaxWidth().clip(MaterialTheme.shapes.large)
+                            ).testTag("library-item-${record.id}").fillMaxWidth().clip(MaterialTheme.shapes.large)
                                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
                                 .combinedClickable(
                                     role = Role.Button,
                                     onClickLabel = stringResource(if (selecting) R.string.library_click_select else libraryClickRes(record)),
                                     onLongClickLabel = stringResource(R.string.library_long_click),
                                     onClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) onPlay(record.id) },
-                                    onLongClick = { if (selecting) toggle(record.id) else if (!state.batchBusy) selectedRecordId = record.id },
+                                    onLongClick = { if (selecting) selectRangeTo(record.id) else if (!state.batchBusy) selectedRecordId = record.id },
                                 )
                                 .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -570,6 +594,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
                             LibraryCover(record, Modifier.width(108.dp)
                                 .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope, inOverlay = true),
                                 watch = watch,
+                                groupCount = imageGroupCounts[imagePostKey(record)]?.takeIf { it > 1 },
                                 selected = if (selecting) record.id in selectedIds else null,
                                 selectionEnabled = !state.batchBusy, onSelect = { toggle(record.id) })
                             Column(Modifier.weight(1f)) {
@@ -633,6 +658,7 @@ fun LibraryScreen(historyViewModel: HistoryViewModel, onPlay: (String) -> Unit,
 @Composable
 private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCover: Boolean = false,
     watch: WatchBadge? = null,
+    groupCount: Int? = null,
     selected: Boolean? = null, selectionEnabled: Boolean = true, onSelect: () -> Unit = {},
     onMore: (() -> Unit)? = null) {
     var coverAspectRatio by rememberSaveable(record.coverUrl) { mutableFloatStateOf(3f / 4f) }
@@ -673,6 +699,34 @@ private fun LibraryCover(record: DownloadRecord, modifier: Modifier, adaptToCove
                 CoverChip {
                     AppIcon(AppIcons.More, stringResource(R.string.library_more_actions),
                         modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        if (record.isLivePhoto || groupCount != null) {
+            Row(
+                Modifier.align(Alignment.BottomStart).padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (record.isLivePhoto) {
+                    CoverChip(size = 22.dp) {
+                        AppIcon(
+                            AppIcons.Play,
+                            stringResource(R.string.viewer_live_photo_badge),
+                            modifier = Modifier.size(12.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                groupCount?.let {
+                    Text(
+                        stringResource(R.string.library_group_count, it),
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.clip(MaterialTheme.shapes.extraSmall)
+                            .background(Color.Black.copy(alpha = .5f))
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                    )
                 }
             }
         }

@@ -13,7 +13,9 @@ object ImageMetadataReader {
         val latLong = exif.latLong
         val altitude = exif.getAltitude(Double.NaN).takeUnless(Double::isNaN)
         return ImageMetadata(
-            imageMetadataFields(
+            latitude = latLong?.getOrNull(0),
+            longitude = latLong?.getOrNull(1),
+            fields = imageMetadataFields(
                 attributes = TAGS.map { tag -> tag.label to exif.getAttribute(tag.name) },
                 latitude = latLong?.getOrNull(0),
                 longitude = latLong?.getOrNull(1),

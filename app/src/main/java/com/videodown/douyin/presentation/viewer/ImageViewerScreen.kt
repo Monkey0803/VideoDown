@@ -22,7 +22,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,33 +34,23 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -82,10 +71,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -93,13 +89,15 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil3.compose.AsyncImage
 import com.github.panpf.zoomimage.CoilZoomAsyncImage
 import com.github.panpf.zoomimage.CoilZoomState
@@ -108,18 +106,21 @@ import com.videodown.douyin.R
 import com.videodown.douyin.core.DouyinIntents
 import com.videodown.douyin.core.ServiceLocator
 import com.videodown.douyin.data.gallery.GalleryExportOutcome
-import com.videodown.douyin.core.formatBytes
-import com.videodown.douyin.core.ImageMetadata
-import com.videodown.douyin.data.image.ImageMetadataReader
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
+import com.videodown.douyin.domain.model.videoMimeType
 import com.videodown.douyin.presentation.components.AppConfirmDialog
 import com.videodown.douyin.presentation.components.AppIcon
 import com.videodown.douyin.presentation.components.AppPlayerView
 import com.videodown.douyin.presentation.components.AppIcons
 import com.videodown.douyin.presentation.components.sharedCover
 import com.videodown.douyin.presentation.galleryErrorMessage
-import com.videodown.douyin.presentation.videoPlatformLabelRes
+import com.videodown.douyin.presentation.imagePostPosition
+import com.videodown.douyin.presentation.library.FileExportDialog
+import com.videodown.douyin.presentation.library.FileExportViewModel
+import com.videodown.douyin.presentation.library.LibraryOrganizationDialog
+import com.videodown.douyin.presentation.library.LibraryOrganizationViewModel
+import com.videodown.douyin.presentation.library.LibraryQuery
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -127,9 +128,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.text.DateFormat
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 private const val DEFAULT_AUTO_HIDE_MILLIS = 3_000L
 
@@ -139,7 +137,9 @@ private enum class VaultViewState { GRANTED, CHECKING, DENIED, UNAVAILABLE }
  * 已存图片中心。
  *
  * ZoomImage 继续独占缩放、平移、双击与子采样；本页只在基础比例开放横向翻页，避免放大后
- * 的拖动被 Pager 抢走。普通图片与保险箱图片由 [imageViewerRecords] 在进入时严格分库。
+ * 的拖动被 Pager 抢走。普通图片与保险箱图片由 [imageViewerRecords] 在进入时严格分库，
+ * 并沿用进入时「已存」的搜索、筛选与排序——从收藏或搜索结果点进来，左右滑动不会突然
+ * 跳进整库。
  */
 @Composable
 fun ImageViewerScreen(
@@ -147,10 +147,14 @@ fun ImageViewerScreen(
     initialRecordId: String,
     onBack: () -> Unit,
     onDelete: (String, (Result<Unit>) -> Unit) -> Unit,
+    onDeleteMany: (Set<String>) -> Unit = {},
+    query: LibraryQuery? = null,
     autoHideMillis: Long = DEFAULT_AUTO_HIDE_MILLIS,
     slideshowSecondMillis: Long = 1_000L,
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedVisibilityScope: AnimatedVisibilityScope? = null,
+    organizationViewModel: LibraryOrganizationViewModel = viewModel(),
+    fileExportViewModel: FileExportViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -159,15 +163,8 @@ fun ImageViewerScreen(
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     val initialRecord = records.firstOrNull { it.id == initialRecordId }
-    // 入口被删除后 records 中已找不到它，因此在首次进入时固定普通库/保险箱边界与文件状态。
+    // 入口被删除后 records 中已找不到它，因此在首次进入时固定普通库/保险箱边界。
     val collectionPrivate = remember(initialRecordId) { initialRecord?.isPrivate }
-    val initialFileWasValid = remember(initialRecordId) {
-        initialRecord?.let { record ->
-            record.isImage && record.status == DownloadStatus.COMPLETED &&
-                record.filePath?.let(::File)?.isFile == true &&
-                record.livePhotoMotion?.let { motion -> motion.filePath?.let(::File)?.isFile == true } != false
-        } == true
-    }
     var vaultAttempt by rememberSaveable(initialRecordId) { mutableIntStateOf(0) }
     var closing by remember(initialRecordId) { mutableStateOf(false) }
     var vaultState by remember(initialRecordId) {
@@ -223,12 +220,23 @@ fun ImageViewerScreen(
         return
     }
 
-    val availableRecords = if (collectionPrivate == null || !initialFileWasValid) {
-        emptyList()
-    } else {
-        imageViewerRecords(records, collectionPrivate) { record ->
-            record.filePath?.let(::File)?.isFile == true &&
+    // 文件是否还在只在进入/记录变化时检查一次；重组（点按、控制栏、幻灯片计时）不再全库扫描。
+    // 入口是否有效、逛哪个分区都在进入时固定：删掉当前这张后仍能继续浏览同一份列表。
+    val entryValid = remember(initialRecordId) {
+        initialRecord?.let { record ->
+            record.isImage && record.status == DownloadStatus.COMPLETED &&
+                record.filePath?.let(::File)?.isFile == true &&
                 record.livePhotoMotion?.let { motion -> motion.filePath?.let(::File)?.isFile == true } != false
+        } == true
+    }
+    val availableRecords = remember(records, collectionPrivate, entryValid, query) {
+        if (collectionPrivate == null || !entryValid) {
+            emptyList()
+        } else {
+            imageViewerRecords(records, collectionPrivate, query) { record ->
+                record.filePath?.let(::File)?.isFile == true &&
+                    record.livePhotoMotion?.let { motion -> motion.filePath?.let(::File)?.isFile == true } != false
+            }
         }
     }
     if (availableRecords.isEmpty()) {
@@ -257,7 +265,8 @@ fun ImageViewerScreen(
     val pagerState = rememberPagerState(initialPage = initialPage) { availableRecords.size }
     val thumbnailState = rememberLazyListState()
     val zoomStates = remember { mutableStateMapOf<String, CoilZoomState>() }
-    val metadataCache = remember { mutableMapOf<ImageMetadataCacheKey, ImageMetadata>() }
+    val imageStates = remember { mutableStateMapOf<String, ViewerImageState>() }
+    val metadataCache = remember { mutableMapOf<ImageMetadataCacheKey, com.videodown.douyin.core.ImageMetadata>() }
     var controlsVisible by rememberSaveable { mutableStateOf(true) }
     var interactionTick by remember { mutableIntStateOf(0) }
     var saving by remember { mutableStateOf(false) }
@@ -267,21 +276,24 @@ fun ImageViewerScreen(
     var intervalExpanded by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<DownloadRecord?>(null) }
     var playingLivePhotoId by remember { mutableStateOf<String?>(null) }
+    var organizingId by remember { mutableStateOf<String?>(null) }
+    var fileExportIds by remember { mutableStateOf<List<String>>(emptyList()) }
     var slideshowRunning by rememberSaveable { mutableStateOf(false) }
     var slideshowInterval by rememberSaveable {
         mutableIntStateOf(normalizedSlideshowIntervalSeconds(ServiceLocator.preferences.imageSlideshowIntervalSeconds))
     }
     var appStarted by remember { mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) }
+    val organization by organizationViewModel.state.collectAsStateWithLifecycle()
 
     val currentIndex = availableRecords.indexOfFirst { it.id == currentId }
         .takeIf { it >= 0 } ?: pagerState.currentPage.coerceIn(0, availableRecords.lastIndex)
     val currentRecord = availableRecords[currentIndex]
-    val currentFile = File(currentRecord.filePath.orEmpty())
     val currentZoom = zoomStates[currentRecord.id]
     val pagerEnabled = currentZoom?.zoomable?.userTransform?.let { transform ->
         transform.scaleX <= 1.01f && transform.scaleY <= 1.01f
     } ?: true
-    val overlayOpen = showingInfo || showingDateGrid || moreExpanded || intervalExpanded || pendingDelete != null || saving
+    val overlayOpen = showingInfo || showingDateGrid || moreExpanded || intervalExpanded || pendingDelete != null ||
+        saving || organizingId != null || fileExportIds.isNotEmpty() || organization.busy
     val slideshowTimerEnabled = canRunSlideshowTimer(
         running = slideshowRunning,
         recordCount = availableRecords.size,
@@ -289,6 +301,16 @@ fun ImageViewerScreen(
         appStarted = appStarted,
         imageAtBaseScale = pagerEnabled,
     )
+    val fontScale = LocalDensity.current.fontScale
+    val windowHeightDp = with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.height.toDp().value
+    }
+    val showThumbnails = availableRecords.size > 1 &&
+        ImageViewerLayoutPolicy.showThumbnailStrip(windowHeightDp.toInt())
+    val actionLabelMaxLines = ImageViewerLayoutPolicy.actionLabelMaxLines(fontScale)
+    val zoomInLabel = stringResource(R.string.viewer_zoom_in)
+    val zoomResetLabel = stringResource(R.string.viewer_zoom_reset)
+    val postPosition = imagePostPosition(availableRecords, currentRecord)
 
     // 进入或翻到 Live Photo 时立即播放；播放器自身 REPEAT_MODE_ONE 持续循环。
     // 用户手动停止后保持静帧，直到离开该页并再次回来才重新自动播放。
@@ -314,6 +336,10 @@ fun ImageViewerScreen(
                     thumbnailState.animateScrollToItem(page)
                 }
             }
+    }
+    // 日期网格是模态的：先收起后面的控制栏，避免两套底部工具条在弹层下沿叠在一起。
+    LaunchedEffect(showingDateGrid) {
+        if (showingDateGrid) controlsVisible = false
     }
     LaunchedEffect(controlsVisible, overlayOpen, currentId, interactionTick, autoHideMillis) {
         if (controlsVisible && !overlayOpen && autoHideMillis > 0L) {
@@ -400,12 +426,51 @@ fun ImageViewerScreen(
         }
     }
 
+    /** 日期网格里批量保存：逐张导出，最后给一条"成功/失败"汇总，而不是刷 N 条提示。 */
+    fun saveMany(ids: Set<String>) {
+        if (saving || ids.isEmpty()) return
+        saving = true
+        scope.launch {
+            var saved = 0
+            var failed = 0
+            ids.forEach { id ->
+                val record = availableRecords.firstOrNull { it.id == id } ?: return@forEach
+                val result = runCatching { ServiceLocator.galleryExporter.export(record) }
+                if (result.isSuccess) saved++ else failed++
+            }
+            saving = false
+            show(
+                if (failed == 0) resources.getString(R.string.viewer_saved_selected, saved)
+                else resources.getString(R.string.viewer_save_selected_partial, saved, failed),
+            )
+        }
+    }
+
+    fun toggleFavorite(record: DownloadRecord) {
+        organizationViewModel.update(record.id, favorite = !record.favorite) {
+            show(resources.getString(if (record.favorite) R.string.viewer_unfavorited else R.string.viewer_favorited))
+        }
+    }
+
+    /** 移入/移出保险箱后这张图就不再属于当前分区：像删除一样前进或退出。 */
+    fun toggleVault(record: DownloadRecord) {
+        val nextId = imageAfterDelete(availableRecords, record.id)
+        organizationViewModel.update(record.id, isPrivate = !record.isPrivate) {
+            if (nextId == null) closeViewer() else currentId = nextId
+            show(resources.getString(if (record.isPrivate) R.string.vault_removed else R.string.vault_added))
+        }
+    }
+
     var pendingPermissionId by remember { mutableStateOf<String?>(null) }
+    var pendingBatchSave by remember { mutableStateOf<Set<String>?>(null) }
     val storagePermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         val record = availableRecords.firstOrNull { it.id == pendingPermissionId }
+        val batch = pendingBatchSave
         pendingPermissionId = null
+        pendingBatchSave = null
         when {
             !granted -> show(resources.getString(R.string.library_need_storage_permission))
+            batch != null -> saveMany(batch)
             record == null -> show(resources.getString(R.string.viewer_missing))
             else -> save(record)
         }
@@ -423,6 +488,18 @@ fun ImageViewerScreen(
         }
     }
 
+    fun saveManyFromUser(ids: Set<String>) {
+        // 由日期网格触发，弹层还开着：不把控制栏唤回，避免两套工具条再次叠在一起。
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
+            pendingBatchSave = ids
+            storagePermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        } else {
+            saveMany(ids)
+        }
+    }
+
     Box(Modifier.fillMaxSize().background(Color.Black).testTag("image-viewer")) {
         HorizontalPager(
             state = pagerState,
@@ -431,24 +508,60 @@ fun ImageViewerScreen(
             modifier = Modifier.fillMaxSize().testTag("image-viewer-pager"),
         ) { page ->
             val record = availableRecords[page]
+            val file = File(record.filePath.orEmpty())
             val zoomState = rememberCoilZoomState()
             DisposableEffect(record.id, zoomState) {
                 zoomStates[record.id] = zoomState
                 onDispose { zoomStates.remove(record.id, zoomState) }
             }
-            CoilZoomAsyncImage(
-                model = File(record.filePath.orEmpty()),
-                contentDescription = record.title,
-                zoomState = zoomState,
-                contentScale = ContentScale.Fit,
-                onTap = {
-                    controlsVisible = !controlsVisible
-                    interactionTick++
-                },
-                modifier = Modifier.fillMaxSize()
-                    .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope)
-                    .testTag("image-viewer-${record.id}"),
-            )
+            val imageState = imageStates[record.id] ?: ViewerImageState.LOADING
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CoilZoomAsyncImage(
+                    model = file,
+                    contentDescription = null,
+                    zoomState = zoomState,
+                    contentScale = ContentScale.Fit,
+                    onTap = {
+                        controlsVisible = !controlsVisible
+                        interactionTick++
+                    },
+                    onLoading = { imageStates[record.id] = ViewerImageState.LOADING },
+                    onSuccess = { imageStates[record.id] = ViewerImageState.READY },
+                    onError = { imageStates[record.id] = ViewerImageState.FAILED },
+                    modifier = Modifier.fillMaxSize()
+                        .sharedCover(record.id, sharedTransitionScope, animatedVisibilityScope)
+                        .semantics {
+                            contentDescription = resources.getString(
+                                R.string.viewer_image_semantics, page + 1, availableRecords.size, record.title,
+                            )
+                            customActions = listOf(
+                                CustomAccessibilityAction(zoomInLabel) {
+                                    scope.launch { zoomState.zoomable.switchScale() }
+                                    true
+                                },
+                                CustomAccessibilityAction(zoomResetLabel) {
+                                    scope.launch { zoomState.zoomable.reset() }
+                                    true
+                                },
+                            )
+                        }
+                        .testTag("image-viewer-${record.id}"),
+                )
+                when (imageState) {
+                    ViewerImageState.LOADING -> ViewerImageLoading(visible = true)
+                    ViewerImageState.FAILED -> ViewerImageFailure(
+                        record = record,
+                        file = file,
+                        onOpenExternal = {
+                            if (!DouyinIntents.playExternally(context, file, videoMimeType(file.extension))) {
+                                show(resources.getString(R.string.viewer_source_failed))
+                            }
+                        },
+                        onDelete = { pendingDelete = record },
+                    )
+                    ViewerImageState.READY -> Unit
+                }
+            }
         }
 
         if (playingLivePhotoId == currentRecord.id) {
@@ -456,7 +569,10 @@ fun ImageViewerScreen(
                 LivePhotoMotionPlayer(
                     file = motion,
                     posterFile = currentRecord.filePath?.let(::File)?.takeIf(File::isFile),
-                    onStop = { playingLivePhotoId = null; wakeControls() },
+                    onTap = {
+                        controlsVisible = !controlsVisible
+                        interactionTick++
+                    },
                 )
             }
         }
@@ -481,16 +597,31 @@ fun ImageViewerScreen(
                     AppIcon(AppIcons.Back, stringResource(R.string.action_back), tint = Color.White)
                 }
                 Column(Modifier.weight(1f).padding(start = 12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (collectionPrivate == true) {
+                            AppIcon(
+                                AppIcons.Storage,
+                                stringResource(R.string.viewer_vault_badge),
+                                tint = Color.White.copy(alpha = .85f),
+                                modifier = Modifier.padding(end = 4.dp).size(14.dp),
+                            )
+                        }
+                        Text(
+                            currentRecord.title.ifBlank { stringResource(R.string.viewer_title) },
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                     Text(
-                        currentRecord.title.ifBlank { stringResource(R.string.viewer_title) },
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        stringResource(R.string.viewer_count, currentIndex + 1, availableRecords.size),
+                        listOfNotNull(
+                            stringResource(R.string.viewer_count, currentIndex + 1, availableRecords.size),
+                            postPosition?.let { (position, total) ->
+                                stringResource(R.string.viewer_post_position, position, total)
+                            },
+                        ).joinToString(" · "),
                         color = Color.White.copy(alpha = .72f),
                         style = MaterialTheme.typography.labelMedium,
                     )
@@ -581,38 +712,50 @@ fun ImageViewerScreen(
                             )
                         }
                     }
-                    LazyRow(
-                        state = thumbnailState,
-                        contentPadding = PaddingValues(horizontal = 14.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth().height(64.dp).testTag("image-viewer-thumbnails"),
-                    ) {
-                        itemsIndexed(availableRecords, key = { _, item -> item.id }) { index, record ->
-                            val selected = record.id == currentRecord.id
-                            AsyncImage(
-                                model = File(record.filePath.orEmpty()),
-                                contentDescription = stringResource(R.string.viewer_thumbnail, index + 1, record.title),
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.size(56.dp)
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .border(
-                                        BorderStroke(if (selected) 2.dp else 1.dp, if (selected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = .28f)),
-                                        MaterialTheme.shapes.medium,
+                    if (showThumbnails) {
+                        LazyRow(
+                            state = thumbnailState,
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth().height(64.dp).testTag("image-viewer-thumbnails"),
+                        ) {
+                            itemsIndexed(availableRecords, key = { _, item -> item.id }) { index, record ->
+                                val selected = record.id == currentRecord.id
+                                Box {
+                                    AsyncImage(
+                                        model = File(record.filePath.orEmpty()),
+                                        contentDescription = stringResource(R.string.viewer_thumbnail, index + 1, record.title),
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.size(56.dp)
+                                            .clip(MaterialTheme.shapes.medium)
+                                            .border(
+                                                BorderStroke(if (selected) 2.dp else 1.dp, if (selected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = .28f)),
+                                                MaterialTheme.shapes.medium,
+                                            )
+                                            .background(Color.White.copy(alpha = .08f))
+                                            .clickable {
+                                                currentId = record.id
+                                                wakeControls()
+                                                scope.launch { pagerState.animateScrollToPage(index) }
+                                            }
+                                            .testTag("image-thumbnail-${record.id}"),
                                     )
-                                    .background(Color.White.copy(alpha = .08f))
-                                    .clickable {
-                                        currentId = record.id
-                                        wakeControls()
-                                        scope.launch { pagerState.animateScrollToPage(index) }
+                                    if (record.isLivePhoto) {
+                                        AppIcon(
+                                            AppIcons.Play,
+                                            stringResource(R.string.viewer_live_photo_badge),
+                                            tint = Color.White,
+                                            modifier = Modifier.align(Alignment.BottomStart).padding(3.dp).size(12.dp),
+                                        )
                                     }
-                                    .testTag("image-thumbnail-${record.id}"),
-                            )
+                                }
+                            }
                         }
                     }
                 }
                 Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     ViewerAction(
@@ -620,19 +763,69 @@ fun ImageViewerScreen(
                         icon = AppIcons.SaveAlbum,
                         busy = saving,
                         enabled = !saving,
+                        maxLines = actionLabelMaxLines,
+                        modifier = Modifier.weight(1f),
                     ) { saveFromUser(currentRecord) }
-                    ViewerAction(stringResource(R.string.action_share), AppIcons.Share) {
+                    ViewerAction(
+                        label = stringResource(R.string.action_share),
+                        icon = AppIcons.Share,
+                        maxLines = actionLabelMaxLines,
+                        modifier = Modifier.weight(1f),
+                    ) {
                         wakeControls()
                         if (!DouyinIntents.shareRecord(context, currentRecord)) show(resources.getString(R.string.library_share_failed))
                     }
-                    ViewerAction(stringResource(R.string.viewer_info), AppIcons.Info) {
+                    ViewerAction(
+                        label = stringResource(R.string.viewer_info),
+                        icon = AppIcons.Info,
+                        maxLines = actionLabelMaxLines,
+                        modifier = Modifier.weight(1f),
+                    ) {
                         wakeControls(); showingInfo = true
                     }
-                    Box {
-                        ViewerAction(stringResource(R.string.viewer_more), AppIcons.More) {
+                    Box(Modifier.weight(1f)) {
+                        ViewerAction(
+                            label = stringResource(R.string.viewer_more),
+                            icon = AppIcons.More,
+                            maxLines = actionLabelMaxLines,
+                        ) {
                             wakeControls(); moreExpanded = true
                         }
                         DropdownMenu(expanded = moreExpanded, onDismissRequest = { moreExpanded = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(if (currentRecord.favorite) R.string.viewer_unfavorite else R.string.viewer_favorite)) },
+                                leadingIcon = {
+                                    AppIcon(
+                                        if (currentRecord.favorite) AppIcons.FavoriteFilled else AppIcons.Favorite,
+                                        null,
+                                    )
+                                },
+                                enabled = !organization.busy,
+                                onClick = { moreExpanded = false; toggleFavorite(currentRecord) },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.library_organize)) },
+                                leadingIcon = { AppIcon(AppIcons.Rename, null) },
+                                enabled = !organization.busy,
+                                onClick = { moreExpanded = false; organizingId = currentRecord.id },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(if (currentRecord.isPrivate) R.string.vault_remove else R.string.vault_add)) },
+                                leadingIcon = { AppIcon(AppIcons.Storage, null) },
+                                enabled = !organization.busy,
+                                onClick = { moreExpanded = false; toggleVault(currentRecord) },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.library_export_folder)) },
+                                leadingIcon = { AppIcon(AppIcons.ExportFolder, null) },
+                                enabled = !organization.busy,
+                                onClick = {
+                                    moreExpanded = false
+                                    fileExportViewModel.reset()
+                                    fileExportIds = listOf(currentRecord.id)
+                                },
+                            )
+                            HorizontalDivider()
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.viewer_open_source)) },
                                 leadingIcon = { AppIcon(AppIcons.ExternalLink, null) },
@@ -651,13 +844,16 @@ fun ImageViewerScreen(
                 }
             }
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter)
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
-            .padding(bottom = 82.dp))
+        SnackbarHost(
+            snackbar,
+            Modifier.align(Alignment.BottomCenter)
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+                .padding(bottom = 82.dp),
+        )
     }
 
     if (showingInfo) {
-        ImageInfoSheet(
+        ImageViewerInfoSheet(
             record = currentRecord,
             zoomState = currentZoom,
             metadataCache = metadataCache,
@@ -665,7 +861,7 @@ fun ImageViewerScreen(
         )
     }
     if (showingDateGrid) {
-        ImageDateGridSheet(
+        ImageViewerDateGridSheet(
             records = availableRecords,
             selectedId = currentRecord.id,
             onSelect = { record ->
@@ -674,8 +870,25 @@ fun ImageViewerScreen(
                 wakeControls()
                 scope.launch { pagerState.animateScrollToPage(availableRecords.indexOf(record)) }
             },
+            onDelete = { ids ->
+                val remaining = availableRecords.filterNot { it.id in ids }
+                val fallback = remaining.getOrNull(currentIndex.coerceAtMost(remaining.lastIndex.coerceAtLeast(0)))?.id
+                onDeleteMany(ids)
+                if (currentRecord.id in ids) {
+                    if (fallback == null) closeViewer() else currentId = fallback
+                }
+            },
+            onSave = { ids -> saveManyFromUser(ids) },
             onDismiss = { showingDateGrid = false; wakeControls() },
         )
+    }
+    organizingId?.let { id ->
+        availableRecords.firstOrNull { it.id == id }?.let { record ->
+            LibraryOrganizationDialog(record, organizationViewModel) { organizingId = null }
+        }
+    }
+    if (fileExportIds.isNotEmpty()) {
+        FileExportDialog(fileExportIds, fileExportViewModel) { fileExportIds = emptyList() }
     }
     pendingDelete?.let { record ->
         AppConfirmDialog(
@@ -718,9 +931,14 @@ private fun ViewerAction(
     icon: AppIcons,
     enabled: Boolean = true,
     busy: Boolean = false,
+    maxLines: Int = 1,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(72.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.padding(horizontal = 2.dp),
+    ) {
         IconButton(
             onClick = onClick,
             enabled = enabled,
@@ -733,162 +951,17 @@ private fun ViewerAction(
             label,
             color = Color.White.copy(alpha = if (enabled) .9f else .45f),
             style = MaterialTheme.typography.labelSmall,
-            maxLines = 1,
+            maxLines = maxLines,
             overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
         )
-    }
-}
-
-private data class ImageMetadataCacheKey(val path: String, val modifiedAt: Long)
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ImageInfoSheet(
-    record: DownloadRecord,
-    zoomState: CoilZoomState?,
-    metadataCache: MutableMap<ImageMetadataCacheKey, ImageMetadata>,
-    onDismiss: () -> Unit,
-) {
-    val file = File(record.filePath.orEmpty())
-    val cacheKey = remember(file.absolutePath, file.lastModified()) {
-        ImageMetadataCacheKey(file.absolutePath, file.lastModified())
-    }
-    var metadata by remember(cacheKey) { mutableStateOf(metadataCache[cacheKey]) }
-    var metadataLoading by remember(cacheKey) { mutableStateOf(metadata == null) }
-    LaunchedEffect(cacheKey) {
-        if (metadata == null) {
-            metadata = withContext(Dispatchers.IO) { ImageMetadataReader.read(file) }
-                .also { metadataCache[cacheKey] = it }
-        }
-        metadataLoading = false
-    }
-    val origin = zoomState?.zoomable?.contentOriginSize
-    val dimensions = origin?.takeIf { it.width > 0 && it.height > 0 }?.let { "${it.width} × ${it.height}" }
-    val unknown = stringResource(R.string.viewer_detail_unknown)
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = MaterialTheme.colorScheme.background,
-    ) {
-        val metadataFields = metadata?.fields.orEmpty()
-        LazyColumn(
-            Modifier.fillMaxWidth().fillMaxHeight(.88f)
-                .testTag("image-info-content"),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 28.dp),
-        ) {
-            item(key = "file-details") {
-                Text(stringResource(R.string.viewer_info), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text(record.title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 16.dp))
-                ImageDetailRow(stringResource(R.string.viewer_detail_author), record.displayAuthor.ifBlank { unknown })
-                ImageDetailRow(stringResource(R.string.viewer_detail_platform), stringResource(videoPlatformLabelRes(record.platform)))
-                ImageDetailRow(stringResource(R.string.viewer_detail_format), file.extension.uppercase().ifBlank { unknown })
-                ImageDetailRow(stringResource(R.string.viewer_detail_dimensions), dimensions ?: unknown)
-                ImageDetailRow(stringResource(R.string.viewer_detail_size), if (file.isFile) formatBytes(file.length()) else unknown)
-                record.livePhotoMotion?.filePath?.let(::File)?.takeIf(File::isFile)?.let { motion ->
-                    ImageDetailRow(stringResource(R.string.viewer_detail_live_photo), formatBytes(motion.length()))
-                }
-                ImageDetailRow(stringResource(R.string.viewer_detail_saved_at), DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(record.updatedAt))
-            }
-            item(key = "metadata-title") {
-                Text(
-                    stringResource(R.string.viewer_exif_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 22.dp, bottom = 6.dp),
-                )
-            }
-            when {
-                metadataLoading -> item(key = "metadata-loading") {
-                    Text(
-                        stringResource(R.string.viewer_exif_loading),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 10.dp),
-                    )
-                }
-                metadataFields.isEmpty() -> item(key = "metadata-empty") {
-                    Text(
-                        stringResource(R.string.viewer_exif_empty),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 10.dp),
-                    )
-                }
-                else -> items(metadataFields, key = { "${it.label}\u0000${it.value}" }) { field ->
-                    ImageDetailRow(field.label, field.value)
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ImageDateGridSheet(
-    records: List<DownloadRecord>,
-    selectedId: String,
-    onSelect: (DownloadRecord) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val groups = remember(records) { imageDateGroups(records) }
-    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG) }
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = MaterialTheme.colorScheme.background,
-    ) {
-        Column(Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
-            Text(
-                stringResource(R.string.viewer_date_grid_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-            )
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 28.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxSize().testTag("image-date-grid"),
-            ) {
-                groups.forEach { group ->
-                    item(span = { GridItemSpan(maxLineSpan) }, key = "date-${group.date}") {
-                        Text(
-                            group.date.format(dateFormatter),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 14.dp, bottom = 6.dp, start = 4.dp),
-                        )
-                    }
-                    gridItems(group.records, key = { it.id }) { record ->
-                        AsyncImage(
-                            model = File(record.filePath.orEmpty()),
-                            contentDescription = record.title,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxWidth().aspectRatio(1f)
-                                .clip(MaterialTheme.shapes.medium)
-                                .border(
-                                    BorderStroke(
-                                        if (record.id == selectedId) 3.dp else 1.dp,
-                                        if (record.id == selectedId) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.outlineVariant,
-                                    ),
-                                    MaterialTheme.shapes.medium,
-                                )
-                                .clickable { onSelect(record) }
-                                .testTag("date-grid-${record.id}"),
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
-private fun LivePhotoMotionPlayer(file: File, posterFile: File?, onStop: () -> Unit) {
+private fun LivePhotoMotionPlayer(file: File, posterFile: File?, onTap: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val player = remember(file.absolutePath) {
@@ -936,15 +1009,8 @@ private fun LivePhotoMotionPlayer(file: File, posterFile: File?, onStop: () -> U
                 modifier = Modifier.fillMaxSize().testTag("live-photo-poster"),
             )
         }
-        Box(Modifier.fillMaxSize().clickable(onClick = onStop))
-    }
-}
-
-@Composable
-private fun ImageDetailRow(label: String, value: String) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 7.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(92.dp))
-        Text(value, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        // 单击只切控制栏；停止交给顶栏按钮，避免"想隐藏控制栏却把实况停了"。
+        Box(Modifier.fillMaxSize().clickable(onClick = onTap).testTag("live-photo-tap"))
     }
 }
 

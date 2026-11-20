@@ -2,7 +2,9 @@ package com.videodown.douyin.presentation.viewer
 
 import com.videodown.douyin.domain.model.DownloadRecord
 import com.videodown.douyin.domain.model.DownloadStatus
+import com.videodown.douyin.core.LibrarySort
 import com.videodown.douyin.domain.model.MediaKind
+import com.videodown.douyin.presentation.library.LibraryQuery
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -14,10 +16,14 @@ class ImageViewerPolicyTest {
         private: Boolean = false,
         kind: MediaKind = MediaKind.IMAGE,
         status: DownloadStatus = DownloadStatus.COMPLETED,
+        favorite: Boolean = false,
+        page: String = "post-$id",
     ) = DownloadRecord(
         id = id,
         awemeId = id,
         title = id,
+        favorite = favorite,
+        sourcePageUrl = page,
         filePath = "/images/$id.jpg",
         status = status,
         mediaKind = kind,
@@ -71,4 +77,55 @@ class ImageViewerPolicyTest {
         assertEquals("b", imageAfterDelete(records, "c"))
         assertEquals(null, imageAfterDelete(listOf(records.first()), "a"))
     }
+
+    @Test fun `entry keeps the library query subset and order`() {
+        val records = listOf(
+            record("fav-new", 40, favorite = true),
+            record("other", 50),
+            record("fav-old", 10, favorite = true),
+        )
+
+        val result = imageViewerRecords(records, "fav-new", LibraryQuery(favoritesOnly = true, sort = LibrarySort.OLDEST)) { true }
+
+        assertEquals(listOf("fav-old", "fav-new"), result.map { it.id })
+    }
+
+    @Test fun `deep link without a query still sees the whole scope`() {
+        val records = listOf(
+            record("private", 10, private = true),
+            record("public", 20),
+        )
+
+        val result = imageViewerRecords(records, "private", LibraryQuery()) { true }
+
+        assertEquals(listOf("private"), result.map { it.id })
+    }
+
+    @Test fun `custom order survives into the viewer`() {
+        val records = listOf(
+            record("second", 20).copy(sortIndex = 2),
+            record("first", 10).copy(sortIndex = 1),
+            record("unsorted", 30),
+        )
+
+        val result = imageViewerRecords(records, "first", LibraryQuery(sort = LibrarySort.CUSTOM)) { true }
+
+        assertEquals(listOf("first", "second", "unsorted"), result.map { it.id })
+    }
+
+    @Test fun `date grid index points at the selected image`() {
+        val groups = imageDateGroups(
+            listOf(
+                record("new-a", 1_735_776_000_000L),
+                record("new-b", 1_735_779_600_000L),
+                record("old", 1_735_689_600_000L),
+            ),
+            java.time.ZoneId.of("UTC"),
+        )
+
+        assertEquals(2, imageDateGridIndex(groups, "new-b"))
+        assertEquals(4, imageDateGridIndex(groups, "old"))
+        assertEquals(0, imageDateGridIndex(groups, "missing"))
+    }
+
 }

@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import com.videodown.douyin.core.ServiceLocator
+import com.videodown.douyin.core.installImagePipeline
 import com.videodown.douyin.data.download.DownloadCompletionNotifier
 
 class VideoDownApp : Application() {
@@ -12,6 +13,7 @@ class VideoDownApp : Application() {
     override fun onCreate() {
         super.onCreate()
         ServiceLocator.init(this)
+        installImagePipeline()
         // One resolver for the context-free classes that still need to produce a message.
         com.videodown.douyin.core.AppText.install(this)
         ServiceLocator.bootstrap()

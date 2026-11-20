@@ -3,6 +3,9 @@ package com.videodown.douyin.core
 /** Android EXIF 读取器与 Compose 信息面板之间的纯 Kotlin 数据。 */
 data class ImageMetadata(
     val fields: List<ImageMetadataField>,
+    /** 原始坐标：面板据此提供"在地图中打开"，展示文本仍由 fields 里的 GPS 行负责。 */
+    val latitude: Double? = null,
+    val longitude: Double? = null,
 ) {
     val isEmpty: Boolean get() = fields.isEmpty()
 }

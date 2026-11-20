@@ -1,14 +1,23 @@
 package com.videodown.douyin
 
 import android.graphics.Bitmap
+import android.graphics.drawable.AnimatedImageDrawable
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import coil3.DrawableImage
+import coil3.SingletonImageLoader
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.size.ScaleDrawable
 import com.videodown.douyin.presentation.theme.VideoDownTheme
+import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.net.ServerSocket
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
@@ -45,6 +54,20 @@ class CoilImageLoadingDeviceTest {
             bitmap.recycle()
             out.toByteArray()
         }
+    }
+
+    /** Coil 会给动图套一层尺寸包装，沿包装链找内层的 AnimatedImageDrawable。 */
+    private fun containsAnimatedDrawable(drawable: android.graphics.drawable.Drawable?): Boolean {
+        var current = drawable
+        repeat(6) {
+            when (val value = current) {
+                is AnimatedImageDrawable -> return true
+                is ScaleDrawable -> current = value.child
+                is android.graphics.drawable.DrawableContainer -> current = value.current
+                else -> return false
+            }
+        }
+        return false
     }
 
     /** 只服务一次请求：把请求头读完，然后连着 body 一起回。 */
@@ -86,5 +109,20 @@ class CoilImageLoadingDeviceTest {
         }
         compose.waitUntil(10_000) { loaded.get() }
         assertTrue("远程封面必须真的能被取回来（否则就是没装网络取图器）", loaded.get())
+    }
+
+    @Test fun animatedGifsDecodeToAnAnimatedDrawable() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val file = File(context.cacheDir, "coil-animated.gif").apply { writeBytes(ANIMATED_GIF_BYTES) }
+        val loader = SingletonImageLoader.get(context)
+        val result = runBlocking {
+            loader.execute(ImageRequest.Builder(context).data(file).build())
+        }
+        val image = (result as? SuccessResult)?.image
+        assertTrue(
+            "GIF 必须解码成可动画的 drawable，而不是静帧位图；实际 image=${image?.javaClass?.name}",
+            image is DrawableImage && containsAnimatedDrawable(image.drawable),
+        )
+        file.delete()
     }
 }
